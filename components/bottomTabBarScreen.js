@@ -10,7 +10,6 @@ import FavoriteScreen from "../screens/favorite/favoriteScreen";
 import BookingScreen from "../screens/booking/bookingScreen";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import UnderDevelopment from "../screens/underDev";
 
 const Tab = createBottomTabNavigator();
 
@@ -104,7 +103,7 @@ const BottomTabBarScreen = ({ navigation }) => {
         />
         <Tab.Screen
           name="Booking"
-          component={BookingScreen }
+          component={BookingScreen}
           options={{
             tabBarIcon: ({ focused }) =>
               focused ? (
@@ -126,7 +125,7 @@ const BottomTabBarScreen = ({ navigation }) => {
         />
         <Tab.Screen
           name="Favorite"
-          component={FavoriteScreen }
+          component={FavoriteScreen}
           options={{
             tabBarIcon: ({ focused }) =>
               focused ? (

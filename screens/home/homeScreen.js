@@ -23,7 +23,7 @@ const nearByChargingStationsList = [
     id: "1",
     stationImage: require("../../assets/images/chargingStations/charging_station2.png"),
     stationName: "VoltCharge Hub",
-    stationAddress: "Next to Green Mall",
+    stationDistance: "4.3 Km",
     rating: 4.5,
     totalStations: 10,
     isOpen: true,
@@ -32,7 +32,7 @@ const nearByChargingStationsList = [
     id: "2",
     stationImage: require("../../assets/images/chargingStations/charging_station3.png"),
     stationName: "EcoPower Station",
-    stationAddress: "Near Zenith Plaza",
+    stationDistance: "7.9 Km",
     rating: 4.1,
     totalStations: 14,
     isOpen: false,
@@ -41,7 +41,7 @@ const nearByChargingStationsList = [
     id: "3",
     stationImage: require("../../assets/images/chargingStations/charging_station1.png"),
     stationName: "ChargeSwift Point",
-    stationAddress: "Opposite River View Park",
+    stationDistance: "6.9 Km",
     rating: 4.3,
     totalStations: 9,
     isOpen: true,
@@ -50,7 +50,7 @@ const nearByChargingStationsList = [
     id: "4",
     stationImage: require("../../assets/images/chargingStations/charging_station5.png"),
     stationName: "AmpereX Charging",
-    stationAddress: "Near City Central Market",
+    stationDistance: "7.7 Km",
     rating: 4.8,
     totalStations: 20,
     isOpen: true,
@@ -267,16 +267,19 @@ const HomeScreen = ({ navigation }) => {
         </View>
         <View style={{ width: screenWidth / 1.83 }}>
           <View style={{ padding: Sizes.fixPadding }}>
-            <Text numberOfLines={1} style={{ ...Fonts.blackColor18SemiBold }}>
+          <Text numberOfLines={1} style={{ ...Fonts.blackColor18SemiBold }}>
               {item.stationName}
             </Text>
-            <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
-              {item.stationAddress}
-            </Text>
+            <View  style={{ flexDirection: "row",justifyContent: "space-between"}}>
             <View style={{ ...commonStyles.rowAlignCenter }}>
               <Text style={{ ...Fonts.blackColor18Medium }}>{item.rating}</Text>
               <MaterialIcons name="star" color={Colors.yellowColor} size={20} />
             </View>
+            <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
+              {item.stationDistance}
+            </Text>
+            </View>
+            
           </View>
           <View
             style={{

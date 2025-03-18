@@ -2,7 +2,7 @@ import { View } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { Colors } from "../constants/styles";
 
-export default rating = ({ rating }) => {
+const Rating = ({ rating }) => {
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
       <MaterialIcons
@@ -33,3 +33,5 @@ export default rating = ({ rating }) => {
     </View>
   );
 };
+
+export default Rating; 

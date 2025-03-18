@@ -21,6 +21,7 @@ import CollapsibleToolbar from "react-native-collapsible-toolbar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import rating from "../../components/rating";
+
 import { Snackbar } from "react-native-paper";
 
 const aminitiesList = [

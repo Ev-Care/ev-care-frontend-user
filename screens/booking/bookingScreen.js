@@ -283,7 +283,7 @@ const BookingScreen = ({ navigation, route }) => {
           keyExtractor={(item) => `${item.id}`}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{paddingBottom:Sizes.fixPadding}}
+          contentContainerStyle={{ paddingBottom: Sizes.fixPadding }}
         />
       );
     }
@@ -338,11 +338,10 @@ const BookingScreen = ({ navigation, route }) => {
                 <Text
                   numberOfLines={1}
                   style={{
-                    ...(focused
-                      ? { ...Fonts.primaryColor18Medium }
-                      : { ...Fonts.grayColor18Medium }),
+                    color: "rgb(49, 49, 49)", 
                     lineHeight: 20.0,
                     paddingTop: Sizes.fixPadding - 5.0,
+                    ...Fonts.blackColor18Medium, 
                   }}
                 >
                   {route.title}

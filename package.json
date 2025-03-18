@@ -3,19 +3,48 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-native-community/datetimepicker": "8.2.0",
+    "@react-navigation/bottom-tabs": "^7.2.1",
+    "@react-navigation/native": "^7.0.15",
+    "@react-navigation/stack": "^7.1.2",
+    "@rneui/base": "^4.0.0-rc.7",
+    "@rneui/themed": "^4.0.0-rc.8",
     "expo": "~52.0.37",
+    "expo-application": "~5.0.1",
+    "expo-linear-gradient": "~14.0.2",
+    "expo-location": "~18.0.7",
+    "expo-splash-screen": "~0.29.22",
     "expo-status-bar": "~2.0.1",
     "react": "18.3.1",
-    "react-native": "0.76.7"
+    "react-native": "0.76.7",
+    "react-native-calendars": "^1.1310.0",
+    "react-native-collapsible-toolbar": "^0.1.2",
+    "react-native-gesture-handler": "~2.20.2",
+    "react-native-google-places-autocomplete": "^2.5.7",
+    "react-native-intl-phone-input": "^1.2.27",
+    "react-native-maps": "1.18.0",
+    "react-native-maps-directions": "^1.9.0",
+    "react-native-otp-textinput": "^1.1.6",
+    "react-native-pager-view": "6.5.1",
+    "react-native-paper": "^5.13.1",
+    "react-native-reanimated": "~3.16.1",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-screens": "~4.4.0",
+    "react-native-swipe-list-view": "^3.2.9",
+    "react-native-tab-view": "^4.0.5",
+    "react-native-vector-icons": "^10.2.0",
+    "rn-card-input": "^1.1.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.25.2",
+    "expo": "^52.0.37",
+    "expo-cli": "^6.3.10"
   },
   "private": true
 }

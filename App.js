@@ -2,7 +2,9 @@ import { createStackNavigator, TransitionPresets } from "@react-navigation/stack
 import { NavigationContainer } from "@react-navigation/native";
 import { LogBox } from "react-native";
 import 'react-native-gesture-handler';
+import 'react-native-get-random-values';
 
+import EnrouteScreen from "./screens/enroute/enrouteScreen";
 import LoadingScreen from "./components/loadingScreen"
 import SplashScreen from "./screens/splashScreen";
 import OnboardingScreen from "./screens/onboarding/onboardingScreen";
@@ -42,7 +44,7 @@ function MyApp() {
           ...TransitionPresets.SlideFromRightIOS,
         }}
       >
-        <Stack.Screen name="Loading" component={LoadingScreen} />
+        {/* <Stack.Screen name="Loading" component={LoadingScreen} />
         <Stack.Screen 
           name="Splash" 
           component={SplashScreen} 
@@ -51,7 +53,7 @@ function MyApp() {
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="Signin" component={SigninScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="Verification" component={VerificationScreen} />
+        <Stack.Screen name="Verification" component={VerificationScreen} /> */}
         <Stack.Screen
           name="BottomTabBar"
           component={BottomTabBarScreen}
@@ -84,6 +86,7 @@ function MyApp() {
         <Stack.Screen name="BookingDetail" component={BookingDetailScreen} />
         <Stack.Screen name="EditProfile" component={EditProfileScreen} />
         <Stack.Screen name="Notification" component={NotificationScreen} />
+        <Stack.Screen name="Enroute" component={EnrouteScreen} />
         <Stack.Screen
           name="TermsAndConditions"
           component={TermsAndConditionsScreen}

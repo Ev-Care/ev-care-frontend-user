@@ -8,6 +8,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import EnrouteScreen from "../screens/enroute/enrouteScreen";
 import FavoriteScreen from "../screens/favorite/favoriteScreen";
 import BookingScreen from "../screens/booking/bookingScreen";
+import ChargingStationsOnMapScreen from "../screens/chargingStationsOnMap/chargingStationsOnMapScreen";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
@@ -101,7 +102,7 @@ const BottomTabBarScreen = ({ navigation }) => {
               ),
           }}
         />
-        <Tab.Screen
+        {/* <Tab.Screen
           name="Booking"
           component={BookingScreen}
           options={{
@@ -117,6 +118,28 @@ const BottomTabBarScreen = ({ navigation }) => {
               ) : (
                 <MaterialIcons
                   name="receipt-long"
+                  size={24}
+                  color={Colors.primaryColor}
+                />
+              ),
+          }}
+        /> */}
+          <Tab.Screen
+          name="Map"
+          component={ChargingStationsOnMapScreen}
+          options={{
+            tabBarIcon: ({ focused }) =>
+              focused ? (
+                <View style={styles.selectedTabCircleStyle}>
+                  <MaterialIcons
+                    name="location-on"
+                    size={24}
+                    color={Colors.whiteColor}
+                  />
+                </View>
+              ) : (
+                <MaterialIcons
+                  name="location-on"
                   size={24}
                   color={Colors.primaryColor}
                 />

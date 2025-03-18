@@ -6,7 +6,7 @@ import {
   ImageBackground,
   ScrollView,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react"; // ✅ Added useRef
 import {
   Colors,
   Fonts,
@@ -17,21 +17,42 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MyStatusBar from "../../components/myStatusBar";
+import { useFocusEffect } from "@react-navigation/native";
 
 const EnRouteScreen = ({ navigation, route }) => {
-  useEffect(() => {
-    if (route.params?.address) {
-      if (route.params.addressFor === "pickup") {
-        setPickupAddress(route.params.address);
-      } else {
-        setDestinationAddress(route.params.address);
-      }
-    }
-  }, [route.params?.address]);
-
   const [pickupAddress, setPickupAddress] = useState("");
+  const [pickupCoordinate, setPickupCoordinate] = useState(null);
   const [destinationAddress, setDestinationAddress] = useState("");
-  const [pickAlert, setpickAlert] = useState(false);
+  const [destinationCoordinate, setDestinationCoordinate] = useState(null);
+  const [pickAlert, setPickAlert] = useState(false); // ✅ Added missing state
+
+  // 🔥 Store previous data using useRef to avoid losing values
+  const prevPickupAddress = useRef("");
+  const prevDestinationAddress = useRef("");
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (route.params?.address) {
+        console.log("Received Data:", route.params);
+
+        if (route.params.addressFor === "pickup") {
+          setPickupAddress(route.params.address);
+          setPickupCoordinate(route.params.coordinate);
+          prevPickupAddress.current = route.params.address; // Store in ref
+        } else if (route.params.addressFor === "destination") {
+          setDestinationAddress(route.params.address);
+          setDestinationCoordinate(route.params.coordinate);
+          prevDestinationAddress.current = route.params.address; // Store in ref
+        }
+      }
+    }, [route.params])
+  );
+
+  // 🔥 Restore previous values if they exist (to prevent losing data)
+  useEffect(() => {
+    if (!pickupAddress) setPickupAddress(prevPickupAddress.current);
+    if (!destinationAddress) setDestinationAddress(prevDestinationAddress.current);
+  }, [pickupAddress, destinationAddress]);
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -66,9 +87,9 @@ const EnRouteScreen = ({ navigation, route }) => {
           if (pickupAddress && destinationAddress) {
             navigation.push("EnrouteChargingStations");
           } else {
-            setpickAlert(true);
+            setPickAlert(true); // ✅ Corrected function name
             setTimeout(() => {
-              setpickAlert(false);
+              setPickAlert(false);
             }, 2000);
           }
         }}
@@ -150,7 +171,7 @@ const EnRouteScreen = ({ navigation, route }) => {
         }}
       >
         Pick starting point & destination point and see how many charging
-        stations are comping at that route.
+        stations are coming at that route.
       </Text>
     );
   }
@@ -219,7 +240,7 @@ const styles = StyleSheet.create({
     paddingVertical: Sizes.fixPadding - 5.0,
     borderRadius: Sizes.fixPadding * 2.0,
     zIndex: 100.0,
-    overflow:'hidden'
+    overflow: "hidden",
   },
   seeRouteButtonStyle: {
     padding: Sizes.fixPadding,

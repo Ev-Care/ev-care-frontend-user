@@ -226,36 +226,36 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
   function markersInfo() {
     return (
       <MapView
-        ref={_map}
-        style={{ flex: 1 }}
-        initialRegion={region}
-        provider={PROVIDER_GOOGLE}
-      >
-        {markerList.map((marker, index) => {
-          const scaleStyle = {
-            transform: [
-              {
-                scale: interpolation[index].scale,
-              },
-            ],
-          };
-          return (
-            <Marker
-              key={index}
-              coordinate={marker.coordinate}
-              onPress={(e) => onMarkerPress(e)}
-            >
-              <Animated.View style={styles.markerStyle}>
-                <Animated.Image
-                  source={require("../../assets/images/icons/marker.png")}
-                  resizeMode="contain"
-                  style={[{ width: 30.0, height: 30.0 }, scaleStyle]}
-                ></Animated.Image>
-              </Animated.View>
-            </Marker>
-          );
-        })}
-      </MapView>
+      ref={_map}
+      style={{ flex: 1 }}
+      initialRegion={region}
+      provider={PROVIDER_GOOGLE}
+    >
+      {markerList.map((marker, index) => {
+        const scaleStyle = {
+          transform: [
+            {
+              scale: interpolation[index].scale,
+            },
+          ],
+        };
+        return (
+          <Marker
+            key={index}
+            coordinate={marker.coordinate}
+            onPress={(e) => onMarkerPress(e)}
+          >
+            <Animated.View style={[styles.markerStyle, scaleStyle]}>
+              <Animated.Image
+                source={require("../../assets/images/icons/marker.png")}
+                resizeMode="contain"
+                style={{ width: 30.0, height: 30.0 }}
+              />
+            </Animated.View>
+          </Marker>
+        );
+      })}
+    </MapView>
     );
   }
 
@@ -428,8 +428,7 @@ const styles = StyleSheet.create({
   markerStyle: {
     alignItems: "center",
     justifyContent: "center",
-    width: 45.0,
-    height: 45.0,
+    
   },
   getDirectionButton: {
     backgroundColor: Colors.primaryColor,

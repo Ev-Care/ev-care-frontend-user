@@ -269,7 +269,7 @@ export const commonStyles = {
     backgroundColor: Colors.primaryColor,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: Sizes.fixPadding,
+    borderRadius: 4,
     padding: Sizes.fixPadding * 1.5,
   },
 };

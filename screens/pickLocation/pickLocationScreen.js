@@ -6,6 +6,7 @@ import {
   Alert,
   PermissionsAndroid,
   Platform,
+  
   Text,
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
@@ -14,7 +15,7 @@ import Geolocation from "react-native-geolocation-service";
 import Key from "../../constants/key";
 import { Colors, Fonts, commonStyles } from "../../constants/styles";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation,StackActions } from "@react-navigation/native";
 
 
 const PickLocationScreen = ({ navigation, route }) => {
@@ -126,23 +127,30 @@ const PickLocationScreen = ({ navigation, route }) => {
 
   // Submit function
   const handleSubmit = () => {
-    console.log("Selected Location:", selectedLocation);
-    console.log("Address:", address);
-    console.log("AddressFor:", route.params?.addressFor);
+    // console.log("Selected Location:", selectedLocation);
+    // console.log("Address:", address);
+    // console.log("AddressFor:", route.params?.addressFor);
   
     if (!selectedLocation || !address) {
       Alert.alert("No Location Selected", "Please select a location first.");
       return;
     }
-  
+    if(route.params?.addressFor==="destination"){
+   route.params.setDestinationAddress(address);
+   route.params.setDestinationCoordinate(selectedLocation);
+  }else{
+    route.params.setPickupAddress(address);
+    route.params.setPickupCoordinate(selectedLocation);
+  }
     // Replace current screen with Enroute instead of stacking
-    navigation.replace("Enroute", {
-      coordinate: selectedLocation,
-      address: address,
-      addressFor: route.params?.addressFor || "default",
-    });
+    navigation.dispatch(StackActions.pop(1));
+    // navigation.pop("Enroute", {
+    //   coordinate: selectedLocation,
+    //   address: address,
+    //   addressFor: route.params?.addressFor || "default",
+    // });
   
-    console.log("Navigating back...");
+    // console.log("Navigating back...");
   };
   
   

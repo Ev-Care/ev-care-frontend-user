@@ -4,8 +4,11 @@ import {
   View,
   Image,
   Animated,
+  Platform ,
   TouchableOpacity,
 } from "react-native";
+
+
 import React, { useState, createRef, useEffect, useRef } from "react";
 import MyStatusBar from "../../components/myStatusBar";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
@@ -83,58 +86,70 @@ const chargingSpotsList = [
   }, 
 ];
 
-const fromDefaultLocation = {
-  latitude: 22.6293867,
-  longitude: 88.4354486,  
-};
 
-const toDefaultLocation = {
-  latitude: 22.6242,
-  longitude: 88.453999,  
-};
 
-const EnrouteChargingStationsScreen = ({ navigation }) => {
-  const [markerList] = useState(chargingSpotsList);
-  const [region] = useState({
-    latitude: 22.6292757,
-    longitude: 88.444781,   
-    latitudeDelta: 0.03,
-    longitudeDelta: 0.03,
+const EnrouteChargingStationsScreen = ({ navigation, route }) => {
+  const fromDefaultLocation = {
+    latitude: route.params?.pickupCoordinate?.latitude || 0,
+    longitude: route.params?.pickupCoordinate?.longitude || 0,
+  };
+
+  const toDefaultLocation = {
+    latitude: route.params?.destinationCoordinate?.latitude || 0,
+    longitude: route.params?.destinationCoordinate?.longitude || 0,
+  };
+
+  const [markerList] = useState(chargingSpotsList); // Declared already
+  const [region, setRegion] = useState({
+    latitude: fromDefaultLocation.latitude,
+    longitude: fromDefaultLocation.longitude,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
   });
 
-  let mapAnimation = new Animated.Value(0);
-  let mapIndex = 0;
-
-  const _map = createRef();
+  const _map = useRef(null);
+  const _scrollView = useRef(null);
+  const mapAnimation = useRef(new Animated.Value(0)).current;
+  const mapIndex = useRef(0);
 
   useEffect(() => {
-    mapAnimation.addListener(({ value }) => {
+    if (_map.current) {
+      _map.current.animateToRegion(
+        {
+          latitude: fromDefaultLocation.latitude,
+          longitude: fromDefaultLocation.longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        },
+        1000
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    const listener = mapAnimation.addListener(({ value }) => {
       let index = Math.floor(value / cardWidth + 0.3);
-      if (index >= markerList.length) {
-        index = markerList.length - 1;
-      }
-      if (index <= 0) {
-        index = 0;
-      }
+      index = Math.max(0, Math.min(index, markerList.length - 1));
 
-      clearTimeout(regionTimeout);
+      if (mapIndex.current !== index) {
+        mapIndex.current = index;
+        const { coordinate } = markerList[index];
 
-      const regionTimeout = setTimeout(() => {
-        if (mapIndex !== index) {
-          mapIndex = index;
-          const { coordinate } = markerList[index];
-          _map.current.animateToRegion(
-            {
-              ...coordinate,
-              latitudeDelta: region.latitudeDelta,
-              longitudeDelta: region.longitudeDelta,
-            },
-            350
-          );
-        }
-      }, 10);
+        _map.current?.animateToRegion(
+          {
+            ...coordinate,
+            latitudeDelta: region.latitudeDelta,
+            longitudeDelta: region.longitudeDelta,
+          },
+          350
+        );
+      }
     });
-  });
+
+    return () => {
+      mapAnimation.removeListener(listener);
+    };
+  }, [mapAnimation, markerList, region]);
 
   const interpolation = markerList.map((marker, index) => {
     const inputRange = [
@@ -143,30 +158,28 @@ const EnrouteChargingStationsScreen = ({ navigation }) => {
       (index + 1) * cardWidth,
     ];
 
-    const scale = mapAnimation.interpolate({
-      inputRange,
-      outputRange: [1, 1.5, 1],
-      extrapolate: "clamp",
-    });
-
-    return { scale };
+    return {
+      scale: mapAnimation.interpolate({
+        inputRange,
+        outputRange: [1, 1.5, 1],
+        extrapolate: "clamp",
+      }),
+    };
   });
 
-  const onMarkerPress = (mapEventData) => {
-    const markerID = mapEventData._targetInst.return.key;
-
+  const onMarkerPress = (e) => {
+    const markerID = e.nativeEvent.id || 0;
     let x = markerID * cardWidth + markerID * 20;
+
     if (Platform.OS === "ios") {
-      x = x - SPACING_FOR_CARD_INSET;
+      x -= SPACING_FOR_CARD_INSET;
     }
 
-    _scrollView.current.scrollTo({ x: x, y: 0, animated: true });
+    _scrollView.current.scrollTo({ x, y: 0, animated: true });
   };
 
-  const _scrollView = useRef(null);
-
   return (
-    <View style={{ flex: 1,backgroundColor:Colors.bodyBackColor }}>
+    <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
       <View style={{ flex: 1 }}>
         {markersInfo()}
@@ -183,12 +196,7 @@ const EnrouteChargingStationsScreen = ({ navigation }) => {
         onPress={() => navigation.pop()}
         style={styles.backArrowWrapStyle}
       >
-        <MaterialIcons
-          name={"arrow-back"}
-          size={24}
-          color={Colors.blackColor}
-          onPress={() => navigation.pop()}
-        />
+        <MaterialIcons name="arrow-back" size={24} color={Colors.blackColor} />
       </TouchableOpacity>
     );
   }
@@ -200,54 +208,35 @@ const EnrouteChargingStationsScreen = ({ navigation }) => {
         style={{ flex: 1 }}
         initialRegion={region}
         provider={PROVIDER_GOOGLE}
+        onRegionChangeComplete={setRegion} // Allows zoom update
       >
         {markerList.map((marker, index) => {
-          const scaleStyle = {
-            transform: [
-              {
-                scale: interpolation[index].scale,
-              },
-            ],
-          };
+          const scaleStyle = { transform: [{ scale: interpolation[index].scale }] };
           return (
-            <Marker
-              key={index}
-              coordinate={marker.coordinate}
-              onPress={(e) => onMarkerPress(e)}
-            >
-              <Animated.View style={styles.markerStyle}>
-                <Animated.Image
-                  source={require("../../assets/images/icons/marker.png")}
-                  resizeMode="contain"
-                  style={[{ width: 30.0, height: 30.0 }, scaleStyle]}
-                ></Animated.Image>
-              </Animated.View>
-            </Marker>
+            <Marker 
+            key={index} 
+            coordinate={marker.coordinate} 
+            onPress={onMarkerPress}
+            pinColor="#28692e" 
+          />
+            
           );
-        })}       
+        })}
+
         <MapViewDirections
           origin={fromDefaultLocation}
           destination={toDefaultLocation}
           apikey={Key.apiKey}
-          lineCap="square"
           strokeColor={Colors.primaryColor}
           strokeWidth={3}
         />
-        <Marker coordinate={fromDefaultLocation}>
-          <Image
-            source={require("../../assets/images/icons/marker1.png")}
-            style={{ width: 40.0, height: 40.0, resizeMode: "contain" }}
-          />
-        </Marker>
-        <Marker coordinate={toDefaultLocation}>
-          <Image
-            source={require("../../assets/images/icons/marker3.png")}
-            style={{ width: 40.0, height: 40.0, resizeMode: "contain" }}
-          />
-        </Marker>
+
+        <Marker coordinate={fromDefaultLocation} pinColor="blue" />
+        <Marker coordinate={toDefaultLocation} pinColor="red" />
       </MapView>
     );
   }
+
 
   function chargingSpotsInfo() {
     return <View style={styles.chargingInfoWrapStyle}>{chargingSpots()}</View>;

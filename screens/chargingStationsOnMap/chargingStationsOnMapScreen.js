@@ -244,15 +244,9 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
             key={index}
             coordinate={marker.coordinate}
             onPress={(e) => onMarkerPress(e)}
-          >
-            <Animated.View style={[styles.markerStyle, scaleStyle]}>
-              <Animated.Image
-                source={require("../../assets/images/icons/marker.png")}
-                resizeMode="contain"
-                style={{ width: 30.0, height: 30.0 }}
-              />
-            </Animated.View>
-          </Marker>
+            pinColor="green" 
+          />
+          
         );
       })}
     </MapView>

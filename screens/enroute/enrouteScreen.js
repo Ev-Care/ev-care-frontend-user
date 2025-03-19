@@ -30,23 +30,23 @@ const EnRouteScreen = ({ navigation, route }) => {
   const prevPickupAddress = useRef("");
   const prevDestinationAddress = useRef("");
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (route.params?.address) {
-        console.log("Received Data:", route.params);
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     if (route.params?.address) {
+  //       // console.log("Received Data:", route.params);
 
-        if (route.params.addressFor === "pickup") {
-          setPickupAddress(route.params.address);
-          setPickupCoordinate(route.params.coordinate);
-          prevPickupAddress.current = route.params.address; // Store in ref
-        } else if (route.params.addressFor === "destination") {
-          setDestinationAddress(route.params.address);
-          setDestinationCoordinate(route.params.coordinate);
-          prevDestinationAddress.current = route.params.address; // Store in ref
-        }
-      }
-    }, [route.params])
-  );
+  //       if (route.params.addressFor === "pickup") {
+  //         setPickupAddress(route.params.address);
+  //         setPickupCoordinate(route.params.coordinate);
+  //         prevPickupAddress.current = route.params.address; // Store in ref
+  //       } else if (route.params.addressFor === "destination") {
+  //         setDestinationAddress(route.params.address);
+  //         setDestinationCoordinate(route.params.coordinate);
+  //         prevDestinationAddress.current = route.params.address; // Store in ref
+  //       }
+  //     }
+  //   }, [route.params])
+  // );
 
   // 🔥 Restore previous values if they exist (to prevent losing data)
   useEffect(() => {
@@ -85,7 +85,7 @@ const EnRouteScreen = ({ navigation, route }) => {
         }}
         onPress={() => {
           if (pickupAddress && destinationAddress) {
-            navigation.push("EnrouteChargingStations");
+            navigation.push("EnrouteChargingStations" ,{pickupCoordinate :pickupCoordinate, destinationCoordinate: destinationCoordinate});
           } else {
             setPickAlert(true); // ✅ Corrected function name
             setTimeout(() => {
@@ -106,7 +106,7 @@ const EnRouteScreen = ({ navigation, route }) => {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => {
-          navigation.push("PickLocation", { addressFor: "destination" });
+          navigation.push("PickLocation", { addressFor: "destination" ,setDestinationAddress:setDestinationAddress, setDestinationCoordinate:setDestinationCoordinate });
         }}
         style={{ ...styles.pickPointWrapStyle }}
       >
@@ -136,7 +136,7 @@ const EnRouteScreen = ({ navigation, route }) => {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => {
-          navigation.push("PickLocation", { addressFor: "pickup" });
+          navigation.push("PickLocation", { addressFor: "pickup" , setPickupAddress:setPickupAddress,setPickupCoordinate:setPickupCoordinate});
         }}
         style={{ ...styles.pickPointWrapStyle, marginTop: Sizes.fixPadding }}
       >

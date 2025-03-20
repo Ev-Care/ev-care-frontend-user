@@ -6,7 +6,7 @@ import {
   Text,
   View,
 } from "react-native";
-import React,{useCallback} from "react";
+import React, { useCallback } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { Fonts } from "../constants/styles";
 import { useFocusEffect } from "@react-navigation/native";
@@ -37,7 +37,7 @@ const SplashScreen = ({ navigation }) => {
   setTimeout(() => {
     navigation.push("Onboarding");
   }, 2000);
-  
+
   return (
     <View style={{ flex: 1 }}>
       <ImageBackground
@@ -45,7 +45,7 @@ const SplashScreen = ({ navigation }) => {
         style={{ flex: 1 }}
       >
         <LinearGradient
-          colors={["rgba(217, 217, 217, 0.00)", "rgba(6, 124, 96, 0.77)"]}
+          colors={["rgba(217, 217, 217, 0.00)", "#101942"]}
           style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
         >
           <Text style={{ ...Fonts.whiteColor38SemiBold }}>EV Care</Text>

@@ -120,8 +120,8 @@ const ProfileScreen = ({ navigation }) => {
             marginBottom: Sizes.fixPadding,
           }}
         >
-          <Text style={{ ...Fonts.blackColor18SemiBold }}>Peter Jones</Text>
-          <Text style={{ ...Fonts.grayColor16Medium }}>+1 1234567890</Text>
+          <Text style={{ ...Fonts.blackColor18SemiBold }}>User Name</Text>
+          <Text style={{ ...Fonts.grayColor16Medium }}>+919677566679</Text>
         </View>
         <View>
           {profileOption({

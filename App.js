@@ -8,7 +8,8 @@ import "react-native-gesture-handler";
 import "react-native-get-random-values";
 import React, { useState, useEffect } from "react";
 import LoadingScreen from "./components/loadingScreen";
-import SplashScreen from "./screens/splashScreen";
+import SecondSplashScreen from "./screens/secondSplashScreen";
+import FirstSplashScreen from "./components/firstSplashScreen";
 import OnboardingScreen from "./screens/onboarding/onboardingScreen";
 import SigninScreen from "./screens/auth/signinScreen";
 import RegisterScreen from "./screens/auth/registerScreen";
@@ -29,8 +30,8 @@ function MyApp() {
 
   useEffect(() => {
     setTimeout(() => {
-      setIsAuthenticated(false); 
-      setUserType(null);
+      setIsAuthenticated(true); 
+      setUserType("user");
     }, 2000);
   }, []);
 
@@ -45,9 +46,14 @@ function MyApp() {
         {!isAuthenticated ? (
           // Non-registered users will see these screens
           <>
+          <Stack.Screen
+              name="FirstSplashScreen"
+              component={FirstSplashScreen}
+              options={{ ...TransitionPresets.DefaultTransition }}
+            />
             <Stack.Screen
-              name="Splash"
-              component={SplashScreen}
+              name="SecondSplashScreen"
+              component={SecondSplashScreen}
               options={{ ...TransitionPresets.DefaultTransition }}
             />
              <Stack.Screen name="Loading" component={ LoadingScreen} />

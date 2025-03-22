@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  Alert,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -19,7 +20,8 @@ import {
 import MyStatusBar from "../../components/myStatusBar";
 import { useFocusEffect } from "@react-navigation/native";
 import IntlPhoneInput from "react-native-intl-phone-input";
-
+import { useSelector, useDispatch } from "react-redux";
+import { loginUser } from "../../redux/store/userSlice";
 const SigninScreen = ({ navigation }) => {
   const backAction = () => {
     if (Platform.OS === "ios") {
@@ -52,7 +54,33 @@ const SigninScreen = ({ navigation }) => {
 
   const [backClickCount, setBackClickCount] = useState(0);
   const [phoneNumber, setPhoneNumber] = useState("");
+ 
+  const users = useSelector((state) => state.users.users);
 
+  const handleSignIn = () => {
+    try {
+      if (!phoneNumber) {
+        Alert.alert("Error", "Please enter a phone number");
+        return;
+      }
+
+      const sanitizedPhoneNumber = phoneNumber.replace(/\s+/g, ""); // Remove spaces
+      // console.log("Sanitized Phone Number:", sanitizedPhoneNumber);
+
+      const user = users.find((user) => user.contactNo === sanitizedPhoneNumber);
+      if (user) {
+        console.log("User exists: " + user.contactNo);
+        navigation.navigate("Verification", { phoneNumber: user.contactNo, role: user.role });
+      } else {
+        Alert.alert("User not found: " + sanitizedPhoneNumber);
+        navigation.navigate("Register");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Something went wrong. Please try again.");
+    }
+};
+
+  
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -74,9 +102,7 @@ const SigninScreen = ({ navigation }) => {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => {
-          navigation.push("Register");
-        }}
+        onPress={handleSignIn}
         style={{ ...commonStyles.button,borderRadius: Sizes.fixPadding-5.0, margin: Sizes.fixPadding * 2.0 }}
       >
         <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>
@@ -93,8 +119,8 @@ const SigninScreen = ({ navigation }) => {
         }}
       >
         <IntlPhoneInput
-          onChangeText={({ phoneNumber }) => setPhoneNumber(phoneNumber)}
-          defaultCountry="IN"
+         onChangeText={({ phoneNumber }) => setPhoneNumber(phoneNumber.replace(/\s+/g, ""))}
+         defaultCountry="IN"
           containerStyle={styles.mobileNumberWrapStyle}
           placeholder={"Enter your phone number"}
           placeholderTextColor={Colors.grayColor}

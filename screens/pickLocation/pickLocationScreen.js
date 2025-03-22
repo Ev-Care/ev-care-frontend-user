@@ -138,9 +138,11 @@ const PickLocationScreen = ({ navigation, route }) => {
     if(route.params?.addressFor==="destination"){
    route.params.setDestinationAddress(address);
    route.params.setDestinationCoordinate(selectedLocation);
-  }else{
+  }else if(route.params?.addressFor==="pickup"){
     route.params.setPickupAddress(address);
     route.params.setPickupCoordinate(selectedLocation);
+  }else{
+    route.params.setAddress(address);
   }
     // Replace current screen with Enroute instead of stacking
     navigation.dispatch(StackActions.pop(1));

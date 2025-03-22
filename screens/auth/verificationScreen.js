@@ -20,21 +20,11 @@ import MyStatusBar from "../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { Overlay } from "@rneui/themed";
 import OTPTextView from "react-native-otp-textinput";
-import {  useDispatch } from "react-redux";
-import { loginUser } from "../../redux/store/userSlice";
-const VerificationScreen = ({ navigation ,route }) => {
+
+const VerificationScreen = ({ navigation }) => {
   const [otpInput, setotpInput] = useState("");
   const [isLoading, setisLoading] = useState(false);
-  const dispatch = useDispatch();
-  const verifyOtp=() => {
-    // console.log("clicked");
-    if (otpInput==="1234"){
-      // console.log("verified");
-      dispatch(loginUser(route.params?.phoneNumber));
-      // setUserType(route.params?.role);
-      // console.log("this is userRole"+route.params?.role+"this is number"+route.params?.phoneNumber); 
-    }
-  }
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -119,12 +109,17 @@ const VerificationScreen = ({ navigation ,route }) => {
     );
   }
 
-  
   function continueButton() {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={verifyOtp}
+        onPress={() => {
+            setisLoading(true);
+            setTimeout(() => {
+              setisLoading(false);
+              navigation.push("BottomTabBar");
+            }, 2000);
+        }}
         style={{ ...commonStyles.button,borderRadius: Sizes.fixPadding-5.0, margin: Sizes.fixPadding * 2.0 }}
       >
         <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>

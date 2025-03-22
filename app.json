@@ -13,15 +13,13 @@
       "resizeMode": "contain",
       "backgroundColor": "#101942"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "bundleIdentifier": "com.render.evcare",
       "buildNumber": "1.0.0",
-      "supportsTablet": true,
-      "infoPlist": {
-        "NSCameraUsageDescription": "This app needs access to your camera.",
-        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library."
-      }
+      "supportsTablet": true
     },
     "android": {
       "package": "com.render.evcare",

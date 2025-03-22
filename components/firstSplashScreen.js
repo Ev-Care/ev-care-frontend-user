@@ -11,7 +11,7 @@ const FirstSplashScreen = ({ navigation }) => {
 
   useEffect(() => {
     setTimeout(() => {
-    //   iconPosition.value = withTiming(-20, { duration: 800 }); // Move left
+      iconPosition.value = withTiming(-20, { duration: 800 }); // Move left
       iconScale.value = withTiming(0.7, { duration: 700 }); // Shrink icon
       textOpacity.value = withTiming(1, { duration: 1000 }); // Fade in text
       textScale.value = withTiming(1, { duration: 1000 }); // Scale up text

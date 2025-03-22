@@ -17,15 +17,19 @@ const VendorDetailForm = () => {
   const [vendorName, setVendorName] = useState("");
   const [address, setAddress] = useState("");
   const [publicContact, setPublicContact] = useState("");
+  const [aadharNumber, setAadharNumber] = useState("");
+  const [panNumber, setPanNumber] = useState("");
+  const [tanNumber, setTanNumber] = useState("");
 
   const selectOnMap = () => {
-    navigation.push("PickLocation", { addressFor: "vendorAddress" , setAddress:setAddress});
-     
-    Alert.alert("Selected", "Location has been selected on the map.");
+    navigation.push("PickLocation", {
+      addressFor: "vendorAddress",
+      setAddress: (newAddress) => setAddress(newAddress),
+    });
   };
 
   const handleSubmit = () => {
-    // if (!vendorName || !address || !publicContact) {
+    // if (!vendorName || !address || !publicContact || !aadharNumber || !panNumber || !tanNumber) {
     //   Alert.alert("Error", "All fields are required!");
     //   return;
     // }
@@ -34,7 +38,6 @@ const VendorDetailForm = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* App Bar */}
       <View style={styles.appBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="black" />
@@ -42,10 +45,9 @@ const VendorDetailForm = () => {
         <Text style={styles.appBarTitle}>Vendor Details</Text>
       </View>
 
-      {/* Progress Bar */}
       <CompleteDetailProgressBar completedSteps={0} />
 
-      <Text style={styles.label}>Vendor Legal Name</Text>
+      {/* <Text style={styles.label}>Vendor Legal Name</Text> */}
       <TextInput
         style={styles.input}
         placeholder="Enter vendor legal name"
@@ -54,7 +56,7 @@ const VendorDetailForm = () => {
         onChangeText={setVendorName}
       />
 
-      <Text style={styles.label}>Public Contact Number</Text>
+      {/* <Text style={styles.label}>Public Contact Number</Text> */}
       <TextInput
         style={styles.input}
         placeholder="Enter public contact"
@@ -63,7 +65,36 @@ const VendorDetailForm = () => {
         value={publicContact}
         onChangeText={setPublicContact}
       />
-       <Text style={styles.label}>Address</Text>
+
+      {/* <Text style={styles.label}>Aadhaar Number</Text> */}
+      <TextInput
+        style={styles.input}
+        placeholder="Enter Aadhaar number"
+        placeholderTextColor="gray"
+        keyboardType="number-pad"
+        value={aadharNumber}
+        onChangeText={setAadharNumber}
+      />
+
+      {/* <Text style={styles.label}>PAN Number</Text> */}
+      <TextInput
+        style={styles.input}
+        placeholder="Enter PAN number"
+        placeholderTextColor="gray"
+        value={panNumber}
+        onChangeText={setPanNumber}
+      />
+
+      {/* <Text style={styles.label}>TAN Number</Text> */}
+      <TextInput
+        style={styles.input}
+        placeholder="Enter TAN number"
+        placeholderTextColor="gray"
+        value={tanNumber}
+        onChangeText={setTanNumber}
+      />
+
+      {/* <Text style={styles.label}>Address</Text> */}
       <TextInput
         style={[styles.input, styles.textArea]}
         placeholder="Home/Street/Locality, City, State, Pincode"
@@ -72,7 +103,8 @@ const VendorDetailForm = () => {
         value={address}
         onChangeText={setAddress}
       />
-      <Text style={styles.label}>OR , </Text>
+
+      <Text style={styles.label}>OR</Text>
       <TouchableOpacity style={styles.mapButton} onPress={selectOnMap}>
         <Text style={styles.mapButtonText}>Select on Map</Text>
       </TouchableOpacity>
@@ -105,21 +137,17 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   appBarTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  label: {
-    fontSize: 16,
-    color: "#F4721E",
-    marginBottom: 5,
-  },
-  appBarTitle: {
     fontSize: 20,
     fontWeight: "500",
     color: "black",
     textAlign: "center",
     flex: 1,
-    marginRight: 30, // Adjust based on the width of the back button
+    marginRight: 30,
+  },
+  label: {
+    fontSize: 16,
+    color: "#F4721E",
+    marginBottom: 5,
   },
   input: {
     borderWidth: 1,

@@ -17,6 +17,7 @@ import {
   screenWidth,
 } from "../../constants/styles";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useSelector, useDispatch } from "react-redux";
 
 const nearByChargingStationsList = [
   {
@@ -104,6 +105,7 @@ export { nearByChargingStationsList, enrouteChargingStationList };
 
 
 const HomeScreen = ({ navigation }) => {
+const user = useSelector((state) => state.users.loggedInUser);
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -374,7 +376,7 @@ const HomeScreen = ({ navigation }) => {
   function welcomeInfo() {
     return (
       <View style={{ margin: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.blackColor26SemiBold }}>Welcome UserName,</Text>
+        <Text style={{ ...Fonts.blackColor26SemiBold }}>Welcome ,{user.name}</Text>
         <Text style={{ ...Fonts.grayColor18Regular }}>
           Find nearest Charging Stations
         </Text>

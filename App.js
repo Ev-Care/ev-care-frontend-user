@@ -7,6 +7,10 @@ import { LogBox } from "react-native";
 import "react-native-gesture-handler";
 import "react-native-get-random-values";
 import React, { useState, useEffect } from "react";
+import { Provider, useSelector } from "react-redux";
+import { store } from "./redux/store/store";
+
+// Screens
 import LoadingScreen from "./components/loadingScreen";
 import SecondSplashScreen from "./screens/secondSplashScreen";
 import FirstSplashScreen from "./components/firstSplashScreen";
@@ -14,26 +18,25 @@ import OnboardingScreen from "./screens/onboarding/onboardingScreen";
 import SigninScreen from "./screens/auth/signinScreen";
 import RegisterScreen from "./screens/auth/registerScreen";
 import VerificationScreen from "./screens/auth/verificationScreen";
+
+// Role-based stacks
 import { AdminStack } from "./roleStack/adminStack";
 import { UserStack } from "./roleStack/userStack";
 import { VendorStack } from "./roleStack/vendorStack";
-
 
 LogBox.ignoreAllLogs();
 
 const Stack = createStackNavigator();
 
-function MyApp() {
+function AppNavigator() {
   const [userType, setUserType] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
+  const user = useSelector((state) => state.users.loggedInUser);
 
   useEffect(() => {
-    setTimeout(() => {
-      setIsAuthenticated(true); 
-      setUserType("user");
-    }, 2000);
-  }, []);
+    if (user) {
+      setUserType(user.role); // Update role when user logs in
+    }
+  }, [user]);
 
   return (
     <NavigationContainer>
@@ -43,10 +46,10 @@ function MyApp() {
           ...TransitionPresets.SlideFromRightIOS,
         }}
       >
-        {!isAuthenticated ? (
-          // Non-registered users will see these screens
+        {!user ? (
+          // Non-registered users see these screens
           <>
-          <Stack.Screen
+            <Stack.Screen
               name="FirstSplashScreen"
               component={FirstSplashScreen}
               options={{ ...TransitionPresets.DefaultTransition }}
@@ -56,13 +59,13 @@ function MyApp() {
               component={SecondSplashScreen}
               options={{ ...TransitionPresets.DefaultTransition }}
             />
-             <Stack.Screen name="Loading" component={ LoadingScreen} />
+            <Stack.Screen name="Loading" component={LoadingScreen} />
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-            <Stack.Screen name="Signin">
-              {(props) => <SigninScreen {...props} setUserType={setUserType} />}
-            </Stack.Screen>
+            <Stack.Screen name="Signin" component={SigninScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
-            <Stack.Screen name="Verification" component={VerificationScreen} />
+            <Stack.Screen name="Verification">
+              {(props) => <VerificationScreen {...props} setUserType={setUserType} />}
+            </Stack.Screen>
           </>
         ) : userType === "user" ? (
           <Stack.Screen name="UserStack" component={UserStack} />
@@ -78,4 +81,10 @@ function MyApp() {
   );
 }
 
-export default MyApp;
+export default function MyApp() {
+  return (
+    <Provider store={store}>
+      <AppNavigator />
+    </Provider>
+  );
+}

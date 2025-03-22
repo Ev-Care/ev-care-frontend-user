@@ -18,10 +18,11 @@ import {
 import MyStatusBar from "../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { BottomSheet } from "@rneui/themed";
-
+import {  logoutUser } from "../../redux/store/userSlice";
+import {  useDispatch } from "react-redux";
 const ProfileScreen = ({ navigation }) => {
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
-
+  const dispatch = useDispatch();
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -88,8 +89,10 @@ const ProfileScreen = ({ navigation }) => {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => {
-                setshowLogoutSheet(false);
+                dispatch( logoutUser());
                 navigation.push("Signin");
+                setshowLogoutSheet(false);
+               
               }}
               style={{
                 ...styles.logoutButtonStyle,

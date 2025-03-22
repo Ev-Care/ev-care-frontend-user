@@ -47,7 +47,6 @@ export function UserStack() {
       <Stack.Screen name="AllChargingStations" component={AllChargingStationsScreen} />
       <Stack.Screen name="ChargingStationsOnMap" component={ChargingStationsOnMapScreen} />
       <Stack.Screen name="ChargingStationDetail" component={ChargingStationDetailScreen} />
-
       <Stack.Screen name="BookSlot" component={BookSlotScreen} />
       <Stack.Screen name="ConfirmDetail" component={ConfirmDetailScreen} />
       <Stack.Screen name="BookingSuccess" component={BookingSuccessScreen} />
@@ -56,16 +55,10 @@ export function UserStack() {
       <Stack.Screen name="EnrouteChargingStations" component={EnrouteChargingStationsScreen} />
       <Stack.Screen name="Direction" component={DirectionScreen} />
       <Stack.Screen name="Enroute" component={EnrouteScreen} />
-
-      
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="Notification" component={NotificationScreen} />
-
-    
       <Stack.Screen name="Filter" component={FilterScreen} />
       <Stack.Screen name="Search" component={SearchScreen} />
-
-    
       <Stack.Screen name="AllReview" component={AllReviewScreen} />
       <Stack.Screen name="TermsAndConditions" component={TermsAndConditionsScreen} />
       <Stack.Screen name="Faq" component={FaqScreen} />

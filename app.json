@@ -4,7 +4,7 @@
     "slug": "ev-care",
     "version": "1.0.0",
     "orientation": "portrait",
-    "owner": "thealoksingh",
+    "owner": "",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -41,7 +41,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "3619e0a6-3961-4365-86ba-d5b1c1f098ba"
+        "projectId": ""
       }
     }
   }

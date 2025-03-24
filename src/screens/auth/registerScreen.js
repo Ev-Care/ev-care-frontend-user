@@ -19,13 +19,48 @@ import {
 } from "../../constants/styles";
 import MyStatusBar from "../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { loginUser } from "../../redux/store/userSlice";
+import { useSelector, useDispatch } from "react-redux";
 
-const RegisterScreen = ({ navigation }) => {
+const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setfullName] = useState("");
-  const [userName, setuserName] = useState("");
+  // const [userName, setuserName] = useState("");
   const [email, setemail] = useState("");
   const [role, setRole] = useState("User");
   
+  const user = route.params?.user;
+
+  const handleSignUp = async () => {
+    try {
+      const response = await fetch(`https://ev-care-api.vercel.app/auth/signup/${user.user_key}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          owner_legal_name: fullName,
+          role: role,
+        }),
+      });
+  
+      if (response.status === 200 || response.status === 201) {
+        const data = await response.json();
+        console.log("User registered successfully:", data);
+        // Navigate to the next screen or show a success message
+        user.fullName = fullName;
+        user.email = email;
+        user.role = role;
+        dispatch(loginUser(user));
+
+      } else {
+        console.log("Failed to register user with status:", response.status);
+        // Handle registration failure
+      }
+    } catch (error) {
+      console.error("Error registering user:", error);
+    }
+  };
  
 
   return (
@@ -39,7 +74,7 @@ const RegisterScreen = ({ navigation }) => {
           contentContainerStyle={{ paddingBottom: Sizes.fixPadding * 2.0 }}
         >  {selectRole()}
           {fullNameInfo()}
-          {userNameInfo()}
+          {/* {userNameInfo()} */}
           {emailInfo()}
           {continueButton()}
           {agreeInfo()}
@@ -112,26 +147,26 @@ const RegisterScreen = ({ navigation }) => {
     );
   }
 
-  function userNameInfo() {
-    return (
-      <View
-        style={{
-          ...styles.textFieldWrapper,
-          marginVertical: Sizes.fixPadding * 2.0,
-        }}
-      >
-        <TextInput
-          placeholder="Username"
-          placeholderTextColor={Colors.grayColor}
-          value={userName}
-          onChangeText={(text) => setuserName(text)}
-          style={{ ...Fonts.blackColor16Medium }}
-          cursorColor={Colors.primaryColor}
-          selectionColor={Colors.primaryColor}
-        />
-      </View>
-    );
-  }
+  // function userNameInfo() {
+  //   return (
+  //     <View
+  //       style={{
+  //         ...styles.textFieldWrapper,
+  //         marginVertical: Sizes.fixPadding * 2.0,
+  //       }}
+  //     >
+  //       <TextInput
+  //         placeholder="Username"
+  //         placeholderTextColor={Colors.grayColor}
+  //         value={userName}
+  //         onChangeText={(text) => setuserName(text)}
+  //         style={{ ...Fonts.blackColor16Medium }}
+  //         cursorColor={Colors.primaryColor}
+  //         selectionColor={Colors.primaryColor}
+  //       />
+  //     </View>
+  //   );
+  // }
 
   function fullNameInfo() {
     return (
@@ -158,9 +193,7 @@ const RegisterScreen = ({ navigation }) => {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => {
-          navigation.push("Verification");
-        }}
+        onPress={handleSignUp}
         style={{ ...commonStyles.button,borderRadius: Sizes.fixPadding-5.0, margin: Sizes.fixPadding * 2.0 }}
       >
         <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>

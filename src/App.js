@@ -30,7 +30,7 @@ const Stack = createStackNavigator();
 
 function AppNavigator() {
   const [userType, setUserType] = useState(null);
-  const user = useSelector((state) => state.users.loggedInUser);
+  const user = useSelector((state) => state.loggedInUser);
 
   useEffect(() => {
     if (user) {

@@ -20,8 +20,8 @@ import {
 import MyStatusBar from "../../components/myStatusBar";
 import { useFocusEffect } from "@react-navigation/native";
 import IntlPhoneInput from "react-native-intl-phone-input";
-import { useSelector, useDispatch } from "react-redux";
-import { loginUser } from "../../redux/store/userSlice";
+import { useSelector } from "react-redux";
+
 const SigninScreen = ({ navigation }) => {
   const backAction = () => {
     if (Platform.OS === "ios") {
@@ -55,27 +55,44 @@ const SigninScreen = ({ navigation }) => {
   const [backClickCount, setBackClickCount] = useState(0);
   const [phoneNumber, setPhoneNumber] = useState("");
  
-  const users = useSelector((state) => state.users.users);
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     try {
       if (!phoneNumber) {
         Alert.alert("Error", "Please enter a phone number");
         return;
       }
 
+      // I want ti here call API - "https://ev-care-api.vercel.app/auth/signInMobile" mehod post  payload  - {
+ //   "mobileNumber": "+916201881238"
+  
       const sanitizedPhoneNumber = phoneNumber.replace(/\s+/g, ""); // Remove spaces
       // console.log("Sanitized Phone Number:", sanitizedPhoneNumber);
 
-      const user = users.find((user) => user.contactNo === sanitizedPhoneNumber);
-      if (user) {
-        console.log("User exists: " + user.contactNo);
-        navigation.navigate("Verification", { phoneNumber: user.contactNo, role: user.role });
-      } else {
-        Alert.alert("User not found: " + sanitizedPhoneNumber);
-        navigation.navigate("Register");
-      }
-    } catch (error) {
+
+       // Call API - "https://ev-care-api.vercel.app/auth/signInMobile" method POST payload - {"mobileNumber": "+916201881238"}
+      const response = await fetch("https://ev-care-api.vercel.app/auth/signInMobile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ mobileNumber: sanitizedPhoneNumber }),
+      });
+
+      if (response.status === 200) {
+        const data = await response.json();
+        // const user = users.find((user) => user.contactNo === sanitizedPhoneNumber);
+        // if (user) {
+          console.log(response.data.message);
+          navigation.navigate("Verification", { phoneNumber: user.contactNo, role: user.role });
+      //   // } else {
+      //     Alert.alert("User not found: " + sanitizedPhoneNumber);
+      //     navigation.navigate("Register");
+      //   }
+      // } else {
+      //   Alert.alert("Error", "Failed to sign in. Please try again.");
+      // }
+    } }catch (error) {
       Alert.alert("Error", "Something went wrong. Please try again.");
     }
 };

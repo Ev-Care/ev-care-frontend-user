@@ -1,4 +1,6 @@
 import {
+  ActivityIndicator,
+  Alert,
   ImageBackground,
   Platform,
   ScrollView,
@@ -24,44 +26,49 @@ import { useSelector, useDispatch } from "react-redux";
 
 const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setfullName] = useState("");
-  // const [userName, setuserName] = useState("");
   const [email, setemail] = useState("");
   const [role, setRole] = useState("User");
+  const [loading, setLoading] = useState(false); // Loader state
+  const dispatch = useDispatch();
   
   const user = route.params?.user;
 
   const handleSignUp = async () => {
+    if (!fullName.trim() || !email.trim()) {
+      Alert.alert("Error", "Please fill in all the fields.");
+      return;
+    }
+
+    setLoading(true);
     try {
       const response = await fetch(`https://ev-care-api.vercel.app/auth/signup/${user.user_key}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: email,
           owner_legal_name: fullName,
           role: role,
         }),
       });
-  
-      if (response.status === 200 || response.status === 201) {
+
+      if (response.ok) {
         const data = await response.json();
-        console.log("User registered successfully:", data);
-        // Navigate to the next screen or show a success message
         user.fullName = fullName;
         user.email = email;
         user.role = role;
         dispatch(loginUser(user));
-
+        Alert.alert("Success", "Registration successful!", [
+          { text: "OK", onPress: () => navigation.navigate("HomeScreen") },
+        ]);
       } else {
-        console.log("Failed to register user with status:", response.status);
-        // Handle registration failure
+        Alert.alert("Registration Failed", "Please check your details and try again.");
       }
     } catch (error) {
-      console.error("Error registering user:", error);
+      Alert.alert("Network Error", "Something went wrong. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
- 
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -72,9 +79,9 @@ const RegisterScreen = ({ navigation, route }) => {
           automaticallyAdjustKeyboardInsets={true}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: Sizes.fixPadding * 2.0 }}
-        >  {selectRole()}
+        >
+          {selectRole()}
           {fullNameInfo()}
-          {/* {userNameInfo()} */}
           {emailInfo()}
           {continueButton()}
           {agreeInfo()}
@@ -82,7 +89,8 @@ const RegisterScreen = ({ navigation, route }) => {
       </View>
     </View>
   );
-   function selectRole() {
+
+  function selectRole() {
     return (
       <View style={{ flexDirection: "row", justifyContent: "space-around", margin: Sizes.fixPadding * 2 }}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -104,13 +112,12 @@ const RegisterScreen = ({ navigation, route }) => {
       </View>
     );
   }
-  
 
   function agreeInfo() {
     return (
       <View style={{ alignItems: "center", justifyContent: "center" }}>
         <Text style={{ textAlign: "center", ...Fonts.grayColor16Medium }}>
-          By continue you’re agreed to our
+          By continuing, you agree to our
         </Text>
         <Text
           style={{
@@ -119,7 +126,7 @@ const RegisterScreen = ({ navigation, route }) => {
             marginTop: Sizes.fixPadding - 5.0,
           }}
         >
-          Terms & condition
+          Terms & Conditions
         </Text>
       </View>
     );
@@ -127,12 +134,7 @@ const RegisterScreen = ({ navigation, route }) => {
 
   function emailInfo() {
     return (
-      <View
-        style={{
-          ...styles.textFieldWrapper,
-          marginBottom: Sizes.fixPadding * 2.0,
-        }}
-      >
+      <View style={{ ...styles.textFieldWrapper, marginBottom: Sizes.fixPadding * 2.0 }}>
         <TextInput
           placeholder="Email address"
           placeholderTextColor={Colors.grayColor}
@@ -147,35 +149,9 @@ const RegisterScreen = ({ navigation, route }) => {
     );
   }
 
-  // function userNameInfo() {
-  //   return (
-  //     <View
-  //       style={{
-  //         ...styles.textFieldWrapper,
-  //         marginVertical: Sizes.fixPadding * 2.0,
-  //       }}
-  //     >
-  //       <TextInput
-  //         placeholder="Username"
-  //         placeholderTextColor={Colors.grayColor}
-  //         value={userName}
-  //         onChangeText={(text) => setuserName(text)}
-  //         style={{ ...Fonts.blackColor16Medium }}
-  //         cursorColor={Colors.primaryColor}
-  //         selectionColor={Colors.primaryColor}
-  //       />
-  //     </View>
-  //   );
-  // }
-
   function fullNameInfo() {
     return (
-      <View
-        style={{
-          ...styles.textFieldWrapper,
-         
-        }}
-      >
+      <View style={{ ...styles.textFieldWrapper }}>
         <TextInput
           placeholder="Full name"
           placeholderTextColor={Colors.grayColor}
@@ -194,9 +170,14 @@ const RegisterScreen = ({ navigation, route }) => {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handleSignUp}
-        style={{ ...commonStyles.button,borderRadius: Sizes.fixPadding-5.0, margin: Sizes.fixPadding * 2.0 }}
+        style={{ ...commonStyles.button, borderRadius: Sizes.fixPadding - 5.0, margin: Sizes.fixPadding * 2.0 }}
+        disabled={loading}
       >
-        <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>
+        {loading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>
+        )}
       </TouchableOpacity>
     );
   }
@@ -213,18 +194,11 @@ const RegisterScreen = ({ navigation, route }) => {
             name="arrow-back"
             color={Colors.whiteColor}
             size={26}
-            onPress={() => {
-              navigation.pop();
-            }}
+            onPress={() => navigation.pop()}
           />
           <View>
             <Text style={{ ...Fonts.whiteColor22SemiBold }}>Register</Text>
-            <Text
-              style={{
-                ...Fonts.whiteColor16Regular,
-                marginTop: Sizes.fixPadding,
-              }}
-            >
+            <Text style={{ ...Fonts.whiteColor16Regular, marginTop: Sizes.fixPadding }}>
               Create your account
             </Text>
           </View>
@@ -247,12 +221,14 @@ const styles = StyleSheet.create({
   textFieldWrapper: {
     backgroundColor: Colors.bodyBackColor,
     ...commonStyles.shadow,
-    borderRadius: Sizes.fixPadding-5.0,
+    borderRadius: Sizes.fixPadding - 5.0,
     paddingHorizontal: Sizes.fixPadding * 1.5,
-    paddingVertical:
-      Platform.OS == "ios" ? Sizes.fixPadding + 3.0 : Sizes.fixPadding,
+    paddingVertical: Platform.OS === "ios" ? Sizes.fixPadding + 3.0 : Sizes.fixPadding,
     marginHorizontal: Sizes.fixPadding * 2.0,
-    borderColor:Colors.extraLightGrayColor,
-    borderWidth:1.0,
+    borderColor: Colors.extraLightGrayColor,
+    borderWidth: 1.0,
+    marginBottom: Sizes.fixPadding * 2.0,
+    marginLeft: Sizes.fixPadding,
+    marginRight: Sizes.fixPadding,
   },
 });

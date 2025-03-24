@@ -18,9 +18,11 @@ import {
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { BottomSheet } from "@rneui/themed";
-import {  logoutUser } from "../../../redux/store/userSlice";
-import {  useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+
+// import { useSelector, useDispatch } from "react-redux";
 const ProfileScreen = ({ navigation }) => {
+  const user = useSelector((state) => state.users.loggedInUser);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
   const dispatch = useDispatch();
   return (
@@ -89,9 +91,9 @@ const ProfileScreen = ({ navigation }) => {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => {
-                dispatch( logoutUser());
-                navigation.push("Signin");
-                setshowLogoutSheet(false);
+                // dispatch( logoutUser());
+                // navigation.push("Signin");
+                // setshowLogoutSheet(false);
                
               }}
               style={{
@@ -123,8 +125,8 @@ const ProfileScreen = ({ navigation }) => {
             marginBottom: Sizes.fixPadding,
           }}
         >
-          <Text style={{ ...Fonts.blackColor18SemiBold }}>User Name</Text>
-          <Text style={{ ...Fonts.grayColor16Medium }}>+919677566679</Text>
+          <Text style={{ ...Fonts.blackColor18SemiBold }}>{user.name}</Text>
+          <Text style={{ ...Fonts.grayColor16Medium }}>+91{user.contactNo}</Text>
         </View>
         <View>
           {profileOption({

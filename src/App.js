@@ -69,11 +69,11 @@ function AppNavigator() {
               {(props) => <VerificationScreen {...props} setUserType={setUserType} />}
             </Stack.Screen>
           </>
-        ) : userType === "user" ? (
+        ) : user.role=== "user" ? (
           <Stack.Screen name="UserStack" component={UserStack} />
-        ) : userType === "admin" ? (
+        ) : user.role === "admin" ? (
           <Stack.Screen name="AdminStack" component={AdminStack} />
-        ) : userType === "vendor" ? (
+        ) : user.role === "vendor" ? (
           <Stack.Screen name="VendorStack" component={VendorStack} />
         ) : (
           <Stack.Screen name="Loading" component={LoadingScreen} />

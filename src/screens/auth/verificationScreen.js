@@ -45,7 +45,7 @@ const VerificationScreen = ({ navigation, route }) => {
         body: JSON.stringify({ otp: otpInput, mobileNumber: route.params?.phoneNumber }),
       });
 
-      if (response.ok) {
+      if (response.status === 200 || response.status === 201) {
         const data = await response.json();
         const user = {
           user_key: data.data.user.user_key,
@@ -56,9 +56,12 @@ const VerificationScreen = ({ navigation, route }) => {
           status: data.data.user.status,
         };
 
-        if (user.status === "new") {
+        console.log(user);
+        console.log("above is data.data");
+
+        if (user.status === "New") {
           navigation.push("Register", { user });
-        } else if (user.status === "completed") {
+        } else if (user.status === "Completed") {
           dispatch(loginUser(user));
         }
       } else {

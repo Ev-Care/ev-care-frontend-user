@@ -51,20 +51,26 @@ const RegisterScreen = ({ navigation, route }) => {
         }),
       });
 
-      if (response.ok) {
+      console.log(user);
+      console.log("user_key = "+user.user_key);
+
+      console.log("response = "+response.status);
+
+      if (response.status === 200 || response.status === 201) {
+        console.log("hi");
         const data = await response.json();
-        user.fullName = fullName;
-        user.email = email;
-        user.role = role;
-        dispatch(loginUser(user));
-        Alert.alert("Success", "Registration successful!", [
-          { text: "OK", onPress: () => navigation.navigate("HomeScreen") },
-        ]);
+        console.log("hi");
+        const updatedUser = { ...user, name: fullName, role: role };
+        console.log(updatedUser);
+        dispatch(loginUser(updatedUser));
+        // Alert.alert("Success", "Registration successful!", [
+        //   { text: "OK", onPress: () => navigation.navigate("HomeScreen") },
+        // ]);
       } else {
         Alert.alert("Registration Failed", "Please check your details and try again.");
       }
     } catch (error) {
-      Alert.alert("Network Error", "Something went wrong. Please try again later.");
+      Alert.alert("Server Error", "Something went wrong. Please try again later.");
     } finally {
       setLoading(false);
     }

@@ -30,10 +30,12 @@ const Stack = createStackNavigator();
 
 function AppNavigator() {
   const [userType, setUserType] = useState(null);
-  const user = useSelector((state) => state.loggedInUser);
+  const user = useSelector((state) => state.users.loggedInUser);
+
 
   useEffect(() => {
     if (user) {
+      console.log("User logged in: ", user.name, " role: ", user.role);
       setUserType(user.role); // Update role when user logs in
     }
   }, [user]);

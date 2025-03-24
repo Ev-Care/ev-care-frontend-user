@@ -72,19 +72,23 @@ const SigninScreen = ({ navigation }) => {
         body: JSON.stringify({ mobileNumber: sanitizedPhoneNumber }),
       });
 
-      setIsLoading(false);
+     console.log(response);
 
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 201) {
         const data = await response.json();
+        console.log(data);
         Alert.alert("Success", data.message);
         navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber });
       } else {
-        Alert.alert("Error", "User not found. Please register.");
-        navigation.navigate("Register");
+        Alert.alert("Server Error", "Please try again later.");
+        // navigation.navigate("Register");
       }
     } catch (error) {
       setIsLoading(false);
       Alert.alert("Error", "Something went wrong. Please try again.");
+    } finally{
+      setIsLoading(false);
+      
     }
   };
 

@@ -76,7 +76,7 @@ const UploadAadhar = () => {
     // }
     
     // Alert.alert("Success", "Submitted!");
-    navigation.navigate("UploadPAN");
+    navigation.navigate("UploadTAN");
   };
   
 

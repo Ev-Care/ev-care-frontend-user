@@ -12,13 +12,13 @@ const PendingApprovalScreen = () => {
       <Text style={styles.subtitle}>Kindly wait for approval from the admin.{"\n"}This usually takes 2-3 business days.</Text>
      
 
-      {/* <TouchableOpacity style={styles.button} onPress={() => Alert.alert("Kindly wait for approval")}>
+      <TouchableOpacity style={styles.button} onPress={() => Alert.alert("Kindly wait for approval")}>
         <Text style={styles.buttonText}>Continue</Text>
-      </TouchableOpacity> */}
+      </TouchableOpacity> */
 
-      {/* <TouchableOpacity onPress={() => navigation.goBack()}>
+      /* <TouchableOpacity onPress={() => navigation.goBack()}>
         <Text style={styles.goBackText}>Go Back</Text>
-      </TouchableOpacity> */}
+      </TouchableOpacity>
     </View>
   );
 };

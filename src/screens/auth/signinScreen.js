@@ -77,7 +77,7 @@ const SigninScreen = ({ navigation }) => {
       if (response.status === 200 || response.status === 201) {
         const data = await response.json();
         console.log(data);
-        Alert.alert("Success", data.message);
+        // Alert.alert("Success", data.message);
         navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber });
       } else {
         Alert.alert("Server Error", "Please try again later.");

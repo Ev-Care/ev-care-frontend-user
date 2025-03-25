@@ -77,13 +77,13 @@ const VendorDetailForm = () => {
       />
 
       {/* <Text style={styles.label}>PAN Number</Text> */}
-      <TextInput
+      {/* <TextInput
         style={styles.input}
         placeholder="Enter PAN number"
         placeholderTextColor="gray"
         value={panNumber}
         onChangeText={setPanNumber}
-      />
+      /> */}
 
       {/* <Text style={styles.label}>TAN Number</Text> */}
       <TextInput

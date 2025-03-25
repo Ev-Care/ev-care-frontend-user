@@ -13,7 +13,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#101942"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "bundleIdentifier": "com.render.evcare",
       "buildNumber": "1.0.0",
@@ -41,7 +43,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": ""
+        "projectId": "3619e0a6-3961-4365-86ba-d5b1c1f098ba"
       }
     }
   }

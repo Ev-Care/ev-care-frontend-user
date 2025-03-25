@@ -19,6 +19,8 @@ import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { BottomSheet } from "@rneui/themed";
 import { useSelector, useDispatch } from "react-redux";
+import { logoutUser } from "../../../../src/redux/store/userSlice";
+import { CommonActions } from "@react-navigation/native";
 
 // import { useSelector, useDispatch } from "react-redux";
 const ProfileScreen = ({ navigation }) => {
@@ -91,8 +93,13 @@ const ProfileScreen = ({ navigation }) => {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => {
-                // dispatch( logoutUser());
-                // navigation.push("Signin");
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: "Signin" }],
+                  })
+                );
+                dispatch( logoutUser());
                 // setshowLogoutSheet(false);
                
               }}

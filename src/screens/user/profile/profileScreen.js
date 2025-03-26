@@ -21,12 +21,14 @@ import { BottomSheet } from "@rneui/themed";
 import { useSelector, useDispatch } from "react-redux";
 // import { logoutUser } from "../../../../src/redux/store/userSlice";
 import { CommonActions } from "@react-navigation/native";
+import { selectUser } from "../../auth/services/selector";
+import { logoutUser } from "../../../redux/store/userSlice";
 
 // import { useSelector, useDispatch } from "react-redux";
 const ProfileScreen = ({ navigation }) => {
-  // const user = useSelector((state) => state.users.loggedInUser);
+  const user = useSelector(selectUser);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -99,7 +101,7 @@ const ProfileScreen = ({ navigation }) => {
                 //     routes: [{ name: "Signin" }],
                 //   })
                 // );
-                // dispatch( logoutUser());
+                dispatch(logoutUser());
                 // // setshowLogoutSheet(false);
                
               }}

@@ -1,29 +1,82 @@
 import { createSlice } from "@reduxjs/toolkit";
-
+import { postSignIn, postSignUp, postVerifyOtp } from "../../screens/auth/services/crudFunction";
+// Initial State
 const initialState = {
   user: null,
- 
-  loggedInUser: null, // Holds the authenticated user
+  loading: false,
+  error: null,
 };
 
-const userSlice = createSlice({
-  name: "users",
+// Auth Slice
+const authSlice = createSlice({
+  name: "auth",
   initialState,
   reducers: {
-    loginUser: (state, action) => {
-      // const user = state.users.find(user => user.contactNo === action.payload);
-      state.user = action.payload;
-      state.loggedInUser = state.user; // Set the logged-in user
-      // state.loggedInUser = null;
-    },
     logoutUser: (state) => {
-      state.loggedInUser = null; // Clear user session
+      state.user = null;
     },
-    // addUser: (state, action) => {
-    //   state.users.push(action.payload);
-    // },
+    signUpUser: (state, action) => {
+      console.log("singup is called in redux");
+      state.user = action.payload;
+      state.loading = false;
+      console.log("User signed up successfully in redux:", action.payload);
+    }
+  },
+  extraReducers: (builder) => {
+    builder
+      // Sign In
+      .addCase(postSignIn.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(postSignIn.fulfilled, (state, action) => {
+        state.loading = false;
+        // state.user = action.payload;
+        console.log("otp sent with response: ", action.payload);
+      })
+      .addCase(postSignIn.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // OTP Verification
+      .addCase(postVerifyOtp.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(postVerifyOtp.fulfilled, (state, action) => {
+        state.loading = false;
+        // console.log("OTP Verified by user and action.payload is: ", action.payload);
+        if (action.payload.data.user.status === "Completed") {
+          state.user = action.payload.data.user;
+          console.log("User state changed by redux:", state.user);
+        }
+        // console.log("User status:", state.user.status);
+      
+      }
+    )
+      .addCase(postVerifyOtp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Sign Up
+      .addCase(postSignUp.pending, (state) => {
+        state.loading = true;
+        console.log("User signing up...");
+        state.error = null;
+      })
+      .addCase(postSignUp.fulfilled, (state, action) => {
+        state.loading = false;
+        console.log("User signed up successfully:", action.payload);
+        // state.user = action.payload;
+      })
+      .addCase(postSignUp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 
-export const { loginUser, logoutUser, addUser } = userSlice.actions;
-export default userSlice.reducer;
+export const { logoutUser, signUpUser } = authSlice.actions;
+export default authSlice.reducer;

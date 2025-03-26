@@ -1,19 +1,27 @@
+import axios from "axios";
+
 export const apiPostRequest = async (request) => {
-    let headers = {
-        "accept": "*/*",
-        "content-type": request.content_type,
-    };
+    try {
+        console.log("Calling API:", request.apiUrl);
+        console.log("Headers:", { "content-type": request.content_type });
+        console.log("Request Body:", request.data);
 
-    let headersClone = { ...headers };
+        const response = await axios.post(request.apiUrl, request.data, {
+            headers: {
+                "accept": "*/*",
+                "content-type": request.content_type,
+            },
+        });
 
-    const response = await fetch(request.apiUrl, {
-        method: "POST",
-        headers: headersClone,
-        body: JSON.stringify(request.data),
-    });
+        // console.log("Raw API Response:", response);
 
-    return apiResponseHandler(response);
+        return response;  // Axios automatically parses JSON
+    } catch (error) {
+        console.log("Error in apiPostRequest:", error?.response?.data || error.message);
+        throw error;
+    }
 };
+
 
 const apiResponseHandler = async (res) => {
     if (!res.ok) {

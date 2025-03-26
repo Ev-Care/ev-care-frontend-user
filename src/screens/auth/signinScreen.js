@@ -23,7 +23,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import IntlPhoneInput from "react-native-intl-phone-input";
 import { Overlay } from "@rneui/themed";
 import { postSignIn } from "./services/crudFunction";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 const SigninScreen = ({ navigation }) => {
   const [backClickCount, setBackClickCount] = useState(0);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -60,7 +60,7 @@ const SigninScreen = ({ navigation }) => {
     }, 1000);
   }
 
- const handleSignIn = async () => {
+  const handleSignIn = async () => {
     if (!phoneNumber || phoneNumber.length < 10) {
       Alert.alert("Invalid Phone Number");
       return;
@@ -69,19 +69,23 @@ const SigninScreen = ({ navigation }) => {
 
     try {
       const sanitizedPhoneNumber = phoneNumber.replace(/\s+/g, "");
-      
+      console.log("Calling API with:", sanitizedPhoneNumber);
+
       // Dispatch the Redux action
       const response = await dispatch(postSignIn({ mobileNumber: sanitizedPhoneNumber })).unwrap();
-
+      
+      console.log("API Response:", response);
       Alert.alert("Success", response.message);
       navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber });
       
     } catch (error) {
+      console.log("Error in handleSignIn:", error);
       Alert.alert("Error", error?.message || "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  };
+};
+
 
  
 

@@ -21,8 +21,8 @@ import {
 } from "../../constants/styles";
 import MyStatusBar from "../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { loginUser } from "../../redux/store/userSlice";
-import { useSelector, useDispatch } from "react-redux";
+import { signUpUser } from "../../redux/store/userSlice";
+import { useDispatch } from "react-redux";
 import { postSignUp } from "./services/crudFunction";
 const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setfullName] = useState("");
@@ -40,24 +40,28 @@ const RegisterScreen = ({ navigation, route }) => {
     }
 
     setLoading(true);
-    
+
     const userData = {
         email: email,
         owner_legal_name: fullName,
         role: role,
-        user_key:user.user_key
+        user_key: user.user_key
     };
 
-    dispatch(postSignUp( userData))
-        .then(() => {
-            Alert.alert("Success", "Registration successful!", [
-                { text: "OK", onPress: () => navigation.navigate("HomeScreen") },
-            ]);
-        })
-        .catch(() => {
-            Alert.alert("Registration Failed", "Please check your details and try again.");
-        })
-        .finally(() => setLoading(false));
+    console.log("post signup called");
+
+    try {
+        const response = await dispatch(postSignUp(userData)).unwrap(); // ✅ Ensure API response is returned
+        console.log("post signup success", response);
+        Alert.alert("Success", "Registration successful!");
+        userData.status = "Completed";
+        dispatch(signUpUser(userData)); // ✅ Use actual API response data
+    } catch (error) {
+        console.error("Signup failed:", error);
+        Alert.alert("Registration Failed", "Please check your details and try again.");
+    } finally {
+        setLoading(false);
+    }
 };
 
   return (

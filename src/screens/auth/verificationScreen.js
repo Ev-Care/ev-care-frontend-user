@@ -21,12 +21,13 @@ import MyStatusBar from "../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { Overlay } from "@rneui/themed";
 import OTPTextView from "react-native-otp-textinput";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 // import { loginUser } from "../../redux/store/userSlice";
 import { verifyOtpSuccess, verifyOtpFailed } from "./services/slice";
+import { postVerifyOtp } from "./services/crudFunction";
 const VerificationScreen = ({ navigation, route }) => {
   const [otpInput, setOtpInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const isLoading = useSelector(state => state.auth.loading);
   const dispatch = useDispatch();
 
   const verifyOtp = async () => {
@@ -34,48 +35,36 @@ const VerificationScreen = ({ navigation, route }) => {
       Alert.alert("Invalid OTP", "Please enter a 6-digit OTP.");
       return;
     }
-
-    setIsLoading(true);
+  
     try {
-      const response = await fetch("https://ev-care-api.vercel.app/auth/verifyOtp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ otp: otpInput, mobileNumber: route.params?.phoneNumber }),
-      });
-
-      if (response.status === 200 || response.status === 201) {
-        const data = await response.json();
+      const response = await dispatch(postVerifyOtp({ otp: otpInput, mobileNumber: route.params?.phoneNumber }));
+  
+      if (response.payload) {
         const user = {
-          user_key: data.data.user.user_key,
-          id: data.data.user.id,
-          name: data.data.user.owner_legal_name,
-          contactNo: data.data.user.mobile_number,
-          role: data.data.user.role,
-          status: data.data.user.status,
+          user_key: response.payload.data.user.user_key,
+          id: response.payload.data.user.id,
+          name: response.payload.data.user.owner_legal_name,
+          contactNo: response.payload.data.user.mobile_number,
+          role: response.payload.data.user.role,
+          status: response.payload.data.user.status,
         };
-
-        console.log(user);
-      // ✅ Store user data in Redux
-
+  
+        console.log("User status:", user.status);
+  
         if (user.status === "New") {
           navigation.push("Register", { user });
         } else if (user.status === "Completed") {
-          dispatch(verifyOtpSuccess(user)); 
+          Alert.alert("Sucess", "Otp verified.");
+          return;
         }
       } else {
         Alert.alert("Verification Failed", "Incorrect OTP. Please try again.");
-        dispatch(verifyOtpFailed("Incorrect OTP")); // ✅ Store error in Redux
       }
     } catch (error) {
       Alert.alert("Error", "An error occurred while verifying OTP. Please try again.");
-      dispatch(verifyOtpFailed(error.message)); // ✅ Store error in Redux
-    } finally {
-      setIsLoading(false);
     }
-};
-
+  };
+  
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>

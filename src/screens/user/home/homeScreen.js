@@ -18,6 +18,8 @@ import {
 } from "../../../constants/styles";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 // import { useSelector, useDispatch } from "react-redux";
+import { selectUser } from "../../auth/services/selector";
+import { useSelector } from "react-redux";
 
 const nearByChargingStationsList = [
   {
@@ -106,7 +108,7 @@ export { nearByChargingStationsList, enrouteChargingStationList };
 
 const HomeScreen = ({ navigation }) => {
 
-// const user = useSelector((state) => state.users.loggedInUser);
+const user = useSelector(selectUser);
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -377,7 +379,7 @@ const HomeScreen = ({ navigation }) => {
   function welcomeInfo() {
     return (
       <View style={{ margin: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.blackColor26SemiBold }}>Welcome ,username</Text>
+        <Text style={{ ...Fonts.blackColor26SemiBold }}>Welcome Username</Text>
         <Text style={{ ...Fonts.grayColor18Regular }}>
           Find nearest Charging Stations
         </Text>

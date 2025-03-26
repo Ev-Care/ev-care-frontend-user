@@ -1,13 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { signInReducer } from "../../screens/auth/services/slice";
+import authReducer from './userSlice'; // Ensure correct import
 
 const store = configureStore({
     reducer: {
-        signIn: signInReducer,
+        auth: authReducer, // Correct reducer reference
     },
-
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
-
 });
 
 export default store;

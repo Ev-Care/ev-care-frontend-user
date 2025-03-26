@@ -1,9 +1,11 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-
+import { logoutUser } from "../../../redux/store/userSlice";
+import {  useDispatch } from "react-redux";
 const PendingApprovalScreen = () => {  
   const navigation = useNavigation();  
+  const dispatch = useDispatch();
 
   return (
     <View style={styles.container}>
@@ -12,8 +14,8 @@ const PendingApprovalScreen = () => {
       <Text style={styles.subtitle}>Kindly wait for approval from the admin.{"\n"}This usually takes 2-3 business days.</Text>
      
 
-      <TouchableOpacity style={styles.button} onPress={() => Alert.alert("Kindly wait for approval")}>
-        <Text style={styles.buttonText}>Logout</Text>
+      <TouchableOpacity style={styles.button} onPress={() => dispatch(logoutUser())}>
+      <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.goBack()}>

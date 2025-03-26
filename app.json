@@ -13,7 +13,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#101942"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "bundleIdentifier": "com.render.evcare",
       "buildNumber": "1.0.0",
@@ -24,11 +26,13 @@
         "NSLocationWhenInUseUsageDescription": "We need your location to provide better services.",
         "NSLocationAlwaysUsageDescription": "We need continuous location access for tracking.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "We need continuous location access to provide real-time updates."
-
       }
     },
     "android": {
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
       "package": "com.render.evcare",
       "versionCode": 1,
       "adaptiveIcon": {
@@ -46,8 +50,16 @@
     },
     "extra": {
       "eas": {
-        "projectId": ""
+        "projectId": "d8e9e121-522f-4937-ba4f-985f540ae83e"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow EV Care to use your location."
+        }
+      ]
+    ]
   }
 }

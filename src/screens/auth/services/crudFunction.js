@@ -20,7 +20,7 @@ export const postSignIn = createAsyncThunk(
                 dispatch(signInSuccess(responseData));
                 return responseData;
             } else {
-                throw new Error("Sign-in failed");
+                throw new Error("Error : otp not sent ,Try again");
             }
         } catch (error) {
             dispatch(signInFailed(error.message));

@@ -20,7 +20,7 @@ export const verifyOtpAPI = (data) =>
         });
 export const signupAPI = (data) => 
             apiPatchRequest({
-                apiUrl: `${API_URL}/auth/signup/${deta.user_key}`,
+                apiUrl: `${API_URL}/auth/signup/${data.user_key}`,
                 content_type: "application/json",
                 data: data,
             });

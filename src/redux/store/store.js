@@ -5,6 +5,7 @@ const store = configureStore({
     reducer: {
         signIn: signInReducer,
     },
+
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
 
 });

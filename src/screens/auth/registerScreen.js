@@ -23,7 +23,7 @@ import MyStatusBar from "../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { loginUser } from "../../redux/store/userSlice";
 import { useSelector, useDispatch } from "react-redux";
-import { signUpUser } from "./services/crudFunction";
+import { postSignUp } from "./services/crudFunction";
 const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setfullName] = useState("");
   const [email, setemail] = useState("");
@@ -45,9 +45,10 @@ const RegisterScreen = ({ navigation, route }) => {
         email: email,
         owner_legal_name: fullName,
         role: role,
+        user_key:user.user_key
     };
 
-    dispatch(signUpUser(user.user_key, userData))
+    dispatch(postSignUp( userData))
         .then(() => {
             Alert.alert("Success", "Registration successful!", [
                 { text: "OK", onPress: () => navigation.navigate("HomeScreen") },

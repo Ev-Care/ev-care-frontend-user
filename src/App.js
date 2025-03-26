@@ -30,17 +30,17 @@ LogBox.ignoreAllLogs();
 const Stack = createStackNavigator();
 
 function AppNavigator() {
-  const [userType, setUserType] = useState("user");
-  // const user = useSelector(selectUser);
+  const [userType, setUserType] = useState(null);
+  const user = useSelector(selectUser);
   
 
 
-  // useEffect(() => {
-  //   if (user) {
-  //     console.log("User logged in: ", user.name, " role: ", user.role);
-  //     setUserType(user.role); // Update role when user logs in
-  //   }
-  // }, [user]);
+  useEffect(() => {
+    if (user) {
+      console.log("User logged in: ", user.name, " role: ", user.role);
+      setUserType(user.role); // Update role when user logs in
+    }
+  }, [user]);
 
   return (
     <NavigationContainer>
@@ -87,8 +87,8 @@ function AppNavigator() {
 
 export default function MyApp() {
   return (
-    // <Provider store={store}>
+    <Provider store={store}>
       <AppNavigator />
-    // </Provider>
+     </Provider>
   );
 }

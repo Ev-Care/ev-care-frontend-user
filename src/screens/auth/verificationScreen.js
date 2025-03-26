@@ -57,12 +57,12 @@ const VerificationScreen = ({ navigation, route }) => {
         };
 
         console.log(user);
-        dispatch(verifyOtpSuccess(user)); // ✅ Store user data in Redux
+      // ✅ Store user data in Redux
 
         if (user.status === "New") {
           navigation.push("Register", { user });
         } else if (user.status === "Completed") {
-          navigation.replace("Home"); // Redirect to home page after login
+          dispatch(verifyOtpSuccess(user)); 
         }
       } else {
         Alert.alert("Verification Failed", "Incorrect OTP. Please try again.");

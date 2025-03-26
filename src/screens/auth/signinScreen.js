@@ -22,11 +22,14 @@ import MyStatusBar from "../../components/myStatusBar";
 import { useFocusEffect } from "@react-navigation/native";
 import IntlPhoneInput from "react-native-intl-phone-input";
 import { Overlay } from "@rneui/themed";
-
+import { postSignIn } from "./services/crudFunction";
+import { useSelector, useDispatch } from "react-redux";
 const SigninScreen = ({ navigation }) => {
   const [backClickCount, setBackClickCount] = useState(0);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
+
 
   const backAction = () => {
     if (Platform.OS === "ios") {
@@ -57,40 +60,30 @@ const SigninScreen = ({ navigation }) => {
     }, 1000);
   }
 
-  const handleSignIn = async () => {
+ const handleSignIn = async () => {
     if (!phoneNumber || phoneNumber.length < 10) {
-      Alert.alert("Invalid Phone Number", "Please enter a valid phone number.");
+      Alert.alert("Invalid Phone Number");
       return;
     }
-
     setIsLoading(true);
+
     try {
       const sanitizedPhoneNumber = phoneNumber.replace(/\s+/g, "");
-      const response = await fetch("https://ev-care-api.vercel.app/auth/signInMobile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobileNumber: sanitizedPhoneNumber }),
-      });
-
-     console.log(response);
-
-      if (response.status === 200 || response.status === 201) {
-        const data = await response.json();
-        console.log(data);
-        Alert.alert("Success", data.message);
-        navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber });
-      } else {
-        Alert.alert("Server Error", "Please try again later.");
-        // navigation.navigate("Register");
-      }
-    } catch (error) {
-      setIsLoading(false);
-      Alert.alert("Error", "Something went wrong. Please try again.");
-    } finally{
-      setIsLoading(false);
       
+      // Dispatch the Redux action
+      const response = await dispatch(postSignIn({ mobileNumber: sanitizedPhoneNumber })).unwrap();
+
+      Alert.alert("Success", response.message);
+      navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber });
+      
+    } catch (error) {
+      Alert.alert("Error", error?.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
+
+ 
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>

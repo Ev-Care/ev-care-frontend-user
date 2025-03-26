@@ -20,10 +20,15 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to your camera.",
-        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library."
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library.",
+        "NSLocationWhenInUseUsageDescription": "We need your location to provide better services.",
+        "NSLocationAlwaysUsageDescription": "We need continuous location access for tracking.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "We need continuous location access to provide real-time updates."
+
       }
     },
     "android": {
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
       "package": "com.render.evcare",
       "versionCode": 1,
       "adaptiveIcon": {

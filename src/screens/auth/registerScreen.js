@@ -23,7 +23,7 @@ import MyStatusBar from "../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { loginUser } from "../../redux/store/userSlice";
 import { useSelector, useDispatch } from "react-redux";
-
+import { signUpUser } from "./services/crudFunction";
 const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setfullName] = useState("");
   const [email, setemail] = useState("");
@@ -40,41 +40,24 @@ const RegisterScreen = ({ navigation, route }) => {
     }
 
     setLoading(true);
-    try {
-      const response = await fetch(`https://ev-care-api.vercel.app/auth/signup/${user.user_key}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email,
-          owner_legal_name: fullName,
-          role: role,
-        }),
-      });
+    
+    const userData = {
+        email: email,
+        owner_legal_name: fullName,
+        role: role,
+    };
 
-      console.log(user);
-      console.log("user_key = "+user.user_key);
-
-      console.log("response = "+response.status);
-
-      if (response.status === 200 || response.status === 201) {
-        console.log("hi");
-        const data = await response.json();
-        console.log("hi");
-        const updatedUser = { ...user, name: fullName, role: role };
-        console.log(updatedUser);
-        dispatch(loginUser(updatedUser));
-        // Alert.alert("Success", "Registration successful!", [
-        //   { text: "OK", onPress: () => navigation.navigate("HomeScreen") },
-        // ]);
-      } else {
-        Alert.alert("Registration Failed", "Please check your details and try again.");
-      }
-    } catch (error) {
-      Alert.alert("Server Error", "Something went wrong. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    dispatch(signUpUser(user.user_key, userData))
+        .then(() => {
+            Alert.alert("Success", "Registration successful!", [
+                { text: "OK", onPress: () => navigation.navigate("HomeScreen") },
+            ]);
+        })
+        .catch(() => {
+            Alert.alert("Registration Failed", "Please check your details and try again.");
+        })
+        .finally(() => setLoading(false));
+};
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>

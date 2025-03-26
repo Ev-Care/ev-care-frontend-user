@@ -24,21 +24,23 @@ import { AdminStack } from "./roleStack/adminStack";
 import { UserStack } from "./roleStack/userStack";
 import { VendorStack } from "./roleStack/vendorStack";
 
+// import { selectUser } from "./screens/auth/services/selector";
 LogBox.ignoreAllLogs();
 
 const Stack = createStackNavigator();
 
 function AppNavigator() {
-  const [userType, setUserType] = useState(null);
-  const user = useSelector((state) => state.users.loggedInUser);
+  const [userType, setUserType] = useState("user");
+  // const user = useSelector(selectUser);
+  
 
 
-  useEffect(() => {
-    if (user) {
-      console.log("User logged in: ", user.name, " role: ", user.role);
-      setUserType(user.role); // Update role when user logs in
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (user) {
+  //     console.log("User logged in: ", user.name, " role: ", user.role);
+  //     setUserType(user.role); // Update role when user logs in
+  //   }
+  // }, [user]);
 
   return (
     <NavigationContainer>
@@ -48,7 +50,7 @@ function AppNavigator() {
           ...TransitionPresets.SlideFromRightIOS,
         }}
       >
-        {!user ? (
+        {!userType ? (
           // Non-registered users see these screens
           <>
             <Stack.Screen
@@ -69,11 +71,11 @@ function AppNavigator() {
               {(props) => <VerificationScreen {...props} setUserType={setUserType} />}
             </Stack.Screen>
           </>
-        ) : user.role=== "user" ? (
+        ) : userType=== "user" ? (
           <Stack.Screen name="UserStack" component={UserStack} />
-        ) : user.role === "admin" ? (
+        ) : userType === "admin" ? (
           <Stack.Screen name="AdminStack" component={AdminStack} />
-        ) : user.role === "vendor" ? (
+        ) : userType === "vendor" ? (
           <Stack.Screen name="VendorStack" component={VendorStack} />
         ) : (
           <Stack.Screen name="Loading" component={LoadingScreen} />
@@ -85,8 +87,8 @@ function AppNavigator() {
 
 export default function MyApp() {
   return (
-    <Provider store={store}>
+    // <Provider store={store}>
       <AppNavigator />
-    </Provider>
+    // </Provider>
   );
 }

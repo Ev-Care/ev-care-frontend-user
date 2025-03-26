@@ -19,14 +19,14 @@ import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { BottomSheet } from "@rneui/themed";
 import { useSelector, useDispatch } from "react-redux";
-import { logoutUser } from "../../../../src/redux/store/userSlice";
+// import { logoutUser } from "../../../../src/redux/store/userSlice";
 import { CommonActions } from "@react-navigation/native";
 
 // import { useSelector, useDispatch } from "react-redux";
 const ProfileScreen = ({ navigation }) => {
-  const user = useSelector((state) => state.users.loggedInUser);
+  // const user = useSelector((state) => state.users.loggedInUser);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -93,14 +93,14 @@ const ProfileScreen = ({ navigation }) => {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => {
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: "Signin" }],
-                  })
-                );
-                dispatch( logoutUser());
-                // setshowLogoutSheet(false);
+                // navigation.dispatch(
+                //   CommonActions.reset({
+                //     index: 0,
+                //     routes: [{ name: "Signin" }],
+                //   })
+                // );
+                // dispatch( logoutUser());
+                // // setshowLogoutSheet(false);
                
               }}
               style={{
@@ -132,8 +132,8 @@ const ProfileScreen = ({ navigation }) => {
             marginBottom: Sizes.fixPadding,
           }}
         >
-          <Text style={{ ...Fonts.blackColor18SemiBold }}>{user.name}</Text>
-          <Text style={{ ...Fonts.grayColor16Medium }}>+91{user.contactNo}</Text>
+          <Text style={{ ...Fonts.blackColor18SemiBold }}>userName</Text>
+          <Text style={{ ...Fonts.grayColor16Medium }}>+9145678765</Text>
         </View>
         <View>
           {profileOption({

@@ -1,12 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
-import userReducer from "./userSlice";
-import vendorReducer from "./vendorSlice";
+import { signInReducer } from "../../screens/auth/services/slice";
 
-export const store = configureStore({
-  reducer: {
-    users: userReducer,
-    vendors: vendorReducer,
-  },
+const store = configureStore({
+    reducer: {
+        signIn: signInReducer,
+    },
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
+
 });
 
 export default store;

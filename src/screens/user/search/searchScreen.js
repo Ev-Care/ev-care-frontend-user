@@ -1,161 +1,235 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  ScrollView,
-  FlatList,
-} from "react-native";
-import React, { useState } from "react";
-import { Colors, Fonts, Sizes, commonStyles } from "../../../constants/styles";
-import MyStatusBar from "../../../components/myStatusBar";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import React, { useState, useEffect, useRef } from "react";
+import { View, StyleSheet, TextInput, FlatList, TouchableOpacity, Text, Alert, Platform, PermissionsAndroid } from "react-native";
+import MapView, { Marker } from "react-native-maps";
+import Geolocation from "react-native-geolocation-service";
+import { Ionicons } from "@expo/vector-icons"; 
+// import {Colors} from " ../../../src/constants/styles";
+import { useNavigation } from "@react-navigation/native";
 
-const recentSearchesList = [
-  "Tesla charging spot",
-  "Fast charging station",
-  "Rapid charge",
+const chargingStations = [
+  { id: 1, name: "Delhi EV Station", place: "Connaught Place, Delhi", latitude: 28.6353, longitude: 77.2250 },
+  { id: 2, name: "Mumbai Charge Hub", place: "Bandra, Mumbai", latitude: 19.0590, longitude: 72.8295 },
+  { id: 3, name: "Bangalore Supercharge", place: "MG Road, Bangalore", latitude: 12.9716, longitude: 77.5946 },
+  { id: 4, name: "Chennai Power Station", place: "T Nagar, Chennai", latitude: 13.0827, longitude: 80.2707 },
+  { id: 5, name: "Kolkata Fast Charger", place: "Park Street, Kolkata", latitude: 22.5550, longitude: 88.3500 },
 ];
 
-const SearchScreen = ({ navigation }) => {
-  const [search, setsearch] = useState("");
-  const [recentSearches, setrecentSearches] = useState(recentSearchesList);
+const ChargingStationMap = () => {
+  const navigation = useNavigation();
+  const mapRef = useRef(null);
+  const [region, setRegion] = useState({
+    latitude: 28.6139,
+    longitude: 77.2090,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
+  });
+  const [search, setSearch] = useState("");
+  const [filteredStations, setFilteredStations] = useState([]);
+
+  useEffect(() => {
+    getUserLocation();
+  }, []);
+
+  const requestLocationPermission = async () => {
+    if (Platform.OS === "android") {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } catch (err) {
+        console.error("Permission request error:", err);
+        return false;
+      }
+    } else if (Platform.OS === "ios") {
+      try {
+        const { status } = await Geolocation.requestAuthorization("whenInUse");
+        return status === "granted";
+      } catch (err) {
+        console.error("iOS permission error:", err);
+        return false;
+      }
+    }
+    return false;
+  };
+  
+  // Function to get user location
+  const getUserLocation = async () => {
+    const hasPermission = await requestLocationPermission();
+    if (!hasPermission) {
+      Alert.alert("Permission Denied", "Using default location (Delhi).");
+      return;
+    }
+  
+    Geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setRegion({
+          latitude,
+          longitude,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        });
+  
+        if (mapRef.current) {
+          setTimeout(() => {
+            mapRef.current.animateCamera(
+              {
+                center: { latitude, longitude },
+                zoom: 15,
+              },
+              { duration: 1000 }
+            );
+          }, 500);
+        }
+      },
+      (error) => {
+        console.error("Error fetching location:", error);
+        Alert.alert("Error", "Failed to fetch location. Using Delhi.");
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+    );
+  };
+  
+
+  const handleSearch = (text) => {
+    setSearch(text);
+    if (text) {
+      const results = chargingStations.filter((station) =>
+        station.name.toLowerCase().includes(text.toLowerCase()) ||
+        station.place.toLowerCase().includes(text.toLowerCase())
+      );
+      setFilteredStations(results);
+    } else {
+      setFilteredStations([]);
+    }
+  };
+
+  const handleSelectStation = (station) => {
+    setRegion({
+      latitude: station.latitude,
+      longitude: station.longitude,
+      latitudeDelta: 0.02,
+      longitudeDelta: 0.02,
+    });
+    mapRef.current.animateToRegion({
+      latitude: station.latitude,
+      longitude: station.longitude,
+      latitudeDelta: 0.02,
+      longitudeDelta: 0.02,
+    }, 1000);
+    setFilteredStations([]);
+    setSearch(station.name);
+  };
 
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
-      <MyStatusBar />
-      <View style={{ flex: 1 }}>
-        {header()}
-        {searchField()}
-        <ScrollView
-          automaticallyAdjustKeyboardInsets={true}
-          showsVerticalScrollIndicator={false}
-        >
-          {recentSearches.length === 0 ? null : recentSearchesInfo()}
-        </ScrollView>
-      </View>
+    <View style={styles.container}>
+      <TextInput
+        style={styles.searchBox}
+        placeholder="Search for charging stations..."
+        value={search}
+        onChangeText={handleSearch}
+      />
+      {filteredStations.length > 0 && (
+        <FlatList
+          data={filteredStations}
+          keyExtractor={(item) => item.id.toString()}
+          style={styles.suggestionList}
+          renderItem={({ item }) => (
+            <TouchableOpacity style={styles.suggestionItem} onPress={() => handleSelectStation(item)}>
+              <Text>{item.name} - {item.place}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      )}
+      <MapView
+  ref={mapRef}
+  style={styles.map}
+  region={region}
+  showsUserLocation={true}
+>
+  {chargingStations.map((station, index) => (
+    <Marker
+      key={station.id}
+      coordinate={{ latitude: station.latitude, longitude: station.longitude }}
+      pinColor={index % 2 === 0 ? "#101942" : "green"}
+      onPress={() => navigation.navigate("ChargingStationDetail")}
+    />
+  ))}
+</MapView>
+
+
+      {/* Floating Button to Get Current Location */}
+      <TouchableOpacity style={styles.locationButton} onPress={getUserLocation}>
+        <Ionicons name="locate-outline" size={28} color="white" />
+      </TouchableOpacity>
+
     </View>
   );
-
-  function recentSearchesInfo() {
-    const renderItem = ({ item }) => (
-      <Text
-        style={{
-          ...Fonts.grayColor16Medium,
-          marginVertical: Sizes.fixPadding - 5.0,
-        }}
-      >
-        {item}
-      </Text>
-    );
-    return (
-      <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
-        <View style={{ ...commonStyles.rowSpaceBetween }}>
-          <Text
-            numberOfLines={1}
-            style={{ ...Fonts.blackColor20SemiBold, flex: 1 }}
-          >
-            Recent searches
-          </Text>
-          <Text
-            onPress={() => {
-              setrecentSearches([]);
-            }}
-            style={{ ...Fonts.primaryColor16Medium }}
-          >
-            Clear all
-          </Text>
-        </View>
-        <FlatList
-          data={recentSearches}
-          keyExtractor={(index) => `${index}`}
-          renderItem={renderItem}
-          scrollEnabled={false}
-        />
-      </View>
-    );
-  }
-
-  function searchField() {
-    return (
-      <View
-        style={{ ...styles.searchBox, marginBottom: Sizes.fixPadding * 2.0 }}
-      >
-        <MaterialIcons
-          name="search"
-          color={search ? Colors.primaryColor : Colors.grayColor}
-          size={24}
-        />
-        <TextInput
-          placeholder="Search for charging station"
-          placeholderTextColor={Colors.grayColor}
-          style={{
-            ...Fonts.blackColor18Medium,
-            flex: 1,
-            marginLeft: Sizes.fixPadding,
-          }}
-          cursorColor={Colors.primaryColor}
-          selectionColor={Colors.primaryColor}
-          value={search}
-          onChangeText={(text) => setsearch(text)}
-        />
-      </View>
-    );
-  }
-
-  function header() {
-    return (
-      <View style={{ ...commonStyles.rowSpaceBetween, margin: 20.0 }}>
-        <View
-          style={{
-            ...commonStyles.rowAlignCenter,
-            flex: 1,
-            marginRight: Sizes.fixPadding - 5.0,
-          }}
-        >
-          <MaterialIcons
-            name="arrow-back"
-            color={Colors.blackColor}
-            size={26}
-            onPress={() => {
-              navigation.pop();
-            }}
-          />
-          <Text
-            numberOfLines={1}
-            style={{
-              ...Fonts.blackColor20SemiBold,
-              flex: 1,
-              marginLeft: Sizes.fixPadding * 2.0,
-            }}
-          >
-            Search
-          </Text>
-        </View>
-        <MaterialIcons
-          name="filter-list"
-          color={Colors.blackColor}
-          size={26}
-          onPress={() => {
-            navigation.push("Filter");
-          }}
-        />
-      </View>
-    );
-  }
 };
 
-export default SearchScreen;
-
 const styles = StyleSheet.create({
-  searchBox: {
-    flexDirection: "row",
+  container: {
+    flex: 1,
+  },
+ 
+    searchBox: {
+      position: "absolute",
+      top: 40,
+      left: 10,
+      right: 10,
+      backgroundColor: "white",
+      padding: 14,
+      borderRadius: 6,
+      borderWidth: 0.5,
+      borderColor: "gray",
+      shadowColor: "#000",
+      shadowOpacity: 0.3,
+      shadowOffset: { width: 2, height: 4 },
+      shadowRadius: 6,
+      elevation: 10,
+      zIndex: 1,
+    },
+  
+  suggestionList: {
+    position: "absolute",
+    top: 90,
+    left: 10,
+    right: 10,
+    backgroundColor: "white",
+    maxHeight: 150,
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 3,
+    zIndex: 1,
+  },
+  suggestionItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  locationButton: {
+    position: "absolute",
+    bottom: 100,
+    right: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 30,
+    backgroundColor: "#101942", 
     alignItems: "center",
-    backgroundColor: Colors.bodyBackColor,
-    ...commonStyles.shadow,
-    borderRadius: Sizes.fixPadding - 5.0,
-    marginHorizontal: Sizes.fixPadding * 2.0,
-    paddingHorizontal: Sizes.fixPadding + 5.0,
-    paddingVertical: Sizes.fixPadding,
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 5,
   },
 });
+
+export default ChargingStationMap;

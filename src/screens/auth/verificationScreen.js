@@ -22,8 +22,8 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { Overlay } from "@rneui/themed";
 import OTPTextView from "react-native-otp-textinput";
 import { useDispatch } from "react-redux";
-import { loginUser } from "../../redux/store/userSlice";
-
+// import { loginUser } from "../../redux/store/userSlice";
+import { verifyOtpSuccess, verifyOtpFailed } from "./services/slice";
 const VerificationScreen = ({ navigation, route }) => {
   const [otpInput, setOtpInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -57,22 +57,25 @@ const VerificationScreen = ({ navigation, route }) => {
         };
 
         console.log(user);
-        console.log("above is data.data");
+        dispatch(verifyOtpSuccess(user)); // ✅ Store user data in Redux
 
         if (user.status === "New") {
           navigation.push("Register", { user });
         } else if (user.status === "Completed") {
-          dispatch(loginUser(user));
+          navigation.replace("Home"); // Redirect to home page after login
         }
       } else {
         Alert.alert("Verification Failed", "Incorrect OTP. Please try again.");
+        dispatch(verifyOtpFailed("Incorrect OTP")); // ✅ Store error in Redux
       }
     } catch (error) {
       Alert.alert("Error", "An error occurred while verifying OTP. Please try again.");
+      dispatch(verifyOtpFailed(error.message)); // ✅ Store error in Redux
     } finally {
       setIsLoading(false);
     }
-  };
+};
+
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>

@@ -75,7 +75,7 @@ const SigninScreen = ({ navigation }) => {
       const response = await dispatch(postSignIn({ mobileNumber: sanitizedPhoneNumber })).unwrap();
       
       console.log("API Response:", response);
-      Alert.alert("Success", response.message);
+      // Alert.alert("Success", response.message);
       navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber });
       
     } catch (error) {

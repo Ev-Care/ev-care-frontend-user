@@ -379,7 +379,7 @@ const user = useSelector(selectUser);
   function welcomeInfo() {
     return (
       <View style={{ margin: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.blackColor26SemiBold }}>Welcome Username</Text>
+        <Text style={{ ...Fonts.blackColor26SemiBold }}>Welcome {user?.name || "Guest"}</Text>
         <Text style={{ ...Fonts.grayColor18Regular }}>
           Find nearest Charging Stations
         </Text>

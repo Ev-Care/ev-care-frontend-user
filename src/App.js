@@ -35,13 +35,14 @@ function AppNavigator() {
 
   useEffect(() => {
     console.log("User in app.js:", user);
-    if (user?.role) {
-      console.log("User role in app.js:", user.role);
-      setUserType(user.role.toLowerCase()); // Update role when user logs in
+    if (user && user.role) {  // ✅ Ensure user is not null
+        console.log("User role in app.js:", user.role);
+        setUserType(user.role.toLowerCase());
     } else {
-      setUserType(null);
+        setUserType(null);
     }
-  }, [user]);
+}, [user]);
+
 
   // Function to handle role-based navigation
   const renderRoleStack = () => {
@@ -80,7 +81,7 @@ function AppNavigator() {
             />
             <Stack.Screen name="Loading" component={LoadingScreen} />
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-            <Stack.Screen name="Signin" component={SigninScreen} />
+            <Stack.Screen name="Signin"  component={SigninScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
             <Stack.Screen name="Verification">
               {(props) => (

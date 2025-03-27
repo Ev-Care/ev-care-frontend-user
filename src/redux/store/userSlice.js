@@ -14,10 +14,11 @@ const authSlice = createSlice({
   reducers: {
     logoutUser: (state) => {
       state.user = null;
+      console.log("User logged out successfully in redux");
     },
     signUpUser: (state, action) => {
       console.log("singup is called in redux");
-      state.user = action.payload;
+      state.user = extractUser(action.payload);
       state.loading = false;
       console.log("User signed up successfully in redux:", action.payload);
     }
@@ -48,7 +49,7 @@ const authSlice = createSlice({
         state.loading = false;
         // console.log("OTP Verified by user and action.payload is: ", action.payload);
         if (action.payload.data.user.status === "Completed") {
-          state.user = action.payload.data.user;
+          state.user = extractUser(action.payload.data.user);
           console.log("User state changed by redux:", state.user);
         }
         // console.log("User status:", state.user.status);
@@ -77,6 +78,16 @@ const authSlice = createSlice({
       });
   },
 });
+
+const extractUser = (data) => {
+  return {
+    user_key: data.user_key,
+    email: data.email,
+    role: data.role,
+    status: data.status,
+    name : data.owner_legal_name
+  }
+}
 
 export const { logoutUser, signUpUser } = authSlice.actions;
 export default authSlice.reducer;

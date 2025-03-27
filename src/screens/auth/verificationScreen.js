@@ -54,7 +54,7 @@ const VerificationScreen = ({ navigation, route }) => {
         if (user.status === "New") {
           navigation.push("Register", { user });
         } else if (user.status === "Completed") {
-          Alert.alert("Sucess", "Otp verified.");
+          // Alert.alert("Sucess", "Otp verified.");
           return;
         }
       } else {

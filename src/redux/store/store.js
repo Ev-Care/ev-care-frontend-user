@@ -1,12 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
-import userReducer from "./userSlice";
-import vendorReducer from "./vendorSlice";
+import authReducer from './userSlice'; // Ensure correct import
 
-export const store = configureStore({
-  reducer: {
-    users: userReducer,
-    vendors: vendorReducer,
-  },
+const store = configureStore({
+    reducer: {
+        auth: authReducer, // Correct reducer reference
+    },
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
 });
 
 export default store;

@@ -8,7 +8,8 @@ import "react-native-gesture-handler";
 import "react-native-get-random-values";
 import React, { useState, useEffect } from "react";
 import { Provider, useSelector } from "react-redux";
-import { store } from "./redux/store/store";
+import  store  from "./redux/store/store";
+import { selectUser } from "./screens/auth/services/selector"; // Ensure correct import
 
 // Screens
 import LoadingScreen from "./screens/loadingScreen";
@@ -30,13 +31,33 @@ const Stack = createStackNavigator();
 
 function AppNavigator() {
   const [userType, setUserType] = useState(null);
-  const user = useSelector((state) => state.users.loggedInUser);
+  const user = useSelector( selectUser); // Get user data
 
   useEffect(() => {
-    if (user) {
-      setUserType(user.role); // Update role when user logs in
+    console.log("User in app.js:", user);
+    if (user && user.role) {  // ✅ Ensure user is not null
+        console.log("User role in app.js:", user.role);
+        setUserType(user.role.toLowerCase());
+    } else {
+        setUserType(null);
     }
-  }, [user]);
+}, [user]);
+
+
+  // Function to handle role-based navigation
+  const renderRoleStack = () => {
+    console.log("User role in renderRoleStack:", userType);
+    switch (userType) {
+      case "user":
+        return <Stack.Screen name="UserStack" component={UserStack} />;
+      case "admin":
+        return <Stack.Screen name="AdminStack" component={AdminStack} />;
+      case "vendor":
+        return <Stack.Screen name="VendorStack" component={VendorStack} />;
+      default:
+        return <Stack.Screen name="Loading" component={LoadingScreen} />;
+    }
+  };
 
   return (
     <NavigationContainer>
@@ -46,8 +67,7 @@ function AppNavigator() {
           ...TransitionPresets.SlideFromRightIOS,
         }}
       >
-        {!user ? (
-          // Non-registered users see these screens
+        {!userType ? (
           <>
             <Stack.Screen
               name="FirstSplashScreen"
@@ -61,20 +81,16 @@ function AppNavigator() {
             />
             <Stack.Screen name="Loading" component={LoadingScreen} />
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-            <Stack.Screen name="Signin" component={SigninScreen} />
+            <Stack.Screen name="Signin"  component={SigninScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
             <Stack.Screen name="Verification">
-              {(props) => <VerificationScreen {...props} setUserType={setUserType} />}
+              {(props) => (
+                <VerificationScreen {...props} setUserType={setUserType} />
+              )}
             </Stack.Screen>
           </>
-        ) : userType === "user" ? (
-          <Stack.Screen name="UserStack" component={UserStack} />
-        ) : userType === "admin" ? (
-          <Stack.Screen name="AdminStack" component={AdminStack} />
-        ) : userType === "vendor" ? (
-          <Stack.Screen name="VendorStack" component={VendorStack} />
         ) : (
-          <Stack.Screen name="Loading" component={LoadingScreen} />
+          renderRoleStack()
         )}
       </Stack.Navigator>
     </NavigationContainer>

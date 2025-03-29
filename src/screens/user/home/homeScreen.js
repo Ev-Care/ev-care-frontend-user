@@ -17,7 +17,8 @@ import {
   screenWidth,
 } from "../../../constants/styles";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { useSelector, useDispatch } from "react-redux";
+import { selectUser } from "../../auth/services/selector";
+import { useSelector } from "react-redux";
 
 const nearByChargingStationsList = [
   {
@@ -105,7 +106,8 @@ export { nearByChargingStationsList, enrouteChargingStationList };
 
 
 const HomeScreen = ({ navigation }) => {
-const user = useSelector((state) => state.users.loggedInUser);
+ const user = useSelector( selectUser);
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -116,22 +118,22 @@ const user = useSelector((state) => state.users.loggedInUser);
           {nearByChargingStationInfo()}
           {enrouteChargingStationInfo()}
         </ScrollView>
-        {mapViewButton()}
+        {/* {mapViewButton()} */}
       </View>
     </View>
   );
 
-  function mapViewButton() {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.9}
-        onPress={() => navigation.push("ChargingStationsOnMap")}
-        style={styles.mapViewButton}
-      >
-        <MaterialIcons name="map" color={Colors.whiteColor} size={30} />
-      </TouchableOpacity>
-    );
-  }
+  // function mapViewButton() {
+  //   return (
+  //     <TouchableOpacity
+  //       activeOpacity={0.9}
+  //       onPress={() => navigation.push("ChargingStationsOnMap")}
+  //       style={styles.mapViewButton}
+  //     >
+  //       <MaterialIcons name="map" color={Colors.whiteColor} size={30} />
+  //     </TouchableOpacity>
+  //   );
+  // }
 
   function enrouteChargingStationInfo() {
     const renderItem = ({ item }) => (
@@ -376,7 +378,7 @@ const user = useSelector((state) => state.users.loggedInUser);
   function welcomeInfo() {
     return (
       <View style={{ margin: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.blackColor26SemiBold }}>Welcome ,{user.name}</Text>
+        <Text style={{ ...Fonts.blackColor26SemiBold }}>Welcome {user?.name || "Guest"}</Text>
         <Text style={{ ...Fonts.grayColor18Regular }}>
           Find nearest Charging Stations
         </Text>

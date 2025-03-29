@@ -13,7 +13,6 @@ import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
 const Tab = createBottomTabNavigator();
-
 const BottomTabBarScreen = ({ navigation }) => {
   const backAction = () => {
     if (Platform.OS === "ios") {
@@ -56,6 +55,7 @@ const BottomTabBarScreen = ({ navigation }) => {
           headerShown: false,
           tabBarShowLabel: false,
           tabBarStyle: styles.tabBarStyle,
+          tabBarIconStyle: { alignSelf: "center" }, 
         }}
       >
         <Tab.Screen
@@ -221,8 +221,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   selectedTabCircleStyle: {
-    width: 50.0,
-    height: 50.0,
+    width: 45.0,
+    height: 45.0,
     borderRadius: 25.0,
     backgroundColor: Colors.primaryColor,
     alignItems: "center",
@@ -234,5 +234,7 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.extraLightGrayColor,
     borderTopWidth: 1.0,
     height: Platform.OS == "ios" ? 100.0 : 70.0,
+    paddingTop:10,
+   paddingBottom: Platform.OS === "ios" ? 20 : 10, // 👈 Helps with centering
   },
 });

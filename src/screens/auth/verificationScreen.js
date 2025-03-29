@@ -7,6 +7,7 @@ import {
   View,
   ActivityIndicator,
   Platform,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import {
@@ -20,21 +21,51 @@ import MyStatusBar from "../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { Overlay } from "@rneui/themed";
 import OTPTextView from "react-native-otp-textinput";
-import {  useDispatch } from "react-redux";
-import { loginUser } from "../../redux/store/userSlice";
-const VerificationScreen = ({ navigation ,route }) => {
-  const [otpInput, setotpInput] = useState("");
-  const [isLoading, setisLoading] = useState(false);
+import { useDispatch, useSelector } from "react-redux";
+// import { loginUser } from "../../redux/store/userSlice";
+import { verifyOtpSuccess, verifyOtpFailed } from "./services/slice";
+import { postVerifyOtp } from "./services/crudFunction";
+const VerificationScreen = ({ navigation, route }) => {
+  const [otpInput, setOtpInput] = useState("");
+  const isLoading = useSelector(state => state.auth.loading);
   const dispatch = useDispatch();
-  const verifyOtp=() => {
-    // console.log("clicked");
-    if (otpInput==="1234"){
-      // console.log("verified");
-      dispatch(loginUser(route.params?.phoneNumber));
-      // setUserType(route.params?.role);
-      // console.log("this is userRole"+route.params?.role+"this is number"+route.params?.phoneNumber); 
+
+  const verifyOtp = async () => {
+    if (otpInput.length !== 6) {
+      Alert.alert("Invalid OTP", "Please enter a 6-digit OTP.");
+      return;
     }
-  }
+  
+    try {
+      const response = await dispatch(postVerifyOtp({ otp: otpInput, mobileNumber: route.params?.phoneNumber }));
+  
+      if (response.payload) {
+        const user = {
+          user_key: response.payload.data.user.user_key,
+          id: response.payload.data.user.id,
+          name: response.payload.data.user.owner_legal_name,
+          contactNo: response.payload.data.user.mobile_number,
+          role: response.payload.data.user.role,
+          status: response.payload.data.user.status,
+        };
+  
+        console.log("User status:", user.status);
+  
+        if (user.status === "New") {
+          navigation.push("Register", { user });
+        } else if (user.status === "Completed") {
+          // Alert.alert("Sucess", "Otp verified.");
+          return;
+        }
+      } else {
+        Alert.alert("Verification Failed", "Incorrect OTP. Please try again.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "An error occurred while verifying OTP. Please try again.");
+    }
+  };
+  
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -71,21 +102,8 @@ const VerificationScreen = ({ navigation ,route }) => {
   function loadingDialog() {
     return (
       <Overlay isVisible={isLoading} overlayStyle={styles.dialogStyle}>
-        <ActivityIndicator
-          size={50}
-          color={Colors.primaryColor}
-          style={{
-            alignSelf: "center",
-            transform: [{ scale: Platform.OS == "ios" ? 2 : 1 }],
-          }}
-        />
-        <Text
-          style={{
-            marginTop: Sizes.fixPadding,
-            textAlign: "center",
-            ...Fonts.blackColor16Regular,
-          }}
-        >
+        <ActivityIndicator size={50} color={Colors.primaryColor} />
+        <Text style={{ marginTop: Sizes.fixPadding, textAlign: "center", ...Fonts.blackColor16Regular }}>
           Please wait...
         </Text>
       </Overlay>
@@ -95,37 +113,23 @@ const VerificationScreen = ({ navigation ,route }) => {
   function otpFields() {
     return (
       <OTPTextView
-        containerStyle={{
-          margin: Sizes.fixPadding * 2.0,
-          marginTop: Sizes.fixPadding * 5.0,
-          justifyContent: "center",
-        }}
-        handleTextChange={(text) => {
-          setotpInput(text);
-          if (text.length == 4) {
-            setisLoading(true);
-            setTimeout(() => {
-              setisLoading(false);
-              navigation.push("BottomTabBar");
-            }, 2000);
-          }
-        }}
-        inputCount={4}
+        containerStyle={{ margin: Sizes.fixPadding * 2.0, marginTop: Sizes.fixPadding * 5.0 }}
+        handleTextChange={setOtpInput}
+        inputCount={6}
         keyboardType="numeric"
         tintColor={Colors.primaryColor}
         offTintColor={Colors.extraLightGrayColor}
-        textInputStyle={{ ...styles.textFieldStyle }}
+        textInputStyle={styles.textFieldStyle}
       />
     );
   }
 
-  
   function continueButton() {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={verifyOtp}
-        style={{ ...commonStyles.button,borderRadius: Sizes.fixPadding-5.0, margin: Sizes.fixPadding * 2.0 }}
+        style={{ ...commonStyles.button, borderRadius: Sizes.fixPadding - 5.0, margin: Sizes.fixPadding * 2.0 }}
       >
         <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>
       </TouchableOpacity>
@@ -140,26 +144,11 @@ const VerificationScreen = ({ navigation ,route }) => {
         resizeMode="stretch"
       >
         <View style={styles.topImageOverlay}>
-          <MaterialIcons
-            name="arrow-back"
-            color={Colors.whiteColor}
-            size={26}
-            onPress={() => {
-              navigation.pop();
-            }}
-          />
+          <MaterialIcons name="arrow-back" color={Colors.whiteColor} size={26} onPress={() => navigation.pop()} />
           <View>
-            <Text style={{ ...Fonts.whiteColor22SemiBold }}>
-              OTP Verification
-            </Text>
-            <Text
-              numberOfLines={1}
-              style={{
-                ...Fonts.whiteColor16Regular,
-                marginTop: Sizes.fixPadding,
-              }}
-            >
-              See your phone to see the verification code
+            <Text style={{ ...Fonts.whiteColor22SemiBold }}>OTP Verification</Text>
+            <Text numberOfLines={1} style={{ ...Fonts.whiteColor16Regular, marginTop: Sizes.fixPadding }}>
+              See your phone for the verification code
             </Text>
           </View>
         </View>
@@ -179,14 +168,16 @@ const styles = StyleSheet.create({
     padding: Sizes.fixPadding * 2.0,
   },
   textFieldStyle: {
-    borderBottomWidth: null,
+    width: screenWidth / 8,
+    height: 50,
+    textAlign: "center",
     borderRadius: Sizes.fixPadding - 5.0,
     backgroundColor: Colors.bodyBackColor,
     borderColor: Colors.primaryColor,
     borderWidth: 1.5,
     ...Fonts.blackColor18SemiBold,
     ...commonStyles.shadow,
-    marginHorizontal: Sizes.fixPadding,
+    marginHorizontal: Sizes.fixPadding / 2,
   },
   dialogStyle: {
     width: "80%",

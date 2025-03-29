@@ -243,7 +243,8 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
           <Marker
             key={index}
             coordinate={marker.coordinate}
-            onPress={(e) => onMarkerPress(e)}
+            // onPress={(e) => onMarkerPress(e)}
+            onPress={() => navigation.push("ChargingStationDetail")}
             pinColor="green" 
           />
           

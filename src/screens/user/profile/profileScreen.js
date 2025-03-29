@@ -18,11 +18,16 @@ import {
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { BottomSheet } from "@rneui/themed";
-import {  logoutUser } from "../../../redux/store/userSlice";
-import {  useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { selectUser } from "../../auth/services/selector";
+import { logoutUser } from "../../../redux/store/userSlice";
+
+// import { useSelector, useDispatch } from "react-redux";
 const ProfileScreen = ({ navigation }) => {
+  const user = useSelector(selectUser);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
   const dispatch = useDispatch();
+ 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -89,11 +94,11 @@ const ProfileScreen = ({ navigation }) => {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => {
-                dispatch( logoutUser());
-                navigation.push("Signin");
+                dispatch(logoutUser());  
+                console.log("User logged out successfully in profileScreen and navigting to Signin");
                 setshowLogoutSheet(false);
-               
-              }}
+      
+            }}
               style={{
                 ...styles.logoutButtonStyle,
                 ...styles.sheetButtonStyle,
@@ -123,61 +128,47 @@ const ProfileScreen = ({ navigation }) => {
             marginBottom: Sizes.fixPadding,
           }}
         >
-          <Text style={{ ...Fonts.blackColor18SemiBold }}>User Name</Text>
-          <Text style={{ ...Fonts.grayColor16Medium }}>+919677566679</Text>
+          <Text style={{ ...Fonts.blackColor18SemiBold }}>{user?.name}</Text>
+          <Text style={{ ...Fonts.grayColor16Medium }}>+9145678765</Text>
         </View>
         <View>
-          {profileOption({
-            option: "Edit Profile",
-            icon: require("../../../../assets/images/icons/user.png"),
-            onPress: () => {
-              navigation.push("EditProfile");
-            },
-          })}
-          {profileOption({
-            option: "My Bookings",
-            icon: require("../../../../assets/images/icons/calendar.png"),
-            onPress: () => {
-              navigation.navigate("Booking");
-            },
-          })}
-          {profileOption({
-            option: "Notifications",
-            icon: require("../../../../assets/images/icons/notification.png"),
-            onPress: () => {
-              navigation.push("Notification");
-            },
-          })}
-          {profileOption({
-            option: "Terms & Condition",
-            icon: require("../../../../assets/images/icons/list.png"),
-            onPress: () => {
-              navigation.push("TermsAndConditions");
-            },
-          })}
-          {profileOption({
-            option: "FAQ",
-            icon: require("../../../../assets/images/icons/faq.png"),
-            onPress: () => {
-              navigation.push("Faq");
-            },
-          })}
-          {profileOption({
-            option: "Privacy Policy",
-            icon: require("../../../../assets/images/icons/privacy_policy.png"),
-            onPress: () => {
-              navigation.push("PrivacyPolicy");
-            },
-          })}
-          {profileOption({
-            option: "Help",
-            icon: require("../../../../assets/images/icons/help.png"),
-            onPress: () => {
-              navigation.push("Help");
-            },
-          })}
-          {logoutInfo()}
-        </View>
+      {profileOption({
+        option: "Edit Profile",
+        iconName: "person",
+        onPress: () => navigation.push("EditProfile"),
+      })}
+      {profileOption({
+        option: "My Bookings",
+        iconName: "calendar-today",
+        onPress: () => navigation.navigate("Booking"),
+      })}
+      {profileOption({
+        option: "Notifications",
+        iconName: "notifications",
+        onPress: () => navigation.push("Notification"),
+      })}
+      {profileOption({
+        option: "Terms & Conditions",
+        iconName: "list-alt",
+        onPress: () => navigation.push("TermsAndConditions"),
+      })}
+      {profileOption({
+        option: "FAQ",
+        iconName: "help-outline",
+        onPress: () => navigation.push("Faq"),
+      })}
+      {profileOption({
+        option: "Privacy Policy",
+        iconName: "privacy-tip",
+        onPress: () => navigation.push("PrivacyPolicy"),
+      })}
+      {profileOption({
+        option: "Help",
+        iconName: "support-agent",
+        onPress: () => navigation.push("Help"),
+      })}
+      {logoutInfo()}
+    </View>
       </View>
     );
   }
@@ -195,12 +186,9 @@ const ProfileScreen = ({ navigation }) => {
         }}
       >
         <View style={{ ...commonStyles.rowAlignCenter, flex: 1 }}>
-          <View style={styles.optionIconWrapper}>
-            <Image
-              source={require("../../../../assets/images/icons/logout.png")}
-              style={{ width: 24.0, height: 24.0, resizeMode: "contain" }}
-            />
-          </View>
+        <View style={styles.optionIconWrapper}>
+  <MaterialIcons name="logout" size={24} color={COLORS.primaryColor} />
+</View>
           <Text
             numberOfLines={1}
             style={{
@@ -221,42 +209,43 @@ const ProfileScreen = ({ navigation }) => {
     );
   }
 
-  function profileOption({ option, icon, onPress }) {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={onPress}
-        style={{
-          ...commonStyles.rowSpaceBetween,
-          marginBottom: Sizes.fixPadding * 2.0,
-        }}
-      >
-        <View style={{ ...commonStyles.rowAlignCenter, flex: 1 }}>
-          <View style={styles.optionIconWrapper}>
-            <Image
-              source={icon}
-              style={{ width: 24.0, height: 24.0, resizeMode: "contain" }}
-            />
+   function profileOption({ option, iconName, onPress }) {
+      return (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={onPress}
+          style={{
+            ...commonStyles.rowSpaceBetween,
+            marginBottom: Sizes.fixPadding * 2.0,
+          }}
+        >
+          <View style={{ ...commonStyles.rowAlignCenter, flex: 1 }}>
+            <View style={styles.optionIconWrapper}>
+              <MaterialIcons
+                name={iconName}
+                size={24}
+                color={Colors.primaryColor}
+              />
+            </View>
+            <Text
+              numberOfLines={1}
+              style={{
+                ...Fonts.blackColor18Medium,
+                marginLeft: Sizes.fixPadding * 1.5,
+                flex: 1,
+              }}
+            >
+              {option}
+            </Text>
           </View>
-          <Text
-            numberOfLines={1}
-            style={{
-              ...Fonts.blackColor18Medium,
-              marginLeft: Sizes.fixPadding * 1.5,
-              flex: 1,
-            }}
-          >
-            {option}
-          </Text>
-        </View>
-        <MaterialIcons
-          name="arrow-forward-ios"
-          size={15.0}
-          color={Colors.primaryColor}
-        />
-      </TouchableOpacity>
-    );
-  }
+          <MaterialIcons
+            name="arrow-forward-ios"
+            size={15.0}
+            color={Colors.primaryColor}
+          />
+        </TouchableOpacity>
+      );
+    }
 
   function header() {
     return (
@@ -295,7 +284,7 @@ const styles = StyleSheet.create({
     width: 46.0,
     height: 46.0,
     borderRadius: 23.0,
-    backgroundColor: "rgba(6, 124, 96, 0.1)",
+    backgroundColor: "rgba(96, 96, 96, 0.1)",
     alignItems: "center",
     justifyContent: "center",
   },  

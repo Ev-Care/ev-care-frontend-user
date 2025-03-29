@@ -6,7 +6,6 @@ import BottomTabBarScreen from "../components/userComponents/bottomTabBarScreen"
 import AllChargingStationsScreen from "../screens/user/allChargingStations/allChargingStationsScreen";
 import ChargingStationsOnMapScreen from "../screens/user/chargingStationsOnMap/chargingStationsOnMapScreen";
 import ChargingStationDetailScreen from "../screens/user/chargingStationDetail/chargingStationDetailScreen";
-
 // Booking & Navigation Screens/user
 import BookSlotScreen from "../screens/user/bookSlot/bookSlotScreen";
 import ConfirmDetailScreen from "../screens/user/confirmDetail/confirmDetailScreen";
@@ -16,7 +15,6 @@ import PickLocationScreen from "../screens/user/pickLocation/pickLocationScreen"
 import EnrouteChargingStationsScreen from "../screens/user/enrouteChargingStations/enrouteChargingStationsScreen";
 import DirectionScreen from "../screens/user/direction/directionScreen";
 import EnrouteScreen from "../screens/user/enroute/enrouteScreen";
-
 // User Profile & Notifications
 import EditProfileScreen from "../screens/user/editProfile/editProfileScreen";
 import NotificationScreen from "../screens/user/notifications/notificationsScreen";

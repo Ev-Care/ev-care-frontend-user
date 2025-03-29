@@ -222,6 +222,13 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     paddingHorizontal: 10,
     fontSize: 16,
+    borderWidth: 0.5,
+    borderColor: "gray",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 2, height: 4 },
+    shadowRadius: 6,
+    elevation: 10,
   },
   map: {
     ...StyleSheet.absoluteFillObject,

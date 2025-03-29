@@ -1,4 +1,6 @@
 import {
+  ActivityIndicator,
+  Alert,
   ImageBackground,
   Platform,
   ScrollView,
@@ -19,14 +21,48 @@ import {
 } from "../../constants/styles";
 import MyStatusBar from "../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-
-const RegisterScreen = ({ navigation }) => {
+import { signUpUser } from "../../redux/store/userSlice";
+import { useDispatch } from "react-redux";
+import { postSignUp } from "./services/crudFunction";
+const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setfullName] = useState("");
-  const [userName, setuserName] = useState("");
   const [email, setemail] = useState("");
   const [role, setRole] = useState("User");
+  const [loading, setLoading] = useState(false); // Loader state
+  const dispatch = useDispatch();
   
- 
+  const user = route.params?.user;
+
+  const handleSignUp = async () => {
+    if (!fullName.trim() || !email.trim()) {
+      Alert.alert("Error", "Please fill in all the fields.");
+      return;
+    }
+
+    setLoading(true);
+
+    const userData = {
+        email: email,
+        owner_legal_name: fullName,
+        role: role,
+        user_key: user.user_key
+    };
+
+    console.log("post signup called");
+
+    try {
+        const response = await dispatch(postSignUp(userData)).unwrap(); // ✅ Ensure API response is returned
+        console.log("post signup success", response);
+        Alert.alert("Success", "Registration successful!");
+        userData.status = "Completed";
+        dispatch(signUpUser(userData)); // ✅ Use actual API response data
+    } catch (error) {
+        console.error("Signup failed:", error);
+        Alert.alert("Registration Failed", "Please check your details and try again.");
+    } finally {
+        setLoading(false);
+    }
+};
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -37,9 +73,9 @@ const RegisterScreen = ({ navigation }) => {
           automaticallyAdjustKeyboardInsets={true}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: Sizes.fixPadding * 2.0 }}
-        >  {selectRole()}
+        >
+          {selectRole()}
           {fullNameInfo()}
-          {userNameInfo()}
           {emailInfo()}
           {continueButton()}
           {agreeInfo()}
@@ -47,7 +83,8 @@ const RegisterScreen = ({ navigation }) => {
       </View>
     </View>
   );
-   function selectRole() {
+
+  function selectRole() {
     return (
       <View style={{ flexDirection: "row", justifyContent: "space-around", margin: Sizes.fixPadding * 2 }}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -69,13 +106,12 @@ const RegisterScreen = ({ navigation }) => {
       </View>
     );
   }
-  
 
   function agreeInfo() {
     return (
       <View style={{ alignItems: "center", justifyContent: "center" }}>
         <Text style={{ textAlign: "center", ...Fonts.grayColor16Medium }}>
-          By continue you’re agreed to our
+          By continuing, you agree to our
         </Text>
         <Text
           style={{
@@ -84,7 +120,7 @@ const RegisterScreen = ({ navigation }) => {
             marginTop: Sizes.fixPadding - 5.0,
           }}
         >
-          Terms & condition
+          Terms & Conditions
         </Text>
       </View>
     );
@@ -92,12 +128,7 @@ const RegisterScreen = ({ navigation }) => {
 
   function emailInfo() {
     return (
-      <View
-        style={{
-          ...styles.textFieldWrapper,
-          marginBottom: Sizes.fixPadding * 2.0,
-        }}
-      >
+      <View style={{ ...styles.textFieldWrapper, marginBottom: Sizes.fixPadding * 2.0 }}>
         <TextInput
           placeholder="Email address"
           placeholderTextColor={Colors.grayColor}
@@ -112,35 +143,9 @@ const RegisterScreen = ({ navigation }) => {
     );
   }
 
-  function userNameInfo() {
-    return (
-      <View
-        style={{
-          ...styles.textFieldWrapper,
-          marginVertical: Sizes.fixPadding * 2.0,
-        }}
-      >
-        <TextInput
-          placeholder="Username"
-          placeholderTextColor={Colors.grayColor}
-          value={userName}
-          onChangeText={(text) => setuserName(text)}
-          style={{ ...Fonts.blackColor16Medium }}
-          cursorColor={Colors.primaryColor}
-          selectionColor={Colors.primaryColor}
-        />
-      </View>
-    );
-  }
-
   function fullNameInfo() {
     return (
-      <View
-        style={{
-          ...styles.textFieldWrapper,
-         
-        }}
-      >
+      <View style={{ ...styles.textFieldWrapper }}>
         <TextInput
           placeholder="Full name"
           placeholderTextColor={Colors.grayColor}
@@ -158,12 +163,15 @@ const RegisterScreen = ({ navigation }) => {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => {
-          navigation.push("Verification");
-        }}
-        style={{ ...commonStyles.button,borderRadius: Sizes.fixPadding-5.0, margin: Sizes.fixPadding * 2.0 }}
+        onPress={handleSignUp}
+        style={{ ...commonStyles.button, borderRadius: Sizes.fixPadding - 5.0, margin: Sizes.fixPadding * 2.0 }}
+        disabled={loading}
       >
-        <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>
+        {loading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>
+        )}
       </TouchableOpacity>
     );
   }
@@ -180,18 +188,11 @@ const RegisterScreen = ({ navigation }) => {
             name="arrow-back"
             color={Colors.whiteColor}
             size={26}
-            onPress={() => {
-              navigation.pop();
-            }}
+            onPress={() => navigation.pop()}
           />
           <View>
             <Text style={{ ...Fonts.whiteColor22SemiBold }}>Register</Text>
-            <Text
-              style={{
-                ...Fonts.whiteColor16Regular,
-                marginTop: Sizes.fixPadding,
-              }}
-            >
+            <Text style={{ ...Fonts.whiteColor16Regular, marginTop: Sizes.fixPadding }}>
               Create your account
             </Text>
           </View>
@@ -214,12 +215,14 @@ const styles = StyleSheet.create({
   textFieldWrapper: {
     backgroundColor: Colors.bodyBackColor,
     ...commonStyles.shadow,
-    borderRadius: Sizes.fixPadding-5.0,
+    borderRadius: Sizes.fixPadding - 5.0,
     paddingHorizontal: Sizes.fixPadding * 1.5,
-    paddingVertical:
-      Platform.OS == "ios" ? Sizes.fixPadding + 3.0 : Sizes.fixPadding,
+    paddingVertical: Platform.OS === "ios" ? Sizes.fixPadding + 3.0 : Sizes.fixPadding,
     marginHorizontal: Sizes.fixPadding * 2.0,
-    borderColor:Colors.extraLightGrayColor,
-    borderWidth:1.0,
+    borderColor: Colors.extraLightGrayColor,
+    borderWidth: 1.0,
+    marginBottom: Sizes.fixPadding * 2.0,
+    marginLeft: Sizes.fixPadding,
+    marginRight: Sizes.fixPadding,
   },
 });

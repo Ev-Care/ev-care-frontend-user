@@ -13,7 +13,7 @@ import * as ImagePicker from "expo-image-picker";
 
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
-
+import {Colors} from "../../../constants/styles";
 const UploadAadhar = () => {
   const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     width: "100%",
-    backgroundColor: "#101942",
+    backgroundColor: Colors.primaryColor,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",

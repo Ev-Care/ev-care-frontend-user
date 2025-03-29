@@ -13,7 +13,6 @@ import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
 const Tab = createBottomTabNavigator();
-
 const BottomTabBarScreen = ({ navigation }) => {
   const backAction = () => {
     if (Platform.OS === "ios") {

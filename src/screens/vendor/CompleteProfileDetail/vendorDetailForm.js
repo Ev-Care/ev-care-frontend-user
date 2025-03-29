@@ -11,7 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
-
+import {Colors} from "../../../constants/styles";
 const VendorDetailForm = () => {
   const navigation = useNavigation();
   const [vendorName, setVendorName] = useState("");
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   submitButton: {
-    backgroundColor: "#101942",
+    backgroundColor:Colors.primaryColor,
     padding: 15,
     borderRadius: 8,
     alignItems: "center",

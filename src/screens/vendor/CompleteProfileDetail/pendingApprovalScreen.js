@@ -3,6 +3,9 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from "react-na
 import { useNavigation } from "@react-navigation/native";
 import { logoutUser } from "../../../redux/store/userSlice";
 import {  useDispatch } from "react-redux";
+import { color } from "@rneui/base";
+import {Colors} from "../../../constants/styles";
+
 const PendingApprovalScreen = () => {  
   const navigation = useNavigation();  
   const dispatch = useDispatch();
@@ -17,6 +20,12 @@ const PendingApprovalScreen = () => {
       <TouchableOpacity style={styles.button} onPress={() => dispatch(logoutUser())}>
       <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
+      <TouchableOpacity 
+  style={[styles.button, { backgroundColor: Colors.primaryColor }]} 
+  onPress={() => navigation.navigate("VendorHome")}
+>
+  <Text style={styles.buttonText}>Continue</Text>
+</TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.goBack()}>
         <Text style={styles.goBackText}>Go Back</Text>

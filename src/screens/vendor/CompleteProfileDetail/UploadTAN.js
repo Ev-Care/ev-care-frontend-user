@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
-
+import {Colors} from "../../../constants/styles";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 
@@ -76,7 +76,7 @@ const UploadTAN = () => {
     // }
     
     // Alert.alert("Success", "Submitted!");
-    navigation.navigate("UploadStationImage");
+    navigation.navigate("PendingApprovalScreen");
   };
   
 
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     width: "100%",
-    backgroundColor: "#101942",
+    backgroundColor:Colors.primaryColor,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",

@@ -14,20 +14,19 @@ import {
   Sizes,
   commonStyles,
   screenWidth,
-} from "../../../constants/styles";
-import MyStatusBar from "../../../components/myStatusBar";
+} from "../../../../constants/styles";
+import MyStatusBar from "../../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { BottomSheet } from "@rneui/themed";
-import { useSelector, useDispatch } from "react-redux";
-import { selectUser } from "../../auth/services/selector";
-import { logoutUser } from "../../../redux/store/userSlice";
+// import { useSelector, useDispatch } from "react-redux";
+// import { selectUser } from "../../auth/services/selector";
+// import { logoutUser } from "../../../redux/store/userSlice";
 
 // import { useSelector, useDispatch } from "react-redux";
-const ProfileScreen = ({ navigation }) => {
-  const user = useSelector(selectUser);
+const VendorProfile = ({ navigation }) => {
+  // const user = useSelector(selectUser);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
-  const dispatch = useDispatch();
- 
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -94,11 +93,10 @@ const ProfileScreen = ({ navigation }) => {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => {
-                dispatch(logoutUser());  
-                console.log("User logged out successfully in profileScreen and navigting to Signin");
-                setshowLogoutSheet(false);
-      
-            }}
+                // dispatch(logoutUser());
+                // console.log("User logged out successfully in profileScreen and navigting to Signin");
+                // setshowLogoutSheet(false);
+              }}
               style={{
                 ...styles.logoutButtonStyle,
                 ...styles.sheetButtonStyle,
@@ -117,7 +115,7 @@ const ProfileScreen = ({ navigation }) => {
       <View style={styles.profileInfoWithOptionsWrapStyle}>
         <View style={{ alignItems: "center" }}>
           <Image
-            source={require("../../../../assets/images/users/user4.png")}
+            source={require("../../../../../assets/images/users/user4.png")}
             style={styles.userImageStyle}
           />
         </View>
@@ -128,7 +126,7 @@ const ProfileScreen = ({ navigation }) => {
             marginBottom: Sizes.fixPadding,
           }}
         >
-          <Text style={{ ...Fonts.blackColor18SemiBold }}>{user?.name}</Text>
+          <Text style={{ ...Fonts.blackColor18SemiBold }}>Alok Singh</Text>
           <Text style={{ ...Fonts.grayColor16Medium }}>+9145678765</Text>
         </View>
         <View>
@@ -137,16 +135,7 @@ const ProfileScreen = ({ navigation }) => {
         iconName: "person",
         onPress: () => navigation.push("EditProfile"),
       })}
-      {profileOption({
-        option: "My Bookings",
-        iconName: "calendar-today",
-        onPress: () => navigation.navigate("Booking"),
-      })}
-      {profileOption({
-        option: "Notifications",
-        iconName: "notifications",
-        onPress: () => navigation.push("Notification"),
-      })}
+        
       {profileOption({
         option: "Terms & Conditions",
         iconName: "list-alt",
@@ -187,8 +176,8 @@ const ProfileScreen = ({ navigation }) => {
       >
         <View style={{ ...commonStyles.rowAlignCenter, flex: 1 }}>
         <View style={styles.optionIconWrapper}>
-  <MaterialIcons name="logout" size={24} color={COLORS.primaryColor} />
-</View>
+        <MaterialIcons name="logout" size={24} color={Colors.primaryColor} />
+        </View>
           <Text
             numberOfLines={1}
             style={{
@@ -209,43 +198,43 @@ const ProfileScreen = ({ navigation }) => {
     );
   }
 
-   function profileOption({ option, iconName, onPress }) {
-      return (
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={onPress}
-          style={{
-            ...commonStyles.rowSpaceBetween,
-            marginBottom: Sizes.fixPadding * 2.0,
-          }}
-        >
-          <View style={{ ...commonStyles.rowAlignCenter, flex: 1 }}>
-            <View style={styles.optionIconWrapper}>
-              <MaterialIcons
-                name={iconName}
-                size={24}
-                color={Colors.primaryColor}
-              />
-            </View>
-            <Text
-              numberOfLines={1}
-              style={{
-                ...Fonts.blackColor18Medium,
-                marginLeft: Sizes.fixPadding * 1.5,
-                flex: 1,
-              }}
-            >
-              {option}
-            </Text>
+  function profileOption({ option, iconName, onPress }) {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={onPress}
+        style={{
+          ...commonStyles.rowSpaceBetween,
+          marginBottom: Sizes.fixPadding * 2.0,
+        }}
+      >
+        <View style={{ ...commonStyles.rowAlignCenter, flex: 1 }}>
+          <View style={styles.optionIconWrapper}>
+            <MaterialIcons
+              name={iconName}
+              size={24}
+              color={Colors.primaryColor}
+            />
           </View>
-          <MaterialIcons
-            name="arrow-forward-ios"
-            size={15.0}
-            color={Colors.primaryColor}
-          />
-        </TouchableOpacity>
-      );
-    }
+          <Text
+            numberOfLines={1}
+            style={{
+              ...Fonts.blackColor18Medium,
+              marginLeft: Sizes.fixPadding * 1.5,
+              flex: 1,
+            }}
+          >
+            {option}
+          </Text>
+        </View>
+        <MaterialIcons
+          name="arrow-forward-ios"
+          size={15.0}
+          color={Colors.primaryColor}
+        />
+      </TouchableOpacity>
+    );
+  }
 
   function header() {
     return (
@@ -261,7 +250,7 @@ const ProfileScreen = ({ navigation }) => {
   }
 };
 
-export default ProfileScreen;
+export default VendorProfile;
 
 const styles = StyleSheet.create({
   userImageStyle: {
@@ -284,17 +273,17 @@ const styles = StyleSheet.create({
     width: 46.0,
     height: 46.0,
     borderRadius: 23.0,
-    backgroundColor: "rgba(96, 96, 96, 0.1)",
+    backgroundColor: "rgba(87, 88, 88, 0.1)",
     alignItems: "center",
     justifyContent: "center",
-  },  
+  },
   sheetButtonStyle: {
     flex: 1,
     ...commonStyles.shadow,
     borderTopWidth: Platform.OS == "ios" ? 0 : 1.0,
     paddingHorizontal: Sizes.fixPadding,
     paddingVertical:
-      Platform.OS == 'ios' ? Sizes.fixPadding + 3.0 : Sizes.fixPadding,
+      Platform.OS == "ios" ? Sizes.fixPadding + 3.0 : Sizes.fixPadding,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "EV Care",
-    "slug": "ev-care",
+    "slug": "ev-care-demo",
     "version": "1.0.0",
     "orientation": "portrait",
     "owner": "",
@@ -13,9 +13,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#101942"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "bundleIdentifier": "com.render.evcare",
       "buildNumber": "1.0.0",
@@ -29,10 +27,7 @@
       }
     },
     "android": {
-      "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
-      ],
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
       "package": "com.render.evcare",
       "versionCode": 1,
       "adaptiveIcon": {
@@ -50,7 +45,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "d8e9e121-522f-4937-ba4f-985f540ae83e"
+        "projectId": "2d151f10-407f-4fad-8211-02405adf5246"
       }
     },
     "plugins": [

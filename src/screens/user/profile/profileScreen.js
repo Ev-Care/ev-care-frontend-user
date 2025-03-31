@@ -32,10 +32,11 @@ const ProfileScreen = ({ navigation }) => {
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
       <View style={{ flex: 1 }}>
-        {header()}
+        {/* {header()} */}
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
+            marginTop :50,
             paddingTop: Sizes.fixPadding,
             paddingBottom: Sizes.fixPadding * 2.0,
           }}

@@ -130,7 +130,7 @@ const ProfileScreen = ({ navigation }) => {
           }}
         >
           <Text style={{ ...Fonts.blackColor18SemiBold }}>{user?.name}</Text>
-          <Text style={{ ...Fonts.grayColor16Medium }}>+9145678765</Text>
+          <Text style={{ ...Fonts.grayColor16Medium }}>+91{user?.contactNo}</Text>
         </View>
         <View>
       {profileOption({
@@ -188,7 +188,7 @@ const ProfileScreen = ({ navigation }) => {
       >
         <View style={{ ...commonStyles.rowAlignCenter, flex: 1 }}>
         <View style={styles.optionIconWrapper}>
-  <MaterialIcons name="logout" size={24} color={COLORS.primaryColor} />
+  <MaterialIcons name="logout" size={24} color={Colors.primaryColor} />
 </View>
           <Text
             numberOfLines={1}

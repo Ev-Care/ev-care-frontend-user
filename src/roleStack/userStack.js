@@ -29,7 +29,7 @@ import TermsAndConditionsScreen from "../screens/user/termsAndConditions/termsAn
 import FaqScreen from "../screens/user/faq/faqScreen";
 import PrivacyPolicyScreen from "../screens/user/privacyPolicy/privacyPolicyScreen";
 import HelpScreen from "../screens/user/help/helpScreen";
-
+import FavoriteScreen from "../screens/user/favorite/favoriteScreen";
 
 const Stack = createStackNavigator();
 
@@ -62,6 +62,7 @@ export function UserStack() {
       <Stack.Screen name="Faq" component={FaqScreen} />
       <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       <Stack.Screen name="Help" component={HelpScreen} />
+      <Stack.Screen name="FavoriteScreen" component={FavoriteScreen} />
     </Stack.Navigator>
   );
 }

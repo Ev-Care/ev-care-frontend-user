@@ -213,7 +213,7 @@ const VendorHome = () => {
   }
   function helpNSupportCard() {
     return (
-      <View style={[styles.featureCard, { backgroundColor: COLORS.white }]}>
+      <TouchableOpacity onPress={() => navigation.navigate("HelpScreen")} style={[styles.featureCard, { backgroundColor: COLORS.white }]}>
         <View style={styles.featureCardHeader}>
           <Text style={[styles.noOfStations, { color: COLORS.black }]}>
             24x7 Support
@@ -237,7 +237,7 @@ const VendorHome = () => {
         <Text style={{ fontSize: 10, color: COLORS.darkGray, marginTop: 5 }}>
          Get 24 x 7 assistance for all your queries with our dedicated support team, ensuring seamless station management.
         </Text>
-      </View>
+      </TouchableOpacity>
     );
   }
 };

@@ -138,11 +138,6 @@ const ProfileScreen = ({ navigation }) => {
         onPress: () => navigation.push("EditProfile"),
       })}
       {profileOption({
-        option: "My Bookings",
-        iconName: "calendar-today",
-        onPress: () => navigation.navigate("Booking"),
-      })}
-      {profileOption({
         option: "Notifications",
         iconName: "notifications",
         onPress: () => navigation.push("Notification"),

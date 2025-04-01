@@ -6,6 +6,8 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
+  Linking,
+  Platform,
 } from "react-native";
 import React from "react";
 import MyStatusBar from "../../../components/myStatusBar";
@@ -108,6 +110,17 @@ export { nearByChargingStationsList, enrouteChargingStationList };
 const HomeScreen = ({ navigation }) => {
  const user = useSelector( selectUser);
 
+ const latitude = 28.6139;  
+ const longitude = 77.2090;
+ 
+
+ const openGoogleMaps = () => {
+  const url = Platform.select({
+    ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
+    android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`
+  });
+  Linking.openURL(url);
+};
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -217,9 +230,7 @@ const HomeScreen = ({ navigation }) => {
             </Text>
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => {
-                navigation.push("Direction");
-              }}
+             onPress={openGoogleMaps}
               style={styles.getDirectionButton}
             >
               <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
@@ -303,9 +314,7 @@ const HomeScreen = ({ navigation }) => {
             </Text>
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => {
-                navigation.push("Direction");
-              }}
+              onPress={openGoogleMaps}
               style={styles.getDirectionButton}
             >
               <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>

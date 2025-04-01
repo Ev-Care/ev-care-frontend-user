@@ -138,7 +138,7 @@ const AddStations = () => {
   );
   function locationDetail() {
     const [networkType, setNetworkType] = useState(''); 
-    const networkTypes = ['self']; 
+    const networkTypes = ['Type-1','Type-2','Type-3','Self']; 
   
     return (
       <TouchableOpacity
@@ -174,7 +174,7 @@ const AddStations = () => {
             onValueChange={(itemValue) => setNetworkType(itemValue)}
             style={styles.picker}
           >
-            <Picker.Item label="Select Network Type" value="" />
+            <Picker.Item  label="Select Network Type" value="" />
             {networkTypes.map((type, index) => (
               <Picker.Item key={index} label={type} value={type} />
             ))}
@@ -544,6 +544,7 @@ const styles = StyleSheet.create({
     borderColor :PRIMARY_COLOR,
     backgroundColor: '#f0f0f0',
     borderRadius: 8,
+    fontWeight: 'bold',
   },
   section: {
     marginBottom: 24,
@@ -553,6 +554,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: PRIMARY_COLOR,
     marginBottom: 12,
+  },
+  networkType:{
+    fontWeight: 'bold',
   },
   optional: {
     fontSize: 12,

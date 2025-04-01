@@ -58,7 +58,7 @@ const VerificationScreen = ({ navigation, route }) => {
             await AsyncStorage.setItem("user", JSON.stringify(user));
             await AsyncStorage.setItem("accessToken", token);
         
-            Alert.alert("Sucess", "Otp verified.");
+            // Alert.alert("Sucess", "Otp verified.");
             return;
           } catch (error) {
             console.error("Error saving user data:", error);

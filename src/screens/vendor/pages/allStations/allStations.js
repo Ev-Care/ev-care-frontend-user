@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   scrollContainer: {
-    padding: 20,
+    padding: 10,
   },
   appBar: {
     flexDirection: "row",

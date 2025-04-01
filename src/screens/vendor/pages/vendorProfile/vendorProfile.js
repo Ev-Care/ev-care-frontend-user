@@ -129,7 +129,7 @@ const VendorProfile = () => {
           }}
         >
           <Text style={{ ...Fonts.blackColor18SemiBold }}>{user?.name}</Text>
-          <Text style={{ ...Fonts.grayColor16Medium }}>+91{user?.contactNo}</Text>
+          <Text style={{ ...Fonts.grayColor16Medium }}>+91{user?.mobile_number}</Text>
         </View>
         <View>
       {profileOption({

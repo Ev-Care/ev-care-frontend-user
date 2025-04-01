@@ -13,7 +13,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#101942"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "bundleIdentifier": "com.render.evcare",
       "buildNumber": "1.0.0",
@@ -27,7 +29,12 @@
       }
     },
     "android": {
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
       "package": "com.render.evcare",
       "versionCode": 1,
       "adaptiveIcon": {
@@ -45,7 +52,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "2d151f10-407f-4fad-8211-02405adf5246"
+        "projectId": "47bb854e-4ca3-4aa1-a1ce-9d97a5e404d8"
       }
     },
     "plugins": [

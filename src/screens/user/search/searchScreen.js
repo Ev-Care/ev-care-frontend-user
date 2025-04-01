@@ -77,9 +77,10 @@ const ChargingStationMap = () => {
       return;
     }
    
-   
+   console.log("Fetching current position...");
     Geolocation.getCurrentPosition(
       (position) => {
+        console.log("Current Position:", position);
         const { latitude, longitude } = position.coords;
         console.log("User's location:", latitude, longitude);
         setRegion({
@@ -88,6 +89,8 @@ const ChargingStationMap = () => {
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         });
+
+        console.log("Fetching address from coordinates...");
 
         if (mapRef.current) {
           console.log("Animating camera to:", latitude, longitude);
@@ -112,7 +115,7 @@ const ChargingStationMap = () => {
           longitudeDelta: 0.05,
         });
       },
-      { enableHighAccuracy: false, timeout: 15000, maximumAge: 1000 }
+      { enableHighAccuracy: true, timeout:20000, maximumAge: 1000 }
     );
   };
   

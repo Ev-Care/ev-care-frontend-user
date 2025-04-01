@@ -22,9 +22,9 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { Overlay } from "@rneui/themed";
 import OTPTextView from "react-native-otp-textinput";
 import { useDispatch, useSelector } from "react-redux";
-// import { loginUser } from "../../redux/store/userSlice";
-import { verifyOtpSuccess, verifyOtpFailed } from "./services/slice";
 import { postVerifyOtp } from "./services/crudFunction";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const VerificationScreen = ({ navigation, route }) => {
   const [otpInput, setOtpInput] = useState("");
   const isLoading = useSelector(state => state.auth.loading);
@@ -38,29 +38,37 @@ const VerificationScreen = ({ navigation, route }) => {
   
     try {
       const response = await dispatch(postVerifyOtp({ otp: otpInput, mobileNumber: route.params?.phoneNumber }));
-  
+      
       if (response.payload) {
         const user = {
           user_key: response.payload.data.user.user_key,
           id: response.payload.data.user.id,
           name: response.payload.data.user.owner_legal_name,
-          contactNo: response.payload.data.user.mobile_number,
+          mobile_number: response.payload.data.user.mobile_number,
           role: response.payload.data.user.role,
           status: response.payload.data.user.status,
         };
-  
-        console.log("User status:", user.status);
+        const token = response.payload.data.access_token;
   
         if (user.status === "New") {
           navigation.push("Register", { user });
         } else if (user.status === "Completed") {
-          // Alert.alert("Sucess", "Otp verified.");
-          return;
+          try {
+      
+            await AsyncStorage.setItem("user", JSON.stringify(user));
+            await AsyncStorage.setItem("accessToken", token);
+        
+            Alert.alert("Sucess", "Otp verified.");
+            return;
+          } catch (error) {
+            console.error("Error saving user data:", error);
+          }
         }
       } else {
         Alert.alert("Verification Failed", "Incorrect OTP. Please try again.");
       }
     } catch (error) {
+      console.log("Error verifying OTP:", error);
       Alert.alert("Error", "An error occurred while verifying OTP. Please try again.");
     }
   };

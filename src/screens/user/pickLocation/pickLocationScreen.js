@@ -60,6 +60,7 @@ const PickLocationScreen = ({ navigation, route }) => {
 
     Geolocation.getCurrentPosition(
       (position) => {
+        console.log("Current Position:", position);
         const { latitude, longitude } = position.coords;
         const newRegion = {
           latitude,

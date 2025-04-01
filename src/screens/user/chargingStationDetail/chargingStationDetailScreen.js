@@ -5,6 +5,7 @@ import {
   View,
   Platform,
   FlatList,
+  Linking,
   Image,
   TouchableOpacity,
 } from "react-native";
@@ -112,6 +113,18 @@ const reviewsList = [
 const ChargingStationDetailScreen = ({ navigation }) => {
   const [inFavorite, setinFavorite] = useState(false);
   const [showSnackBar, setshowSnackBar] = useState(false);
+const latitude = 28.6139;  
+ const longitude = 77.2090;
+ 
+
+ const openGoogleMaps = () => {
+  const url = Platform.select({
+    ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
+    android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`
+  });
+  Linking.openURL(url);
+};
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -134,7 +147,7 @@ const ChargingStationDetailScreen = ({ navigation }) => {
   function bookSlotAndGetDirectionButton() {
     return (
       <View style={styles.bottomButtonWrapper}>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => {
             navigation.push("BookSlot");
@@ -148,12 +161,10 @@ const ChargingStationDetailScreen = ({ navigation }) => {
           <Text numberOfLines={1} style={{ ...Fonts.primaryColor18Medium }}>
             Book Slot
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity
           activeOpacity={0.9}
-          onPress={() => {
-            navigation.push("Direction");
-          }}
+          onPress={openGoogleMaps}
           style={{
             ...styles.bookSlotAndGetDirectionButtonStyle,
             backgroundColor: Colors.primaryColor,

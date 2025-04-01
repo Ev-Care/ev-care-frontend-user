@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   appBarTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "500",
     color: "black",
     textAlign: "center",
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     marginRight: 30,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#F4721E",
     marginBottom: 5,
   },
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
-    fontSize: 16,
+    fontSize: 14,
     backgroundColor: "#f5f5f5",
     marginBottom: 15,
   },
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   },
   mapButtonText: {
     color: "#F4721E",
-    fontSize: 16,
+    fontSize: 14,
   },
   submitButton: {
     backgroundColor:Colors.primaryColor,
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   submitText: {
-    fontSize: 16,
+    fontSize: 14,
     color: "white",
     fontWeight: "bold",
   },

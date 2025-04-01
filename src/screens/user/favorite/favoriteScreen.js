@@ -2,6 +2,8 @@ import {
   StyleSheet,
   Text,
   View,
+  Platform,
+  Linking,
   Image,
   TouchableOpacity,
 } from "react-native";
@@ -14,6 +16,7 @@ import {
   commonStyles,
 } from "../../../constants/styles";
 import MyStatusBar from "../../../components/myStatusBar";
+// import { useNavigation } from "@react-navigation/native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { SwipeListView } from "react-native-swipe-list-view";
 import { Snackbar } from "react-native-paper";
@@ -51,10 +54,20 @@ const favoritesList = [
   },
 ];
 
-const FavoriteScreen = () => {
+const FavoriteScreen = ({navigation}) => {
   const [showSnackBar, setShowSnackBar] = useState(false);
   const [listData, setListData] = useState(favoritesList);
+const latitude = 28.6139;  
+ const longitude = 77.2090;
+ 
 
+ const openGoogleMaps = () => {
+  const url = Platform.select({
+    ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
+    android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`
+  });
+  Linking.openURL(url);
+};
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -120,7 +133,7 @@ const FavoriteScreen = () => {
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => {
-            navigation.push("ChargingStationDetail");
+            navigation.navigate("ChargingStationDetail");
           }}
           style={styles.enrouteChargingStationWrapStyle}
         >
@@ -197,9 +210,7 @@ const FavoriteScreen = () => {
               </Text>
               <TouchableOpacity
                 activeOpacity={0.8}
-                onPress={() => {
-                  navigation.push("Direction");
-                }}
+                onPress={openGoogleMaps}
                 style={styles.getDirectionButton}
               >
                 <Text style={{ ...Fonts.whiteColor16Medium }}>

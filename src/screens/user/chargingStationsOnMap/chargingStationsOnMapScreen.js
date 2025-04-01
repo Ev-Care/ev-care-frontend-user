@@ -4,6 +4,8 @@ import {
   View,
   Image,
   Animated,
+  Platform,
+  Linking,
   TouchableOpacity,
 } from "react-native";
 import React, { useState, createRef, useEffect, useRef } from "react";
@@ -181,7 +183,17 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
 
     return { scale };
   });
-
+  const latitude = 28.6139;  
+  const longitude = 77.2090;
+  
+ 
+  const openGoogleMaps = () => {
+   const url = Platform.select({
+     ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
+     android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`
+   });
+   Linking.openURL(url);
+ };
   const onMarkerPress = (mapEventData) => {
     const markerID = mapEventData._targetInst.return.key;
 
@@ -367,9 +379,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                 </Text>
                 <TouchableOpacity
                   activeOpacity={0.8}
-                  onPress={() => {
-                    navigation.push("Direction");
-                  }}
+                  onPress={openGoogleMaps}
                   style={styles.getDirectionButton}
                 >
                   <Text style={{ ...Fonts.whiteColor16Medium }}>

@@ -174,22 +174,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   stationName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 5,
   },
   statusText: {
-    fontSize: 14,
+    fontSize: 12,
     color: COLORS.primary, 
     marginBottom: 5,
   },
   text: {
-    fontSize: 14,
+    fontSize: 12,
     color: COLORS.primary,
   },
   addressText: {
-    fontSize: 14,
+    fontSize: 10,
     color: COLORS.darkGray,
   },
   row: {

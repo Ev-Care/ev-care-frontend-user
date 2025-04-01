@@ -226,8 +226,8 @@ const styles = StyleSheet.create({
   },
   submitButtonStyle: {
     padding: Sizes.fixPadding,
-    borderRadius: Sizes.fixPadding * 5.0,
-    marginHorizontal: Sizes.fixPadding * 4.0,
+    borderRadius:10,
+    marginHorizontal:18,
     marginVertical: Sizes.fixPadding * 2.0,
     backgroundColor: Colors.primaryColor,
     alignItems: "center",

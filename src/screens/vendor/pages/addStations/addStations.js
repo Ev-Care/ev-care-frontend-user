@@ -210,11 +210,11 @@ const AddStations = () => {
 
     </View>
         {/* Next Button */}
-        <View style={styles.nextButtonContainer}>
+        {/* <View style={styles.nextButtonContainer}>
           <TouchableOpacity style={styles.nextButton}>
             <Text style={styles.nextButtonText}>Next</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </>)}
         </TouchableOpacity>
     );
@@ -253,11 +253,11 @@ const AddStations = () => {
         </View>
 
         {/* Next Button */}
-        <View style={styles.nextButtonContainer}>
+        {/* <View style={styles.nextButtonContainer}>
           <TouchableOpacity style={styles.nextButton}>
             <Text style={styles.nextButtonText}>Next</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
         </>)}
         </TouchableOpacity>)
   }
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: PRIMARY_COLOR,
     marginBottom: 16,
@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
     alignItems: "center",  
   },
   picker: {
-    fontSize: 14,
+    fontSize: 12,
     height: 50,
     width: '100%',
     borderColor :PRIMARY_COLOR,
@@ -549,13 +549,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionLabel: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
     color: PRIMARY_COLOR,
     marginBottom: 12,
   },
   optional: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'normal',
     color: '#888',
   },
@@ -594,13 +594,13 @@ const styles = StyleSheet.create({
   },
   amenityLabel: {
     marginTop: 4,
-    fontSize: 12,
+    fontSize: 10,
     color: PRIMARY_COLOR,
     textAlign: 'center',
   },
   connectorLabel: {
     marginTop: 4,
-    fontSize: 12,
+    fontSize: 10,
     color: PRIMARY_COLOR,
     textAlign: 'center',
   },
@@ -623,14 +623,14 @@ const styles = StyleSheet.create({
     borderColor: PRIMARY_COLOR,
   },
   buttonText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#555',
   },
   selectedButtonText: {
     color: 'white',
   },
   photoDescription: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#666',
     marginBottom: 12,
   },
@@ -654,14 +654,14 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
     borderRadius: 8,
     padding: 12,
-    fontSize: 14,
+    fontSize: 12,
   },
   textArea: {
     borderWidth: 1,
     borderColor: '#e0e0e0',
     borderRadius: 8,
     padding: 12,
-    fontSize: 14,
+    fontSize: 12,
     textAlignVertical: 'top',
     minHeight: 100,
   },
@@ -716,7 +716,7 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
     borderRadius: 8,
     padding: 10,
-    fontSize: 14,
+    fontSize: 12,
     width: '48%',
   },
   mapButton: {
@@ -730,7 +730,7 @@ const styles = StyleSheet.create({
   },
   mapButtonText: {
     color: "#F4721E",
-    fontSize: 14,
+    fontSize: 12,
   },
   
 });

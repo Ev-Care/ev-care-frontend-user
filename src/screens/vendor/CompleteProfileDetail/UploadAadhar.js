@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   appBarTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "500",
     color: "black",
     textAlign: "center",
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   },
   uploadText: {
     color: "black",
-    fontSize: 16,
+    fontSize: 14,
   },
   uploadedImage: {
     width: "100%",
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonText: {
-    fontSize: 14,
+    fontSize: 12,
     color: "#F4721E",
   },
   submitButton: {
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   submitText: {
-    fontSize: 16,
+    fontSize: 14,
     color: "white",
     fontWeight: "bold",
   },

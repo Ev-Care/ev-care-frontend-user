@@ -21,7 +21,9 @@ import { BottomSheet } from "@rneui/themed";
 import { logoutUser } from "../../../../redux/store/userSlice";
 import { selectUser } from "../../../auth/services/selector";
 import { useSelector, useDispatch } from "react-redux";
-const VendorProfile = ({ navigation }) => {
+import { useNavigation } from "@react-navigation/native";
+const VendorProfile = () => {
+  const navigation = useNavigation();
   const user = useSelector(selectUser);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
   const dispatch = useDispatch();
@@ -133,28 +135,28 @@ const VendorProfile = ({ navigation }) => {
       {profileOption({
         option: "Edit Profile",
         iconName: "person",
-        onPress: () => navigation.push("EditProfile"),
+        onPress: () =>  navigation.navigate("EditProfileScreen"),
       })}
         
       {profileOption({
         option: "Terms & Conditions",
         iconName: "list-alt",
-        onPress: () => navigation.push("TermsAndConditions"),
+        onPress: () => navigation.push("TermsAndConditionsScreen"),
       })}
       {profileOption({
         option: "FAQ",
         iconName: "help-outline",
-        onPress: () => navigation.push("Faq"),
+        onPress: () => navigation.push("FaqScreen"),
       })}
       {profileOption({
         option: "Privacy Policy",
         iconName: "privacy-tip",
-        onPress: () => navigation.push("PrivacyPolicy"),
+        onPress: () => navigation.push("PrivacyPolicyScreen"),
       })}
       {profileOption({
         option: "Help",
         iconName: "support-agent",
-        onPress: () => navigation.push("Help"),
+        onPress: () => navigation.push("HelpScreen"),
       })}
       {logoutInfo()}
     </View>

@@ -26,6 +26,12 @@ const authSlice = createSlice({
       console.log("User data restored from AsyncStorage:", action.payload.user);
       console.log("Access token restored from AsyncStorage:", action.payload.accessToken);
     },
+    signUpUser: (state, action) => {
+      console.log("singup is called in redux");
+      state.user = extractUser(action.payload);
+      state.loading = false;
+      console.log("User signed up successfully in redux:", action.payload);
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -93,5 +99,5 @@ const extractUser = (data) => ({
   mobile_number: data.mobile_number,
 });
 
-export const { logoutUser, restoreUser } = authSlice.actions;
+export const { logoutUser, restoreUser, signUpUser } = authSlice.actions;
 export default authSlice.reducer;

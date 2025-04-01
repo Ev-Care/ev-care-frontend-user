@@ -16,7 +16,7 @@ import {
   Ionicons,
   FontAwesome5,
 } from "@expo/vector-icons";
-
+import { useNavigation } from "@react-navigation/native";
 // Colors
 const COLORS = {
   primary: "#101942",
@@ -29,6 +29,7 @@ const COLORS = {
 };
 
 const VendorHome = () => {
+    const navigation = useNavigation();
   const [isLive, setIsLive] = useState(false);
   // Get current time to display appropriate greeting
   const getGreeting = () => {
@@ -85,9 +86,7 @@ const VendorHome = () => {
           </View>
 
           <Image
-            source={{
-              uri: "https://img.freepik.com/free-vector/ev-charging-station-with-electric-car-collection_1308-130715.jpg?t=st=1743281545~exp=1743285145~hmac=1659fdbe504f1a758223a37d76d75c4bdce5dd8500dffabfc01d7d370f1f0712&w=826",
-            }}
+            source={require("../../../../../assets/images/vendorWelcome.png")}
             style={styles.welcomeImage}
             resizeMode="contain"
           />
@@ -102,19 +101,19 @@ const VendorHome = () => {
 
         <View style={styles.featuresContainer}>
           {manageStationCard()}
-          {viewBookingsCard()}
-        </View>
-        <View style={styles.featuresContainer}>
-          {bookingHistoryCard()}
           {helpNSupportCard()}
         </View>
+        {/* <View style={styles.featuresContainer}>
+          {bookingHistoryCard()}
+          {viewBookingsCard()}
+        </View> */}
       </ScrollView>
     </SafeAreaView>
   );
 
   function manageStationCard() {
     return (
-      <View style={[styles.featureCard, { backgroundColor: COLORS.primary }]}>
+      <TouchableOpacity  onPress={() => navigation.navigate("AllStations")} style={[styles.featureCard, { backgroundColor: COLORS.primary }]}>
         <View style={styles.featureCardHeader}>
           <Text style={[styles.noOfStations, { color: COLORS.white }]}>
             8 Stations
@@ -150,7 +149,7 @@ const VendorHome = () => {
             thumbColor={COLORS.white}
           />
         </View>
-      </View>
+      </TouchableOpacity>
     );
   }
   function viewBookingsCard() {

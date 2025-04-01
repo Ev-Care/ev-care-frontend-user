@@ -23,7 +23,7 @@ const VendorDetailForm = () => {
 
   const selectOnMap = () => {
     navigation.push("PickLocation", {
-      addressFor: "vendorAddress",
+      addressFor: "stationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
     });
   };

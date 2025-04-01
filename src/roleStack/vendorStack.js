@@ -13,6 +13,8 @@ import VendorBottomTabBar from "../components/vendorComponents/vendorBottomTabBa
 import AddStations from "../screens/vendor/pages/addStations/addStations";
 
 import VendorHome from "../screens/vendor/pages/vendorHome/vendorHome";
+import AllStations from "../screens/vendor/pages/allStations/allStations";
+import StationDetail from "../screens/vendor/pages/stationDetail.js/stationDetail";
 // import VendorProfile from "../screens/vendor/pages/vendorProfile/vendorProfile";
 
 const Stack = createStackNavigator();
@@ -37,7 +39,8 @@ export function VendorStack() {
       ) : ( <>
         <Stack.Screen name="VendorBottomTabBar" component={VendorBottomTabBar} />
          {/* <Stack.Screen name="AddStations" component={AddStations} /> */}
-        
+        <Stack.Screen name="AllStations" component={AllStations} />
+        <Stack.Screen name="StationDetail" component={StationDetail} />
          </>
       )}
     </Stack.Navigator>

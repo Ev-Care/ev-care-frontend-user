@@ -22,7 +22,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectUser } from "../../auth/services/selector";
 import { logoutUser } from "../../../redux/store/userSlice";
 
-// import { useSelector, useDispatch } from "react-redux";
 const ProfileScreen = ({ navigation }) => {
   const user = useSelector(selectUser);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
@@ -31,7 +30,7 @@ const ProfileScreen = ({ navigation }) => {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
-      <View style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 }}>
         {/* {header()} */}
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -43,7 +42,7 @@ const ProfileScreen = ({ navigation }) => {
         >
           {profileInfoWithOptions()}
         </ScrollView>
-      </View>
+      </ScrollView>
       {logoutSheet()}
     </View>
   );
@@ -188,8 +187,8 @@ const ProfileScreen = ({ navigation }) => {
       >
         <View style={{ ...commonStyles.rowAlignCenter, flex: 1 }}>
         <View style={styles.optionIconWrapper}>
-  <MaterialIcons name="logout" size={24} color={Colors.primaryColor} />
-</View>
+        <MaterialIcons name="logout" size={24} color={Colors.redColor} />
+        </View>
           <Text
             numberOfLines={1}
             style={{

@@ -18,19 +18,17 @@ import {
 import MyStatusBar from "../../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { BottomSheet } from "@rneui/themed";
-// import { useSelector, useDispatch } from "react-redux";
-// import { selectUser } from "../../auth/services/selector";
-// import { logoutUser } from "../../../redux/store/userSlice";
-
-// import { useSelector, useDispatch } from "react-redux";
+import { logoutUser } from "../../../../redux/store/userSlice";
+import { selectUser } from "../../../auth/services/selector";
+import { useSelector, useDispatch } from "react-redux";
 const VendorProfile = ({ navigation }) => {
-  // const user = useSelector(selectUser);
+  const user = useSelector(selectUser);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
-
+  const dispatch = useDispatch();
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
-      <View style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 }}>
         {/* {header()} */}
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -42,7 +40,7 @@ const VendorProfile = ({ navigation }) => {
         >
           {profileInfoWithOptions()}
         </ScrollView>
-      </View>
+      </ScrollView>
       {logoutSheet()}
     </View>
   );
@@ -93,11 +91,12 @@ const VendorProfile = ({ navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => {
-                // dispatch(logoutUser());
-                // console.log("User logged out successfully in profileScreen and navigting to Signin");
-                // setshowLogoutSheet(false);
-              }}
+               onPress={() => {
+                             dispatch(logoutUser());  
+                             console.log("User logged out successfully in profileScreen and navigting to Signin");
+                             setshowLogoutSheet(false);
+                   
+                         }}
               style={{
                 ...styles.logoutButtonStyle,
                 ...styles.sheetButtonStyle,
@@ -127,8 +126,8 @@ const VendorProfile = ({ navigation }) => {
             marginBottom: Sizes.fixPadding,
           }}
         >
-          <Text style={{ ...Fonts.blackColor18SemiBold }}>Alok Singh</Text>
-          <Text style={{ ...Fonts.grayColor16Medium }}>+9145678765</Text>
+          <Text style={{ ...Fonts.blackColor18SemiBold }}>{user?.name}</Text>
+          <Text style={{ ...Fonts.grayColor16Medium }}>+91{user?.contactNo}</Text>
         </View>
         <View>
       {profileOption({
@@ -177,7 +176,7 @@ const VendorProfile = ({ navigation }) => {
       >
         <View style={{ ...commonStyles.rowAlignCenter, flex: 1 }}>
         <View style={styles.optionIconWrapper}>
-        <MaterialIcons name="logout" size={24} color={Colors.primaryColor} />
+        <MaterialIcons name="logout" size={24} color={Colors.redColor} />
         </View>
           <Text
             numberOfLines={1}

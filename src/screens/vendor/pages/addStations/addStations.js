@@ -32,9 +32,13 @@ const AddStations = () => {
   const [accessType , setAccessType] = useState(null);
   const [networkType, setNetworkType] = useState(''); 
   const [chargerType , setchargerType] = useState(null);
-  const [powerRating, setPowerRating] = useState ("");
+  const [powerRating, setPowerRating] = useState (0);
+  const [chargerForms, setChargerForms] = useState([{}]);
+
+  const[selectedForm , setSelectedForm]=useState(null);
   const [selectedConnectors , setSelectedConnectors] = useState ([]);
   const networkTypes = ['Type 1', 'Type 2', 'Type 3', 'Type 4', 'Type 5']; 
+  const addChargerForm = () => setChargerForms(prevForms => [...prevForms, {}]);
   const navigation = useNavigation();
   const amenities = [
     { id: 'restroom', icon: 'toilet', label: 'Restroom' },
@@ -97,11 +101,19 @@ const AddStations = () => {
   };
   const selectOnMap = () => {
     navigation.push("PickLocation", {
-      addressFor: "vendorAddress",
+      addressFor: "stationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
     });
   };
   
+  const handleVisibility = (form) => {
+    if (selectedForm !== form) {
+      setSelectedForm(form);
+    }
+  };
+  const removeChargerForm = (index) => {
+    setChargerForms(chargerForms.filter((_, i) => i !== index));
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -115,12 +127,9 @@ const AddStations = () => {
 
       {locationDetail()}
       {additionalDetail ()}
-      {chargerDetail()}
+      {chargerForms.map((_, index) => ( chargerDetail(index)))}
       {/* Bottom Buttons */}
-      <View style={styles.bottomButtons}>
-        <TouchableOpacity style={styles.addNewButton}>
-          <Text style={styles.addNewButtonText}>Add New</Text>
-        </TouchableOpacity>
+      <View style={styles.bottomButtons}>     
         <TouchableOpacity style={styles.previewButton}>
           <Text style={styles.previewButtonText}>Preview</Text>
         </TouchableOpacity>
@@ -132,10 +141,16 @@ const AddStations = () => {
     const networkTypes = ['self']; 
   
     return (
-      <View style={styles.card}>
+      <TouchableOpacity
+      style={styles.card}
+      onPress={() =>handleVisibility("locationdetail")}
+    >
         <Text style={styles.sectionTitle}>Location Details</Text>
-    {/* Select Coordinate and Address on Map */}
-    <TouchableOpacity style={styles.mapButton} onPress={selectOnMap}>
+     
+
+      {selectedForm==="locationdetail"&&(<>
+       {/* Select Coordinate and Address on Map */}
+        <TouchableOpacity style={styles.mapButton} onPress={selectOnMap}>
           <Text style={styles.mapButtonText}>Select on Map (required)</Text>
         </TouchableOpacity>
   
@@ -200,17 +215,70 @@ const AddStations = () => {
             <Text style={styles.nextButtonText}>Next</Text>
           </TouchableOpacity>
         </View>
-      
-      </View>
+      </>)}
+        </TouchableOpacity>
     );
   }
-  function chargerDetail() {
+ function additionalDetail (){
+    return(
+      <TouchableOpacity
+      style={styles.card}
+      onPress={() =>handleVisibility("additionaldetail")}
+    >
+        <Text style={styles.sectionTitle}>Additional Details</Text>
+        {selectedForm ==="additionaldetail"&&(<>
+        {/* Amenities Section  */}
+         {amenitiesSection()}
+        {/* Open Hours Section */}
+        {openHoursSection()}
+      
+        {/* Upload Photo Section */}
+        {uploadPhotoSection()}
+
+        {/* Landmark Section */}
+        {landmarkSection()}
+        {/* Additional Comments Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>
+            Additional Comments <Text style={styles.optional}>(Optional)</Text>
+          </Text>
+          <TextInput
+            style={styles.textArea}
+            placeholder="Add your thoughts here"
+            multiline
+            numberOfLines={4}
+            value={comments}
+            onChangeText={setComments}
+          />
+        </View>
+
+        {/* Next Button */}
+        <View style={styles.nextButtonContainer}>
+          <TouchableOpacity style={styles.nextButton}>
+            <Text style={styles.nextButtonText}>Next</Text>
+          </TouchableOpacity>
+        </View>
+        </>)}
+        </TouchableOpacity>)
+  }
+  function chargerDetail(index) {
   
     return (
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Charger Details</Text>
-   
+       <TouchableOpacity
+      style={styles.card}
+      onPress={() =>handleVisibility("chargerdetail")}
+       >
+        <View style={styles.chagerTitle}>
+        <Text style={styles.sectionTitle}>Charger Details {index+1}</Text>
+        {index > 0 && (
+        <TouchableOpacity onPress={() => removeChargerForm(index)} style={styles.deleteButton}>
+          <Icon name="close-circle" size={24} color="red" />
+        </TouchableOpacity>
+      )}
+        </View>
         {/* Charger Type  */}
+        {selectedForm==="chargerdetail"&&(
+          <>
         <View style={styles.section}>
       <Text style={styles.sectionLabel}>
          Charger Type 
@@ -279,58 +347,22 @@ const AddStations = () => {
             >
               {connectors.label}
             </Text>
+           
           </TouchableOpacity>
         ))}
       </View>
     </View>
         {/* Next Button */}
-        <View style={styles.nextButtonContainer}>
-          <TouchableOpacity style={styles.nextButton}>
+        {index === chargerForms.length - 1 && (  <View style={styles.nextButtonContainer}>
+          <TouchableOpacity onPress={addChargerForm} style={styles.nextButton}>
             <Text style={styles.nextButtonText}>Add more</Text>
           </TouchableOpacity>
-        </View>
-      
-      </View>
+        </View>)}
+        </>)}
+        </TouchableOpacity>
     );
   }
-  function additionalDetail (){
-    return(
-    <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Additional Details</Text>
-        
-        {/* Amenities Section  */}
-         {amenitiesSection()}
-        {/* Open Hours Section */}
-        {openHoursSection()}
-      
-        {/* Upload Photo Section */}
-        {uploadPhotoSection()}
-
-        {/* Landmark Section */}
-        {landmarkSection()}
-        {/* Additional Comments Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>
-            Additional Comments <Text style={styles.optional}>(Optional)</Text>
-          </Text>
-          <TextInput
-            style={styles.textArea}
-            placeholder="Add your thoughts here"
-            multiline
-            numberOfLines={4}
-            value={comments}
-            onChangeText={setComments}
-          />
-        </View>
-
-        {/* Next Button */}
-        <View style={styles.nextButtonContainer}>
-          <TouchableOpacity style={styles.nextButton}>
-            <Text style={styles.nextButtonText}>Next</Text>
-          </TouchableOpacity>
-        </View>
-      </View>)
-  }
+ 
   
   function amenitiesSection(){
     return( 
@@ -372,7 +404,7 @@ const AddStations = () => {
     return(
       <View style={styles.section}>
       <Text style={styles.sectionLabel}>
-        Open Hours <Text style={styles.optional}>(Optional)</Text>
+        Open Hours 
       </Text>
       <View style={styles.hoursContainer}>
         <TouchableOpacity
@@ -465,7 +497,7 @@ const AddStations = () => {
     </View>)
   }
 };
-
+// export default  AddStations ;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -482,7 +514,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: PRIMARY_COLOR,
   },
-  card: {
+  card:{
     backgroundColor: 'white',
     borderRadius: 12,
     margin: 16,
@@ -499,6 +531,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: PRIMARY_COLOR,
     marginBottom: 16,
+  },
+  chagerTitle: {
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "center",  
   },
   picker: {
     fontSize: 14,
@@ -657,10 +694,13 @@ const styles = StyleSheet.create({
     color: '#ff5722',
   },
   previewButton: {
+    justifyContent:'center',
+    alignItems: 'center',
     backgroundColor: '#ff9e80',
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 8,
+    width: '100%'
   },
   previewButtonText: {
     fontSize: 16,

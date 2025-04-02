@@ -25,8 +25,9 @@ import { useNavigation } from "@react-navigation/native";
 const VendorProfile = () => {
   const navigation = useNavigation();
   const user = useSelector(selectUser);
-  const [showLogoutSheet, setshowLogoutSheet] = useState(false);
   const dispatch = useDispatch();
+  const [showLogoutSheet, setshowLogoutSheet] = useState(false);
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -129,7 +130,7 @@ const VendorProfile = () => {
           }}
         >
           <Text style={{ ...Fonts.blackColor18SemiBold }}>{user?.name}</Text>
-          <Text style={{ ...Fonts.grayColor16Medium }}>+91{user?.contactNo}</Text>
+          <Text style={{ ...Fonts.grayColor16Medium }}>+91{user?.mobile_number}</Text>
         </View>
         <View>
       {profileOption({

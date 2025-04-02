@@ -1,20 +1,30 @@
 import { createSlice } from "@reduxjs/toolkit";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { postSignIn, postSignUp, postVerifyOtp } from "../../screens/auth/services/crudFunction";
-// Initial State
+
 const initialState = {
   user: null,
   loading: false,
   error: null,
+  accessToken: null,
 };
 
-// Auth Slice
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
     logoutUser: (state) => {
       state.user = null;
-      console.log("User logged out successfully in redux");
+      state.accessToken = null;
+      AsyncStorage.removeItem("user");
+      AsyncStorage.removeItem("accessToken");
+      console.log("User logged out successfully");
+    },
+    restoreUser: (state, action) => {
+      state.user = action.payload.user;
+      state.accessToken = action.payload.accessToken;
+      console.log("User data restored from AsyncStorage:", action.payload.user);
+      console.log("Access token restored from AsyncStorage:", action.payload.accessToken);
     },
     signUpUser: (state, action) => {
       console.log("singup is called in redux");
@@ -50,7 +60,8 @@ const authSlice = createSlice({
         // console.log("OTP Verified by user and action.payload is: ", action.payload);
         if (action.payload.data.user.status === "Completed") {
           state.user = extractUser(action.payload.data.user);
-          console.log("User state changed by redux:", state.user);
+          state.accessToken = action.payload.data.access_token;
+        
         }
         // console.log("User status:", state.user.status);
       
@@ -79,15 +90,14 @@ const authSlice = createSlice({
   },
 });
 
-const extractUser = (data) => {
-  return {
-    user_key: data.user_key,
-    email: data.email,
-    role: data.role,
-    status: data.status,
-    name : data.owner_legal_name
-  }
-}
+const extractUser = (data) => ({
+  user_key: data.user_key,
+  email: data.email,
+  role: data.role,
+  status: data.status,
+  name: data.owner_legal_name,
+  mobile_number: data.mobile_number,
+});
 
-export const { logoutUser, signUpUser } = authSlice.actions;
+export const { logoutUser, restoreUser, signUpUser } = authSlice.actions;
 export default authSlice.reducer;

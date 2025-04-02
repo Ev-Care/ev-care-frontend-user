@@ -42,6 +42,18 @@ export const postVerifyOtp = createAsyncThunk(
         const response = await verifyOtpAPI(data);
   
         if (response.status === 200 || response.status === 201) {
+          const user = {
+            user_key: response.data.data.user.user_key,
+            id: response.data.data.user.id,
+            name: response.data.data.user.owner_legal_name,
+            mobile_number: response.data.data.user.mobile_number,
+            role: response.data.data.user.role,
+            status: response.data.data.user.status,
+          };
+          const token = response.data.data.access_token;
+    
+          
+
           return response.data; // Axios automatically parses JSON
         } else {
           throw new Error("OTP verification failed");

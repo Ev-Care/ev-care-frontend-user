@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import React, { useState, createRef, useEffect, useRef } from "react";
 import MyStatusBar from "../../../components/myStatusBar";
+import { Ionicons } from "@expo/vector-icons"; 
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import {
   Colors,
@@ -19,6 +20,7 @@ import {
   Fonts,
 } from "../../../constants/styles";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import * as Location from "expo-location";
 
 const width = screenWidth;
 const cardWidth = width / 1.15;
@@ -27,13 +29,13 @@ const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
 const chargingSpotsList = [
   {
     coordinate: {
-      latitude: 22.6293867,
-      longitude: 88.4354486,
+      latitude: 28.613939, // Delhi
+      longitude: 77.209021,
     },
     id: "1",
     stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
     stationName: "BYD Charging Point",
-    stationAddress: "Near shell petrol station",
+    stationAddress: "Near Connaught Place",
     rating: 4.7,
     totalStations: 8,
     distance: "4.5 km",
@@ -41,13 +43,13 @@ const chargingSpotsList = [
   },
   {
     coordinate: {
-      latitude: 22.6345648,
-      longitude: 88.4377279,
+      latitude: 19.076090, // Mumbai
+      longitude: 72.877426,
     },
     id: "2",
     stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
     stationName: "TATA EStation",
-    stationAddress: "Near orange business hub",
+    stationAddress: "Near Bandra Kurla Complex",
     rating: 3.9,
     totalStations: 15,
     distance: "5.7 km",
@@ -55,13 +57,13 @@ const chargingSpotsList = [
   },
   {
     coordinate: {
-      latitude: 22.6281662,
-      longitude: 88.4410113,
+      latitude: 13.082680, // Chennai
+      longitude: 80.270721,
     },
     id: "3",
     stationImage: require("../../../../assets/images/chargingStations/charging_station3.png"),
     stationName: "HP Charging Station",
-    stationAddress: "Near ananta business park",
+    stationAddress: "Near Marina Beach",
     rating: 4.9,
     totalStations: 6,
     distance: "2.1 km",
@@ -69,13 +71,13 @@ const chargingSpotsList = [
   },
   {
     coordinate: {
-      latitude: 22.6341137,
-      longitude: 88.4497463,
+      latitude: 12.971899, // Bengaluru
+      longitude: 77.595566,
     },
     id: "4",
     stationImage: require("../../../../assets/images/chargingStations/charging_station6.png"),
     stationName: "VIDA Station V1",
-    stationAddress: "Near opera street",
+    stationAddress: "Near MG Road",
     rating: 4.2,
     totalStations: 15,
     distance: "3.5 km",
@@ -83,13 +85,13 @@ const chargingSpotsList = [
   },
   {
     coordinate: {
-      latitude: 22.6181,
-      longitude: 88.456747,
+      latitude: 18.4663366, // pune
+      longitude: 73.8348392,
     },
     id: "5",
     stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
     stationName: "BYD Charging Point",
-    stationAddress: "Near shell petrol station",
+    stationAddress: "Near Park Street",
     rating: 4.7,
     totalStations: 8,
     distance: "4.5 km",
@@ -97,37 +99,26 @@ const chargingSpotsList = [
   },
   {
     coordinate: {
-      latitude: 22.640124,
-      longitude: 88.438968,
+      latitude: 17.385045, // Hyderabad
+      longitude: 78.486671,
     },
     id: "6",
     stationImage: require("../../../../assets/images/chargingStations/charging_station1.png"),
     stationName: "TATA EStation",
-    stationAddress: "Near orange business hub",
+    stationAddress: "Near HITEC City",
     rating: 3.9,
     totalStations: 15,
     distance: "5.7 km",
     isOpen: false,
   },
-  {
-    coordinate: {
-      latitude: 22.616357,
-      longitude: 88.442317,
-    },
-    id: "7",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station7.png"),
-    stationName: "HP Charging Station",
-    stationAddress: "Near ananta business park",
-    rating: 4.9,
-    totalStations: 6,
-    distance: "2.1 km",
-    isOpen: true,
-  },
+  
 ];
 
 const ChargingStationsOnMapScreen = ({ navigation }) => {
   const [markerList] = useState(chargingSpotsList);
-  const [region] = useState({
+  const [currentLocation, setCurrentLocation] = useState(null);
+  const _map = useRef();
+  const [region,setRegion] = useState({
     latitude: 22.6292757,
     longitude: 88.444781,
     latitudeDelta: 0.03,
@@ -137,7 +128,6 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
   let mapAnimation = new Animated.Value(0);
   let mapIndex = 0;
 
-  const _map = createRef();
 
   useEffect(() => {
     mapAnimation.addListener(({ value }) => {
@@ -168,6 +158,59 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
     });
   });
 
+   const getUserLocation = async () => {
+     try {
+       let { status } = await Location.requestForegroundPermissionsAsync();
+       
+       if (status !== "granted") {
+         setErrorMsg("Permission to access location was denied");
+         Alert.alert("Permission Denied", "Using default location (Delhi).");
+         setRegion({
+           latitude: 28.6139,
+           longitude: 77.209,
+           latitudeDelta: 0.05,
+           longitudeDelta: 0.05,
+         });
+         return;
+       }
+   
+       let location = await Location.getCurrentPositionAsync({});
+   
+       const { latitude, longitude } = location.coords;
+       // console.log("location fetched:", latitude, longitude);
+       // ✅ Update state instantly
+       setRegion({
+         latitude,
+         longitude,
+         latitudeDelta: 0.05,
+         longitudeDelta: 0.05,
+       });
+   
+       setCurrentLocation({ latitude, longitude });
+   
+       // ✅ Animate camera IMMEDIATELY without waiting for state update
+       if (_map.current) {
+         console.log("Animating camera to..:", latitude, longitude);
+         _map.current.animateCamera(
+           {
+             center: { latitude, longitude },
+             zoom: 15, // Adjust zoom level as needed
+           },
+           { duration: 500 }
+         );
+       }
+     } catch (error) {
+       console.error("Error requesting location:", error);
+       Alert.alert("Error", "Failed to fetch location. Using default (Delhi).");
+       setRegion({
+         latitude: 28.6139,
+         longitude: 77.209,
+         latitudeDelta: 0.05,
+         longitudeDelta: 0.05,
+       });
+     }
+   };
+ 
   const interpolation = markerList.map((marker, index) => {
     const inputRange = [
       (index - 1) * cardWidth,
@@ -214,7 +257,12 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
         {markersInfo()}
         {backArrow()}
         {chargingSpotsInfo()}
+        {/* Floating Button to Get Current Location */}
+              <TouchableOpacity style={styles.locationButton} onPress={getUserLocation}>
+                <Ionicons name="locate-outline" size={28} color="white" />
+              </TouchableOpacity>
       </View>
+      
     </View>
   );
 
@@ -255,13 +303,33 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
           <Marker
             key={index}
             coordinate={marker.coordinate}
-            // onPress={(e) => onMarkerPress(e)}
-            onPress={() => navigation.push("ChargingStationDetail")}
+            onPress={(e) => onMarkerPress(e)}
+            anchor={{ x: 0.5, y: 0.5 }} 
+            // onPress={() => navigation.push("ChargingStationDetail")}
             pinColor="green" 
-          />
+          >
+            <Image
+                   source={require("../../../../assets/images/stationMarker.png")}
+                   style={{ width: 50, height: 50 }}
+                   resizeMode="contain"
+                 />
+          </Marker>
           
         );
       })}
+      {/* Custom Current Location Marker */}
+                {currentLocation && (
+                 <Marker 
+                 coordinate={currentLocation}
+                 anchor={{ x: 0.5, y: 0.5 }} 
+               >
+                 <Image
+                   source={require("../../../../assets/images/userMarker.png")}
+                   style={{ width: 50, height: 50 }}
+                   resizeMode="contain"
+                 />
+               </Marker>
+                )}
     </MapView>
     );
   }
@@ -459,5 +527,21 @@ const styles = StyleSheet.create({
     left: 20.0,
     alignItems: "center",
     justifyContent: "center",
+  },
+  locationButton: {
+    position: "absolute",
+    bottom: 200,
+    right: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 30,
+    backgroundColor: "#101942", 
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 5,
   },
 });

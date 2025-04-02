@@ -6,7 +6,7 @@ import {
   Alert,
   PermissionsAndroid,
   Platform,
-  
+  Image,
   Text,
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
@@ -16,12 +16,13 @@ import Key from "../../../constants/key";
 import { Colors, Fonts, commonStyles } from "../../../constants/styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation,StackActions } from "@react-navigation/native";
-
+import * as Location from "expo-location";
 
 const PickLocationScreen = ({ navigation, route }) => {
   // const navigation = useNavigation();
   const mapRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
+   const [currentLocation, setCurrentLocation] = useState(null);
   const [address, setAddress] = useState(""); // Store address
   const [region, setRegion] = useState({
     latitude: 28.6139, // Default to Delhi
@@ -29,60 +30,71 @@ const PickLocationScreen = ({ navigation, route }) => {
     latitudeDelta: 0.03,
     longitudeDelta: 0.03,
   });
-
-  // Function to request location permission (Android only)
-  const requestLocationPermission = async () => {
-    if (Platform.OS === "android") {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      } catch (err) {
-        console.error("Permission Error:", err);
-        return false;
+useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (mapRef.current) {
+        getUserLocation();
+      } else {
+        console.log("Map reference is not ready yet");
       }
-    }
-    return true;
-  };
-
-  // Fetch user's location on component mount
-  useEffect(() => {
-    getUserLocation();
+    }, 500); 
+  
+    return () => clearTimeout(timeout); 
   }, []);
-
   const getUserLocation = async () => {
-    const hasPermission = await requestLocationPermission();
-    if (!hasPermission) {
-      Alert.alert("Permission Denied", "Using default location (Delhi).");
-      return;
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        Alert.alert("Permission Denied", "Using default location (Delhi).");
+        setRegion({
+          latitude: 28.6139,
+          longitude: 77.209,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        });
+        return;
+      }
+  
+      let location = await Location.getCurrentPositionAsync({});
+  
+      const { latitude, longitude } = location.coords;
+      // console.log("location fetched:", latitude, longitude);
+      // ✅ Update state instantly
+      setRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
+  
+      setCurrentLocation({ latitude, longitude });
+  
+      // ✅ Animate camera IMMEDIATELY without waiting for state update
+      if (mapRef.current) {
+        console.log("Animating camera to..:", latitude, longitude);
+        mapRef.current.animateCamera(
+          {
+            center: { latitude, longitude },
+            zoom: 15, // Adjust zoom level as needed
+          },
+          { duration: 0 }
+        );
+      }
+    } catch (error) {
+      console.error("Error requesting location:", error);
+      Alert.alert("Error", "Failed to fetch location. Using default (Delhi).");
+      setRegion({
+        latitude: 28.6139,
+        longitude: 77.209,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
     }
-
-    Geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        const newRegion = {
-          latitude,
-          longitude,
-          latitudeDelta: 0.03,
-          longitudeDelta: 0.03,
-        };
-
-        setRegion(newRegion);
-        setSelectedLocation({ latitude, longitude });
-        fetchAddressFromCoordinates(latitude, longitude);
-
-        if (mapRef.current) {
-          mapRef.current.animateCamera({ center: newRegion, zoom: 15 }, { duration: 1000 });
-        }
-      },
-      (error) => {
-        console.error("Geolocation Error:", error);
-        Alert.alert("Error", "Failed to get location. Using default (Delhi).");
-      },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-    );
   };
+  
+  
 
   // Fetch address from coordinates using Google Maps API
   const fetchAddressFromCoordinates = async (latitude, longitude) => {
@@ -127,9 +139,7 @@ const PickLocationScreen = ({ navigation, route }) => {
 
   // Submit function
   const handleSubmit = () => {
-    // console.log("Selected Location:", selectedLocation);
-    // console.log("Address:", address);
-    // console.log("AddressFor:", route.params?.addressFor);
+  
   
     if (!selectedLocation || !address) {
       Alert.alert("No Location Selected", "Please select a location first.");
@@ -181,9 +191,23 @@ const PickLocationScreen = ({ navigation, route }) => {
         style={styles.map}
         region={region}
         onPress={handleMapPress}
-        showsUserLocation={true}
+        showsUserLocation={false}  
+        showsMyLocationButton={false}  
       >
         {selectedLocation && <Marker coordinate={selectedLocation} />}
+         {/* Custom Current Location Marker */}
+          {currentLocation && (
+           <Marker 
+           coordinate={currentLocation}
+           anchor={{ x: 0.5, y: 0.5 }} 
+         >
+           <Image
+             source={require("../../../../assets/images/userMarker.png")}
+             style={{ width: 50, height: 50 }}
+             resizeMode="contain"
+           />
+         </Marker>
+          )}
       </MapView>
 
       {/* Display Selected Address */}

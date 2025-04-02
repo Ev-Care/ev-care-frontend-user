@@ -25,8 +25,9 @@ import { useNavigation } from "@react-navigation/native";
 const VendorProfile = () => {
   const navigation = useNavigation();
   const user = useSelector(selectUser);
-  const [showLogoutSheet, setshowLogoutSheet] = useState(false);
   const dispatch = useDispatch();
+  const [showLogoutSheet, setshowLogoutSheet] = useState(false);
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />

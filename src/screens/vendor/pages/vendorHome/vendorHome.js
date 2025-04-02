@@ -17,6 +17,8 @@ import {
   FontAwesome5,
 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { selectUser } from "../../../auth/services/selector";
+import { useSelector, useDispatch } from "react-redux";
 // Colors
 const COLORS = {
   primary: "#101942",
@@ -31,6 +33,8 @@ const COLORS = {
 const VendorHome = () => {
     const navigation = useNavigation();
   const [isLive, setIsLive] = useState(false);
+    const user = useSelector(selectUser);
+    const dispatch = useDispatch();
   // Get current time to display appropriate greeting
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -58,7 +62,7 @@ const VendorHome = () => {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.greetingContainer}>
-            <Text style={styles.greeting}>Hi Alok Singh !</Text>
+            <Text style={styles.greeting}>Hi {user?.name} !</Text>
             <Text style={styles.subGreeting}>{getGreeting()}</Text>
           </View>
 

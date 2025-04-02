@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, StyleSheet, TextInput, FlatList, TouchableOpacity, Text, Alert, Platform, PermissionsAndroid } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import { View,Image, StyleSheet, TextInput, FlatList, TouchableOpacity, Text, Alert, Platform, PermissionsAndroid } from "react-native";
+import MapView, { Marker, Callout } from "react-native-maps";
 import Geolocation from "react-native-geolocation-service";
 import { Ionicons } from "@expo/vector-icons"; 
 // import {Colors} from " ../../../src/constants/styles";
 import { useNavigation } from "@react-navigation/native";
 import {Linking} from "react-native";
+import * as Location from "expo-location";
 
 const chargingStations = [
   { id: 1, name: "Delhi EV Station", place: "Connaught Place, Delhi", latitude: 28.6353, longitude: 77.2250 },
@@ -27,97 +28,65 @@ const ChargingStationMap = () => {
   const [search, setSearch] = useState("");
   const [filteredStations, setFilteredStations] = useState([]);
   const [permission, setPermission] = useState("");
-
+  const [currentLocation, setCurrentLocation] = useState(null);
   useEffect(() => {
-    console.log("useEffect called - Requesting location permission...");
+    // console.log("useEffect called - Requesting location permission...");
     getUserLocation();
-  }, [permission]);
-  
- 
-  const requestLocationPermission = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-      );
-
-      console.log("Android Permission Result:", granted);
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        setPermission("Location permission granted");
-        return true;
-      } else if (granted === PermissionsAndroid.RESULTS.DENIED) {
-        setPermission("Location permission denied.");
-        Alert.alert("Permission Denied", "App needs location permission to function properly.");
-      } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
-       setPermission("Location permission permanently denied.");
-        Alert.alert(
-          "Permission Denied",
-          "Please enable location permission in settings."
-        );
-      }
-      return false;
-    } catch (err) {
-      console.error("Permission request error:", err);
-      return false;
-    }
-  };
+  }, []);
 
   const getUserLocation = async () => {
-    console.log("getUserLocation called...");
-
-    const hasPermission = await requestLocationPermission();
-    if (!hasPermission) {
-      console.log("Permission denied. Using default location (Delhi).");
-      Alert.alert("Permission Denied", "Using default location (Delhi).");
-      setRegion({
-        latitude: 28.6139,
-        longitude: 77.209,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      });
-      return;
-    }
-   
-   console.log("Fetching current position...");
-    Geolocation.getCurrentPosition(
-      (position) => {
-        console.log("Current Position:", position);
-        const { latitude, longitude } = position.coords;
-        console.log("User's location:", latitude, longitude);
-        setRegion({
-          latitude,
-          longitude,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        });
-
-        console.log("Fetching address from coordinates...");
-
-        if (mapRef.current) {
-          console.log("Animating camera to:", latitude, longitude);
-          setTimeout(() => {
-            mapRef.current.animateCamera(
-              {
-                center: { latitude, longitude },
-                zoom: 15,
-              },
-              { duration: 1000 }
-            );
-          }, 500);
-        }
-      },
-      (error) => {
-        console.error("Error fetching location:", error.code, error.message);
-        Alert.alert("Error", "Failed to fetch location. Using Delhi.");
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        Alert.alert("Permission Denied", "Using default location (Delhi).");
         setRegion({
           latitude: 28.6139,
           longitude: 77.209,
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         });
-      },
-      { enableHighAccuracy: true, timeout:20000, maximumAge: 1000 }
-    );
+        return;
+      }
+  
+      let location = await Location.getCurrentPositionAsync({});
+  
+      const { latitude, longitude } = location.coords;
+  
+      // ✅ Update state instantly
+      setRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
+  
+      setCurrentLocation({ latitude, longitude });
+  
+      // ✅ Animate camera IMMEDIATELY without waiting for state update
+      if (mapRef.current) {
+        console.log("Animating camera to:", latitude, longitude);
+        mapRef.current.animateCamera(
+          {
+            center: { latitude, longitude },
+            zoom: 15, // Adjust zoom level as needed
+          },
+          { duration: 1000 }
+        );
+      }
+    } catch (error) {
+      console.error("Error requesting location:", error);
+      Alert.alert("Error", "Failed to fetch location. Using default (Delhi).");
+      setRegion({
+        latitude: 28.6139,
+        longitude: 77.209,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
+    }
   };
+  
   
 
   const handleSearch = (text) => {
@@ -170,12 +139,15 @@ const ChargingStationMap = () => {
           )}
         />
       )}
+      
       <MapView
   ref={mapRef}
   style={styles.map}
   region={region}
-  showsUserLocation={true}
+  showsUserLocation={false}  // Hides default current location marker
+  showsMyLocationButton={false}  // Hides default location button
 >
+  {/* Charging Stations Markers */}
   {chargingStations.map((station, index) => (
     <Marker
       key={station.id}
@@ -184,16 +156,29 @@ const ChargingStationMap = () => {
       onPress={() => navigation.navigate("ChargingStationDetail")}
     />
   ))}
+
+  {/* Custom Current Location Marker */}
+  {currentLocation && (
+   <Marker 
+   coordinate={currentLocation}
+   anchor={{ x: 0.5, y: 0.5 }} 
+ >
+   <Image
+     source={require("../../../../assets/images/userMarker.png")}
+     style={{ width: 50, height: 50 }}
+     resizeMode="contain"
+   />
+ </Marker>
+  )}
 </MapView>
-
-
+  
       {/* Floating Button to Get Current Location */}
       <TouchableOpacity style={styles.locationButton} onPress={getUserLocation}>
         <Ionicons name="locate-outline" size={28} color="white" />
       </TouchableOpacity>
-
     </View>
   );
+  
 };
 
 const styles = StyleSheet.create({

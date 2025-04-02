@@ -28,10 +28,18 @@ const ChargingStationMap = () => {
   const [search, setSearch] = useState("");
   const [filteredStations, setFilteredStations] = useState([]);
   const [permission, setPermission] = useState("");
+  
   const [currentLocation, setCurrentLocation] = useState(null);
   useEffect(() => {
-    // console.log("useEffect called - Requesting location permission...");
-    getUserLocation();
+    const timeout = setTimeout(() => {
+      if (mapRef.current) {
+        getUserLocation();
+      } else {
+        console.log("Map reference is not ready yet");
+      }
+    }, 500); 
+  
+    return () => clearTimeout(timeout); 
   }, []);
 
   const getUserLocation = async () => {
@@ -72,7 +80,7 @@ const ChargingStationMap = () => {
             center: { latitude, longitude },
             zoom: 15, // Adjust zoom level as needed
           },
-          { duration: 1000 }
+          { duration: 0 }
         );
       }
     } catch (error) {

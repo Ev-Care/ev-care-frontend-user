@@ -4,11 +4,10 @@ import {
   View,
   Image,
   Animated,
-  Platform ,
+  Platform,
   Linking,
   TouchableOpacity,
 } from "react-native";
-
 
 import React, { useState, createRef, useEffect, useRef } from "react";
 import MyStatusBar from "../../../components/myStatusBar";
@@ -31,13 +30,13 @@ const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
 const chargingSpotsList = [
   {
     coordinate: {
-      latitude: 22.6181,
-      longitude: 88.456747,
+      latitude: 28.535517, // Noida, Uttar Pradesh
+      longitude: 77.391029,
     },
     id: "1",
     stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
     stationName: "BYD Charging Point",
-    stationAddress: "Near shell petrol station",
+    stationAddress: "Near Sector 18 Metro Station",
     rating: 4.7,
     totalStations: 8,
     distance: "4.5 km",
@@ -45,13 +44,13 @@ const chargingSpotsList = [
   },
   {
     coordinate: {
-      latitude: 22.6345648,
-      longitude: 88.4377279,
+      latitude: 19.21833, // Navi Mumbai, Maharashtra
+      longitude: 72.978088,
     },
     id: "2",
     stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
     stationName: "TATA EStation",
-    stationAddress: "Near orange business hub",
+    stationAddress: "Near Vashi Railway Station",
     rating: 3.9,
     totalStations: 15,
     distance: "5.7 km",
@@ -59,13 +58,13 @@ const chargingSpotsList = [
   },
   {
     coordinate: {
-      latitude: 22.616357,
-      longitude: 88.442317,
+      latitude: 12.914142, // Mysuru, Karnataka
+      longitude: 74.856033,
     },
     id: "3",
     stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
     stationName: "HP Charging Station",
-    stationAddress: "Near ananta business park",
+    stationAddress: "Near Mysore Palace",
     rating: 4.9,
     totalStations: 6,
     distance: "2.1 km",
@@ -73,21 +72,19 @@ const chargingSpotsList = [
   },
   {
     coordinate: {
-      latitude: 22.6341137,
-      longitude: 88.4497463,
+      latitude: 25.435801, // Agra, Uttar Pradesh
+      longitude: 78.634674,
     },
     id: "4",
     stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
     stationName: "VIDA Station V1",
-    stationAddress: "Near opera street",
+    stationAddress: "Near Taj Mahal West Gate",
     rating: 4.2,
     totalStations: 15,
     distance: "3.5 km",
     isOpen: false,
-  }, 
+  },
 ];
-
-
 
 const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   const fromDefaultLocation = {
@@ -167,27 +164,26 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       }),
     };
   });
-  const latitude = 28.6139;  
-  const longitude = 77.2090;
-  
- 
+  const latitude = 28.6139;
+  const longitude = 77.209;
+
   const openGoogleMaps = () => {
-   const url = Platform.select({
-     ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-     android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`
-   });
-   Linking.openURL(url);
- };
-  const onMarkerPress = (e) => {
-    const markerID = e.nativeEvent.id || 0;
-    let x = markerID * cardWidth + markerID * 20;
-
-    if (Platform.OS === "ios") {
-      x -= SPACING_FOR_CARD_INSET;
-    }
-
-    _scrollView.current.scrollTo({ x, y: 0, animated: true });
+    const url = Platform.select({
+      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
+      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
+    });
+    Linking.openURL(url);
   };
+  const onMarkerPress = (mapEventData) => {
+     const markerID = mapEventData._targetInst.return.key;
+ 
+     let x = markerID * cardWidth + markerID * 20;
+     if (Platform.OS === "ios") {
+       x = x - SPACING_FOR_CARD_INSET;
+     }
+ 
+     _scrollView.current.scrollTo({ x: x, y: 0, animated: true });
+   };
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -222,15 +218,22 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
         onRegionChangeComplete={setRegion} // Allows zoom update
       >
         {markerList.map((marker, index) => {
-          const scaleStyle = { transform: [{ scale: interpolation[index].scale }] };
+          const scaleStyle = {
+            transform: [{ scale: interpolation[index].scale }],
+          };
           return (
-            <Marker 
-            key={index} 
-            coordinate={marker.coordinate} 
-            onPress={onMarkerPress}
-            pinColor="#28692e" 
-          />
-            
+            <Marker
+              key={index}
+              coordinate={marker.coordinate}
+              onPress={onMarkerPress}
+              pinColor="#28692e"
+            >
+              <Image
+                source={require("../../../../assets/images/stationMarker.png")}
+                style={{ width: 50, height: 50 }}
+                resizeMode="contain"
+              />
+            </Marker>
           );
         })}
 
@@ -247,7 +250,6 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       </MapView>
     );
   }
-
 
   function chargingSpotsInfo() {
     return <View style={styles.chargingInfoWrapStyle}>{chargingSpots()}</View>;

@@ -30,9 +30,16 @@ const PickLocationScreen = ({ navigation, route }) => {
     latitudeDelta: 0.03,
     longitudeDelta: 0.03,
   });
- useEffect(() => {
-    // console.log("useEffect called - Requesting location permission...");
-    getUserLocation();
+useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (mapRef.current) {
+        getUserLocation();
+      } else {
+        console.log("Map reference is not ready yet");
+      }
+    }, 500); 
+  
+    return () => clearTimeout(timeout); 
   }, []);
   const getUserLocation = async () => {
     try {
@@ -66,13 +73,13 @@ const PickLocationScreen = ({ navigation, route }) => {
   
       // ✅ Animate camera IMMEDIATELY without waiting for state update
       if (mapRef.current) {
-        console.log("Animating camera to:", latitude, longitude);
+        console.log("Animating camera to..:", latitude, longitude);
         mapRef.current.animateCamera(
           {
             center: { latitude, longitude },
             zoom: 15, // Adjust zoom level as needed
           },
-          { duration: 1000 }
+          { duration: 0 }
         );
       }
     } catch (error) {
@@ -132,9 +139,7 @@ const PickLocationScreen = ({ navigation, route }) => {
 
   // Submit function
   const handleSubmit = () => {
-    // console.log("Selected Location:", selectedLocation);
-    // console.log("Address:", address);
-    // console.log("AddressFor:", route.params?.addressFor);
+  
   
     if (!selectedLocation || !address) {
       Alert.alert("No Location Selected", "Please select a location first.");

@@ -30,6 +30,7 @@ import FaqScreen from "../screens/user/faq/faqScreen";
 import PrivacyPolicyScreen from "../screens/user/privacyPolicy/privacyPolicyScreen";
 import HelpScreen from "../screens/user/help/helpScreen";
 import FavoriteScreen from "../screens/user/favorite/favoriteScreen";
+import userHome from "../screens/user/home/userHome";
 
 const Stack = createStackNavigator();
 
@@ -63,6 +64,7 @@ export function UserStack() {
       <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       <Stack.Screen name="Help" component={HelpScreen} />
       <Stack.Screen name="FavoriteScreen" component={FavoriteScreen} />
+      <Stack.Screen name="userHome" component={userHome} />
     </Stack.Navigator>
   );
 }

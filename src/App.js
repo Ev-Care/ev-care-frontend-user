@@ -34,10 +34,12 @@ function AppNavigator() {
   const user = useSelector( selectUser); // Get user data
 
   useEffect(() => {
-    console.log("User in app.js:", user);
-    if (user && user.role) {  // ✅ Ensure user is not null
-        console.log("User role in app.js:", user.role);
-        setUserType(user.role.toLowerCase());
+
+    // if (user && user.role) { 
+      if (true) { 
+       
+        // setUserType(user.role.toLowerCase());
+        setUserType("user");
     } else {
         setUserType(null);
     }

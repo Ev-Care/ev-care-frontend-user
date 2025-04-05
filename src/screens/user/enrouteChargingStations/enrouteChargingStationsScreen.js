@@ -5,10 +5,12 @@ import {
   Image,
   Animated,
   Platform,
+  ScrollView,
+  Dimensions,
   Linking,
   TouchableOpacity,
 } from "react-native";
-
+import { BottomSheet } from "@rneui/themed";
 import React, { useState, createRef, useEffect, useRef } from "react";
 import MyStatusBar from "../../../components/myStatusBar";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
@@ -35,8 +37,8 @@ const chargingSpotsList = [
     },
     id: "1",
     stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
-    stationName: "BYD Charging Point",
-    stationAddress: "Near Sector 18 Metro Station",
+    stationName: "BYD Charging Point Charging Point Charging Point",
+    stationAddress: "Near Sector 18 Metro Station Near Sector 18 Metro Station Near Sector 18 Metro Station",
     rating: 4.7,
     totalStations: 8,
     distance: "4.5 km",
@@ -87,16 +89,19 @@ const chargingSpotsList = [
 ];
 
 const EnrouteChargingStationsScreen = ({ navigation, route }) => {
+  const SCREEN_HEIGHT = Dimensions.get("window").height;
+  const [expanded, setExpanded] = useState(false);
+  const [showBottomSheet, setshowBottomSheet] = useState(true);
+  const [addedStops, setAddedStops] = useState([]);
+
   const fromDefaultLocation = {
     latitude: route.params?.pickupCoordinate?.latitude || 0,
     longitude: route.params?.pickupCoordinate?.longitude || 0,
   };
-
   const toDefaultLocation = {
     latitude: route.params?.destinationCoordinate?.latitude || 0,
     longitude: route.params?.destinationCoordinate?.longitude || 0,
   };
-
   const [markerList] = useState(chargingSpotsList); // Declared already
   const [region, setRegion] = useState({
     latitude: fromDefaultLocation.latitude,
@@ -166,25 +171,46 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   });
   const latitude = 28.6139;
   const longitude = 77.209;
+  const toggleStop = (station) => {
+    const exists = addedStops.find((stop) => stop.id === station.id);
+    if (exists) {
+      setAddedStops((prev) => prev.filter((stop) => stop.id !== station.id));
+    } else {
+      setAddedStops((prev) => [...prev, station]);
+    }
+  };
+  const removeStop = (id) => {
+    setAddedStops((prevStops) => prevStops.filter((stop) => stop.id !== id));
+  };
+  const openGoogleMapsWithStops = () => {
+    const source = "28.535517,77.391029"; // Replace with your source
+    const destination = "28.459497,77.026634"; // Replace with your destination
 
-  const openGoogleMaps = () => {
-    const url = Platform.select({
-      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
-    });
+    const waypoints = addedStops
+      .map((stop) => `${stop.coordinate.latitude},${stop.coordinate.longitude}`)
+      .join("|");
+
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${source}&destination=${destination}&waypoints=${waypoints}&travelmode=driving`;
+
     Linking.openURL(url);
   };
-  const onMarkerPress = (mapEventData) => {
-     const markerID = mapEventData._targetInst.return.key;
- 
-     let x = markerID * cardWidth + markerID * 20;
-     if (Platform.OS === "ios") {
-       x = x - SPACING_FOR_CARD_INSET;
-     }
- 
-     _scrollView.current.scrollTo({ x: x, y: 0, animated: true });
-   };
 
+  const onMarkerPress = (mapEventData) => {
+    const markerID = mapEventData._targetInst.return.key;
+
+    let x = markerID * cardWidth + markerID * 20;
+    if (Platform.OS === "ios") {
+      x = x - SPACING_FOR_CARD_INSET;
+    }
+
+    _scrollView.current.scrollTo({ x: x, y: 0, animated: true });
+  };
+  function trimName(threshold, str) {
+    if (str.length <= threshold) {
+      return str;
+    }
+    return str.substring(0, threshold) + ".....";
+  }
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -192,10 +218,150 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
         {markersInfo()}
         {backArrow()}
         {chargingSpotsInfo()}
+        {bottomSheet()}
       </View>
     </View>
   );
+  function bottomSheet() {
+    return (
+      addedStops.length > 0 && (
+        <Animated.View
+          style={[
+            styles.bottomSheetContainer,
+            { height: expanded ? SCREEN_HEIGHT * 0.75 : 200 },
+          ]}
+        >
+          {/* Handle */}
+          <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+            <View style={styles.bottomSheetHandle} />
+          </TouchableOpacity>
+          {/* Scrollable content */}
+          <ScrollView style={styles.bottomSheetScroll}>
+            { departureinfo()}
+            {addedStopsInfo()}
+            {arriveInfo()}
+          </ScrollView>
 
+          {/* Bottom Button */}
+          <TouchableOpacity
+            onPress={openGoogleMapsWithStops}
+            style={styles.bottomSheetButton}
+          >
+            <Text style={styles.bottomSheetButtonText}>Start Journey</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      )
+    );
+  }
+  function arriveInfo(){
+    return (
+      <View style={styles.stopsContainer}>
+        <View
+          style={[
+            styles.progress,
+            {
+              height: 88,
+              width: 30,
+              alignItems: "center",
+            },
+          ]}
+        >
+          <MaterialIcons name="location-on" size={20} color="red" />
+        </View>
+        <View style={[styles.stops, { marginTop: 2 }]}>
+          <Text style={styles.stopText}>{trimName(30,"Arrival Place Adresss name abcd") }</Text>
+
+          <Text style={[styles.stopDescription, {}]}>
+          {trimName(50," Arrival Address : city name ,state name , country ,pincode, 411041") }
+          
+          </Text>
+        </View>
+      </View>)
+  }
+  function departureinfo(){
+    return ( <View style={styles.stopsContainer}>
+      <View
+        style={[
+          {
+            height: 90,
+            width: 30,
+            alignItems: "center",
+          },
+        ]}
+      >
+        <MaterialIcons name="circle" size={20} color="#3366ff" />
+
+        <View
+          style={{
+            width: 2,
+            flex: 1,
+
+            borderStyle: "dotted",
+            borderWidth: 1,
+            borderColor: "gray",
+          }}
+        />
+      </View>
+
+      <View style={[styles.stops, {}]}>
+        <Text style={styles.stopText}>{trimName(30,"Departure Place Name") }</Text>
+        <Text style={styles.stopDescription}>
+        {trimName(50," Departure Address : city name ,state name , country ,pincode, 411041") }
+        </Text>
+        <Text style={[styles.stopDescription, { color: "red" }]}>
+          Charge Your EV to avoid any issues on Trip
+        </Text>
+        <View style={[styles.stopBottomline]}></View>
+      </View>
+    </View>);
+  } 
+ function addedStopsInfo(){
+  return ( <>
+     {addedStops.map((stop, index) => (
+    <View key={stop.id} style={styles.stopsContainer}>
+      <View
+        style={{
+          height: 90,
+          width: 30,
+          alignItems: "center",
+        }}
+      >
+        <MaterialIcons name="location-on" size={20} color={"green"} />
+        <View
+          style={{
+            width: 2,
+            flex: 1,
+            borderStyle: "dotted",
+            borderWidth: 1,
+            borderColor: "gray",
+          }}
+        />
+      </View>
+
+      <View style={styles.stops}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Text style={styles.stopText}>{trimName(30,stop.stationName)}</Text>
+          <TouchableOpacity onPress={() => removeStop(stop.id)}>
+            <MaterialIcons name="delete" size={20} color={"red"} />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.stopDescription}>
+          No. of Chargers - {stop.totalStations}
+        </Text>
+        <Text style={styles.stopDescription}>
+          Address: {trimName(45,stop.stationAddress)}
+        </Text>
+        <View style={styles.stopBottomline} />
+      </View>
+    </View>
+  ))}</>);
+ };
   function backArrow() {
     return (
       <TouchableOpacity
@@ -207,54 +373,6 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       </TouchableOpacity>
     );
   }
-
-  function markersInfo() {
-    return (
-      <MapView
-        ref={_map}
-        style={{ flex: 1 }}
-        initialRegion={region}
-        provider={PROVIDER_GOOGLE}
-        onRegionChangeComplete={setRegion} // Allows zoom update
-      >
-        {markerList.map((marker, index) => {
-          const scaleStyle = {
-            transform: [{ scale: interpolation[index].scale }],
-          };
-          return (
-            <Marker
-              key={index}
-              coordinate={marker.coordinate}
-              onPress={onMarkerPress}
-              pinColor="#28692e"
-            >
-              <Image
-                source={require("../../../../assets/images/stationMarker.png")}
-                style={{ width: 50, height: 50 }}
-                resizeMode="contain"
-              />
-            </Marker>
-          );
-        })}
-
-        <MapViewDirections
-          origin={fromDefaultLocation}
-          destination={toDefaultLocation}
-          apikey={Key.apiKey}
-          strokeColor={Colors.primaryColor}
-          strokeWidth={3}
-        />
-
-        <Marker coordinate={fromDefaultLocation} pinColor="blue" />
-        <Marker coordinate={toDefaultLocation} pinColor="red" />
-      </MapView>
-    );
-  }
-
-  function chargingSpotsInfo() {
-    return <View style={styles.chargingInfoWrapStyle}>{chargingSpots()}</View>;
-  }
-
   function chargingSpots() {
     return (
       <Animated.ScrollView
@@ -364,11 +482,20 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                 </Text>
                 <TouchableOpacity
                   activeOpacity={0.8}
-                  onPress={openGoogleMaps}
-                  style={styles.getDirectionButton}
+                  onPress={() => toggleStop(item)}
+                  style={[
+                    styles.getDirectionButton,
+                    {
+                      backgroundColor: addedStops.some((s) => s.id === item.id)
+                        ? Colors.orangeColor
+                        : Colors.primaryColor,
+                    },
+                  ]}
                 >
                   <Text style={{ ...Fonts.whiteColor16Medium }}>
-                    Get Direction
+                    {addedStops.some((s) => s.id === item.id)
+                      ? "- Remove Stop"
+                      : "+ Add Stop"}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -376,6 +503,62 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         ))}
       </Animated.ScrollView>
+    );
+  }
+  function markersInfo() {
+    return (
+      <MapView
+        ref={_map}
+        style={{ flex: 1 }}
+        initialRegion={region}
+        provider={PROVIDER_GOOGLE}
+        onRegionChangeComplete={setRegion} // Allows zoom update
+      >
+        {markerList.map((marker, index) => {
+          const scaleStyle = {
+            transform: [{ scale: interpolation[index].scale }],
+          };
+          return (
+            <Marker
+              key={index}
+              coordinate={marker.coordinate}
+              onPress={onMarkerPress}
+              pinColor="#28692e"
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <Image
+                source={require("../../../../assets/images/stationMarker.png")}
+                style={{ width: 50, height: 50 }}
+                resizeMode="contain"
+              />
+            </Marker>
+          );
+        })}
+
+        <MapViewDirections
+          origin={fromDefaultLocation}
+          destination={toDefaultLocation}
+          apikey={Key.apiKey}
+          strokeColor={Colors.primaryColor}
+          strokeWidth={3}
+        />
+
+        <Marker coordinate={fromDefaultLocation} pinColor="blue" />
+        <Marker coordinate={toDefaultLocation} pinColor="red" />
+      </MapView>
+    );
+  }
+
+  function chargingSpotsInfo() {
+    return (
+      <View
+        style={[
+          styles.chargingInfoWrapStyle,
+          { bottom: addedStops.length > 0 ? 200 : 0 },
+        ]}
+      >
+        {chargingSpots()}
+      </View>
     );
   }
 };
@@ -409,6 +592,63 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: Sizes.fixPadding,
     borderBottomRightRadius: Sizes.fixPadding,
   },
+  // bottom sheet
+  bottomSheetContainer: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    elevation: 20,
+  },
+  bottomSheetHandle: {
+    width: 60,
+    height: 6,
+    backgroundColor: "#ccc",
+    borderRadius: 3,
+    alignSelf: "center",
+    marginBottom: 30,
+  },
+  bottomSheetScroll: {
+    flex: 1,
+  },
+  stopBottomline: {
+    backgroundColor: "#e0ebeb",
+    width: 300,
+    height: 0.9,
+    marginVertical: 20,
+  },
+
+  bottomSheetButton: {
+    backgroundColor: Colors.primaryColor,
+    paddingVertical: 12,
+    marginTop: 10,
+    marginBottom: 20,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  bottomSheetButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  stopsContainer: {
+    flex: 1,
+    flexDirection: "row",
+    // justifyContent: "space-between",
+    gap: 6,
+    paddingHorizontal: Sizes.fixPadding * 2.0,
+  },
+  stopText: {
+    ...Fonts.blackColor18SemiBold,
+  },
+  stopDescription: {
+    marginVertical: 2,
+    ...Fonts.grayColor14Medium,
+  }, //bttom sheet
+
   primaryColorDot: {
     width: 10.0,
     height: 10.0,
@@ -422,7 +662,6 @@ const styles = StyleSheet.create({
     height: 45.0,
   },
   getDirectionButton: {
-    backgroundColor: Colors.primaryColor,
     paddingHorizontal: Sizes.fixPadding + 5.0,
     paddingVertical: Sizes.fixPadding - 2.0,
     borderTopLeftRadius: Sizes.fixPadding,
@@ -430,7 +669,6 @@ const styles = StyleSheet.create({
   },
   chargingInfoWrapStyle: {
     position: "absolute",
-    bottom: 0.0,
     left: 0.0,
     right: 0.0,
   },

@@ -9,7 +9,8 @@ export const Colors = {
   bodyBackColor: "#F2F2F2",
   yellowColor: "#F2C94C",
   extraLightGrayColor: "#e0e0e0",
-  redColor:'#FF0606'
+  redColor:'#FF0606',
+  orangeColor:'#FF8C00'
 };
 
 export const FontFamily = {

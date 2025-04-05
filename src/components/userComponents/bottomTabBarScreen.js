@@ -11,6 +11,10 @@ import BookingScreen from "../../screens/user/booking/bookingScreen";
 import ChargingStationsOnMapScreen from "../../screens/user/chargingStationsOnMap/chargingStationsOnMapScreen";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import userHome from "../../screens/user/home/userHome";
+import EnrouteChargingStationsScreen from "../../screens/user/enrouteChargingStations/enrouteChargingStationsScreen";
+
+
 
 const Tab = createBottomTabNavigator();
 const BottomTabBarScreen = ({ navigation }) => {
@@ -60,7 +64,7 @@ const BottomTabBarScreen = ({ navigation }) => {
       >
         <Tab.Screen
           name="Home"
-          component={HomeScreen}
+          component={userHome}
           options={{
             tabBarIcon: ({ focused }) =>
               focused ? (

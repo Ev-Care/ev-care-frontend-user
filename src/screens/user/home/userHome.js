@@ -260,7 +260,10 @@ const UserHome = ({ navigation }) => {
 
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Explore more</Text>
-          <TouchableOpacity style={styles.exploreCard}>
+          <TouchableOpacity onPress={() => {
+        navigation.push("FavoriteScreen");
+      }}
+           style={styles.exploreCard}>
             <View style={styles.exploreInfo}>
               <View style={styles.exploreCardContainer}>
                 <Text style={styles.exploreCardText}>Favorites</Text>

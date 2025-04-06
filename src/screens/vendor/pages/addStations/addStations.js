@@ -16,9 +16,27 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from "@react-navigation/native";
-const PRIMARY_COLOR = '#101942';
 
+
+
+const PRIMARY_COLOR = '#101942';
+const amenities = [
+  { id: 'restroom', icon: 'toilet', label: 'Restroom' },
+  { id: 'cafe', icon: 'coffee', label: 'Cafe' },
+  { id: 'store', icon: 'cart', label: 'Store' },
+  { id: 'carcare', icon: 'car', label: 'Car Care' },
+  { id: 'lodging', icon: 'bed', label: 'Lodging' },
+];
+const connectors = [
+  { id: 'css2', icon: 'ev-plug-ccs2', type: 'CCS-2' },
+  { id: 'chademo', icon: 'ev-plug-chademo',type: 'CHAdeMO' },
+  { id: 'type2', icon: 'ev-plug-type2', type: 'Type-2' },
+  { id: 'wall', icon: 'ev-plug-type1',type: 'Wall' },
+  { id: 'gbt', icon: 'ev-plug-type2', type: 'GBT' },
+  { id: 'tesla', icon: 'ev-plug-tesla', type:'Tesla' },
+];
 const AddStations = () => {
+  const navigation = useNavigation();
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [openHours, setOpenHours] = useState('24 Hours');
   const [photo, setPhoto] = useState(null);
@@ -34,27 +52,34 @@ const AddStations = () => {
   const [chargerType , setchargerType] = useState(null);
   const [powerRating, setPowerRating] = useState (0);
   const [chargerForms, setChargerForms] = useState([{}]);
-
   const[selectedForm , setSelectedForm]=useState(null);
-  const [selectedConnectors , setSelectedConnectors] = useState ([]);
   const networkTypes = ['Type 1', 'Type 2', 'Type 3', 'Type 4', 'Type 5']; 
   const addChargerForm = () => setChargerForms(prevForms => [...prevForms, {}]);
-  const navigation = useNavigation();
-  const amenities = [
-    { id: 'restroom', icon: 'toilet', label: 'Restroom' },
-    { id: 'cafe', icon: 'coffee', label: 'Cafe' },
-    { id: 'store', icon: 'cart', label: 'Store' },
-    { id: 'carcare', icon: 'car', label: 'Car Care' },
-    { id: 'lodging', icon: 'bed', label: 'Lodging' },
-  ];
-  const connectors = [
-    { id: 'css2', icon: 'ev-plug-ccs2', label: 'CCS-2' },
-    { id: 'chademo', icon: 'ev-plug-chademo', label: 'CHAdeMO' },
-    { id: 'type2', icon: 'ev-plug-type2', label: 'Type-2' },
-    { id: 'wall', icon: 'ev-plug-type1', label: 'Wall' },
-    { id: 'gbt', icon: 'ev-plug-type2', label: 'GBT' },
-    { id: 'tesla', icon: 'ev-plug-tesla', label: 'Tesla' },
-  ];
+  const [connectorsList, setConnectorsList] = useState([]);
+ 
+  const incrementConnector = (id) => {
+    setConnectorsList((prev) => {
+      const exists = prev.find((c) => c.id === id);
+      if (exists) {
+        return prev.map((c) =>
+          c.id === id ? { ...c, count: c.count + 1 } : c
+        );
+      } else {
+        return [...prev, { id, count: 1 }];
+      }
+    });
+  };
+  
+  const decrementConnector = (id) => {
+    setConnectorsList((prev) =>
+      prev
+        .map((c) =>
+          c.id === id && c.count > 0 ? { ...c, count: c.count - 1 } : c
+        )
+        .filter((c) => c.count > 0) 
+    );
+  };
+  
   const handleTimeChange = (event, selectedDate) => {
     setShowPicker(false);
     if (selectedDate) {
@@ -73,13 +98,7 @@ const AddStations = () => {
       setSelectedAmenities([...selectedAmenities, id]);
     }
   };
-  const addConnector = (id) => {
-    if (selectedConnectors.includes(id)) {
-      setSelectedConnectors(selectedConnectors.filter(item => item !== id));
-    } else {
-      setSelectedConnectors([...selectedConnectors, id]);
-    }
-  };
+
   const handleImagePick = async () => {
     // Request permission
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -320,38 +339,7 @@ const AddStations = () => {
       />
          </View>
          {/* connectors  */}
-         <View style={styles.section}>
-      <Text style={styles.sectionLabel}>
-       Connectors <Text style={styles.optional}> 1 </Text>
-      </Text>
-      <View style={styles.connectorsContainer}>
-        {connectors.map((connectors) => (
-          <TouchableOpacity
-            key={connectors.id}
-            style={[
-              styles.connectorsItem,
-              selectedConnectors.includes(connectors.id) && styles.selectedAmenity,
-            ]}
-            onPress={() => addConnector(connectors.id)}
-          >
-            <Icon
-              name={connectors.icon}
-              size={24}
-              color={ selectedConnectors.includes(connectors.id) ? '#fff' : PRIMARY_COLOR}
-            />
-            <Text
-              style={[
-                styles.connectorLabel,
-                selectedConnectors.includes(connectors.id) && styles.selectedAmenityText,
-              ]}
-            >
-              {connectors.label}
-            </Text>
-           
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
+          {connectorsInfo()}
         {/* Next Button */}
         {index === chargerForms.length - 1 && (  <View style={styles.nextButtonContainer}>
           <TouchableOpacity onPress={addChargerForm} style={styles.nextButton}>
@@ -363,6 +351,50 @@ const AddStations = () => {
     );
   }
  
+  function connectorsInfo(){
+    return( <View style={styles.section}>
+      <Text style={styles.sectionLabel}>
+       Connectors 
+      </Text>
+      <View style={styles.connectorsBox}>
+      {connectors.map((connector) => {
+       const selectedConnector = connectorsList.find(c => c.id === connector.id);
+  return (
+    <View
+      key={connector.id}
+      style={[styles.connectorsItem]}
+    >
+      {/* Connector Icon */}
+      <View style={{ alignItems: "center",flexDirection:"row", gap:4}}>
+      <Icon name={connector.icon} size={24} color="#101942" />
+      <Text style={[styles.optional,{}]}>{connector.type}</Text>
+      </View>
+
+      {/* Increment Decrement Counter */}
+      <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
+        <TouchableOpacity
+          onPress={() => decrementConnector(connector.id)}
+          style={[styles.incDecButton, { backgroundColor: "#FF8C00" }]}
+        >
+          <Text style={{ color: "#fff", fontSize: 18 }}>−</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.countText}>{selectedConnector?.count || 0}</Text>
+
+        <TouchableOpacity
+          onPress={() => incrementConnector(connector.id)}
+          style={[styles.incDecButton, { backgroundColor: "#101942" }]}
+        >
+          <Text style={{ color: "#fff", fontSize: 18 }}>+</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+})}
+
+      </View>
+        </View>);
+  }
   
   function amenitiesSection(){
     return( 
@@ -569,10 +601,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   connectorsContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     flexWrap: 'wrap',
     gap :10,
     
+  },
+  incDecButton:{
+    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  countText:{
+    marginHorizontal: 10,
+    fontSize: 14,
+    borderColor: "#e0e0e0",
+    color:"gray",
+    borderRadius: 4,
+    borderWidth: 0.8, 
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    textAlign: "center",
   },
   amenityItem: {
     width: '18%',
@@ -584,12 +632,20 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   connectorsItem: {
-    width: '30%',
-    alignItems: 'center',
-    padding: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center", 
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
+    borderColor: "#e0e0e0",
+    paddingHorizontal: 10,
+    paddingVertical: 10, 
+    marginBottom: 4,
+    borderRadius: 6, 
+  }
+  ,
+  connectorsBox: {
+    width: '100%',
+    // alignItems: 'center',
     marginBottom: 4,
   },
   selectedAmenity: {

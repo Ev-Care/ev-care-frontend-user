@@ -327,12 +327,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   welcomeTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: COLORS.black,
   },
   welcomeSubtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: COLORS.darkGray,
     marginTop: 5,
     lineHeight: 20,

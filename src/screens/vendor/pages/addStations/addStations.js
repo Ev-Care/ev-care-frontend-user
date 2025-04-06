@@ -10,7 +10,7 @@ import {
   Image,
   Platform,
 } from 'react-native';
-
+import MyStatusBar from "../../../../components/myStatusBar";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
@@ -136,6 +136,7 @@ const AddStations = () => {
 
   return (
     <ScrollView style={styles.container}>
+       <MyStatusBar/>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-left" size={24} color={PRIMARY_COLOR} />

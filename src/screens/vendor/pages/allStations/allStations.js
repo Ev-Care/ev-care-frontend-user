@@ -7,8 +7,17 @@ import {
   Image,
   TouchableOpacity,
   Switch,
+
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import MyStatusBar from "../../../../components/myStatusBar";
+import {
+  Colors,
+  Fonts,
+  Sizes,
+  commonStyles,
+  screenWidth,
+} from "../../../../constants/styles";
 import VendorBottomTabBar from "../../../../components/vendorComponents/vendorBottomTabBar";
 import { useNavigation } from "@react-navigation/native";
 const COLORS = {
@@ -75,6 +84,7 @@ const AllStations = () => {
 
   return (
     <View style={styles.container}>
+      <MyStatusBar/>
       {/* App Bar */}
       <View style={styles.appBar}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -127,7 +137,7 @@ const AllStations = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: Colors.bodyBackColor,
   },
   scrollContainer: {
     padding: 10,
@@ -136,28 +146,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: COLORS.white,
+    backgroundColor: Colors.bodyBackColor,
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.gray,
+    borderBottomColor: "#e0e0eb",
   },
   title: {
     fontSize: 18,
-
+    fontWeight: 'bold',
     color: COLORS.primary,
     textAlign: "center",
   },
   card: {
-    backgroundColor: COLORS.white,
+    backgroundColor: Colors.bodyBackColor,
+    ...commonStyles.shadow,
+    borderColor: Colors.extraLightGrayColor,
     borderRadius: 10,
     padding: 15,
     marginBottom: 15,
     flexDirection: "row",
-    alignItems: "center",
-    elevation: 5,
-    shadowColor: COLORS.black,
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2 },
+    alignItems: "center", 
   },
   image: {
     width: 80,

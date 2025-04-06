@@ -16,6 +16,14 @@ import {
   Ionicons,
   FontAwesome5,
 } from "@expo/vector-icons";
+import {
+  Colors,
+  Fonts,
+  Sizes,
+  commonStyles,
+  screenWidth,
+} from "../../../../constants/styles";
+import MyStatusBar from "../../../../components/myStatusBar";
 import { useNavigation } from "@react-navigation/native";
 import { selectUser } from "../../../auth/services/selector";
 import { useSelector, useDispatch } from "react-redux";
@@ -58,6 +66,7 @@ const VendorHome = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+       <MyStatusBar/>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
@@ -249,7 +258,7 @@ const VendorHome = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: Colors.bodyBackColor,
   },
   header: {
     flexDirection: "row",
@@ -277,7 +286,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.gray,
+    backgroundColor: Colors.bodyBackColor,
   },
   greetingContainer: {
     paddingHorizontal: 20,
@@ -293,22 +302,22 @@ const styles = StyleSheet.create({
     color: COLORS.darkGray,
     marginTop: 4,
   },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.gray,
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    marginHorizontal: 20,
-    marginTop: 20,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 10,
-    fontSize: 16,
-    color: COLORS.black,
-  },
+  // searchContainer: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   backgroundColor: COLORS.gray,
+  //   borderRadius: 12,
+  //   paddingHorizontal: 15,
+  //   paddingVertical: 8,
+  //   marginHorizontal: 20,
+  //   marginTop: 20,
+  // },
+  // searchInput: {
+  //   flex: 1,
+  //   marginLeft: 10,
+  //   fontSize: 16,
+  //   color: COLORS.black,
+  // },
   welcomeCard: {
     flexDirection: "row",
     backgroundColor: COLORS.white,

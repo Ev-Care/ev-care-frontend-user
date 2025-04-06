@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, Text, Image, View } from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity,Text, Image, View } from "react-native";
 import React from "react";
 import {
   Colors,
@@ -86,7 +86,9 @@ const AllChargingStationsScreen = ({ navigation }) => {
 
   function allStationsInfo() {
     const renderItem = ({ item }) => (
-      <View style={styles.enrouteChargingStationWrapStyle}>
+      <TouchableOpacity  onPress={() => {
+        navigation.navigate("ChargingStationDetail");
+      }} style={styles.enrouteChargingStationWrapStyle}>
         <Image
           source={item.stationImage}
           style={styles.enrouteChargingStationImage}
@@ -163,7 +165,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
             </View>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
     return (
       <FlatList

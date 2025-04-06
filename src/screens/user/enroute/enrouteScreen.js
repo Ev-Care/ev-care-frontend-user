@@ -243,8 +243,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   seeRouteButtonStyle: {
-    padding: Sizes.fixPadding,
+    padding: Sizes.fixPadding + 4.0,
     marginHorizontal: Sizes.fixPadding * 2.0,
     marginBottom: Sizes.fixPadding * 2.0,
+    borderRadius: Sizes.fixPadding ,
   },
 });

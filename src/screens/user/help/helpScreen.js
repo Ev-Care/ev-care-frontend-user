@@ -52,7 +52,7 @@ const HelpScreen = ({ navigation }) => {
         onPress={() => {
           navigation.pop();
         }}
-        style={{ ...styles.submitButtonStyle }}
+        style={[{ ...styles.submitButtonStyle },{paddingVertical:12 ,marginBottom:50}]}
       >
         <Text style={{ ...Fonts.whiteColor18Medium }}>Submit</Text>
       </TouchableOpacity>
@@ -68,22 +68,26 @@ const HelpScreen = ({ navigation }) => {
             placeholder="Write your message here.."
             value={message}
             onChangeText={(text) => setmessage(text)}
-            style={{
-              ...Fonts.blackColor16Medium,
-              paddingTop: Sizes.fixPadding - 5.0,
-              minHeight: Platform.OS == "ios" ? 120.0 : null,
-            }}
+            style={[
+              {
+                ...Fonts.blackColor16Medium,
+                paddingTop: Sizes.fixPadding,
+                paddingHorizontal: Sizes.fixPadding,
+                minHeight: 160, // Increased height for larger box
+                textAlignVertical: "top",
+              },
+            ]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}
             multiline
-            numberOfLines={5}
-            textAlignVertical="top"
+            numberOfLines={8}
           />
         </View>
       </View>
     );
   }
+  
 
   function mobileNumberInfo() {
     return (

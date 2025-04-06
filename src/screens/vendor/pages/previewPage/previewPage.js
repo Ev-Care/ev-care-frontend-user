@@ -45,32 +45,6 @@ const PreviewPage = ({navigation}) => {
       setActiveTab(index);
     }
   };
-
-  // Sample review data
-  const reviews = [
-    {
-      id: '1',
-      name: 'Andrew Anderson',
-      avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-      rating: 5,
-      comment: 'Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.',
-    },
-    {
-      id: '2',
-      name: 'Peter Jones',
-      avatar: 'https://randomuser.me/api/portraits/men/44.jpg',
-      rating: 3,
-      comment: 'Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.',
-    },
-    {
-      id: '3',
-      name: 'Emily Wood',
-      avatar: 'https://randomuser.me/api/portraits/women/65.jpg',
-      rating: 4,
-      comment: 'Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.',
-    },
-  ];
-
   const renderStars = (rating) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -461,44 +435,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 16,
   },
-  reviewsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
+
   seeAllText: {
     color: COLORS.accent,
     fontWeight: 'bold',
   },
-  reviewItem: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    backgroundColor: COLORS.white,
-    padding: 12,
-    borderRadius: 8,
-  },
-  reviewAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 12,
-  },
-  reviewContent: {
-    flex: 1,
-  },
-  reviewName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-    marginBottom: 4,
-  },
-  reviewText: {
-    fontSize: 12,
-    color: COLORS.gray,
-    marginTop: 8,
-    lineHeight: 20,
-  },
+ 
   bottomButtons: {
     flexDirection: 'row',
     padding: 16,

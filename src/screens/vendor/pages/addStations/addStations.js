@@ -378,7 +378,7 @@ const AddStations = () => {
       <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
         <TouchableOpacity
           onPress={() => decrementConnector(connector.id)}
-          style={[styles.incDecButton, { backgroundColor: "#FF8C00" }]}
+          style={[styles.incDecButton, { backgroundColor: "#FF5722" }]}
         >
           <Text style={{ color: "#fff", fontSize: 14 }}>−</Text>
         </TouchableOpacity>
@@ -753,7 +753,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   addNewButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#ff5722',
   },
@@ -761,13 +761,13 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     alignItems: 'center',
     backgroundColor: "#FF5722",
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 40,
     borderRadius: 8,
     width: '100%'
   },
   previewButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: 'white',
   },

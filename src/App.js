@@ -39,7 +39,7 @@ function AppNavigator() {
       if (true) { 
        
         // setUserType(user.role.toLowerCase());
-        setUserType("vendor");
+        setUserType("user");
     } else {
         setUserType(null);
     }

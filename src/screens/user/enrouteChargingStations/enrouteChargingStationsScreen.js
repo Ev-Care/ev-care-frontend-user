@@ -182,6 +182,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   const removeStop = (id) => {
     setAddedStops((prevStops) => prevStops.filter((stop) => stop.id !== id));
   };
+  
   const openGoogleMapsWithStops = () => {
     const source = "28.535517,77.391029"; // Replace with your source
     const destination = "28.459497,77.026634"; // Replace with your destination

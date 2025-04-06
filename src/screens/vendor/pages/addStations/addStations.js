@@ -344,7 +344,7 @@ const AddStations = () => {
         {/* Next Button */}
         {index === chargerForms.length - 1 && (  <View style={styles.nextButtonContainer}>
           <TouchableOpacity onPress={addChargerForm} style={styles.nextButton}>
-            <Text style={styles.nextButtonText}>Add more</Text>
+            <Text style={styles.nextButtonText}>+ Add more</Text>
           </TouchableOpacity>
         </View>)}
         </>)}
@@ -377,7 +377,7 @@ const AddStations = () => {
           onPress={() => decrementConnector(connector.id)}
           style={[styles.incDecButton, { backgroundColor: "#FF8C00" }]}
         >
-          <Text style={{ color: "#fff", fontSize: 18 }}>−</Text>
+          <Text style={{ color: "#fff", fontSize: 14 }}>−</Text>
         </TouchableOpacity>
 
         <Text style={styles.countText}>{selectedConnector?.count || 0}</Text>
@@ -386,7 +386,7 @@ const AddStations = () => {
           onPress={() => incrementConnector(connector.id)}
           style={[styles.incDecButton, { backgroundColor: "#101942" }]}
         >
-          <Text style={{ color: "#fff", fontSize: 18 }}>+</Text>
+          <Text style={{ color: "#fff", fontSize: 14 }}>+</Text>
         </TouchableOpacity>
       </View>
     </View>

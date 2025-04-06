@@ -13,7 +13,7 @@ import VendorBottomTabBar from "../components/vendorComponents/vendorBottomTabBa
 import AddStations from "../screens/vendor/pages/addStations/addStations";
 import VendorHome from "../screens/vendor/pages/vendorHome/vendorHome";
 import AllStations from "../screens/vendor/pages/allStations/allStations";
-import StationDetail from "../screens/vendor/pages/stationDetail.js/stationDetail";
+import StationManagement from "../screens/vendor/pages/stationManagement/stationManagement";
 import EditProfileScreen from "../screens/user/editProfile/editProfileScreen";
 import TermsAndConditionsScreen from "../screens/user/termsAndConditions/termsAndConditionsScreen";
 import FaqScreen from "../screens/user/faq/faqScreen";
@@ -62,7 +62,7 @@ export function VendorStack() {
         <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
         <Stack.Screen name="HelpScreen" component={HelpScreen} />
         <Stack.Screen name="VendorProfile" component={VendorProfile} />
-        <Stack.Screen name="StationDetail" component={StationDetail} />
+        <Stack.Screen name="StationDetail" component={StationManagement} />
       </>
     )}
   </Stack.Navigator>

@@ -96,7 +96,7 @@ const AllStations = () => {
 
       <ScrollView style={styles.scrollContainer}>
         {stations.map((station) => (
-          <TouchableOpacity onPress={() => navigation.navigate("StationDetail")} key={station.id} style={styles.card}>
+          <TouchableOpacity onPress={() => navigation.navigate("StationManagement")} key={station.id} style={styles.card}>
             <Image source={{ uri: station.image }} style={styles.image} />
             <View style={styles.infoContainer}>
               <View style={styles.headerRow}>

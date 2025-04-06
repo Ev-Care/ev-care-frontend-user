@@ -29,7 +29,7 @@ const COLORS = {
 
 const { width } = Dimensions.get('window');
 
-const PreviewPage = () => {
+const PreviewPage = ({navigation}) => {
   const [activeTab, setActiveTab] = useState(0);
   const scrollViewRef = useRef(null);
 
@@ -87,11 +87,9 @@ const PreviewPage = () => {
     return <View style={{ flexDirection: 'row' }}>{stars}</View>;
   };
 
- 
-
   return (
     <View style={styles.container}>
-      {/* Header with map background */}
+    
       <View style={styles.header}>
         <Image
           source={{ uri:'https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }}
@@ -104,10 +102,10 @@ const PreviewPage = () => {
           <Text style={styles.stationName}>Gurukul apartment near cafe paramour</Text>
           <Text style={styles.stationAddress}>Pune Vadgaon Budruk, Sinhgad College Rd</Text>
           <View style={styles.statusContainer}>
-            <Text style={styles.statusClosed}>Closed</Text>
-            <Text style={styles.statusTime}>• 04:05 - 06:09</Text>
+            <Text style={styles.openHour}>Open Hours</Text>
+            <Text style={styles.statusTime}>• 04:05 AM - 06:09 PM</Text>
             <View style={styles.newBadge}>
-              <Text style={styles.newText}>4.5 ⭐</Text>
+              <Text style={styles.newText}>New</Text>
             </View>
           </View>
         </View>
@@ -129,13 +127,7 @@ const PreviewPage = () => {
           <Text style={[styles.tabText, activeTab === 1 && styles.activeTabText]}>Details</Text>
           {activeTab === 1 && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 2 && styles.activeTabButton]}
-          onPress={() => handleTabPress(2)}
-        >
-          <Text style={[styles.tabText, activeTab === 2 && styles.activeTabText]}>Reviews</Text>
-          {activeTab === 2 && <View style={styles.activeTabIndicator} />}
-        </TouchableOpacity>
+       
       </View>
 
       {/* Swipeable Content */}
@@ -151,15 +143,16 @@ const PreviewPage = () => {
         {chargerTab()}
         {/* Details Tab */} 
         {detailTab()}
-        {/* Reviews Tab */}
-       {reviewsTab()}
+      
       </ScrollView>
 
 
 
       {/* Bottom Buttons */}
       <View style={styles.bottomButtons}>
-        <TouchableOpacity style={styles.editButton}>
+        <TouchableOpacity  onPress={() => {
+            navigation.pop();
+           }} style={styles.editButton}>
           <Text style={styles.editButtonText}>Edit</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.submitButton}>
@@ -264,28 +257,6 @@ const PreviewPage = () => {
       </View>
     </ScrollView>);
   };
-  function reviewsTab() {
-    return (
-      <ScrollView style={styles.tabContent}>
-        <View style={styles.reviewsHeader}>
-          <Text style={styles.sectionTitle}>Reviews</Text>
-        </View>
-        {reviews.map((item) => renderReviewItem({ item }))}
-      </ScrollView>
-    );
-  };
-  
-  function renderReviewItem ({ item }){return(
-    <View style={styles.reviewItem}>
-      <Image source={{ uri: item.avatar }} style={styles.reviewAvatar} />
-      <View style={styles.reviewContent}>
-        <Text style={styles.reviewName}>{item.name}</Text>
-        {renderStars(item.rating)}
-        <Text style={styles.reviewText}>{item.comment}</Text>
-      </View>
-    </View>
-  );};
-  
 };
 
 const styles = StyleSheet.create({
@@ -338,8 +309,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  statusClosed: {
-    color: COLORS.red,
+  openHour: {
+    color: COLORS.primary,
     fontWeight: 'bold',
     fontSize: 12,
   },

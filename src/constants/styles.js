@@ -10,7 +10,8 @@ export const Colors = {
   yellowColor: "#F2C94C",
   extraLightGrayColor: "#e0e0e0",
   redColor:'#FF0606',
-  orangeColor:'#FF8C00'
+  orangeColor:'#FF8C00',
+  darOrangeColor:'#FF5722',
 };
 
 export const FontFamily = {

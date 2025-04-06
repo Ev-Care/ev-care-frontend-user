@@ -20,6 +20,7 @@ import FaqScreen from "../screens/user/faq/faqScreen";
 import PrivacyPolicyScreen from "../screens/user/privacyPolicy/privacyPolicyScreen";
 import HelpScreen from "../screens/user/help/helpScreen";
 import VendorProfile from "../screens/vendor/pages/vendorProfile/vendorProfile";
+import PreviewPage from "../screens/vendor/pages/previewPage/previewPage";
 
 
 // import VendorProfile from "../screens/vendor/pages/vendorProfile/vendorProfile";
@@ -62,7 +63,8 @@ export function VendorStack() {
         <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
         <Stack.Screen name="HelpScreen" component={HelpScreen} />
         <Stack.Screen name="VendorProfile" component={VendorProfile} />
-        <Stack.Screen name="StationDetail" component={StationManagement} />
+        <Stack.Screen name="PreviewPage" component={PreviewPage} />
+        <Stack.Screen name="StationManagement" component={StationManagement} />
       </>
     )}
   </Stack.Navigator>

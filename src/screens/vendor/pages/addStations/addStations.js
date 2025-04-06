@@ -124,6 +124,9 @@ const AddStations = () => {
       setAddress: (newAddress) => setAddress(newAddress),
     });
   };
+  const handlePreview = () => {
+  navigation.push("PreviewPage");
+  };
   
   const handleVisibility = (form) => {
     if (selectedForm !== form) {
@@ -150,7 +153,7 @@ const AddStations = () => {
       {chargerForms.map((_, index) => ( chargerDetail(index)))}
       {/* Bottom Buttons */}
       <View style={styles.bottomButtons}>     
-        <TouchableOpacity style={styles.previewButton}>
+        <TouchableOpacity onPress={handlePreview} style={styles.previewButton}>
           <Text style={styles.previewButtonText}>Preview</Text>
         </TouchableOpacity>
       </View>
@@ -757,7 +760,7 @@ const styles = StyleSheet.create({
   previewButton: {
     justifyContent:'center',
     alignItems: 'center',
-    backgroundColor: '#ff9e80',
+    backgroundColor: "#FF5722",
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 8,
@@ -767,7 +770,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: 'white',
-  },customTimeContainer: {
+  },
+  customTimeContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 10,

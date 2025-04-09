@@ -40,6 +40,7 @@ const RegisterScreen = ({ navigation, route }) => {
     }
 
     setLoading(true);
+    console.log("post signup called");
 
     const userData = {
         email: email,
@@ -48,7 +49,6 @@ const RegisterScreen = ({ navigation, route }) => {
         user_key: user.user_key
     };
 
-    console.log("post signup called");
 
     try {
         const response = await dispatch(postSignUp(userData)).unwrap(); // ✅ Ensure API response is returned

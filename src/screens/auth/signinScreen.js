@@ -77,6 +77,7 @@ const SigninScreen = ({ navigation }) => {
       console.log("API Response:", response);
       // Alert.alert("Success", response.message);
       navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber });
+      console.log("after navigation");
       
     } catch (error) {
       console.log("Error in handleSignIn:", error);

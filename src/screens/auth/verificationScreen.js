@@ -24,12 +24,13 @@ import OTPTextView from "react-native-otp-textinput";
 import { useDispatch, useSelector } from "react-redux";
 import { postVerifyOtp } from "./services/crudFunction";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { selectUser } from "./services/selector";
 
 const VerificationScreen = ({ navigation, route }) => {
   const [otpInput, setOtpInput] = useState("");
   const isLoading = useSelector(state => state.auth.loading);
   const dispatch = useDispatch();
-
+  // const user = useSelector(selectUser);
   const verifyOtp = async () => {
     if (otpInput.length !== 6) {
       Alert.alert("Invalid OTP", "Please enter a 6-digit OTP.");
@@ -38,27 +39,36 @@ const VerificationScreen = ({ navigation, route }) => {
   
     try {
       const response = await dispatch(postVerifyOtp({ otp: otpInput, mobileNumber: route.params?.phoneNumber }));
-      
-      if (response.payload) {
-        const user = {
-          user_key: response.payload.data.user.user_key,
-          id: response.payload.data.user.id,
-          name: response.payload.data.user.owner_legal_name,
-          mobile_number: response.payload.data.user.mobile_number,
-          role: response.payload.data.user.role,
-          status: response.payload.data.user.status,
-        };
-        const token = response.payload.data.access_token;
+       console.log(response);
+      if (response.payload.status === 200) {
+        console.log("OTP verification response:", response.payload);
+        const user = response.payload.data.user;
+       
+        const token =  response.payload.data.access_token;
   
-        if (user.status === "New") {
+      // if (response.payload) {
+      //   console.log("OTP verification response:", response.payload);
+      //   const user = {
+      //     user_key: response.payload.data.user.user_key,
+      //     id: response.payload.data.user.id,
+      //     name: response.payload.data.user.owner_legal_name,
+      //     mobile_number: response.payload.data.user.mobile_number,
+      //     role: response.payload.data.user.role,
+      //     status: response.payload.data.user.status,
+      //   };
+      //   const token = response.payload.data.access_token;
+  
+        if (user && user.status === "New") {
+          console.log("User status:", user.status);
+
           navigation.push("Register", { user });
-        } else if (user.status === "Completed") {
+        } else if ( user && user.status === "Completed") {
           try {
       
             await AsyncStorage.setItem("user", JSON.stringify(user));
-            await AsyncStorage.setItem("accessToken", token);
+            // await AsyncStorage.setItem("accessToken", token);
         
-            // Alert.alert("Sucess", "Otp verified.");
+            Alert.alert("Sucess", "Otp verified.");
             return;
           } catch (error) {
             console.error("Error saving user data:", error);

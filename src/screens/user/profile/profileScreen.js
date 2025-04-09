@@ -129,7 +129,9 @@ const ProfileScreen = ({ navigation }) => {
           }}
         >
           <Text style={{ ...Fonts.blackColor18SemiBold }}>{user?.name}</Text>
-          <Text style={{ ...Fonts.grayColor16Medium }}>+91{user?.mobile_number}</Text>
+          <Text style={{ ...Fonts.grayColor16Medium }}>
+  +91{typeof user?.mobile_number === "string" || typeof user?.mobile_number === "number" ? user?.mobile_number : JSON.stringify(user?.mobile_number)}
+</Text>
         </View>
         <View>
       {profileOption({

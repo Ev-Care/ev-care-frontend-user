@@ -21,9 +21,9 @@ const PendingApprovalScreen = (route) => {
       <TouchableOpacity style={styles.button} onPress={() => setApproved(true)}>
       <Text style={styles.buttonText}>continue</Text>
       </TouchableOpacity> */}
-      <TouchableOpacity 
-  style={[styles.button, { backgroundColor: Colors.primaryColor }]} 
-  onPress={() => navigation.navigate("VendorBottomTabBar")}
+    <TouchableOpacity 
+    style={[styles.button, { backgroundColor: Colors.primaryColor }]} 
+    onPress={() => navigation.navigate("VendorBottomTabBar")}
 >
   <Text style={styles.buttonText}>Continue</Text>
 </TouchableOpacity>

@@ -10,14 +10,14 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
-
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 import {Colors} from "../../../constants/styles";
-const UploadAadhar = () => {
-  const navigation = useNavigation();
+const UploadAadhar = ({route,navigation}) => {
+  // const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
   const [backImage, setBackImage] = useState(null);
+  const { vendorDetail } = route.params || {};
 
   // Function to pick an image
   const pickImage = async (source, type) => {
@@ -62,21 +62,29 @@ const UploadAadhar = () => {
 
   // Handle Submit
   const handleSubmit = () => {
-    // if (!frontImage && !backImage) {
-    //   Alert.alert("Error", "Please upload both front and back images.");
-    //   return;
-    // }
-    // if (!frontImage) {
-    //   Alert.alert("Error", "Please upload the front side image.");
-    //   return;
-    // }
-    // if (!backImage) {
-    //   Alert.alert("Error", "Please upload the back side image.");
-    //   return;
-    // }
-    
-    // Alert.alert("Success", "Submitted!");
-    navigation.navigate("UploadPAN");
+    if (!frontImage && !backImage) {
+      Alert.alert("Error", "Please upload both front and back images.");
+      return;
+    }
+    if (!frontImage) {
+      Alert.alert("Error", "Please upload the front side image.");
+      return;
+    }
+    if (!backImage) {
+      Alert.alert("Error", "Please upload the back side image.");
+      return;
+    }
+    if (!vendorDetail) {
+      console.warn("vendorDetail not passed at aadhar Page!");
+      return null; 
+    }
+    let VendorDetailAtAadharPage = {
+      ...vendorDetail,
+      aadhar_front_pic: frontImage,
+      aadhar_back_pic: backImage,
+    };
+    // console.log("Updated Vendor Detail at page 2:", VendorDetailAtAadharPage);
+    navigation.navigate("UploadPAN",{VendorDetailAtAadharPage});
   };
   
 
@@ -148,12 +156,11 @@ const UploadAadhar = () => {
           >
             <MaterialIcons name="photo-library" size={20} color="#F4721E" />
             <Text style={styles.buttonText}> Upload from Gallery</Text>
-          </TouchableOpacity>
-        </View>
-
+            </TouchableOpacity>
+            </View>
         {/* Submit Button */}
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitText}>Submit</Text>
+          <Text style={styles.submitText}>Next</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

@@ -14,12 +14,34 @@ import {Colors} from "../../../constants/styles";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 
-const UploadTAN = () => {
-  const navigation = useNavigation();
+const UploadTAN = ({route,navigation}) => {
+  // const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
-  const [backImage, setBackImage] = useState(null);
 
+  const { VendorDetailAtPanPage } = route.params || {};
   // Function to pick an image
+
+
+  // Handle Submit
+  const handleSubmit = () => {
+    if (!frontImage) {
+          Alert.alert("Error", "Please upload image first.");
+          return;
+        }
+    if (!VendorDetailAtPanPage) {
+      console.warn("vendorDetail not passed!");
+      return null; 
+    }
+    let VendorDetailAtTanPage = {
+      ...VendorDetailAtPanPage,
+      tan_pic: frontImage,
+    };
+    // Write code here to call API , submit The data 
+    console.log("Updated Vendor Detail at Tan page:", VendorDetailAtTanPage);
+    navigation.navigate("PendingApprovalScreen",{VendorDetailAtTanPage});
+  };
+
+  ''
   const pickImage = async (source, type) => {
     let permissionResult;
 
@@ -60,26 +82,6 @@ const UploadTAN = () => {
     }
   };
 
-  // Handle Submit
-  const handleSubmit = () => {
-    // if (!frontImage && !backImage) {
-    //   Alert.alert("Error", "Please upload both front and back images.");
-    //   return;
-    // }
-    // if (!frontImage) {
-    //   Alert.alert("Error", "Please upload the front side image.");
-    //   return;
-    // }
-    // if (!backImage) {
-    //   Alert.alert("Error", "Please upload the back side image.");
-    //   return;
-    // }
-    
-    // Alert.alert("Success", "Submitted!");
-    navigation.navigate("PendingApprovalScreen");
-  };
-  
-
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
@@ -118,33 +120,6 @@ const UploadTAN = () => {
           <TouchableOpacity
             style={styles.outlinedButton}
             onPress={() => pickImage("gallery", "front")}
-          >
-            <MaterialIcons name="photo-library" size={20} color="#F4721E" />
-            <Text style={styles.buttonText}> Upload from Gallery</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Upload Back Side */}
-        <View style={styles.uploadBox}>
-          {backImage ? (
-            <Image source={{ uri: backImage }} style={styles.uploadedImage} />
-          ) : (
-            <Text style={styles.uploadText}>Upload Back Side</Text>
-          )}
-        </View>
-
-        {/* Buttons for Back Side */}
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={styles.outlinedButton}
-            onPress={() => pickImage("camera", "back")}
-          >
-            <MaterialIcons name="photo-camera" size={20} color="#F4721E" />
-            <Text style={styles.buttonText}> Take Image</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.outlinedButton}
-            onPress={() => pickImage("gallery", "back")}
           >
             <MaterialIcons name="photo-library" size={20} color="#F4721E" />
             <Text style={styles.buttonText}> Upload from Gallery</Text>

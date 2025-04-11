@@ -6,20 +6,43 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Image,
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 import {Colors} from "../../../constants/styles";
+import * as ImagePicker from 'expo-image-picker';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const VendorDetailForm = () => {
   const navigation = useNavigation();
-  const [vendorName, setVendorName] = useState("");
+  const [businessName, setBusinessName] = useState("");
   const [address, setAddress] = useState("");
-  const [publicContact, setPublicContact] = useState("");
   const [aadharNumber, setAadharNumber] = useState("");
   const [panNumber, setPanNumber] = useState("");
   const [tanNumber, setTanNumber] = useState("");
+  const [avatar, setAvatar] = useState(null);
+  
+  let vendorDetail = {};
+  const handleSubmit = () => {
+    if (!businessName || !address || !aadharNumber || !panNumber || !tanNumber) {
+      Alert.alert("Error", "All fields are required!");
+      return;
+    }
+  
+    // Fill the vendor detail object
+    vendorDetail = {
+      businessName,
+      address,
+      aadharNumber,
+      panNumber,
+      tanNumber,
+      avatar,
+    };
+    // console.log(" Vendor Detail at page 1:", vendorDetail);
+    navigation.navigate("UploadAadhar", { vendorDetail });
+  };
 
   const selectOnMap = () => {
     navigation.push("PickLocation", {
@@ -27,13 +50,24 @@ const VendorDetailForm = () => {
       setAddress: (newAddress) => setAddress(newAddress),
     });
   };
+  const handleImagePick = async () => {
+    // Request permission
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Sorry, we need camera roll permissions to make this work!');
+      return;
+    }
 
-  const handleSubmit = () => {
-    // if (!vendorName || !address || !publicContact || !aadharNumber || !panNumber || !tanNumber) {
-    //   Alert.alert("Error", "All fields are required!");
-    //   return;
-    // }
-    navigation.navigate("UploadAadhar");
+    // Launch image picker
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setAvatar(result.assets[0].uri);
+    }
   };
 
   return (
@@ -47,24 +81,40 @@ const VendorDetailForm = () => {
 
       <CompleteDetailProgressBar completedSteps={0} />
 
-      {/* <Text style={styles.label}>Vendor Legal Name</Text> */}
+
+             <View style={styles.section}>
+            <Text style={styles.sectionLabel}>
+              Upload Your Photo <Text style={styles.optional}>(Optional)</Text>
+            </Text>
+            <Text style={styles.photoDescription}>
+              It will Appear At Your Profile Page.
+            </Text>
+            <TouchableOpacity style={styles.photoUpload} onPress={handleImagePick}>
+              {avatar ? (
+                <Image source={{ uri: avatar }} style={styles.previewImage} />
+              ) : (
+                <Icon name="camera-plus-outline" size={40} color="#ccc" />
+              )}
+            </TouchableOpacity>
+      </View>
+
       <TextInput
         style={styles.input}
-        placeholder="Enter vendor legal name"
+        placeholder="Enter Business name"
         placeholderTextColor="gray"
-        value={vendorName}
-        onChangeText={setVendorName}
+        value={businessName}
+        onChangeText={setBusinessName}
       />
 
       {/* <Text style={styles.label}>Public Contact Number</Text> */}
-      <TextInput
+      {/* <TextInput
         style={styles.input}
         placeholder="Enter public contact"
         placeholderTextColor="gray"
         keyboardType="phone-pad"
         value={publicContact}
         onChangeText={setPublicContact}
-      />
+      /> */}
 
       {/* <Text style={styles.label}>Aadhaar Number</Text> */}
       <TextInput
@@ -110,7 +160,7 @@ const VendorDetailForm = () => {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitText}>Submit</Text>
+        <Text style={styles.submitText}>Next</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -185,5 +235,39 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "white",
     fontWeight: "bold",
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color:Colors.primaryColor,
+    marginBottom: 12,
+  },
+  optional: {
+    fontSize: 12,
+    fontWeight: 'normal',
+    color: '#888',
+  },
+  photoDescription: {
+    fontSize: 10,
+    color: '#666',
+    marginBottom: 12,
+  },
+  photoUpload: {
+    width: 120,
+    height: 120,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#ccc',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
   },
 });

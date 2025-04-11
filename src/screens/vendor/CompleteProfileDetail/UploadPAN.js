@@ -14,13 +14,32 @@ import {Colors} from "../../../constants/styles";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 
-const UploadPAN = () => {
-  const navigation = useNavigation();
+const UploadPAN = ({route,navigation}) => {
+  // const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
-  const [backImage, setBackImage] = useState(null);
+  const {VendorDetailAtAadharPage} = route.params || {};
 
-  // Function to pick an image
-  const pickImage = async (source, type) => {
+  // Handle Submit
+  const handleSubmit = () => {
+     if (!frontImage) {
+       Alert.alert("Error", "Please upload image first.");
+       return;
+     }
+  
+     if (!VendorDetailAtAadharPage) {
+       console.warn("vendorDetail not passed at pan page!");
+       return null; 
+     }
+     let VendorDetailAtPanPage = {
+       ...VendorDetailAtAadharPage,
+       pan_pic: frontImage,
+     };
+    //  console.log("Updated Vendor Detail at page 3:", VendorDetailAtPanPage);
+     navigation.navigate("UploadTAN",{VendorDetailAtPanPage});
+   };
+
+   // Function to pick an image
+   const pickImage = async (source, type) => {
     let permissionResult;
 
     if (source === "camera") {
@@ -60,26 +79,6 @@ const UploadPAN = () => {
     }
   };
 
-  // Handle Submit
-  const handleSubmit = () => {
-    // if (!frontImage && !backImage) {
-    //   Alert.alert("Error", "Please upload both front and back images.");
-    //   return;
-    // }
-    // if (!frontImage) {
-    //   Alert.alert("Error", "Please upload the front side image.");
-    //   return;
-    // }
-    // if (!backImage) {
-    //   Alert.alert("Error", "Please upload the back side image.");
-    //   return;
-    // }
-    
-    // Alert.alert("Success", "Submitted!");
-    navigation.navigate("UploadTAN");
-  };
-  
-
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
@@ -116,35 +115,8 @@ const UploadPAN = () => {
             <Text style={styles.buttonText}> Take Image</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.outlinedButton}
-            onPress={() => pickImage("gallery", "front")}
-          >
-            <MaterialIcons name="photo-library" size={20} color="#F4721E" />
-            <Text style={styles.buttonText}> Upload from Gallery</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Upload Back Side */}
-        <View style={styles.uploadBox}>
-          {backImage ? (
-            <Image source={{ uri: backImage }} style={styles.uploadedImage} />
-          ) : (
-            <Text style={styles.uploadText}>Upload Back Side</Text>
-          )}
-        </View>
-
-        {/* Buttons for Back Side */}
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={styles.outlinedButton}
-            onPress={() => pickImage("camera", "back")}
-          >
-            <MaterialIcons name="photo-camera" size={20} color="#F4721E" />
-            <Text style={styles.buttonText}> Take Image</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.outlinedButton}
-            onPress={() => pickImage("gallery", "back")}
+          style={styles.outlinedButton}
+          onPress={() => pickImage("gallery", "front")}
           >
             <MaterialIcons name="photo-library" size={20} color="#F4721E" />
             <Text style={styles.buttonText}> Upload from Gallery</Text>
@@ -153,7 +125,7 @@ const UploadPAN = () => {
 
         {/* Submit Button */}
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitText}>Submit</Text>
+          <Text style={styles.submitText}>Next</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

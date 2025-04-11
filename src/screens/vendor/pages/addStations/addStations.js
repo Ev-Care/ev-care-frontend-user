@@ -21,39 +21,35 @@ import { useNavigation } from "@react-navigation/native";
 
 const PRIMARY_COLOR = '#101942';
 const amenities = [
-  { id: 'restroom', icon: 'toilet', label: 'Restroom' },
-  { id: 'cafe', icon: 'coffee', label: 'Cafe' },
-  { id: 'store', icon: 'cart', label: 'Store' },
-  { id: 'carcare', icon: 'car', label: 'Car Care' },
-  { id: 'lodging', icon: 'bed', label: 'Lodging' },
+  { id: 1, icon: 'toilet', label: 'Restroom' },
+  { id: 2, icon: 'coffee', label: 'Cafe' },
+  { id: 3, icon: 'wifi', label: 'Wifi' },
+  { id: 4, icon: 'cart', label: 'Store' },
+  { id: 5, icon: 'car', label: 'Car Care' },
+  { id: 6, icon: 'bed', label: 'Lodging' },
 ];
 const connectors = [
-  { id: 'css2', icon: 'ev-plug-ccs2', type: 'CCS-2' },
-  { id: 'chademo', icon: 'ev-plug-chademo',type: 'CHAdeMO' },
-  { id: 'type2', icon: 'ev-plug-type2', type: 'Type-2' },
-  { id: 'wall', icon: 'ev-plug-type1',type: 'Wall' },
-  { id: 'gbt', icon: 'ev-plug-type2', type: 'GBT' },
-  { id: 'tesla', icon: 'ev-plug-tesla', type:'Tesla' },
+  { id: 1, icon: 'ev-plug-ccs2', type: 'CCS-2' },
+  { id: 2, icon: 'ev-plug-chademo',type: 'CHAdeMO' },
+  { id: 3, icon: 'ev-plug-type2', type: 'Type-2' },
+  { id: 4, icon: 'ev-plug-type1',type: 'Wall' },
+  { id: 5, icon: 'ev-plug-type2', type: 'GBT' },
 ];
 const AddStations = () => {
   const navigation = useNavigation();
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [openHours, setOpenHours] = useState('24 Hours');
   const [photo, setPhoto] = useState(null);
-  const [landmark, setLandmark] = useState('');
-  const [comments, setComments] = useState('');
   const [address, setAddress] = useState("");
   const [openTime, setOpenTime] = useState('');
   const [closeTime, setCloseTime] = useState('');
   const [showPicker, setShowPicker] = useState(false);
   const [selectedField, setSelectedField] = useState(null);
-  const [accessType , setAccessType] = useState(null);
-  const [networkType, setNetworkType] = useState(''); 
+ const [stationName,setStationName]=useState(null);
   const [chargerType , setchargerType] = useState(null);
   const [powerRating, setPowerRating] = useState (0);
   const [chargerForms, setChargerForms] = useState([{}]);
   const[selectedForm , setSelectedForm]=useState(null);
-  const networkTypes = ['Type 1', 'Type 2', 'Type 3', 'Type 4', 'Type 5']; 
   const addChargerForm = () => setChargerForms(prevForms => [...prevForms, {}]);
   const [connectorsList, setConnectorsList] = useState([]);
  
@@ -168,10 +164,8 @@ const AddStations = () => {
       style={styles.card}
       onPress={() =>handleVisibility("locationdetail")}
     >
-        <Text style={styles.sectionTitle}>Location Details</Text>
-     
-
-      {selectedForm==="locationdetail"&&(<>
+      <Text style={styles.sectionTitle}>Location Details</Text>
+       {selectedForm==="locationdetail"&&(<>
        {/* Select Coordinate and Address on Map */}
         <TouchableOpacity style={styles.mapButton} onPress={selectOnMap}>
           <Text style={styles.mapButtonText}>Select on Map (required)</Text>
@@ -188,56 +182,7 @@ const AddStations = () => {
             onChangeText={setAddress}
           />
         )}
-          
-        {/* Network Type Dropdown */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Network Type</Text>
-          <Picker
-            selectedValue={networkType}
-            onValueChange={(itemValue) => setNetworkType(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item  label="Select Network Type" value="" />
-            {networkTypes.map((type, index) => (
-              <Picker.Item key={index} label={type} value={type} />
-            ))}
-          </Picker>
-        </View>
-        {/* access Type  */}
-        <View style={styles.section}>
-      <Text style={styles.sectionLabel}>
-         Access Type 
-      </Text>
-      <View style={styles.hoursContainer}>
-        <TouchableOpacity
-          style={[styles.hoursButton,accessType === 'public' && styles.selectedButton]}
-          onPress={() => {
-            setAccessType('public');
-          }}
-        >
-          <Text style={[styles.buttonText, accessType === 'public' && styles.selectedButtonText]}>
-           Public
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.hoursButton, accessType === 'captive' && styles.selectedButton]}
-          onPress={() => {
-            setAccessType('captive');
-          }}
-        >
-          <Text style={[styles.buttonText, accessType === 'captive' && styles.selectedButtonText]}>
-            Captive
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-    </View>
-        {/* Next Button */}
-        {/* <View style={styles.nextButtonContainer}>
-          <TouchableOpacity style={styles.nextButton}>
-            <Text style={styles.nextButtonText}>Next</Text>
-          </TouchableOpacity>
-        </View> */}
+      
       </>)}
         </TouchableOpacity>
     );
@@ -250,6 +195,8 @@ const AddStations = () => {
     >
         <Text style={styles.sectionTitle}>Additional Details</Text>
         {selectedForm ==="additionaldetail"&&(<>
+        {/* stationName */}
+        {stationNameSection()}
         {/* Amenities Section  */}
          {amenitiesSection()}
         {/* Open Hours Section */}
@@ -258,29 +205,7 @@ const AddStations = () => {
         {/* Upload Photo Section */}
         {uploadPhotoSection()}
 
-        {/* Landmark Section */}
-        {landmarkSection()}
-        {/* Additional Comments Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>
-            Additional Comments <Text style={styles.optional}>(Optional)</Text>
-          </Text>
-          <TextInput
-            style={styles.textArea}
-            placeholder="Add your thoughts here"
-            multiline
-            numberOfLines={4}
-            value={comments}
-            onChangeText={setComments}
-          />
-        </View>
-
-        {/* Next Button */}
-        {/* <View style={styles.nextButtonContainer}>
-          <TouchableOpacity style={styles.nextButton}>
-            <Text style={styles.nextButtonText}>Next</Text>
-          </TouchableOpacity>
-        </View> */}
+        
         </>)}
         </TouchableOpacity>)
   }
@@ -519,16 +444,17 @@ const AddStations = () => {
       </TouchableOpacity>
     </View>);
   }
-  function landmarkSection(){
+
+  function stationNameSection(){
     return (<View style={styles.section}>
       <Text style={styles.sectionLabel}>
-        Landmark <Text style={styles.optional}>(Optional)</Text>
+        Station Name 
       </Text>
       <TextInput
         style={styles.input}
-        placeholder="Add a landmark"
-        value={landmark}
-        onChangeText={setLandmark}
+        placeholder="Enter Station Name"
+        value={stationName}
+        onChangeText={setStationName}
       />
     </View>)
   }

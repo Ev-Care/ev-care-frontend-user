@@ -31,8 +31,9 @@ const RegisterScreen = ({ navigation, route }) => {
   const [loading, setLoading] = useState(false); // Loader state
   const dispatch = useDispatch();
   
-  const user = route.params?.user;
+  const userKey = route.params?.userKey;
 
+  console.log(" register screen opened");
   const handleSignUp = async () => {
     if (!fullName.trim() || !email.trim()) {
       Alert.alert("Error", "Please fill in all the fields.");
@@ -45,17 +46,19 @@ const RegisterScreen = ({ navigation, route }) => {
         email: email,
         owner_legal_name: fullName,
         role: role,
-        user_key: user.user_key
+        user_key: userKey,
     };
 
     console.log("post signup called");
 
     try {
         const response = await dispatch(postSignUp(userData)).unwrap(); // ✅ Ensure API response is returned
+        // userData.status = "";
+        // dispatch(signUpUser(userData)); // ✅ Use actual API response data
         console.log("post signup success", response);
         Alert.alert("Success", "Registration successful!");
-        userData.status = "Completed";
-        dispatch(signUpUser(userData)); // ✅ Use actual API response data
+        navigation.push("Signin");
+
     } catch (error) {
         console.error("Signup failed:", error);
         Alert.alert("Registration Failed", "Please check your details and try again.");

@@ -24,11 +24,14 @@ import OTPTextView from "react-native-otp-textinput";
 import { useDispatch, useSelector } from "react-redux";
 import { postVerifyOtp } from "./services/crudFunction";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { selectUser, selectToken } from "./services/selector";
 
 const VerificationScreen = ({ navigation, route }) => {
   const [otpInput, setOtpInput] = useState("");
   const isLoading = useSelector(state => state.auth.loading);
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
+  const token = useSelector(selectToken);
 
   const verifyOtp = async () => {
     if (otpInput.length !== 6) {
@@ -40,7 +43,7 @@ const VerificationScreen = ({ navigation, route }) => {
       const response = await dispatch(postVerifyOtp({ otp: otpInput, mobileNumber: route.params?.phoneNumber }));
       
       if (response.payload) {
-        const user = {
+        /* const user = {
           user_key: response.payload.data.user.user_key,
           id: response.payload.data.user.id,
           name: response.payload.data.user.owner_legal_name,
@@ -49,10 +52,13 @@ const VerificationScreen = ({ navigation, route }) => {
           status: response.payload.data.user.status,
         };
         const token = response.payload.data.access_token;
+        */
+       console.log("response in VerificationScreen", response.payload.data.user.status)
   
-        if (user.status === "New") {
-          navigation.push("Register", { user });
-        } else if (user.status === "Completed") {
+        if ( response.payload.data.user.status === "New") {
+          console.log("response in VerificationScreen", response.payload.data.user.status)
+          navigation.push("Register", { userKey:response.payload.data.user.user_key });
+        } else if (user && user.status !== "New" && token) {
           try {
       
             await AsyncStorage.setItem("user", JSON.stringify(user));

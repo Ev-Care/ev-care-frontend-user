@@ -9,7 +9,7 @@ import "react-native-get-random-values";
 import React, { useState, useEffect } from "react";
 import { Provider, useSelector } from "react-redux";
 import  store  from "./redux/store/store";
-import { selectUser } from "./screens/auth/services/selector"; // Ensure correct import
+import { selectUser, selectProfileStatus } from "./screens/auth/services/selector"; // Ensure correct import
 
 // Screens
 import LoadingScreen from "./screens/loadingScreen";
@@ -32,14 +32,15 @@ const Stack = createStackNavigator();
 function AppNavigator() {
   const [userType, setUserType] = useState(null);
   const user = useSelector( selectUser); // Get user data
+  const profileStatus = useSelector(selectProfileStatus);
 
   useEffect(() => {
 
-    // if (user && user.role) { 
-      if (true) { 
-       
-        // setUserType(user.role.toLowerCase());
-        setUserType("user");
+    if (user && user.role) { 
+      // if (true) { 
+       console.log("profile = ",profileStatus);
+        setUserType(user.role.toLowerCase());
+        // setUserType("user");
     } else {
         setUserType(null);
     }

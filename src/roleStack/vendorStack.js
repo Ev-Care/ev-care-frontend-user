@@ -21,26 +21,25 @@ import PrivacyPolicyScreen from "../screens/user/privacyPolicy/privacyPolicyScre
 import HelpScreen from "../screens/user/help/helpScreen";
 import VendorProfile from "../screens/vendor/pages/vendorProfile/vendorProfile";
 import PreviewPage from "../screens/vendor/pages/previewPage/previewPage";
-
+import { useSelector } from "react-redux";
+import { selectProfileStatus, selectUser } from "../screens/auth/services/selector"; // Ensure correct import
+import { selectloader } from "../screens/auth/services/selector"; // Ensure correct import
 
 // import VendorProfile from "../screens/vendor/pages/vendorProfile/vendorProfile";
 
 const Stack = createStackNavigator();
 
 export function VendorStack() {
-  const [isApproved, setApproved] = useState(null);
-
+  // const [isApproved, setApproved] = useState(null);
+  const user = useSelector(selectUser); // Get user data
+  const profileStatus = useSelector(selectProfileStatus);
   useEffect(() => {
-      if (true) { 
-        setApproved(true);
-    } else {
-      setApproved(flase);
-    }
-}, [isApproved]);
+     
+}, []);
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-    {!isApproved ? (
+    {user && user.role ==="vendor" && profileStatus === "Details_Pending" ? (
       <>
         <Stack.Screen name="Instruction" component={Instruction} />
         <Stack.Screen name="UploadAadhar" component={UploadAadhar} />

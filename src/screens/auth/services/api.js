@@ -2,7 +2,7 @@
 import { apiPostRequest } from "../../../redux/api/post";
 import {apiPatchRequest} from "../../../redux/api/patch";
 
-const API_URL = process.env.APP_BACKEND_API || "https://ev-care-api.vercel.app";
+const API_URL = process.env.APP_BACKEND_API || "http://89.116.34.17:3010";
 
 // API CALLS
 export const signInAPI = (data) => 

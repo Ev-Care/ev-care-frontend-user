@@ -23,11 +23,12 @@ import { useFocusEffect } from "@react-navigation/native";
 import IntlPhoneInput from "react-native-intl-phone-input";
 import { Overlay } from "@rneui/themed";
 import { postSignIn } from "./services/crudFunction";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { selectloader } from "./services/selector";
 const SigninScreen = ({ navigation }) => {
   const [backClickCount, setBackClickCount] = useState(0);
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const isLoading = useSelector(selectloader);
   const dispatch = useDispatch();
 
 
@@ -65,8 +66,7 @@ const SigninScreen = ({ navigation }) => {
       Alert.alert("Invalid Phone Number");
       return;
     }
-    setIsLoading(true);
-
+   
     try {
       const sanitizedPhoneNumber = phoneNumber.replace(/\s+/g, "");
       console.log("Calling API with:", sanitizedPhoneNumber);
@@ -74,15 +74,13 @@ const SigninScreen = ({ navigation }) => {
       // Dispatch the Redux action
       const response = await dispatch(postSignIn({ mobileNumber: sanitizedPhoneNumber })).unwrap();
       
-      console.log("API Response:", response);
-      // Alert.alert("Success", response.message);
       navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber });
       
     } catch (error) {
       console.log("Error in handleSignIn:", error);
       Alert.alert("Error", error?.message || "Something went wrong. Please try again.");
     } finally {
-      setIsLoading(false);
+      console.log("Signin API call completed");
     }
 };
 

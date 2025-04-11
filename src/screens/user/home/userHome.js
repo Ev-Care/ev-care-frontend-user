@@ -25,6 +25,8 @@ import {
   commonStyles,
   screenWidth,
 } from "../../../constants/styles";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../auth/services/selector";
 
 const COLORS = {
   primary: "#101942",
@@ -101,7 +103,7 @@ const UserHome = ({ navigation }) => {
   const [count, setCount] = useState(0);
   const scrollY = useRef(new Animated.Value(0)).current;
   const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
-
+  const user = useSelector(selectUser);
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good Morning";
@@ -184,7 +186,7 @@ const UserHome = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.greetingContainer}>
-          <Text style={styles.greeting}>Hi Alok!</Text>
+          <Text style={styles.greeting}>Hi {user?.name}!</Text>
           <Text style={styles.subGreeting}>{getGreeting()}</Text>
         </View>
 

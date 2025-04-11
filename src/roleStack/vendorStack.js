@@ -32,40 +32,43 @@ const Stack = createStackNavigator();
 export function VendorStack() {
   // const [isApproved, setApproved] = useState(null);
   const user = useSelector(selectUser); // Get user data
-  const profileStatus = useSelector(selectProfileStatus);
+  console.log("user in vendor stack", user);
+  console.log("user in vendor stack", user.role.toLowerCase());
+
   useEffect(() => {
-     
-}, []);
+
+  }, []);
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-    {user && user.role ==="vendor" && profileStatus === "Details_Pending" ? (
-      <>
-        <Stack.Screen name="Instruction" component={Instruction} />
-        <Stack.Screen name="UploadAadhar" component={UploadAadhar} />
-        <Stack.Screen name="UploadPAN" component={UploadPAN} />
-        <Stack.Screen name="UploadTAN" component={UploadTAN} />
-        <Stack.Screen name="UploadStationImage" component={UploadStationImage} />
-        <Stack.Screen name="VendorDetailForm" component={VendorDetailForm} />
-        <Stack.Screen name="PickLocation" component={PickLocationScreen} />
-        <Stack.Screen name="VendorAccountDetailsForm" component={VendorAccountDetailsForm} />
-        <Stack.Screen name="PendingApprovalScreen" component={PendingApprovalScreen} />
-      </>
-    ) : (
-      <>
-        <Stack.Screen name="VendorBottomTabBar" component={VendorBottomTabBar} />
-        <Stack.Screen name="VendorHome" component={VendorHome} />
-        <Stack.Screen name="AllStations" component={AllStations} />
-        <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
-        <Stack.Screen name="TermsAndConditionsScreen" component={TermsAndConditionsScreen} />
-        <Stack.Screen name="FaqScreen" component={FaqScreen} />
-        <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
-        <Stack.Screen name="HelpScreen" component={HelpScreen} />
-        <Stack.Screen name="VendorProfile" component={VendorProfile} />
-        <Stack.Screen name="PreviewPage" component={PreviewPage} />
-        <Stack.Screen name="StationManagement" component={StationManagement} />
-      </>
-    )}
-  </Stack.Navigator>
+      {user && user.role.toLowerCase() === "vendor" && (user.pan_no === null || user.tan_no === null || user.adhar_no === null) ? (
+        <>
+        {console.log("inside vendor stack")}
+          <Stack.Screen name="Instruction" component={Instruction} />
+          <Stack.Screen name="UploadAadhar" component={UploadAadhar} />
+          <Stack.Screen name="UploadPAN" component={UploadPAN} />
+          <Stack.Screen name="UploadTAN" component={UploadTAN} />
+          <Stack.Screen name="UploadStationImage" component={UploadStationImage} />
+          <Stack.Screen name="VendorDetailForm" component={VendorDetailForm} />
+          <Stack.Screen name="PickLocation" component={PickLocationScreen} />
+          <Stack.Screen name="VendorAccountDetailsForm" component={VendorAccountDetailsForm} />
+          <Stack.Screen name="PendingApprovalScreen" component={PendingApprovalScreen} />
+        </>
+      ) : (
+        <>
+          <Stack.Screen name="VendorBottomTabBar" component={VendorBottomTabBar} />
+          <Stack.Screen name="VendorHome" component={VendorHome} />
+          <Stack.Screen name="AllStations" component={AllStations} />
+          <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
+          <Stack.Screen name="TermsAndConditionsScreen" component={TermsAndConditionsScreen} />
+          <Stack.Screen name="FaqScreen" component={FaqScreen} />
+          <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
+          <Stack.Screen name="HelpScreen" component={HelpScreen} />
+          <Stack.Screen name="VendorProfile" component={VendorProfile} />
+          <Stack.Screen name="PreviewPage" component={PreviewPage} />
+          <Stack.Screen name="StationManagement" component={StationManagement} />
+        </>
+      )}
+    </Stack.Navigator>
   );
 }

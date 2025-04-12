@@ -13,75 +13,90 @@ import * as ImagePicker from "expo-image-picker";
 import {Colors} from "../../../constants/styles";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
+import { useDispatch, useSelector } from "react-redux";
+import { selectToken } from "../../auth/services/selector";
+import { postSingleFile } from "../../auth/services/crudFunction";
+import { setupImagePicker } from "./vendorDetailForm";
 
 const UploadTAN = ({route,navigation}) => {
-  // const navigation = useNavigation();
-  const [frontImage, setFrontImage] = useState(null);
-
-  const { VendorDetailAtPanPage } = route.params || {};
-  // Function to pick an image
-
-
-  // Handle Submit
-  const handleSubmit = () => {
-    if (!frontImage) {
-          Alert.alert("Error", "Please upload image first.");
-          return;
-        }
-    if (!VendorDetailAtPanPage) {
-      console.warn("vendorDetail not passed!");
-      return null; 
-    }
-    let VendorDetailAtTanPage = {
-      ...VendorDetailAtPanPage,
-      tan_pic: frontImage,
-    };
-    // Write code here to call API , submit The data 
-    console.log("Updated Vendor Detail at Tan page:", VendorDetailAtTanPage);
-    navigation.navigate("PendingApprovalScreen",{VendorDetailAtTanPage});
-  };
-
-  ''
-  const pickImage = async (source, type) => {
-    let permissionResult;
-
-    if (source === "camera") {
-      permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-    } else {
-      permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-    }
-
-    if (permissionResult.granted === false) {
-      alert("Permission is required!");
-      return;
-    }
-
-    let result;
-    if (source === "camera") {
-      result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-    } else {
-      result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-    }
-
-    if (!result.canceled) {
-      const imageUri = result.assets[0].uri;
-      if (type === "front") {
-        setFrontImage(imageUri);
-      } else {
-        setBackImage(imageUri);
-      }
-    }
-  };
-
+ const [frontImage, setFrontImage] = useState(null);
+   const [frontImageUri, setFrontImageUri] = useState(null);
+   const { VendorDetailAtPanPage } = route.params || {};
+   const dispatch = useDispatch(); // Get the dispatch function
+   const accessToken = useSelector(selectToken); // Get access token from Redux store
+ 
+   // Function to pick an image
+   
+    const pickImage = async (source, type) => {
+     let permissionResult;
+ 
+     if (source === "camera") {
+       permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+     } else {
+       permissionResult =
+         await ImagePicker.requestMediaLibraryPermissionsAsync();
+     }
+     if (permissionResult.granted === false) {
+       alert("Permission is required!");
+       return;
+     }
+     let result;
+     if (source === "camera") {
+       result = await ImagePicker.launchCameraAsync({
+         allowsEditing: true,
+         aspect: [4, 3],
+         quality: 1,
+       });
+     } else {
+       result = await ImagePicker.launchImageLibraryAsync({
+         allowsEditing: true,
+         aspect: [4, 3],
+         quality: 1,
+       });
+     }
+ 
+     if (!result.canceled) {
+       const imageUri = result.assets[0].uri;
+       const file = await setupImagePicker(imageUri);
+     
+       const response = await dispatch(
+         postSingleFile({ file: file, accessToken: accessToken })
+       );
+       if (response?.payload.code === 200 || response?.payload.code === 201) {
+         
+         if (type === "front") {
+           setFrontImage(imageUri);
+           setFrontImageUri(response?.payload?.data?.filePathUrl);
+           console.log(" Image URI set successfully:",frontImageUri);
+         } 
+       } else {
+         // console.error("Image upload failed:", response.data);
+         Alert.alert("Error", "Failed to upload image. Please try again.");
+       }
+ 
+      
+     }
+   };
+ 
+   // Handle Submit
+   const handleSubmit = () => {
+    
+     if (!frontImageUri) {
+       Alert.alert("Error", "Please upload the image.");
+       return;
+     }
+    
+     if (!VendorDetailAtPanPage) {
+       console.warn("vendorDetail not passed at tan Page!");
+       return null;
+     }
+     let VendorDetailAtTanPage = {
+       ...VendorDetailAtPanPage,
+       tan_pic: frontImageUri,
+     };
+     console.log("Updated Vendor Detail at page 4:", VendorDetailAtTanPage );
+     navigation.navigate("PendingApprovalScreen", { VendorDetailAtTanPage });
+   };
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>

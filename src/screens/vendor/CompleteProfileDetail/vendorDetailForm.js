@@ -20,7 +20,7 @@ import { selectToken, selectUser } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 
 
- const setupImagePicker = (file) => {
+ export const setupImagePicker = (file) => {
   // console.log("inside setup image");
   const fileExtension = file.split('.').pop().toLowerCase(); // Get the file extension
   const supportedFormats = ['jpg', 'jpeg', 'png']; // Supported formats
@@ -57,14 +57,15 @@ const VendorDetailForm = () => {
 
   let vendorDetail = {};
   const handleSubmit = () => {
-    if (!businessName || !address || !aadharNumber || !panNumber || !tanNumber) {
+    // if (!businessName || !address || !aadharNumber || !panNumber || !tanNumber || !avatarUri) {
+      if(!avatarUri){
       Alert.alert("Error", "All fields are required!");
       return;
     }
 
     // Fill the vendor detail object
     let vendorDetail = {
-      user_key: useSelector(selectUser).user_key,
+      // user_key: useSelector(selectUser).user_key,
       business_name: businessName,
       pan_no: panNumber,
       tan_no: tanNumber,
@@ -79,6 +80,8 @@ const VendorDetailForm = () => {
     // console.log(" Vendor Detail at page 1:", vendorDetail);
     navigation.navigate("UploadAadhar", { vendorDetail });
   };
+
+
 
   const selectOnMap = () => {
     navigation.push("PickLocation", {
@@ -113,9 +116,8 @@ const VendorDetailForm = () => {
 
             const selectedImageUri = result.assets[0].uri;
             // console.log("Selected image URI:", selectedImageUri);
-            setAvatar(selectedImageUri);
+          
             // console.log("Selected image URI after useStte:", selectedImageUri);
-
             // Prepare the file for upload
             const file = setupImagePicker(selectedImageUri);
             // console.log("Selected image URI fter setup:", selectedImageUri);
@@ -129,6 +131,7 @@ const VendorDetailForm = () => {
             // console.log("Image uploaded successfully:", response?.payload);
             if (response?.payload.code === 200 || response?.payload.code === 201) {
                 setAvatarUri(response?.payload?.data?.filePathUrl); // Set the avatar URI to the response path
+                setAvatar(selectedImageUri);
                 console.log("Image URI set successfully:", avatarUri);
             } else {
                 // console.error("Image upload failed:", response.data);
@@ -155,7 +158,8 @@ const VendorDetailForm = () => {
 
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>
-          Upload Your Photo <Text style={styles.optional}>(Optional)</Text>
+          Upload Your Photo 
+          {/* <Text style={styles.optional}>(Optional)</Text> */}
         </Text>
         <Text style={styles.photoDescription}>
           It will Appear At Your Profile Page.

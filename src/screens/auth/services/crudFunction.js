@@ -7,7 +7,7 @@ import {
     signUpFailed 
 } from "./slice"; 
 
-import { signInAPI, verifyOtpAPI, signupAPI, postSingleFileAPI } from "./api";
+import { signInAPI, verifyOtpAPI, signupAPI, postSingleFileAPI ,updateVendorAPI } from "./api";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 // Async Thunks
@@ -89,4 +89,20 @@ export const postSingleFile = createAsyncThunk(
       }
     }
   
+  );
+  export const patchUpdateVendorProfile = createAsyncThunk(
+    "auth/UpdateVendorProfile",
+    async (data, { rejectWithValue }) => {
+      try {
+        const response = await updateVendorAPI(data);
+        
+        if (response.status === 200 || response.status === 201) {
+          return data;
+        } else {
+          throw new Error("Detail Submission Request failed");
+        }
+      } catch (error) {
+        return rejectWithValue(error?.response?.data?.message || "Request failed");
+      }
+    }
   );

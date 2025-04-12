@@ -12,12 +12,20 @@ import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
-import {Colors} from "../../../constants/styles";
-const UploadAadhar = ({route,navigation}) => {
+import { Colors } from "../../../constants/styles";
+import { setupImagePicker } from "./vendorDetailForm";
+import { useDispatch, useSelector } from "react-redux";
+import { selectToken } from "../../auth/services/selector";
+import { postSingleFile } from "../../auth/services/crudFunction";
+const UploadAadhar = ({ route, navigation }) => {
   // const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
   const [backImage, setBackImage] = useState(null);
+  const [frontImageUri, setFrontImageUri] = useState(null);
+  const [backImageUri, setBackImageUri] = useState(null);
   const { vendorDetail } = route.params || {};
+  const dispatch = useDispatch(); // Get the dispatch function
+  const accessToken = useSelector(selectToken); // Get access token from Redux store
 
   // Function to pick an image
   const pickImage = async (source, type) => {
@@ -52,41 +60,58 @@ const UploadAadhar = ({route,navigation}) => {
 
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
-      if (type === "front") {
-        setFrontImage(imageUri);
+      const file = await setupImagePicker(imageUri);
+    
+      const response = await dispatch(
+        postSingleFile({ file: file, accessToken: accessToken })
+      );
+      if (response?.payload.code === 200 || response?.payload.code === 201) {
+        
+        if (type === "front") {
+          setFrontImage(imageUri);
+          setFrontImageUri(response?.payload?.data?.filePathUrl);
+        
+          console.log("front Image URI set successfully:",frontImageUri);
+        } else {
+          setBackImageUri(response?.payload?.data?.filePathUrl);
+          setBackImage(imageUri);
+          console.log("back Image URI set successfully:",backImageUri);
+        }    
       } else {
-        setBackImage(imageUri);
+        // console.error("Image upload failed:", response.data);
+        Alert.alert("Error", "Failed to upload image. Please try again.");
       }
+
+     
     }
   };
 
   // Handle Submit
   const handleSubmit = () => {
-    if (!frontImage && !backImage) {
+    if (!frontImageUri && !backImageUri) {
       Alert.alert("Error", "Please upload both front and back images.");
       return;
     }
-    if (!frontImage) {
+    if (!frontImageUri) {
       Alert.alert("Error", "Please upload the front side image.");
       return;
     }
-    if (!backImage) {
+    if (!backImageUri) {
       Alert.alert("Error", "Please upload the back side image.");
       return;
     }
     if (!vendorDetail) {
       console.warn("vendorDetail not passed at aadhar Page!");
-      return null; 
+      return null;
     }
     let VendorDetailAtAadharPage = {
       ...vendorDetail,
-      aadhar_front_pic: frontImage,
-      aadhar_back_pic: backImage,
+      adhar_front_pic: frontImageUri,
+      adhar_back_pic: backImageUri,
     };
     // console.log("Updated Vendor Detail at page 2:", VendorDetailAtAadharPage);
-    navigation.navigate("UploadPAN",{VendorDetailAtAadharPage});
+    navigation.navigate("UploadPAN", { VendorDetailAtAadharPage });
   };
-  
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -156,8 +181,8 @@ const UploadAadhar = ({route,navigation}) => {
           >
             <MaterialIcons name="photo-library" size={20} color="#F4721E" />
             <Text style={styles.buttonText}> Upload from Gallery</Text>
-            </TouchableOpacity>
-            </View>
+          </TouchableOpacity>
+        </View>
         {/* Submit Button */}
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
           <Text style={styles.submitText}>Next</Text>

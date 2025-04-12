@@ -13,32 +13,20 @@ import * as ImagePicker from "expo-image-picker";
 import {Colors} from "../../../constants/styles";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
-
+import { useDispatch, useSelector } from "react-redux";
+import { selectToken } from "../../auth/services/selector";
+import { postSingleFile } from "../../auth/services/crudFunction";
+import { setupImagePicker } from "./vendorDetailForm";
 const UploadPAN = ({route,navigation}) => {
   // const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
-  const {VendorDetailAtAadharPage} = route.params || {};
+  const [frontImageUri, setFrontImageUri] = useState(null);
+  const {  VendorDetailAtAadharPage } = route.params || {};
+  const dispatch = useDispatch(); // Get the dispatch function
+  const accessToken = useSelector(selectToken); // Get access token from Redux store
 
-  // Handle Submit
-  const handleSubmit = () => {
-     if (!frontImage) {
-       Alert.alert("Error", "Please upload image first.");
-       return;
-     }
+  // Function to pick an image
   
-     if (!VendorDetailAtAadharPage) {
-       console.warn("vendorDetail not passed at pan page!");
-       return null; 
-     }
-     let VendorDetailAtPanPage = {
-       ...VendorDetailAtAadharPage,
-       pan_pic: frontImage,
-     };
-    //  console.log("Updated Vendor Detail at page 3:", VendorDetailAtPanPage);
-     navigation.navigate("UploadTAN",{VendorDetailAtPanPage});
-   };
-
-   // Function to pick an image
    const pickImage = async (source, type) => {
     let permissionResult;
 
@@ -71,12 +59,46 @@ const UploadPAN = ({route,navigation}) => {
 
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
-      if (type === "front") {
-        setFrontImage(imageUri);
+      const file = await setupImagePicker(imageUri);
+    
+      const response = await dispatch(
+        postSingleFile({ file: file, accessToken: accessToken })
+      );
+      if (response?.payload.code === 200 || response?.payload.code === 201) {
+        
+        if (type === "front") {
+          setFrontImage(imageUri);
+          setFrontImageUri(response?.payload?.data?.filePathUrl);
+          console.log(" Image URI set successfully:",frontImageUri);
+        } 
       } else {
-        setBackImage(imageUri);
+        // console.error("Image upload failed:", response.data);
+        Alert.alert("Error", "Failed to upload image. Please try again.");
       }
+
+     
     }
+  };
+
+  // Handle Submit
+  const handleSubmit = () => {
+   
+    if (!frontImageUri) {
+      Alert.alert("Error", "Please upload the image.");
+      return;
+    }
+   
+    if (! VendorDetailAtAadharPage) {
+      console.warn("vendorDetail not passed at pan Page!");
+      return null;
+    }
+    let VendorDetailAtPanPage = {
+      ... VendorDetailAtAadharPage,
+      pan_pic: frontImageUri,
+   
+    };
+    // console.log("Updated Vendor Detail at page 3:", VendorDetailAtPanPage );
+    navigation.navigate("UploadTAN", { VendorDetailAtPanPage });
   };
 
   return (

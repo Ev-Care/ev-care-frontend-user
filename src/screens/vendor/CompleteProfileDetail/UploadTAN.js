@@ -104,20 +104,17 @@ const UploadTAN = ({ route, navigation }) => {
       Alert.alert("Error", "Please upload the image.");
       return;
     }
-
     if (!VendorDetailAtPanPage) {
       console.warn("vendorDetail not passed at tan Page!");
       return null;
     }
-
     let VendorDetailAtTanPage = {
       ...VendorDetailAtPanPage,
       tan_pic: frontImageUri,
     };
-    console.log("Updated Vendor Detail at page 4 up:", VendorDetailAtTanPage);
+    // console.log("Updated Vendor Detail at page 4 up:", VendorDetailAtTanPage);
     try {
-      const response = await dispatch(
-        patchUpdateVendorProfile(VendorDetailAtTanPage)
+      const response = await dispatch(patchUpdateVendorProfile({detail:VendorDetailAtTanPage ,user_key:userKey, accessToken: accessToken})
       ).unwrap();
       console.log("vendor Detail Submitted ", response);
       console.log(

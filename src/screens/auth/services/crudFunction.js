@@ -94,18 +94,20 @@ export const postSingleFile = createAsyncThunk(
     "auth/UpdateVendorProfile",
     async (data, { rejectWithValue }) => {
       try {
-        const { user_key, ...bodyData } = data; // separate user_key for URL
-  
-        const response = await updateVendorAPI(user_key, bodyData);
-  
+        console.log("data at crud func page",data.user_key);
+        const response = await updateVendorAPI(data);
+        console.log("response at crud func page",response);
         if (response.status === 200 || response.status === 201) {
+          
           return response.data; // or `bodyData` if you want
         } else {
-          throw new Error("Detail Submission Request failed");
+          console.log("resposne in else",response);
+          // return rejectWithValue(response.message + " "+response.statusCode);
+          throw new Error(response.message + " "+response.statusCode);
         }
       } catch (error) {
-        return rejectWithValue(error?.response?.data?.message || "Request failed");
+        console.log("error at crud ",error);
+        return rejectWithValue(error || "Request failed");
       }
     }
   );
-  

@@ -62,6 +62,7 @@ export function VendorStack() {
           <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
           <Stack.Screen name="HelpScreen" component={HelpScreen} />
           <Stack.Screen name="VendorProfile" component={VendorProfile} />
+          <Stack.Screen name="PickLocation" component={PickLocationScreen} />
           <Stack.Screen name="PreviewPage" component={PreviewPage} />
           <Stack.Screen name="StationManagement" component={StationManagement} />
         </>

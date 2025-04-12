@@ -70,7 +70,6 @@ const VendorDetailForm = () => {
 
     // Fill the vendor detail object
     let vendorDetail = {
-      user_key: userKey,
       business_name: businessName,
       pan_no: panNumber,
       tan_no: tanNumber,
@@ -112,30 +111,18 @@ const VendorDetailForm = () => {
         allowsEditing: true,
         quality: 1,
       });
-
-      // console.log("Image picker result:", result);
-
+     
       if (!result.canceled) {
-        // console.log("Image selection successful");
-
+    
         const selectedImageUri = result.assets[0].uri;
-        // console.log("Selected image URI:", selectedImageUri);
-
-        // console.log("Selected image URI after useStte:", selectedImageUri);
-        // Prepare the file for upload
+      
         const file = setupImagePicker(selectedImageUri);
-        // console.log("Selected image URI fter setup:", selectedImageUri);
-
-        // Call the API
-        // console.log("accessToken11:", accessToken);
-        // console.log("file :", file);
+      
         setImageLoading(true);
         const response = await dispatch(
           postSingleFile({ file: file, accessToken: accessToken })
         );
-        // console.log("Image upload response:");
-
-        // console.log("Image uploaded successfully:", response?.payload);
+      
         if (response?.payload.code === 200 || response?.payload.code === 201) {
           setAvatarUri(response?.payload?.data?.filePathUrl); // Set the avatar URI to the response path
           setAvatar(selectedImageUri);

@@ -3,100 +3,139 @@ import {
   View,
   Text,
   TouchableOpacity,
+  ActivityIndicator,
   StyleSheet,
   ScrollView,
   Image,
   Alert,
 } from "react-native";
+import {
+  Colors,
+  screenWidth,
+  Fonts,
+  Sizes,
+  commonStyles,
+} from "../../../constants/styles";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
-import {Colors} from "../../../constants/styles";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 import { useDispatch, useSelector } from "react-redux";
-import { selectToken } from "../../auth/services/selector";
+import { selectToken, selectUser } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "./vendorDetailForm";
+import { patchUpdateVendorProfile } from "../../auth/services/crudFunction";
 
-const UploadTAN = ({route,navigation}) => {
- const [frontImage, setFrontImage] = useState(null);
-   const [frontImageUri, setFrontImageUri] = useState(null);
-   const { VendorDetailAtPanPage } = route.params || {};
-   const dispatch = useDispatch(); // Get the dispatch function
-   const accessToken = useSelector(selectToken); // Get access token from Redux store
- 
-   // Function to pick an image
-   
-    const pickImage = async (source, type) => {
-     let permissionResult;
- 
-     if (source === "camera") {
-       permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-     } else {
-       permissionResult =
-         await ImagePicker.requestMediaLibraryPermissionsAsync();
-     }
-     if (permissionResult.granted === false) {
-       alert("Permission is required!");
-       return;
-     }
-     let result;
-     if (source === "camera") {
-       result = await ImagePicker.launchCameraAsync({
-         allowsEditing: true,
-         aspect: [4, 3],
-         quality: 1,
-       });
-     } else {
-       result = await ImagePicker.launchImageLibraryAsync({
-         allowsEditing: true,
-         aspect: [4, 3],
-         quality: 1,
-       });
-     }
- 
-     if (!result.canceled) {
-       const imageUri = result.assets[0].uri;
-       const file = await setupImagePicker(imageUri);
-     
-       const response = await dispatch(
-         postSingleFile({ file: file, accessToken: accessToken })
-       );
-       if (response?.payload.code === 200 || response?.payload.code === 201) {
-         
-         if (type === "front") {
-           setFrontImage(imageUri);
-           setFrontImageUri(response?.payload?.data?.filePathUrl);
-           console.log(" Image URI set successfully:",frontImageUri);
-         } 
-       } else {
-         // console.error("Image upload failed:", response.data);
-         Alert.alert("Error", "Failed to upload image. Please try again.");
-       }
- 
-      
-     }
-   };
- 
-   // Handle Submit
-   const handleSubmit = () => {
-    
-     if (!frontImageUri) {
-       Alert.alert("Error", "Please upload the image.");
-       return;
-     }
-    
-     if (!VendorDetailAtPanPage) {
-       console.warn("vendorDetail not passed at tan Page!");
-       return null;
-     }
-     let VendorDetailAtTanPage = {
-       ...VendorDetailAtPanPage,
-       tan_pic: frontImageUri,
-     };
-     console.log("Updated Vendor Detail at page 4:", VendorDetailAtTanPage );
-     navigation.navigate("PendingApprovalScreen", { VendorDetailAtTanPage });
-   };
+const UploadTAN = ({ route, navigation }) => {
+  const [frontImage, setFrontImage] = useState(null);
+  const [frontImageUri, setFrontImageUri] = useState(null);
+  const [loading, setLoading] = useState(false); // Loader state
+  const { VendorDetailAtPanPage } = route.params || {};
+  const dispatch = useDispatch(); // Get the dispatch function
+  const accessToken = useSelector(selectToken); // Get access token from Redux store
+  const userKey = useSelector(selectUser).user_key;
+  const [imageloading, setImageLoading] = useState(false); 
+
+
+  // Function to pick an image
+
+  const pickImage = async (source, type) => {
+    let permissionResult;
+  
+    if (source === "camera") {
+      permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    } else {
+      permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    }
+  
+    if (!permissionResult.granted) {
+      alert("Permission is required!");
+      return;
+    }
+  
+    let result;
+    if (source === "camera") {
+      result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+    } else {
+      result = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+    }
+  
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+      const file = await setupImagePicker(imageUri);
+      setImageLoading(true);
+  
+      try {
+        const response = await dispatch(
+          postSingleFile({ file: file, accessToken: accessToken })
+        );
+  
+        if (response?.payload.code === 200 || response?.payload.code === 201) {
+          if (type === "front") {
+            setFrontImage(imageUri);
+            setFrontImageUri(response?.payload?.data?.filePathUrl);
+            console.log("Front image uploaded:", response?.payload?.data?.filePathUrl);
+          } else if (type === "back") {
+            // For future-proofing
+          }
+        } else {
+          Alert.alert("Error", "Failed to upload image. Please try again.");
+        }
+      } catch (error) {
+        Alert.alert("Error", "Something went wrong while uploading.");
+      } finally {
+        setImageLoading(false);
+      }
+    }
+  };
+  
+
+  // Handle Submit
+  const handleSubmit = async () => {
+    if (!frontImageUri) {
+      Alert.alert("Error", "Please upload the image.");
+      return;
+    }
+
+    if (!VendorDetailAtPanPage) {
+      console.warn("vendorDetail not passed at tan Page!");
+      return null;
+    }
+
+    let VendorDetailAtTanPage = {
+      ...VendorDetailAtPanPage,
+      tan_pic: frontImageUri,
+    };
+    console.log("Updated Vendor Detail at page 4 up:", VendorDetailAtTanPage);
+    try {
+      const response = await dispatch(
+        patchUpdateVendorProfile(VendorDetailAtTanPage)
+      ).unwrap();
+      console.log("vendor Detail Submitted ", response);
+      console.log(
+        "Updated Vendor Detail at page 4 down:",
+        VendorDetailAtTanPage
+      );
+      navigation.navigate("PendingApprovalScreen", { VendorDetailAtTanPage });
+    } catch (error) {
+      console.error("Vendor detail submission failed:", error);
+      Alert.alert(
+        "Submission Failed",
+        "Please check your details and try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
@@ -116,7 +155,9 @@ const UploadTAN = ({route,navigation}) => {
 
         {/* Upload Front Side */}
         <View style={styles.uploadBox}>
-          {frontImage ? (
+          {imageloading? (
+            <ActivityIndicator size={40} color="black" />
+          ) : frontImage ? (
             <Image source={{ uri: frontImage }} style={styles.uploadedImage} />
           ) : (
             <Text style={styles.uploadText}>Upload Front Side</Text>
@@ -142,8 +183,17 @@ const UploadTAN = ({route,navigation}) => {
         </View>
 
         {/* Submit Button */}
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitText}>Submit</Text>
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          {/* <Text style={styles.submitText}>Submit</Text> */}
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={{ ...Fonts.whiteColor18SemiBold }}>Submit</Text>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -221,7 +271,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     width: "100%",
-    backgroundColor:Colors.primaryColor,
+    backgroundColor: Colors.primaryColor,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",

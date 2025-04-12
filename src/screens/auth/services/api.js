@@ -36,9 +36,10 @@ export const postSingleFileAPI = (data) => {
         accessToken: data.accessToken,
     });
 }
-export const updateVendorAPI = (data) =>
+export const updateVendorAPI = (user_key, data) =>
     apiPatchRequest({
-        apiUrl: `${API_URL}/users/update-vendor-profile/${data.user_key}`,
-        content_type: "application/json",
-        data: data,
+      apiUrl: `${API_URL}/users/update-vendor-profile/${user_key}`,
+      content_type: "application/json",
+      data: data,
     });
+  

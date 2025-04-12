@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  ActivityIndicator,
   StyleSheet,
   ScrollView,
   Image,
@@ -23,6 +24,8 @@ const UploadAadhar = ({ route, navigation }) => {
   const [backImage, setBackImage] = useState(null);
   const [frontImageUri, setFrontImageUri] = useState(null);
   const [backImageUri, setBackImageUri] = useState(null);
+  const [frontImageloading, setFrontImageLoading] = useState(false); 
+  const [backImageloading, setBackImageLoading] = useState(false); 
   const { vendorDetail } = route.params || {};
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
@@ -30,19 +33,18 @@ const UploadAadhar = ({ route, navigation }) => {
   // Function to pick an image
   const pickImage = async (source, type) => {
     let permissionResult;
-
+  
     if (source === "camera") {
       permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     } else {
-      permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     }
-
+  
     if (permissionResult.granted === false) {
       alert("Permission is required!");
       return;
     }
-
+  
     let result;
     if (source === "camera") {
       result = await ImagePicker.launchCameraAsync({
@@ -57,34 +59,49 @@ const UploadAadhar = ({ route, navigation }) => {
         quality: 1,
       });
     }
-
+  
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
       const file = await setupImagePicker(imageUri);
-    
-      const response = await dispatch(
-        postSingleFile({ file: file, accessToken: accessToken })
-      );
-      if (response?.payload.code === 200 || response?.payload.code === 201) {
-        
-        if (type === "front") {
-          setFrontImage(imageUri);
-          setFrontImageUri(response?.payload?.data?.filePathUrl);
-        
-          console.log("front Image URI set successfully:",frontImageUri);
-        } else {
-          setBackImageUri(response?.payload?.data?.filePathUrl);
-          setBackImage(imageUri);
-          console.log("back Image URI set successfully:",backImageUri);
-        }    
+  
+      // 👉 Show loader BEFORE dispatch
+      if (type === "front") {
+        setFrontImageLoading(true);
       } else {
-        // console.error("Image upload failed:", response.data);
-        Alert.alert("Error", "Failed to upload image. Please try again.");
+        setBackImageLoading(true);
       }
-
-     
+  
+      try {
+        const response = await dispatch(
+          postSingleFile({ file: file, accessToken: accessToken })
+        );
+  
+        if (response?.payload.code === 200 || response?.payload.code === 201) {
+          if (type === "front") {
+            setFrontImage(imageUri);
+            setFrontImageUri(response?.payload?.data?.filePathUrl);
+            console.log("front Image URI set successfully:", response?.payload?.data?.filePathUrl);
+          } else {
+            setBackImage(imageUri);
+            setBackImageUri(response?.payload?.data?.filePathUrl);
+            console.log("back Image URI set successfully:", response?.payload?.data?.filePathUrl);
+          }
+        } else {
+          Alert.alert("Error", "Failed to upload image. Please try again.");
+        }
+      } catch (error) {
+        Alert.alert("Error", "Upload failed. Please try again.");
+      } finally {
+        // 👉 Always stop loader
+        if (type === "front") {
+          setFrontImageLoading(false);
+        } else {
+          setBackImageLoading(false);
+        }
+      }
     }
   };
+  
 
   // Handle Submit
   const handleSubmit = () => {
@@ -132,7 +149,9 @@ const UploadAadhar = ({ route, navigation }) => {
 
         {/* Upload Front Side */}
         <View style={styles.uploadBox}>
-          {frontImage ? (
+          {frontImageloading? (
+            <ActivityIndicator size={40} color="black" />
+          ) : frontImage ? (
             <Image source={{ uri: frontImage }} style={styles.uploadedImage} />
           ) : (
             <Text style={styles.uploadText}>Upload Front Side</Text>
@@ -159,7 +178,9 @@ const UploadAadhar = ({ route, navigation }) => {
 
         {/* Upload Back Side */}
         <View style={styles.uploadBox}>
-          {backImage ? (
+          {backImageloading? (
+            <ActivityIndicator size={40} color="black" />
+          ) : backImage ? (
             <Image source={{ uri: backImage }} style={styles.uploadedImage} />
           ) : (
             <Text style={styles.uploadText}>Upload Back Side</Text>

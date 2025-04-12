@@ -5,43 +5,50 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
   Image,
   Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
-import {Colors} from "../../../constants/styles";
+import {
+  Colors,
+  screenWidth,
+  Fonts,
+  Sizes,
+  commonStyles,
+} from "../../../constants/styles";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 import { useDispatch, useSelector } from "react-redux";
 import { selectToken } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "./vendorDetailForm";
-const UploadPAN = ({route,navigation}) => {
+const UploadPAN = ({ route, navigation }) => {
   // const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
   const [frontImageUri, setFrontImageUri] = useState(null);
-  const {  VendorDetailAtAadharPage } = route.params || {};
+  const [loading, setLoading] = useState(false); // Loader state
+  const { VendorDetailAtAadharPage } = route.params || {};
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
 
   // Function to pick an image
-  
-   const pickImage = async (source, type) => {
-    let permissionResult;
 
+  const pickImage = async (source, type) => {
+    let permissionResult;
+  
     if (source === "camera") {
       permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     } else {
-      permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     }
-
+  
     if (permissionResult.granted === false) {
       alert("Permission is required!");
       return;
     }
-
+  
     let result;
     if (source === "camera") {
       result = await ImagePicker.launchCameraAsync({
@@ -56,46 +63,48 @@ const UploadPAN = ({route,navigation}) => {
         quality: 1,
       });
     }
-
+  
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
       const file = await setupImagePicker(imageUri);
-    
-      const response = await dispatch(
-        postSingleFile({ file: file, accessToken: accessToken })
-      );
-      if (response?.payload.code === 200 || response?.payload.code === 201) {
-        
-        if (type === "front") {
-          setFrontImage(imageUri);
-          setFrontImageUri(response?.payload?.data?.filePathUrl);
-          console.log(" Image URI set successfully:",frontImageUri);
-        } 
-      } else {
-        // console.error("Image upload failed:", response.data);
-        Alert.alert("Error", "Failed to upload image. Please try again.");
+      setLoading(true);
+  
+      try {
+        const response = await dispatch(
+          postSingleFile({ file: file, accessToken: accessToken })
+        );
+  
+        if (response?.payload.code === 200 || response?.payload.code === 201) {
+          if (type === "front") {
+            setFrontImage(imageUri);
+            setFrontImageUri(response?.payload?.data?.filePathUrl);
+            console.log("Image URI set successfully:", response?.payload?.data?.filePathUrl);
+          }
+        } else {
+          Alert.alert("Error", "Failed to upload image. Please try again.");
+        }
+      } catch (error) {
+        Alert.alert("Error", "Something went wrong while uploading.");
+      } finally {
+        setLoading(false);
       }
-
-     
     }
   };
-
+  
   // Handle Submit
   const handleSubmit = () => {
-   
     if (!frontImageUri) {
       Alert.alert("Error", "Please upload the image.");
       return;
     }
-   
-    if (! VendorDetailAtAadharPage) {
+
+    if (!VendorDetailAtAadharPage) {
       console.warn("vendorDetail not passed at pan Page!");
       return null;
     }
     let VendorDetailAtPanPage = {
-      ... VendorDetailAtAadharPage,
+      ...VendorDetailAtAadharPage,
       pan_pic: frontImageUri,
-   
     };
     // console.log("Updated Vendor Detail at page 3:", VendorDetailAtPanPage );
     navigation.navigate("UploadTAN", { VendorDetailAtPanPage });
@@ -120,7 +129,9 @@ const UploadPAN = ({route,navigation}) => {
 
         {/* Upload Front Side */}
         <View style={styles.uploadBox}>
-          {frontImage ? (
+          {loading ? (
+            <ActivityIndicator size={40} color="black" />
+          ) : frontImage ? (
             <Image source={{ uri: frontImage }} style={styles.uploadedImage} />
           ) : (
             <Text style={styles.uploadText}>Upload Front Side</Text>
@@ -137,8 +148,8 @@ const UploadPAN = ({route,navigation}) => {
             <Text style={styles.buttonText}> Take Image</Text>
           </TouchableOpacity>
           <TouchableOpacity
-          style={styles.outlinedButton}
-          onPress={() => pickImage("gallery", "front")}
+            style={styles.outlinedButton}
+            onPress={() => pickImage("gallery", "front")}
           >
             <MaterialIcons name="photo-library" size={20} color="#F4721E" />
             <Text style={styles.buttonText}> Upload from Gallery</Text>

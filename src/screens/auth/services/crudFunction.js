@@ -94,10 +94,12 @@ export const postSingleFile = createAsyncThunk(
     "auth/UpdateVendorProfile",
     async (data, { rejectWithValue }) => {
       try {
-        const response = await updateVendorAPI(data);
-        
+        const { user_key, ...bodyData } = data; // separate user_key for URL
+  
+        const response = await updateVendorAPI(user_key, bodyData);
+  
         if (response.status === 200 || response.status === 201) {
-          return data;
+          return response.data; // or `bodyData` if you want
         } else {
           throw new Error("Detail Submission Request failed");
         }
@@ -106,3 +108,4 @@ export const postSingleFile = createAsyncThunk(
       }
     }
   );
+  

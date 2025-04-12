@@ -58,11 +58,11 @@ const VerificationScreen = ({ navigation, route }) => {
         if ( response.payload.data.user.status === "New") {
           console.log("response in VerificationScreen", response.payload.data.user.status)
           navigation.push("Register", { userKey:response.payload.data.user.user_key });
-        } else if (user && user.status !== "New" && token) {
+        } else /* if (user && user.status !== "New" && token) */ {
           try {
       
-            await AsyncStorage.setItem("user", JSON.stringify(user));
-            await AsyncStorage.setItem("accessToken", token);
+            await AsyncStorage.setItem("user", JSON.stringify(response.payload.data.user));
+            await AsyncStorage.setItem("accessToken", response.payload.data.access_token);
         
             // Alert.alert("Sucess", "Otp verified.");
             return;

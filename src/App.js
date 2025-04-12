@@ -38,7 +38,7 @@ function AppNavigator() {
 
     if (user && user.role) { 
       // if (true) { 
-       console.log("profile = ",profileStatus);
+     
         setUserType(user.role.toLowerCase());
         // setUserType("user");
     } else {

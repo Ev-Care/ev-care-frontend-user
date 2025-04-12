@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { postSignIn, postSignUp, postVerifyOtp } from "../../screens/auth/services/crudFunction";
+import { postSignIn, postSignUp, postVerifyOtp, postSingleFile } from "../../screens/auth/services/crudFunction";
 
 
 const initialState = {
@@ -88,16 +88,30 @@ const authSlice = createSlice({
       .addCase(postSignUp.fulfilled, (state, action) => {
         state.loading = false;
         console.log("User signed up successfully:", action.payload);
-         // Extract user data from the response
+        // Extract user data from the response
         if (action.payload.role === "Vendor") {
           state.profileStatus = "Details_Pending";
           console.log("User profile status:", state.profileStatus);
           // state.user = action.payload;
-        }})
+        }
+      })
       .addCase(postSignUp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(postSingleFile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(postSingleFile.fulfilled, (state, action) => {
+        state.loading = false;
+        // state.filePathUrl = action.payload?.filePathUrl; // Assuming the API returns this
+      })
+      .addCase(postSingleFile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "File upload failed";
       });
+
   },
 });
 

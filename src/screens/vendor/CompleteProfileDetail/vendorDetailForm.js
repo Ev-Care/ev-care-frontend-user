@@ -12,9 +12,37 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
-import {Colors} from "../../../constants/styles";
+import { Colors } from "../../../constants/styles";
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useDispatch, useSelector } from "react-redux";
+import { selectToken, selectUser } from "../../auth/services/selector";
+import { postSingleFile } from "../../auth/services/crudFunction";
+
+
+ const setupImagePicker = (file) => {
+  // console.log("inside setup image");
+  const fileExtension = file.split('.').pop().toLowerCase(); // Get the file extension
+  const supportedFormats = ['jpg', 'jpeg', 'png']; // Supported formats
+
+  if (!supportedFormats.includes(fileExtension)) {
+    throw new Error("Unsupported file format. Please upload a JPG or PNG image.");
+  }
+  // console.log("File extension passed:", fileExtension);
+  const mimeType = `image/${fileExtension}`; // Dynamically set MIME type
+  const fileName = `avatar.${fileExtension}`; // Dynamically set file name
+
+  // Prepare the form data for the API call
+  const formData = new FormData();
+  formData.append("file", {
+    uri: file,
+    name: fileName,
+    type: mimeType,
+  });
+ 
+  return formData;
+};
+
 const VendorDetailForm = () => {
   const navigation = useNavigation();
   const [businessName, setBusinessName] = useState("");
@@ -23,22 +51,30 @@ const VendorDetailForm = () => {
   const [panNumber, setPanNumber] = useState("");
   const [tanNumber, setTanNumber] = useState("");
   const [avatar, setAvatar] = useState(null);
-  
+  const accessToken = useSelector(selectToken); // Get access token from Redux store
+  const [avatarUri, setAvatarUri] = useState(null); // State to hold the image URI
+  const dispatch = useDispatch(); // Get the dispatch function
+
   let vendorDetail = {};
   const handleSubmit = () => {
     if (!businessName || !address || !aadharNumber || !panNumber || !tanNumber) {
       Alert.alert("Error", "All fields are required!");
       return;
     }
-  
+
     // Fill the vendor detail object
-    vendorDetail = {
-      businessName,
-      address,
-      aadharNumber,
-      panNumber,
-      tanNumber,
-      avatar,
+    let vendorDetail = {
+      user_key: useSelector(selectUser).user_key,
+      business_name: businessName,
+      pan_no: panNumber,
+      tan_no: tanNumber,
+      adhar_no: aadharNumber,
+      address: address,
+      avatar: avatarUri,
+      adhar_front_pic: null,
+      adhar_back_pic: null,
+      pan_pic: null,
+      tan_pic: null,
     };
     // console.log(" Vendor Detail at page 1:", vendorDetail);
     navigation.navigate("UploadAadhar", { vendorDetail });
@@ -50,25 +86,60 @@ const VendorDetailForm = () => {
       setAddress: (newAddress) => setAddress(newAddress),
     });
   };
+
+
+ 
+
   const handleImagePick = async () => {
-    // Request permission
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      alert('Sorry, we need camera roll permissions to make this work!');
-      return;
-    }
+    try {
+        // Request permission
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'Camera roll permissions are required to upload an image.');
+            return;
+        }
 
-    // Launch image picker
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-    });
+        // Launch image picker
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images, // Ensure this is correctly accessed
+            allowsEditing: true,
+            quality: 1,
+        });
 
-    if (!result.canceled) {
-      setAvatar(result.assets[0].uri);
+        // console.log("Image picker result:", result);
+
+        if (!result.canceled) {
+            // console.log("Image selection successful");
+
+            const selectedImageUri = result.assets[0].uri;
+            // console.log("Selected image URI:", selectedImageUri);
+            setAvatar(selectedImageUri);
+            // console.log("Selected image URI after useStte:", selectedImageUri);
+
+            // Prepare the file for upload
+            const file = setupImagePicker(selectedImageUri);
+            // console.log("Selected image URI fter setup:", selectedImageUri);
+
+            // Call the API
+            // console.log("accessToken11:", accessToken);
+            // console.log("file :", file);
+            const response = await dispatch(postSingleFile({ file:file, accessToken:accessToken }));
+            // console.log("Image upload response:");
+
+            // console.log("Image uploaded successfully:", response?.payload);
+            if (response?.payload.code === 200 || response?.payload.code === 201) {
+                setAvatarUri(response?.payload?.data?.filePathUrl); // Set the avatar URI to the response path
+                console.log("Image URI set successfully:", avatarUri);
+            } else {
+                // console.error("Image upload failed:", response.data);
+                Alert.alert("Error", "Failed to upload image. Please try again.");
+            }
+        }
+    } catch (error) {
+        console.error("Error in handleImagePick:", error);
+        Alert.alert("Error", error.message || "An unexpected error occurred.");
     }
-  };
+};
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -82,20 +153,20 @@ const VendorDetailForm = () => {
       <CompleteDetailProgressBar completedSteps={0} />
 
 
-             <View style={styles.section}>
-            <Text style={styles.sectionLabel}>
-              Upload Your Photo <Text style={styles.optional}>(Optional)</Text>
-            </Text>
-            <Text style={styles.photoDescription}>
-              It will Appear At Your Profile Page.
-            </Text>
-            <TouchableOpacity style={styles.photoUpload} onPress={handleImagePick}>
-              {avatar ? (
-                <Image source={{ uri: avatar }} style={styles.previewImage} />
-              ) : (
-                <Icon name="camera-plus-outline" size={40} color="#ccc" />
-              )}
-            </TouchableOpacity>
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>
+          Upload Your Photo <Text style={styles.optional}>(Optional)</Text>
+        </Text>
+        <Text style={styles.photoDescription}>
+          It will Appear At Your Profile Page.
+        </Text>
+        <TouchableOpacity style={styles.photoUpload} onPress={handleImagePick}>
+          {avatar ? (
+            <Image source={{ uri: avatar }} style={styles.previewImage} />
+          ) : (
+            <Icon name="camera-plus-outline" size={40} color="#ccc" />
+          )}
+        </TouchableOpacity>
       </View>
 
       <TextInput
@@ -226,7 +297,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   submitButton: {
-    backgroundColor:Colors.primaryColor,
+    backgroundColor: Colors.primaryColor,
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
@@ -242,7 +313,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 12,
     fontWeight: 'bold',
-    color:Colors.primaryColor,
+    color: Colors.primaryColor,
     marginBottom: 12,
   },
   optional: {

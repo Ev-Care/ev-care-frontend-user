@@ -7,7 +7,7 @@ import {
     signUpFailed 
 } from "./slice"; 
 
-import { signInAPI, verifyOtpAPI, signupAPI } from "./api";
+import { signInAPI, verifyOtpAPI, signupAPI, postSingleFileAPI } from "./api";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 // Async Thunks
@@ -53,7 +53,7 @@ export const postVerifyOtp = createAsyncThunk(
     }
   );
   
-  export const postSignUp = createAsyncThunk(
+export const postSignUp = createAsyncThunk(
     "auth/signUp",
     async (data, { rejectWithValue }) => {
       try {
@@ -61,6 +61,26 @@ export const postVerifyOtp = createAsyncThunk(
         
         if (response.status === 200 || response.status === 201) {
           return data;
+        } else {
+          throw new Error("Signup failed");
+        }
+      } catch (error) {
+        return rejectWithValue(error?.response?.data?.message || "Signup failed");
+      }
+    }
+  
+  );
+
+export const postSingleFile = createAsyncThunk(
+    "auth/singleFileUpload",
+    async (data, { rejectWithValue }) => {
+     
+      try {
+        // console.log("postSingleFile called with:", data);
+        const response = await postSingleFileAPI(data);
+        
+        if (response.status === 200 || response.status === 201) {
+          return response.data;
         } else {
           throw new Error("Signup failed");
         }

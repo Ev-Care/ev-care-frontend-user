@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const apiPostFileRequest = async (request) => {
     try {
-        // console.log("Calling API:", request);
+        // console.log("Calling API:", request.apiUrl);
         // console.log("Headers:", { "content-type": request.content_type, Authorization: `Bearer ${request.accessToken}` });
         // console.log("Request Body:", request.file);
 

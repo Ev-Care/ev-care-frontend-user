@@ -15,11 +15,11 @@ export const postSignIn = createAsyncThunk(
     "auth/signIn",
     async (data, { rejectWithValue }) => {
         try {
-            console.log("postSignIn called with:", data);
+           
             const response = await signInAPI(data);
 
             if (response.status === 200 || response.status === 201) {
-                console.log("API Response:", response.data);
+                // console.log("API Response:", response.data);
                 return response.data;
             } else {
                 throw new Error(response.data?.message || "OTP not sent, try again");
@@ -90,6 +90,7 @@ export const postSingleFile = createAsyncThunk(
     }
   
   );
+
   export const patchUpdateVendorProfile = createAsyncThunk(
     "auth/UpdateVendorProfile",
     async (data, { rejectWithValue }) => {
@@ -98,7 +99,7 @@ export const postSingleFile = createAsyncThunk(
         const response = await updateVendorAPI(data);
         console.log("response at crud func page",response);
         if (response.status === 200 || response.status === 201) {
-          
+         
           return response.data; // or `bodyData` if you want
         } else {
           console.log("resposne in else",response);

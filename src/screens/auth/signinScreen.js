@@ -69,7 +69,7 @@ const SigninScreen = ({ navigation }) => {
    
     try {
       const sanitizedPhoneNumber = phoneNumber.replace(/\s+/g, "");
-      console.log("Calling API with:", sanitizedPhoneNumber);
+      // console.log("Calling API with:", sanitizedPhoneNumber);
 
       // Dispatch the Redux action
       const response = await dispatch(postSignIn({ mobileNumber: sanitizedPhoneNumber })).unwrap();

@@ -154,6 +154,8 @@ useEffect(() => {
   }
   else{
     route.params.setAddress(address);
+    route.params.setCoordinate(selectedLocation);
+
   }
     // Replace current screen with Enroute instead of stacking
     navigation.dispatch(StackActions.pop(1));

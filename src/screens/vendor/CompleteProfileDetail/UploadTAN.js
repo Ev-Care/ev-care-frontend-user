@@ -25,6 +25,7 @@ import { selectToken, selectUser } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "./vendorDetailForm";
 import { patchUpdateVendorProfile } from "../../auth/services/crudFunction";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const UploadTAN = ({ route, navigation }) => {
   const [frontImage, setFrontImage] = useState(null);
@@ -33,7 +34,7 @@ const UploadTAN = ({ route, navigation }) => {
   const { VendorDetailAtPanPage } = route.params || {};
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
-  const userKey = useSelector(selectUser).user_key;
+  const user = useSelector(selectUser);
   const [imageloading, setImageLoading] = useState(false); 
 
 
@@ -114,14 +115,29 @@ const UploadTAN = ({ route, navigation }) => {
     };
     // console.log("Updated Vendor Detail at page 4 up:", VendorDetailAtTanPage);
     try {
-      const response = await dispatch(patchUpdateVendorProfile({detail:VendorDetailAtTanPage ,user_key:userKey, accessToken: accessToken})
-      ).unwrap();
       console.log("vendor Detail Submitted ", response);
-      console.log(
-        "Updated Vendor Detail at page 4 down:",
-        VendorDetailAtTanPage
-      );
-      navigation.navigate("PendingApprovalScreen", { VendorDetailAtTanPage });
+      const response = await dispatch(patchUpdateVendorProfile({detail:VendorDetailAtTanPage, user_key:user.user_key, accessToken: accessToken})
+      ).unwrap();
+      // console.log(
+      //   "Updated Vendor Detail Response: ",
+      //   response
+      // );
+      console.log("code = ",response?.code);
+      if (response?.code === 200 || response?.code === 201) {
+      
+      
+          await AsyncStorage.setItem("user", JSON.stringify(user));
+         
+          console.log("User data saved successfully:", response.payload.data);
+      
+        
+        Alert.alert("Success", "Vendor details updated successfully.");
+      } else {
+        console.error("Error saving user data:", error);
+        Alert.alert("Error", "Failed to update vendor details. Please try again.");
+      }
+
+      // navigation.navigate("PendingApprovalScreen", { VendorDetailAtTanPage });
     } catch (error) {
       console.error("Vendor detail submission failed:", error);
       Alert.alert(

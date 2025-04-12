@@ -2,9 +2,9 @@ import axios from "axios";
 
 export const apiPostRequest = async (request) => {
     try {
-        console.log("Calling API:", request.apiUrl);
-        console.log("Headers:", { "content-type": request.content_type });
-        console.log("Request Body:", request.data);
+        // console.log("Calling API:", request.apiUrl);
+        // console.log("Headers:", { "content-type": request.content_type });
+        // console.log("Request Body:", request.data);
 
         const response = await axios.post(request.apiUrl, request.data, {
             headers: {

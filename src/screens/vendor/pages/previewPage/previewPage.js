@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MapView, { Marker } from 'react-native-maps';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 // Define colors at the top for easy customization
 const COLORS = {
@@ -32,6 +33,29 @@ const { width } = Dimensions.get('window');
 const PreviewPage = ({navigation}) => {
   const [activeTab, setActiveTab] = useState(0);
   const scrollViewRef = useRef(null);
+ 
+  const route = useRoute();
+  const { stationData } = route.params; // Retrieve the passed data
+
+  console.log('Station Data:', stationData); // Log the station data for debugging
+  console.log('Chargers:', JSON.stringify(stationData.chargers, null, 2));
+  const handleSubmit = async () => {
+    try {
+      console.log('Submitting station data:', stationData);
+
+      // Call the API (replace with your actual API call)
+      const response = await fakeApiCall(stationData); // Replace `fakeApiCall` with your API function
+      console.log('Station added successfully:', response);
+
+      // Show success message
+      Alert.alert('Success', 'Station added successfully!');
+      navigation.goBack(); // Navigate back after successful submission
+    } catch (error) {
+      console.error('Error adding station:', error);
+      Alert.alert('Error', 'Failed to add station. Please try again.');
+    }
+  };
+
 
   const handleTabPress = (index) => {
     setActiveTab(index);
@@ -73,11 +97,11 @@ const PreviewPage = ({navigation}) => {
           <View style={styles.communityBadge}>
             <Text style={styles.communityText}>Community Listed</Text>
           </View>
-          <Text style={styles.stationName}>Gurukul apartment near cafe paramour</Text>
-          <Text style={styles.stationAddress}>Pune Vadgaon Budruk, Sinhgad College Rd</Text>
+          <Text style={styles.stationName}>{stationData?.stationName}</Text>
+          <Text style={styles.stationAddress}>{stationData?.address}</Text>
           <View style={styles.statusContainer}>
             <Text style={styles.openHour}>Open Hours</Text>
-            <Text style={styles.statusTime}>• 04:05 AM - 06:09 PM</Text>
+            <Text style={styles.statusTime}>• {stationData?.openHours}</Text>
             <View style={styles.newBadge}>
               <Text style={styles.newText}>New</Text>
             </View>
@@ -129,7 +153,7 @@ const PreviewPage = ({navigation}) => {
            }} style={styles.editButton}>
           <Text style={styles.editButtonText}>Edit</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.submitButton}>
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
           <Text style={styles.submitButtonText}>Submit</Text>
         </TouchableOpacity>
       </View>

@@ -29,8 +29,8 @@ const Stack = createStackNavigator();
 export function VendorStack() {
   // const [isApproved, setApproved] = useState(null);
   const user = useSelector(selectUser); // Get user data
-  console.log("user in vendor stack", user);
-  console.log("user in vendor stack", user.role.toLowerCase());
+  // console.log("user in vendor stack", user);
+  console.log("user role in vendor stack", user?.role.toLowerCase());
 
   useEffect(() => {
 
@@ -53,6 +53,7 @@ export function VendorStack() {
         </>
       ) : (
         <>
+        {user && user.role.toLowerCase() === "vendor" && (user.pan_no !== null && user.tan_no !== null && user.adhar_no !== null)}
           <Stack.Screen name="VendorBottomTabBar" component={VendorBottomTabBar} />
           <Stack.Screen name="VendorHome" component={VendorHome} />
           <Stack.Screen name="AllStations" component={AllStations} />

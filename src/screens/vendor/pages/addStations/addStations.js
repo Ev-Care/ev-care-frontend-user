@@ -1,4 +1,4 @@
-// AddStations.js
+// AddStations.js this is add station this is ravi
 import React, { useState } from 'react';
 import {
   View,
@@ -30,9 +30,9 @@ const amenities = [
 ];
 const connectors = [
   { id: 1, icon: 'ev-plug-ccs2', type: 'CCS-2' },
-  { id: 2, icon: 'ev-plug-chademo',type: 'CHAdeMO' },
+  { id: 2, icon: 'ev-plug-chademo', type: 'CHAdeMO' },
   { id: 3, icon: 'ev-plug-type2', type: 'Type-2' },
-  { id: 4, icon: 'ev-plug-type1',type: 'Wall' },
+  { id: 4, icon: 'ev-plug-type1', type: 'Wall' },
   { id: 5, icon: 'ev-plug-type2', type: 'GBT' },
 ];
 const AddStations = () => {
@@ -45,37 +45,43 @@ const AddStations = () => {
   const [closeTime, setCloseTime] = useState('');
   const [showPicker, setShowPicker] = useState(false);
   const [selectedField, setSelectedField] = useState(null);
- const [stationName,setStationName]=useState(null);
-  const [chargerType , setchargerType] = useState(null);
-  const [powerRating, setPowerRating] = useState (0);
+  const [stationName, setStationName] = useState(null);
+  const [chargerType, setchargerType] = useState(null);
+  const [powerRating, setPowerRating] = useState(0);
   const [chargerForms, setChargerForms] = useState([{}]);
-  const[selectedForm , setSelectedForm]=useState(null);
+  const [selectedForm, setSelectedForm] = useState(null);
+  const [coordinate ,setCoordinate] = useState(null);
   const addChargerForm = () => setChargerForms(prevForms => [...prevForms, {}]);
   const [connectorsList, setConnectorsList] = useState([]);
- 
-  const incrementConnector = (id) => {
+
+
+  const incrementConnector = (id, chargerIndex) => {
     setConnectorsList((prev) => {
-      const exists = prev.find((c) => c.id === id);
+      const exists = prev.find((c) => c.id === id && c.chargerIndex === chargerIndex);
       if (exists) {
         return prev.map((c) =>
-          c.id === id ? { ...c, count: c.count + 1 } : c
+          c.id === id && c.chargerIndex === chargerIndex
+            ? { ...c, count: c.count + 1 }
+            : c
         );
       } else {
-        return [...prev, { id, count: 1 }];
+        return [...prev, { id, count: 1, chargerIndex }];
       }
     });
   };
   
-  const decrementConnector = (id) => {
+  const decrementConnector = (id, chargerIndex) => {
     setConnectorsList((prev) =>
       prev
         .map((c) =>
-          c.id === id && c.count > 0 ? { ...c, count: c.count - 1 } : c
+          c.id === id && c.chargerIndex === chargerIndex && c.count > 0
+            ? { ...c, count: c.count - 1 }
+            : c
         )
-        .filter((c) => c.count > 0) 
+        .filter((c) => c.count > 0)
     );
   };
-  
+
   const handleTimeChange = (event, selectedDate) => {
     setShowPicker(false);
     if (selectedDate) {
@@ -118,12 +124,36 @@ const AddStations = () => {
     navigation.push("PickLocation", {
       addressFor: "stationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
+      setCoordinate:(newCoordinate )=>setCoordinate(newCoordinate)
+
     });
   };
   const handlePreview = () => {
-  navigation.push("PreviewPage");
-  };
+    // Validate required fields
+    if (!stationName || !address || chargerForms.length === 0) {
+      alert('Please fill in all required fields.');
+      return;
+    }
   
+    // Prepare the data for preview
+    const stationData = {
+      stationName,
+      address,
+      photo,
+      openHours: openHours === '24 Hours' ? '24 Hours' : { openTime, closeTime },
+      amenities: selectedAmenities,
+      chargers: chargerForms.map((_, index) => ({
+        chargerType: chargerForms[index].chargerType || null,
+        powerRating: chargerForms[index].powerRating || null,
+        connectors: connectorsList.filter((connector) => connector.chargerIndex === index),
+      })),
+    };
+  
+    console.log('Station Data:', JSON.stringify(stationData, null, 2));
+  
+    // Navigate to PreviewPage with the data
+    navigation.push("PreviewPage", { stationData });
+  };
   const handleVisibility = (form) => {
     if (selectedForm !== form) {
       setSelectedForm(form);
@@ -135,7 +165,7 @@ const AddStations = () => {
 
   return (
     <ScrollView style={styles.container}>
-       <MyStatusBar/>
+      <MyStatusBar />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-left" size={24} color={PRIMARY_COLOR} />
@@ -145,10 +175,14 @@ const AddStations = () => {
       </View>
 
       {locationDetail()}
-      {additionalDetail ()}
-      {chargerForms.map((_, index) => ( chargerDetail(index)))}
+      {additionalDetail()}
+      {chargerForms.map((_, index) => (
+        <View key={`charger-${index}`}>
+          {chargerDetail(index)}
+        </View>
+      ))}
       {/* Bottom Buttons */}
-      <View style={styles.bottomButtons}>     
+      <View style={styles.bottomButtons}>
         <TouchableOpacity onPress={handlePreview} style={styles.previewButton}>
           <Text style={styles.previewButtonText}>Preview</Text>
         </TouchableOpacity>
@@ -156,279 +190,324 @@ const AddStations = () => {
     </ScrollView>
   );
   function locationDetail() {
-    const [networkType, setNetworkType] = useState(''); 
-    const networkTypes = ['Type-1','Type-2','Type-3','Self']; 
-  
+    const [networkType, setNetworkType] = useState('');
+    const networkTypes = ['Type-1', 'Type-2', 'Type-3', 'Self'];
+
     return (
       <TouchableOpacity
-      style={styles.card}
-      onPress={() =>handleVisibility("locationdetail")}
-    >
-      <Text style={styles.sectionTitle}>Location Details</Text>
-       {selectedForm==="locationdetail"&&(<>
-       {/* Select Coordinate and Address on Map */}
-        <TouchableOpacity style={styles.mapButton} onPress={selectOnMap}>
-          <Text style={styles.mapButtonText}>Select on Map (required)</Text>
-        </TouchableOpacity>
-  
-        {/* Display Address */}
-        {address && (
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Home/Street/Locality, City, State, Pincode"
-            placeholderTextColor="gray"
-            multiline
-            value={address}
-            onChangeText={setAddress}
-          />
-        )}
-      
-      </>)}
-        </TouchableOpacity>
+        style={styles.card}
+        onPress={() => handleVisibility("locationdetail")}
+      >
+        <Text style={styles.sectionTitle}>Location Details</Text>
+        {selectedForm === "locationdetail" && (<>
+          {/* Select Coordinate and Address on Map */}
+          <TouchableOpacity style={styles.mapButton} onPress={selectOnMap}>
+            <Text style={styles.mapButtonText}>Select on Map (required)</Text>
+          </TouchableOpacity>
+
+          {/* Display Address */}
+          {address && (
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Home/Street/Locality, City, State, Pincode"
+              placeholderTextColor="gray"
+              multiline
+              value={address}
+              onChangeText={setAddress}
+            />
+          )}
+
+        </>)}
+      </TouchableOpacity>
     );
   }
- function additionalDetail (){
-    return(
+  function additionalDetail() {
+    return (
       <TouchableOpacity
-      style={styles.card}
-      onPress={() =>handleVisibility("additionaldetail")}
-    >
+        style={styles.card}
+        onPress={() => handleVisibility("additionaldetail")}
+      >
         <Text style={styles.sectionTitle}>Additional Details</Text>
-        {selectedForm ==="additionaldetail"&&(<>
-        {/* stationName */}
-        {stationNameSection()}
-        {/* Amenities Section  */}
-         {amenitiesSection()}
-        {/* Open Hours Section */}
-        {openHoursSection()}
-      
-        {/* Upload Photo Section */}
-        {uploadPhotoSection()}
+        {selectedForm === "additionaldetail" && (<>
+          {/* stationName */}
+          {stationNameSection()}
+          {/* Amenities Section  */}
+          {amenitiesSection()}
+          {/* Open Hours Section */}
+          {openHoursSection()}
 
-        
+          {/* Upload Photo Section */}
+          {uploadPhotoSection()}
+
+
         </>)}
-        </TouchableOpacity>)
+      </TouchableOpacity>)
   }
   function chargerDetail(index) {
-  
     return (
-       <TouchableOpacity
-      style={styles.card}
-      onPress={() =>handleVisibility("chargerdetail")}
-       >
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => handleVisibility("chargerdetail")}
+      >
         <View style={styles.chagerTitle}>
-        <Text style={styles.sectionTitle}>Charger Details {index+1}</Text>
-        {index > 0 && (
-        <TouchableOpacity onPress={() => removeChargerForm(index)} style={styles.deleteButton}>
-          <Icon name="close-circle" size={24} color="red" />
-        </TouchableOpacity>
-      )}
+          <Text style={styles.sectionTitle}>Charger Details {index + 1}</Text>
+          {index > 0 && (
+            <TouchableOpacity
+              onPress={() => removeChargerForm(index)}
+              style={styles.deleteButton}
+            >
+              <Icon name="close-circle" size={24} color="red" />
+            </TouchableOpacity>
+          )}
         </View>
-        {/* Charger Type  */}
-        {selectedForm==="chargerdetail"&&(
+        {/* Charger Type */}
+        {selectedForm === "chargerdetail" && (
           <>
-        <View style={styles.section}>
-      <Text style={styles.sectionLabel}>
-         Charger Type 
-      </Text>
-      <View style={styles.hoursContainer}>
-        <TouchableOpacity
-          style={[styles.hoursButton,chargerType === 'AC' && styles.selectedButton]}
-          onPress={() => {
-            setchargerType('AC');
-          }}
-        >
-          <Text style={[styles.buttonText, chargerType === 'AC' && styles.selectedButtonText]}>
-           AC
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.hoursButton, chargerType === 'DC' && styles.selectedButton]}
-          onPress={() => {
-           setchargerType('DC');
-          }}
-        >
-          <Text style={[styles.buttonText, chargerType === 'DC' && styles.selectedButtonText]}>
-           DC
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-        </View>
-          {/* power Rating  */}
-          <View style={styles.section}>
-      <Text style={styles.sectionLabel}>
-        Power Rating <Text style={styles.optional}>(in kW)</Text>
-      </Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Power Rating In kW"
-        value={powerRating}
-        onChangeText={setPowerRating}
-      />
-         </View>
-         {/* connectors  */}
-          {connectorsInfo()}
-        {/* Next Button */}
-        {index === chargerForms.length - 1 && (  <View style={styles.nextButtonContainer}>
-          <TouchableOpacity onPress={addChargerForm} style={styles.nextButton}>
-            <Text style={styles.nextButtonText}>+ Add more</Text>
-          </TouchableOpacity>
-        </View>)}
-        </>)}
-        </TouchableOpacity>
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Charger Type</Text>
+              <View style={styles.hoursContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.hoursButton,
+                    chargerForms[index]?.chargerType === "AC" &&
+                      styles.selectedButton,
+                  ]}
+                  onPress={() => {
+                    setChargerForms((prev) =>
+                      prev.map((charger, i) =>
+                        i === index
+                          ? { ...charger, chargerType: "AC" }
+                          : charger
+                      )
+                    );
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      chargerForms[index]?.chargerType === "AC" &&
+                        styles.selectedButtonText,
+                    ]}
+                  >
+                    AC
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.hoursButton,
+                    chargerForms[index]?.chargerType === "DC" &&
+                      styles.selectedButton,
+                  ]}
+                  onPress={() => {
+                    setChargerForms((prev) =>
+                      prev.map((charger, i) =>
+                        i === index
+                          ? { ...charger, chargerType: "DC" }
+                          : charger
+                      )
+                    );
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      chargerForms[index]?.chargerType === "DC" &&
+                        styles.selectedButtonText,
+                    ]}
+                  >
+                    DC
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            {/* Power Rating */}
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>
+                Power Rating <Text style={styles.optional}>(in kW)</Text>
+              </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Power Rating In kW"
+                value={chargerForms[index]?.powerRating || ""}
+                onChangeText={(text) =>
+                  setChargerForms((prev) =>
+                    prev.map((charger, i) =>
+                      i === index
+                        ? { ...charger, powerRating: text }
+                        : charger
+                    )
+                  )
+                }
+              />
+            </View>
+            {/* Connectors */}
+            {connectorsInfo(index)}
+            {/* Add More Chargers */}
+            {index === chargerForms.length - 1 && (
+              <View style={styles.nextButtonContainer}>
+                <TouchableOpacity onPress={addChargerForm} style={styles.nextButton}>
+                  <Text style={styles.nextButtonText}>+ Add more</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </>
+        )}
+      </TouchableOpacity>
     );
   }
- 
-  function connectorsInfo(){
-    return( <View style={styles.section}>
-      <Text style={styles.sectionLabel}>
-       Connectors 
-      </Text>
-      <View style={styles.connectorsBox}>
-      {connectors.map((connector) => {
-       const selectedConnector = connectorsList.find(c => c.id === connector.id);
-  return (
-    <View
-      key={connector.id}
-      style={[styles.connectorsItem]}
-    >
-      {/* Connector Icon */}
-      <View style={{ alignItems: "center",flexDirection:"row", gap:4}}>
-      <Icon name={connector.icon} size={24} color="#101942" />
-      <Text style={[styles.optional,{}]}>{connector.type}</Text>
-      </View>
 
-      {/* Increment Decrement Counter */}
-      <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
-        <TouchableOpacity
-          onPress={() => decrementConnector(connector.id)}
-          style={[styles.incDecButton, { backgroundColor: "#FF5722" }]}
-        >
-          <Text style={{ color: "#fff", fontSize: 14 }}>−</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.countText}>{selectedConnector?.count || 0}</Text>
-
-        <TouchableOpacity
-          onPress={() => incrementConnector(connector.id)}
-          style={[styles.incDecButton, { backgroundColor: "#101942" }]}
-        >
-          <Text style={{ color: "#fff", fontSize: 14 }}>+</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-})}
-
-      </View>
-        </View>);
-  }
+  function connectorsInfo(chargerIndex) {
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>Connectors</Text>
+        <View style={styles.connectorsBox}>
+          {connectors.map((connector) => {
+            // Find the count for the current connector in connectorsList
+            const connectorData = connectorsList.find(
+              (c) => c.id === connector.id && c.chargerIndex === chargerIndex
+            );
+            const count = connectorData ? connectorData.count : 0;
   
-  function amenitiesSection(){
-    return( 
-    <View style={styles.section}>
-      <Text style={styles.sectionLabel}>
-        Amenities <Text style={styles.optional}>(Optional)</Text>
-      </Text>
-      <View style={styles.amenitiesContainer}>
-        {amenities.map((amenity) => (
-          <TouchableOpacity
-            key={amenity.id}
-            style={[
-              styles.amenityItem,
-              selectedAmenities.includes(amenity.id) && styles.selectedAmenity,
-            ]}
-            onPress={() => toggleAmenity(amenity.id)}
-          >
-            <Icon
-              name={amenity.icon}
-              size={24}
-              color={selectedAmenities.includes(amenity.id) ? '#fff' : PRIMARY_COLOR}
-            />
-            <Text
+            return (
+              <View
+                key={`connector-${connector.id}`}
+                style={[styles.connectorsItem]}
+              >
+                {/* Connector Icon */}
+                <View style={{ alignItems: "center", flexDirection: "row", gap: 4 }}>
+                  <Icon name={connector.icon} size={24} color="#101942" />
+                  <Text style={[styles.optional]}>{connector.type}</Text>
+                </View>
+  
+                {/* Increment Decrement Counter */}
+                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
+                  <TouchableOpacity
+                    onPress={() => decrementConnector(connector.id, chargerIndex)}
+                    style={[styles.incDecButton, { backgroundColor: "#FF5722" }]}
+                  >
+                    <Text style={{ color: "#fff", fontSize: 14 }}>−</Text>
+                  </TouchableOpacity>
+  
+                  <Text style={styles.countText}>{count}</Text>
+  
+                  <TouchableOpacity
+                    onPress={() => incrementConnector(connector.id, chargerIndex)}
+                    style={[styles.incDecButton, { backgroundColor: "#101942" }]}
+                  >
+                    <Text style={{ color: "#fff", fontSize: 14 }}>+</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+  function amenitiesSection() {
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>
+          Amenities <Text style={styles.optional}>(Optional)</Text>
+        </Text>
+        <View style={styles.amenitiesContainer}>
+          {amenities.map((amenity) => (
+            <TouchableOpacity
+              key={amenity.id}
               style={[
-                styles.amenityLabel,
-                selectedAmenities.includes(amenity.id) && styles.selectedAmenityText,
+                styles.amenityItem,
+                selectedAmenities.includes(amenity.id) && styles.selectedAmenity,
               ]}
+              onPress={() => toggleAmenity(amenity.id)}
             >
-              {amenity.label}
+              <Icon
+                name={amenity.icon}
+                size={24}
+                color={selectedAmenities.includes(amenity.id) ? '#fff' : PRIMARY_COLOR}
+              />
+              <Text
+                style={[
+                  styles.amenityLabel,
+                  selectedAmenities.includes(amenity.id) && styles.selectedAmenityText,
+                ]}
+              >
+                {amenity.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    )
+  }
+  function openHoursSection() {
+    {/* Open Hours Section */ }
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>
+          Open Hours
+        </Text>
+        <View style={styles.hoursContainer}>
+          <TouchableOpacity
+            style={[styles.hoursButton, openHours === '24 Hours' && styles.selectedButton]}
+            onPress={() => {
+              setOpenHours('24 Hours');
+              setOpenTime('');
+              setCloseTime('');
+            }}
+          >
+            <Text style={[styles.buttonText, openHours === '24 Hours' && styles.selectedButtonText]}>
+              24 Hours
             </Text>
           </TouchableOpacity>
-        ))}
-      </View>
-    </View>
-)
-  }
-  function openHoursSection(){
-    {/* Open Hours Section */}
-    return(
-      <View style={styles.section}>
-      <Text style={styles.sectionLabel}>
-        Open Hours 
-      </Text>
-      <View style={styles.hoursContainer}>
-        <TouchableOpacity
-          style={[styles.hoursButton, openHours === '24 Hours' && styles.selectedButton]}
-          onPress={() => {
-            setOpenHours('24 Hours');
-            setOpenTime('');
-            setCloseTime('');
-          }}
-        >
-          <Text style={[styles.buttonText, openHours === '24 Hours' && styles.selectedButtonText]}>
-            24 Hours
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.hoursButton, openHours === 'Custom' && styles.selectedButton]}
-          onPress={() => setOpenHours('Custom')}
-        >
-          <Text style={[styles.buttonText, openHours === 'Custom' && styles.selectedButtonText]}>
-            Custom
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Show Time Inputs when "Custom" is selected */}
-      {openHours === 'Custom' && (
-        <View style={styles.customTimeContainer}>
           <TouchableOpacity
-            style={styles.timeInput}
-            onPress={() => {
-              setSelectedField('open');
-              setShowPicker(true);
-            }}
+            style={[styles.hoursButton, openHours === 'Custom' && styles.selectedButton]}
+            onPress={() => setOpenHours('Custom')}
           >
-            <Text>{openTime || 'Opening Time'}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.timeInput}
-            onPress={() => {
-              setSelectedField('close');
-              setShowPicker(true);
-            }}
-          >
-            <Text>{closeTime || 'Closing Time'}</Text>
+            <Text style={[styles.buttonText, openHours === 'Custom' && styles.selectedButtonText]}>
+              Custom
+            </Text>
           </TouchableOpacity>
         </View>
-      )}
 
-      {/* Time Picker (only shown when needed) */}
-      {showPicker && (
-        <DateTimePicker
-          mode="time"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          value={new Date()}
-          onChange={handleTimeChange}
-        />
-      )}
-    </View>)
+        {/* Show Time Inputs when "Custom" is selected */}
+        {openHours === 'Custom' && (
+          <View style={styles.customTimeContainer}>
+            <TouchableOpacity
+              style={styles.timeInput}
+              onPress={() => {
+                setSelectedField('open');
+                setShowPicker(true);
+              }}
+            >
+              <Text>{openTime || 'Opening Time'}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.timeInput}
+              onPress={() => {
+                setSelectedField('close');
+                setShowPicker(true);
+              }}
+            >
+              <Text>{closeTime || 'Closing Time'}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Time Picker (only shown when needed) */}
+        {showPicker && (
+          <DateTimePicker
+            mode="time"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            value={new Date()}
+            onChange={handleTimeChange}
+          />
+        )}
+      </View>)
 
   }
-  function uploadPhotoSection(){
-    return(<View style={styles.section}>
+  function uploadPhotoSection() {
+    return (<View style={styles.section}>
       <Text style={styles.sectionLabel}>
         Upload Photo <Text style={styles.optional}>(Optional)</Text>
       </Text>
@@ -445,10 +524,10 @@ const AddStations = () => {
     </View>);
   }
 
-  function stationNameSection(){
+  function stationNameSection() {
     return (<View style={styles.section}>
       <Text style={styles.sectionLabel}>
-        Station Name 
+        Station Name
       </Text>
       <TextInput
         style={styles.input}
@@ -476,12 +555,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: PRIMARY_COLOR,
   },
-  card:{
+  card: {
     backgroundColor: 'white',
     borderRadius: 12,
     margin: 16,
     padding: 20,
-    paddingBottom :5,
+    paddingBottom: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -495,15 +574,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   chagerTitle: {
-    flexDirection: "row", 
-    justifyContent: "space-between", 
-    alignItems: "center",  
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   picker: {
     fontSize: 12,
     height: 50,
     width: '100%',
-    borderColor :PRIMARY_COLOR,
+    borderColor: PRIMARY_COLOR,
     backgroundColor: '#f0f0f0',
     borderRadius: 8,
     fontWeight: 'bold',
@@ -517,7 +596,7 @@ const styles = StyleSheet.create({
     color: PRIMARY_COLOR,
     marginBottom: 12,
   },
-  networkType:{
+  networkType: {
     fontWeight: 'bold',
   },
   optional: {
@@ -533,21 +612,21 @@ const styles = StyleSheet.create({
   connectorsContainer: {
     flexDirection: 'column',
     flexWrap: 'wrap',
-    gap :10,
-    
+    gap: 10,
+
   },
-  incDecButton:{
+  incDecButton: {
     borderRadius: 4,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  countText:{
+  countText: {
     marginHorizontal: 10,
     fontSize: 14,
     borderColor: "#e0e0e0",
-    color:"gray",
+    color: "gray",
     borderRadius: 4,
-    borderWidth: 0.8, 
+    borderWidth: 0.8,
     paddingHorizontal: 10,
     paddingVertical: 4,
     textAlign: "center",
@@ -564,13 +643,13 @@ const styles = StyleSheet.create({
   connectorsItem: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center", 
+    alignItems: "center",
     borderWidth: 1,
     borderColor: "#e0e0e0",
     paddingHorizontal: 10,
-    paddingVertical: 10, 
+    paddingVertical: 10,
     marginBottom: 4,
-    borderRadius: 6, 
+    borderRadius: 6,
   }
   ,
   connectorsBox: {
@@ -684,7 +763,7 @@ const styles = StyleSheet.create({
     color: '#ff5722',
   },
   previewButton: {
-    justifyContent:'center',
+    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: "#FF5722",
     paddingVertical: 10,
@@ -723,7 +802,7 @@ const styles = StyleSheet.create({
     color: "#F4721E",
     fontSize: 12,
   },
-  
+
 });
 
 export default AddStations;

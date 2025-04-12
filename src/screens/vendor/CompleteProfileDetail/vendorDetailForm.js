@@ -61,6 +61,8 @@ const VendorDetailForm = () => {
 
   let vendorDetail = {};
 
+   
+
   const handleSubmit = () => {
     // if (!businessName || !address || !aadharNumber || !panNumber || !tanNumber || !avatarUri) {
     if (!avatarUri) {
@@ -123,9 +125,9 @@ const VendorDetailForm = () => {
           postSingleFile({ file: file, accessToken: accessToken })
         );
       
-        if (response?.payload.code === 200 || response?.payload.code === 201) {
-          setAvatarUri(response?.payload?.data?.filePathUrl); // Set the avatar URI to the response path
+        if (response?.payload?.code === 200 || response?.payload?.code === 201) {
           setAvatar(selectedImageUri);
+          setAvatarUri(response?.payload?.data?.filePathUrl); // Set the avatar URI to the response path
           console.log("Image URI set successfully:", avatarUri);
           setImageLoading(false);
         } else {

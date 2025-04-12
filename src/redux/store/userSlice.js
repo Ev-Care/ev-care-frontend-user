@@ -1,6 +1,6 @@
-import { createSlice } from "@reduxjs/toolkit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { postSignIn, postSignUp, postVerifyOtp, postSingleFile } from "../../screens/auth/services/crudFunction";
+import { createSlice } from "@reduxjs/toolkit";
+import { postSignIn, postSignUp, postSingleFile, postVerifyOtp, patchUpdateVendorProfile } from "../../screens/auth/services/crudFunction";
 
 
 const initialState = {
@@ -45,9 +45,7 @@ const authSlice = createSlice({
       })
       .addCase(postSignIn.fulfilled, (state, action) => {
         state.loading = false;
-        console.log("User signin in...");
-        console.log("otp sent with response: ", action.payload.message);
-        console.log("User signed in successfully:");
+        
       })
       .addCase(postSignIn.rejected, (state, action) => {
         state.loading = false;
@@ -61,7 +59,7 @@ const authSlice = createSlice({
       })
       .addCase(postVerifyOtp.fulfilled, (state, action) => {
         state.loading = false;
-        console.log("OTP verification response:", action.payload);
+        //console.log("OTP verification response:", action.payload);
         // console.log("OTP Verified by user and action.payload is: ", action.payload);
 
         // console.log("OTP verified successfully:", response.data);
@@ -110,6 +108,21 @@ const authSlice = createSlice({
       .addCase(postSingleFile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "File upload failed";
+      })
+      .addCase(patchUpdateVendorProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(patchUpdateVendorProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        console.log("User profile updated successfully:", action.payload);
+        // state.user = action.payload; // Assuming the API returns the updated user data
+        state.user = extractUser(action.payload.data); // Extract user data from the response
+        console.log("User data after update in slice:", state.user);
+      })
+      .addCase(patchUpdateVendorProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Profile update failed";
       });
 
   },

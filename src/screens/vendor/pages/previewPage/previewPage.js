@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef,useEffect } from 'react';
 import {
   View,
   Text,
@@ -30,15 +30,30 @@ const COLORS = {
 
 const { width } = Dimensions.get('window');
 
-const PreviewPage = ({navigation}) => {
+const PreviewPage = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const scrollViewRef = useRef(null);
- 
+  const mapRef = useRef(null); 
+
   const route = useRoute();
   const { stationData } = route.params; // Retrieve the passed data
 
   console.log('Station Data:', stationData); // Log the station data for debugging
   console.log('Chargers:', JSON.stringify(stationData.chargers, null, 2));
+
+  useEffect(() => {
+    if (mapRef.current && stationData.coordinates) {
+      const { latitude, longitude } = stationData.coordinates;
+      mapRef.current.animateCamera({
+        center: {
+          latitude: latitude || 0,
+          longitude: longitude || 0,
+        },
+        zoom: 15, // Adjust zoom level as needed
+      });
+    }
+  }, [stationData.coordinates]); // Trigger whenever coordinates change
+
   const handleSubmit = async () => {
     try {
       console.log('Submitting station data:', stationData);
@@ -56,7 +71,6 @@ const PreviewPage = ({navigation}) => {
     }
   };
 
-
   const handleTabPress = (index) => {
     setActiveTab(index);
     scrollViewRef.current.scrollTo({ x: index * width, animated: true });
@@ -69,39 +83,29 @@ const PreviewPage = ({navigation}) => {
       setActiveTab(index);
     }
   };
-  const renderStars = (rating) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <Icon
-          key={i}
-          name={i <= rating ? 'star' : 'star-outline'}
-          size={16}
-          color={COLORS.yellow}
-          style={{ marginRight: 2 }}
-        />
-      );
-    }
-    return <View style={{ flexDirection: 'row' }}>{stars}</View>;
-  };
 
   return (
     <View style={styles.container}>
-    
+      {/* Header */}
       <View style={styles.header}>
         <Image
-          source={{ uri:'https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }}
+          source={{
+            uri: stationData.photo || 'https://via.placeholder.com/400x200',
+          }}
           style={styles.mapBackground}
         />
         <View style={styles.overlay}>
           <View style={styles.communityBadge}>
             <Text style={styles.communityText}>Community Listed</Text>
           </View>
-          <Text style={styles.stationName}>{stationData?.stationName}</Text>
-          <Text style={styles.stationAddress}>{stationData?.address}</Text>
+          <Text style={styles.stationName}>{stationData.station_name}</Text>
+          <Text style={styles.stationAddress}>{stationData.address}</Text>
           <View style={styles.statusContainer}>
             <Text style={styles.openHour}>Open Hours</Text>
-            <Text style={styles.statusTime}>• {stationData?.openHours}</Text>
+            <Text style={styles.statusTime}>
+              • {stationData.open_hours_opening_time} -{' '}
+              {stationData.open_hours_closing_time}
+            </Text>
             <View style={styles.newBadge}>
               <Text style={styles.newText}>New</Text>
             </View>
@@ -115,17 +119,24 @@ const PreviewPage = ({navigation}) => {
           style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
           onPress={() => handleTabPress(0)}
         >
-          <Text style={[styles.tabText, activeTab === 0 && styles.activeTabText]}>Charger</Text>
+          <Text
+            style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
+          >
+            Charger
+          </Text>
           {activeTab === 0 && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
           onPress={() => handleTabPress(1)}
         >
-          <Text style={[styles.tabText, activeTab === 1 && styles.activeTabText]}>Details</Text>
+          <Text
+            style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
+          >
+            Details
+          </Text>
           {activeTab === 1 && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
-       
       </View>
 
       {/* Swipeable Content */}
@@ -139,18 +150,18 @@ const PreviewPage = ({navigation}) => {
       >
         {/* Charger Tab */}
         {chargerTab()}
-        {/* Details Tab */} 
+        {/* Details Tab */}
         {detailTab()}
-      
       </ScrollView>
-
-
 
       {/* Bottom Buttons */}
       <View style={styles.bottomButtons}>
-        <TouchableOpacity  onPress={() => {
+        <TouchableOpacity
+          onPress={() => {
             navigation.pop();
-           }} style={styles.editButton}>
+          }}
+          style={styles.editButton}
+        >
           <Text style={styles.editButtonText}>Edit</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
@@ -159,102 +170,88 @@ const PreviewPage = ({navigation}) => {
       </View>
     </View>
   );
-  function chargerTab(){
-    return( <ScrollView style={styles.tabContent}>
-      <View style={styles.chargerCard}>
-        <Text style={styles.chargerTitle}>Sunfuel AC 1</Text>
-        <View style={styles.chargerSpecs}>
-          <Text style={styles.chargerSpecText}>AC</Text>
-          <Text style={styles.chargerSpecText}>|</Text>
-          <Text style={styles.chargerSpecText}>60kW</Text>
-        </View>
-  
-        <View style={styles.connectorContainer}>
-          <View style={styles.connector}>
-            <Text style={styles.connectorTitle}>Connector 1</Text>
-            <View style={styles.connectorType}>
-              <Icon name="ev-plug-type1" size={20} color={COLORS.primary} />
-              <Text style={styles.connectorTypeText}>Wall</Text>
+
+  function chargerTab() {
+    return (
+      <ScrollView style={styles.tabContent}>
+        {stationData.chargers.map((charger, index) => (
+          <View key={index} style={styles.chargerCard}>
+            <Text style={styles.chargerTitle}>
+              Charger {index + 1} - {charger.charger_type}
+            </Text>
+            <View style={styles.chargerSpecs}>
+              <Text style={styles.chargerSpecText}>
+                {charger.charger_type}
+              </Text>
+              <Text style={styles.chargerSpecText}>|</Text>
+              <Text style={styles.chargerSpecText}>
+                {charger.power_rating || charger.max_power_kw} kW
+              </Text>
+            </View>
+
+            <View style={styles.connectorContainer}>
+              {charger.connectors.map((connector, connectorIndex) => (
+                <View key={connectorIndex} style={styles.connector}>
+                  <Text style={styles.connectorTitle}>
+                    Connector {connectorIndex + 1}
+                  </Text>
+                  <View style={styles.connectorType}>
+                    <Icon
+                      name="ev-plug-type1"
+                      size={20}
+                      color={COLORS.primary}
+                    />
+                    <Text style={styles.connectorTypeText}>
+                      Type {connector.connector_type_id}
+                    </Text>
+                  </View>
+                </View>
+              ))}
             </View>
           </View>
-  
-          <View style={styles.connector}>
-            <Text style={styles.connectorTitle}>Connector 2</Text>
-            <View style={styles.connectorType}>
-              <Icon name="ev-plug-chademo" size={20} color={COLORS.primary} />
-              <Text style={styles.connectorTypeText}>CHAdeMO</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-      <View style={styles.chargerCard}>
-        <Text style={styles.chargerTitle}>Sunfuel AC 1</Text>
-        <View style={styles.chargerSpecs}>
-          <Text style={styles.chargerSpecText}>AC</Text>
-          <Text style={styles.chargerSpecText}>|</Text>
-          <Text style={styles.chargerSpecText}>60kW</Text>
-        </View>
-  
-        <View style={styles.connectorContainer}>
-          <View style={styles.connector}>
-            <Text style={styles.connectorTitle}>Connector 1</Text>
-            <View style={styles.connectorType}>
-              <Icon name="ev-plug-type1" size={20} color={COLORS.primary} />
-              <Text style={styles.connectorTypeText}>Wall</Text>
-            </View>
-          </View>
-  
-          <View style={styles.connector}>
-            <Text style={styles.connectorTitle}>Connector 2</Text>
-            <View style={styles.connectorType}>
-              <Icon name="ev-plug-chademo" size={20} color={COLORS.primary} />
-              <Text style={styles.connectorTypeText}>CHAdeMO</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-    </ScrollView>);
-  };
-  function detailTab(){
-    return(<ScrollView style={styles.tabContent}>
-      <Text style={styles.sectionTitle}>Location Details</Text>
-      <View style={styles.mapContainer}>
+        ))}
+      </ScrollView>
+    );
+  }
+
+  function detailTab() {
+    return (
+      <ScrollView style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Location Details</Text>
+        <View style={styles.mapContainer}>
         <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: 18.4575,
-            longitude: 73.8508,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
+        ref={mapRef} // Attach the ref to the MapView
+        style={styles.map}
+        initialRegion={{
+          latitude: stationData.coordinates.latitude || 0,
+          longitude: stationData.coordinates.longitude || 0,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }}
+      >
+        <Marker
+          coordinate={{
+            latitude: stationData.coordinates.latitude || 0,
+            longitude: stationData.coordinates.longitude || 0,
           }}
-        >
-          <Marker
-            coordinate={{ latitude: 18.4575, longitude: 73.8508 }}
-            title="Sinhgad College"
-            description="Wadgaon Campus"
-          />
-        </MapView>
-      </View>
+          title={stationData.station_name}
+          description={stationData.address}
+        />
+      </MapView>
+        </View>
 
-      <View style={styles.landmarkContainer}>
-        <Text style={styles.landmarkTitle}>Landmark - Cafe Paramour</Text>
-      </View>
-
-      <Text style={styles.sectionTitle}>Amenities</Text>
-      <View style={styles.amenitiesContainer}>
-        <View style={styles.amenityItem}>
-          <Icon name="coffee" size={24} color={COLORS.primary} />
+        <Text style={styles.sectionTitle}>Amenities</Text>
+        <View style={styles.amenitiesContainer}>
+          {stationData.amenities.split(',').map((amenity, index) => (
+            <View key={index} style={styles.amenityItem}>
+              <Icon name="check-circle" size={24} color={COLORS.primary} />
+              <Text style={styles.connectorTypeText}>{amenity.trim()}</Text>
+            </View>
+          ))}
         </View>
-        <View style={styles.amenityItem}>
-          <Icon name="wifi" size={24} color={COLORS.primary} />
-        </View>
-        <View style={styles.amenityItem}>
-          <Icon name="cart" size={24} color={COLORS.primary} />
-        </View>
-      
-      </View>
-    </ScrollView>);
-  };
+      </ScrollView>
+    );
+  }
 };
 
 const styles = StyleSheet.create({

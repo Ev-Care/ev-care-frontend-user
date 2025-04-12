@@ -135,25 +135,46 @@ const AddStations = () => {
       return;
     }
   
-    // Prepare the data for preview
+    // Transform amenities into a comma-separated string
+    const amenitiesString = selectedAmenities
+      .map((id) => amenities.find((amenity) => amenity.id === id)?.label)
+      .join(',');
+  
+    // Transform chargers and connectors
+    const chargers = chargerForms.map((charger, index) => ({
+      charger_type: charger.chargerType || null,
+      power_rating: parseFloat(charger.powerRating) || null,
+      connectors: connectorsList
+        .filter((connector) => connector.chargerIndex === index)
+        .flatMap((connector) =>
+          Array(connector.count).fill({
+            connector_type_id: connector.id,
+            connector_status: 'operational',
+          })
+        ),
+    }));
+  
+    // Prepare the final station data
     const stationData = {
-      stationName,
+      owner_id: 1, // Replace with the actual owner ID if available
+      station_name: stationName,
       address,
-      photo,
-      openHours: openHours === '24 Hours' ? '24 Hours' : { openTime, closeTime },
-      amenities: selectedAmenities,
-      chargers: chargerForms.map((_, index) => ({
-        chargerType: chargerForms[index].chargerType || null,
-        powerRating: chargerForms[index].powerRating || null,
-        connectors: connectorsList.filter((connector) => connector.chargerIndex === index),
-      })),
+      coordinates: {
+        latitude: coordinate?.latitude || null,
+        longitude: coordinate?.longitude || null,
+      },
+      amenities: amenitiesString,
+      open_hours_opening_time: openHours === '24 Hours' ? '00:00:00' : openTime || '00:00:00',
+      open_hours_closing_time: openHours === '24 Hours' ? '23:59:59' : closeTime || '23:59:59',
+      chargers,
     };
   
-    console.log('Station Data:', JSON.stringify(stationData, null, 2));
+    console.log('Transformed Station Data:', JSON.stringify(stationData, null, 2));
   
-    // Navigate to PreviewPage with the data
-    navigation.push("PreviewPage", { stationData });
+    // Navigate to PreviewPage with the transformed data
+    navigation.push('PreviewPage', { stationData });
   };
+  
   const handleVisibility = (form) => {
     if (selectedForm !== form) {
       setSelectedForm(form);

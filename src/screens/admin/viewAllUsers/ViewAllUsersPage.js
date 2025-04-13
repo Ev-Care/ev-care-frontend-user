@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-import { useEffect, useRef } from 'react';
 
-const AdminDashboard = () => {
+const ViewAllUsers = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -16,7 +15,7 @@ const AdminDashboard = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🚧Admin Dashboard Is Currently Under Development 🚧</Text>
+      <Text style={styles.title}>🚧 Under Development 🚧</Text>
       <Animated.Text style={[styles.subtitle, { opacity: fadeAnim }]}>
         Stay tuned! We're building something amazing.
       </Animated.Text>
@@ -44,4 +43,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AdminDashboard;
+export default ViewAllUsers;

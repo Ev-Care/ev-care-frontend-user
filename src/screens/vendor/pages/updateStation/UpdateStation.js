@@ -5,11 +5,9 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
   TextInput,
   ScrollView,
   Image,
-  Alert,
   Platform,
 } from 'react-native';
 import MyStatusBar from "../../../../components/myStatusBar";
@@ -17,13 +15,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
-import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
-import { setupImagePicker } from "../../CompleteProfileDetail/vendorDetailForm";
-import { postSingleFile } from "../../../auth/services/crudFunction";
-import { selectToken, selectUser } from "../../../auth/services/selector";
-
-
 
 const PRIMARY_COLOR = '#101942';
 const amenities = [
@@ -41,7 +33,7 @@ const connectors = [
   { id: 4, icon: 'ev-plug-type1', type: 'Wall' },
   { id: 5, icon: 'ev-plug-type2', type: 'GBT' },
 ];
-const AddStations = () => {
+const UpdateStation = () => {
   const navigation = useNavigation();
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [openHours, setOpenHours] = useState('24 Hours');
@@ -56,14 +48,10 @@ const AddStations = () => {
   const [powerRating, setPowerRating] = useState(0);
   const [chargerForms, setChargerForms] = useState([{}]);
   const [selectedForm, setSelectedForm] = useState(null);
-  const [coordinate, setCoordinate] = useState(null);
+  const [coordinate ,setCoordinate] = useState(null);
   const addChargerForm = () => setChargerForms(prevForms => [...prevForms, {}]);
   const [connectorsList, setConnectorsList] = useState([]);
-  const accessToken = useSelector(selectToken); // Get access token from Redux store
-  const dispatch = useDispatch(); // Get the dispatch function
-  const [imageloading, setImageLoading] = useState(false);
-  const [viewImage, setViewImage] = useState(null);
-  const user = useSelector(selectUser); // Get user data
+
 
   const incrementConnector = (id, chargerIndex) => {
     setConnectorsList((prev) => {
@@ -79,7 +67,7 @@ const AddStations = () => {
       }
     });
   };
-
+  
   const decrementConnector = (id, chargerIndex) => {
     setConnectorsList((prev) =>
       prev
@@ -127,37 +115,14 @@ const AddStations = () => {
     });
 
     if (!result.canceled) {
-
-      const imageUri = result.assets[0].uri;
-      setImageLoading(true);
-      const file = await setupImagePicker(imageUri);
-      console.log("File selected", file);
-      try {
-        const response = await dispatch(
-          postSingleFile({ file: file, accessToken: accessToken })
-        );
-
-        if (response?.payload.code === 200 || response?.payload.code === 201) {
-
-          setPhoto(response?.payload?.data?.filePathUrl);
-          setViewImage(imageUri);
-          console.log("Station image uploaded:", response?.payload?.data?.filePathUrl);
-
-        } else {
-          Alert.alert("Error", "File Should be less than 5 MB");
-        }
-      } catch (error) {
-        Alert.alert("Error", "Something went wrong while uploading.");
-      } finally {
-        setImageLoading(false);
-      }
+      setPhoto(result.assets[0].uri);
     }
   };
   const selectOnMap = () => {
     navigation.push("PickLocation", {
       addressFor: "stationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
-      setCoordinate: (newCoordinate) => setCoordinate(newCoordinate)
+      setCoordinate:(newCoordinate )=>setCoordinate(newCoordinate)
 
     });
   };
@@ -167,12 +132,12 @@ const AddStations = () => {
       alert('Please fill in all required fields.');
       return;
     }
-
+  
     // Transform amenities into a comma-separated string
     const amenitiesString = selectedAmenities
       .map((id) => amenities.find((amenity) => amenity.id === id)?.label)
       .join(',');
-
+  
     // Transform chargers and connectors
     const chargers = chargerForms.map((charger, index) => ({
       charger_type: charger.chargerType || null,
@@ -181,14 +146,15 @@ const AddStations = () => {
         .filter((connector) => connector.chargerIndex === index)
         .flatMap((connector) =>
           Array(connector.count).fill({
-            connector_type_id: connector.id, // Only include connector_type_id
+            connector_type_id: connector.id,
+            connector_status: 'operational',
           })
         ),
     }));
-
+  
     // Prepare the final station data
     const stationData = {
-      owner_id: user.id, // Replace with the actual owner ID if available
+      owner_id: 1, // Replace with the actual owner ID if available
       station_name: stationName,
       address,
       coordinates: {
@@ -199,15 +165,14 @@ const AddStations = () => {
       open_hours_opening_time: openHours === '24 Hours' ? '00:00:00' : openTime || '00:00:00',
       open_hours_closing_time: openHours === '24 Hours' ? '23:59:59' : closeTime || '23:59:59',
       chargers,
-      station_images: photo ? [photo] : [], // Include the photo if available
     };
-
+  
     console.log('Transformed Station Data:', JSON.stringify(stationData, null, 2));
-
+  
     // Navigate to PreviewPage with the transformed data
     navigation.push('PreviewPage', { stationData });
   };
-
+  
   const handleVisibility = (form) => {
     if (selectedForm !== form) {
       setSelectedForm(form);
@@ -224,7 +189,7 @@ const AddStations = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-left" size={24} color={PRIMARY_COLOR} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>List a Station</Text>
+        <Text style={styles.headerTitle}>Update Station</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -324,7 +289,7 @@ const AddStations = () => {
                   style={[
                     styles.hoursButton,
                     chargerForms[index]?.chargerType === "AC" &&
-                    styles.selectedButton,
+                      styles.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -340,7 +305,7 @@ const AddStations = () => {
                     style={[
                       styles.buttonText,
                       chargerForms[index]?.chargerType === "AC" &&
-                      styles.selectedButtonText,
+                        styles.selectedButtonText,
                     ]}
                   >
                     AC
@@ -350,7 +315,7 @@ const AddStations = () => {
                   style={[
                     styles.hoursButton,
                     chargerForms[index]?.chargerType === "DC" &&
-                    styles.selectedButton,
+                      styles.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -366,7 +331,7 @@ const AddStations = () => {
                     style={[
                       styles.buttonText,
                       chargerForms[index]?.chargerType === "DC" &&
-                      styles.selectedButtonText,
+                        styles.selectedButtonText,
                     ]}
                   >
                     DC
@@ -421,7 +386,7 @@ const AddStations = () => {
               (c) => c.id === connector.id && c.chargerIndex === chargerIndex
             );
             const count = connectorData ? connectorData.count : 0;
-
+  
             return (
               <View
                 key={`connector-${connector.id}`}
@@ -432,7 +397,7 @@ const AddStations = () => {
                   <Icon name={connector.icon} size={24} color="#101942" />
                   <Text style={[styles.optional]}>{connector.type}</Text>
                 </View>
-
+  
                 {/* Increment Decrement Counter */}
                 <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
                   <TouchableOpacity
@@ -441,9 +406,9 @@ const AddStations = () => {
                   >
                     <Text style={{ color: "#fff", fontSize: 14 }}>−</Text>
                   </TouchableOpacity>
-
+  
                   <Text style={styles.countText}>{count}</Text>
-
+  
                   <TouchableOpacity
                     onPress={() => incrementConnector(connector.id, chargerIndex)}
                     style={[styles.incDecButton, { backgroundColor: "#101942" }]}
@@ -563,16 +528,14 @@ const AddStations = () => {
   function uploadPhotoSection() {
     return (<View style={styles.section}>
       <Text style={styles.sectionLabel}>
-        Upload Photo <Text style={styles.optional}>(Required)</Text>
+        Upload Photo <Text style={styles.optional}>(Optional)</Text>
       </Text>
       <Text style={styles.photoDescription}>
         Contribute to smoother journeys; include a location/charger photo.
       </Text>
       <TouchableOpacity style={styles.photoUpload} onPress={handleImagePick}>
-        {imageloading ? (
-          <ActivityIndicator size={40} color="#ccc" />
-        ) : viewImage ? (
-          <Image source={{ uri: viewImage }} style={styles.previewImage} />
+        {photo ? (
+          <Image source={{ uri: photo }} style={styles.previewImage} />
         ) : (
           <Icon name="camera-plus-outline" size={40} color="#ccc" />
         )}
@@ -861,4 +824,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default AddStations;
+export default UpdateStation;

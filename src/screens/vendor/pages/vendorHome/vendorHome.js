@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -27,6 +27,8 @@ import MyStatusBar from "../../../../components/myStatusBar";
 import { useNavigation } from "@react-navigation/native";
 import { selectUser } from "../../../auth/services/selector";
 import { useSelector, useDispatch } from "react-redux";
+import { selectStation } from "../../services/selector";
+import { fetchStations } from "../../services/crudFunction";
 // Colors
 const COLORS = {
   primary: "#101942",
@@ -35,14 +37,33 @@ const COLORS = {
   darkGray: "#9E9E9E",
   white: "#FFFFFF",
   black: "#000000",
-  green:"#00FF00",
+  green: "#00FF00",
 };
 
-const VendorHome = () => {
-    const navigation = useNavigation();
+const VendorHome =  () => {
+  const navigation = useNavigation();
   const [isLive, setIsLive] = useState(false);
-    const user = useSelector(selectUser);
-    const dispatch = useDispatch();
+  const user = useSelector(selectUser);
+  const dispatch = useDispatch();
+  
+  useEffect(() => {
+    // console.log("useEffect called");
+  
+    const fetchData = async () => {
+      if (user?.id) {
+        console.log("Dispatching fetchStations for user ID:", user?.id);
+        await dispatch(fetchStations(user?.id));
+      } else {
+        console.log("User ID is not available");
+      }
+    };
+  
+    fetchData();
+  
+    return () => {
+      console.log("Cleaning up VendorHome...");
+    };
+  }, [user?.id, dispatch]);
   // Get current time to display appropriate greeting
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -50,6 +71,10 @@ const VendorHome = () => {
     if (hour < 18) return "Good Afternoon";
     return "Good Evening";
   };
+
+  const stations = useSelector(selectStation);
+  
+  
 
   const feature = [
     {
@@ -63,20 +88,25 @@ const VendorHome = () => {
       description: "toggle below button to Enable Desable Availability",
     },
   ];
-
+  function getFirstName(fullName) {
+    if (!fullName) return "";
+    return fullName.trim().split(" ")[0];
+  }
   return (
     <SafeAreaView style={styles.container}>
-       <MyStatusBar/>
+      <MyStatusBar />
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.greetingContainer}>
-            <Text style={styles.greeting}>Hi {user?.name} !</Text>
+          <Text style={styles.greeting}>
+      Hi {getFirstName(user?.business_name)} {" "}!
+       </Text>
             <Text style={styles.subGreeting}>{getGreeting()}</Text>
           </View>
 
           <TouchableOpacity style={styles.notificationButton}>
-            <Feather name="bell" size={24} color={COLORS.black} />
+            {/* <Feather name="bell" size={24} color={COLORS.black} /> */}
           </TouchableOpacity>
         </View>
         {/* Search Bar */}
@@ -126,10 +156,10 @@ const VendorHome = () => {
 
   function manageStationCard() {
     return (
-      <TouchableOpacity  onPress={() => navigation.navigate("AllStations")} style={[styles.featureCard, { backgroundColor: COLORS.primary }]}>
+      <TouchableOpacity onPress={() => navigation.navigate("AllStations")} style={[styles.featureCard, { backgroundColor: COLORS.primary }]}>
         <View style={styles.featureCardHeader}>
           <Text style={[styles.noOfStations, { color: COLORS.white }]}>
-            8 Stations
+            {stations?.length} Stations
           </Text>
           <TouchableOpacity>
             <Feather name="more-vertical" size={18} color={COLORS.white} />
@@ -148,7 +178,7 @@ const VendorHome = () => {
           Manage Stations
         </Text>
         <Text style={{ fontSize: 10, color: COLORS.white, marginTop: 5 }}>
-        Click to Manage Stations & Ports Availability in Real-Time
+          Click to Manage Stations & Ports Availability in Real-Time
         </Text>
 
         <View style={styles.availabilityContainer}>
@@ -167,7 +197,7 @@ const VendorHome = () => {
   }
   function viewBookingsCard() {
     return (
-      <View style={[styles.featureCard, { backgroundColor:  COLORS.primary }]}>
+      <View style={[styles.featureCard, { backgroundColor: COLORS.primary }]}>
         <View style={styles.featureCardHeader}>
           <Text style={[styles.noOfStations, { color: COLORS.white }]}>
             19 Bookings
@@ -189,7 +219,7 @@ const VendorHome = () => {
           Current Bookings
         </Text>
         <Text style={{ fontSize: 10, color: COLORS.white, marginTop: 5 }}>
-        View, modify, and track all your station booking requests with ease and accuracy
+          View, modify, and track all your station booking requests with ease and accuracy
         </Text>
       </View>
     );
@@ -248,7 +278,7 @@ const VendorHome = () => {
           Help & Support
         </Text>
         <Text style={{ fontSize: 10, color: COLORS.darkGray, marginTop: 5 }}>
-         Get 24 x 7 assistance for all your queries with our dedicated support team, ensuring seamless station management.
+          Get 24 x 7 assistance for all your queries with our dedicated support team, ensuring seamless station management.
         </Text>
       </TouchableOpacity>
     );

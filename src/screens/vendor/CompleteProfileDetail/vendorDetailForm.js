@@ -65,7 +65,7 @@ const VendorDetailForm = () => {
 
   const handleSubmit = () => {
     // if (!businessName || !address || !aadharNumber || !panNumber || !tanNumber || !avatarUri) {
-    if (!avatarUri) {
+    if (!avatarUri ,!businessName || !address || !aadharNumber || !panNumber || !tanNumber ) {
       Alert.alert("Error", "All fields are required!");
       return;
     }
@@ -133,7 +133,7 @@ const VendorDetailForm = () => {
         } else {
           // console.error("Image upload failed:", response.data);
           setImageLoading(false);
-          Alert.alert("Error", "Failed to upload image. Please try again.");
+          Alert.alert("Error", "File Should be less than 5 MB");
         }
       }
     } catch (error) {

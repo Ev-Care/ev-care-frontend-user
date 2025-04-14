@@ -83,12 +83,12 @@ const UploadTAN = ({ route, navigation }) => {
           if (type === "front") {
             setFrontImage(imageUri);
             setFrontImageUri(response?.payload?.data?.filePathUrl);
-            console.log("Front image uploaded:", response?.payload?.data?.filePathUrl);
+            console.log("TAN image uploaded:", response?.payload?.data?.filePathUrl);
           } else if (type === "back") {
             // For future-proofing
           }
         } else {
-          Alert.alert("Error", "Failed to upload image. Please try again.");
+          Alert.alert("Error", "File Should be less than 5 MB");
         }
       } catch (error) {
         Alert.alert("Error", "Something went wrong while uploading.");

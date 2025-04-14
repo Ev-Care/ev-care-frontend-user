@@ -136,7 +136,7 @@ const VendorProfile = () => {
       {profileOption({
         option: "Edit Profile",
         iconName: "person",
-        onPress: () =>  navigation.navigate("EditProfileScreen"),
+        onPress: () =>  navigation.navigate("EditProfileVendor"),
       })}
         
       {profileOption({

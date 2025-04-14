@@ -10,6 +10,7 @@ import {
   Dimensions,
   Platform,
   Snackbar,
+  TextInput,
   Linking,
 } from 'react-native';
 import {
@@ -22,10 +23,11 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MapView, { Marker } from 'react-native-maps';
+import { Overlay } from "@rneui/themed";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: '#101942',
-  accent: '#FF5722', // Orange
+  accent: '#ff7f50', // Orange
   lightPurple: '#E6D8F2',
   white: '#FFFFFF',
   gray: '#8A94A6',
@@ -62,6 +64,16 @@ const { width } = Dimensions.get('window');
   },
 ];
 const ChargingStationDetailScreen = () => {
+  // for  rating Start 
+   const [showRateNowDialog, setshowRateNowDialog] = useState(false);
+   const [reviewComment, setReviewComment] = useState('');
+    const [rate1, setRate1] = useState(false);
+    const [rate2, setRate2] = useState(false);
+    const [rate3, setRate3] = useState(false);
+    const [rate4, setRate4] = useState(false);
+    const [rate5, setRate5] = useState(false);
+ // for  rating end
+
   const [activeTab, setActiveTab] = useState(0);
   const [inFavorite, setinFavorite] = useState(false);
   const [showSnackBar, setshowSnackBar] = useState(false);
@@ -176,8 +188,15 @@ const ChargingStationDetailScreen = () => {
       <View style={styles.bottomButtons}>
         <TouchableOpacity onPress={openGoogleMaps} style={styles. directionButton}>
           <Text style={styles. directionButtonText}>Get Direction</Text>
+       
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => {
+                setshowRateNowDialog(true);
+              }} style={styles. rateNowButton}>
+          <Text style={styles. directionButtonText}>Rate Now</Text>
         </TouchableOpacity>
       </View>
+      {rateNowDialog()}
     </View>
   );
   function chargerTab(){
@@ -327,7 +346,172 @@ function snackBarInfo() {
     </Snackbar>
   );
 }
-  
+function rateNowDialog() {
+  return (
+    <Overlay
+      isVisible={showRateNowDialog}
+      onBackdropPress={() => setshowRateNowDialog(false)}
+      overlayStyle={styles.dialogStyle}
+    >
+      <View>
+        <Image
+          source={require("../../../../assets/images/icons/rating.png")}
+          style={styles.ratingImageStyle}
+        />
+        <Text
+          style={{
+            ...Fonts.blackColor18Medium,
+            textAlign: "center",
+            marginHorizontal: Sizes.fixPadding * 2.0,
+          }}
+        >
+          Rate your charging experience..
+        </Text>
+        {rating()}
+
+        <TextInput
+          value={reviewComment}
+          onChangeText={(text) => setReviewComment(text)}
+          placeholder="Write your feedback here..."
+          placeholderTextColor="#999"
+          multiline
+          style={{
+            borderWidth: 1,
+            borderColor: '#ccc',
+            borderRadius: 8,
+            padding: 10,
+            marginTop: Sizes.fixPadding * 1.5,
+            marginHorizontal: Sizes.fixPadding * 1.5,
+            textAlignVertical: 'top',
+            minHeight: 80,
+            fontSize: 12,
+            color: '#333',
+          }}
+        />
+
+        <View
+          style={{
+            ...commonStyles.rowAlignCenter,
+            marginTop: Sizes.fixPadding,
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              setshowRateNowDialog(false);
+            }}
+            style={{
+              ...styles.noButtonStyle,
+              ...styles.dialogYesNoButtonStyle,
+            }}
+          >
+            <Text style={{ ...Fonts.blackColor16Medium }}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              setshowRateNowDialog(false);
+              // You can handle reviewComment submission here
+            }}
+            style={{
+              ...styles.yesButtonStyle,
+              ...styles.dialogYesNoButtonStyle,
+            }}
+          >
+            <Text style={{ ...Fonts.whiteColor16Medium }}>Submit</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Overlay>
+  );
+}
+
+
+function rating() {
+  return (
+    <View style={{ ...styles.ratingWrapStyle }}>
+      <MaterialIcons
+        name={rate1 ? "star" : "star-border"}
+        size={screenWidth / 12.5}
+        color={Colors.primaryColor}
+        onPress={() => {
+          if (rate1) {
+            setRate2(false);
+            setRate3(false);
+            setRate4(false);
+            setRate5(false);
+          } else {
+            setRate1(true);
+          }
+        }}
+      />
+      <MaterialIcons
+        name={rate2 ? "star" : "star-border"}
+        size={screenWidth / 12.5}
+        color={Colors.primaryColor}
+        onPress={() => {
+          if (rate2) {
+            setRate1(true);
+            setRate3(false);
+            setRate4(false);
+            setRate5(false);
+          } else {
+            setRate2(true);
+            setRate1(true);
+          }
+        }}
+      />
+      <MaterialIcons
+        name={rate3 ? "star" : "star-border"}
+        size={screenWidth / 12.5}
+        color={Colors.primaryColor}
+        onPress={() => {
+          if (rate3) {
+            setRate4(false);
+            setRate5(false);
+            setRate2(true);
+          } else {
+            setRate3(true);
+            setRate2(true);
+            setRate1(true);
+          }
+        }}
+      />
+      <MaterialIcons
+        name={rate4 ? "star" : "star-border"}
+        size={screenWidth / 12.5}
+        color={Colors.primaryColor}
+        onPress={() => {
+          if (rate4) {
+            setRate5(false);
+            setRate3(true);
+          } else {
+            setRate4(true);
+            setRate3(true);
+            setRate2(true);
+            setRate1(true);
+          }
+        }}
+      />
+      <MaterialIcons
+        name={rate5 ? "star" : "star-border"}
+        size={screenWidth / 12.5}
+        color={Colors.primaryColor}
+        onPress={() => {
+          if (rate5) {
+            setRate4(true);
+          } else {
+            setRate5(true);
+            setRate4(true);
+            setRate3(true);
+            setRate2(true);
+            setRate1(true);
+          }
+        }}
+      />
+    </View>
+  );
+}
 };
 
 const styles = StyleSheet.create({
@@ -575,6 +759,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: '#E0E0E0',
+    gap: 10,
   },
  
   directionButton: {
@@ -585,11 +770,62 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  rateNowButton: {
+    flex: 1,
+    backgroundColor:COLORS.accent ,
+    paddingVertical: 12,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   directionButtonText: {
     color: COLORS.white,
     fontSize: 14,
     fontWeight: 'bold',
   },
+    dialogStyle: {
+      backgroundColor: Colors.whiteColor,
+      borderRadius: Sizes.fixPadding - 5.0,
+      width: "85%",
+      padding: 0.0,
+      elevation: 0,
+    },
+      ratingImageStyle: {
+        marginTop: Sizes.fixPadding * 1.5,
+        width: 70.0,
+        height: 60.0,
+        resizeMode: "contain",
+        alignSelf: "center",
+      },
+      ratingWrapStyle: {
+        ...commonStyles.rowAlignCenter,
+        justifyContent: "center",
+        marginVertical: Sizes.fixPadding + 5.0,
+      },
+        dialogYesNoButtonStyle: {
+          flex: 1,
+          ...commonStyles.shadow,
+          borderTopWidth: Platform.OS == "ios" ? 0 : 1.0,
+          padding: Sizes.fixPadding,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        noButtonStyle: {
+          backgroundColor: Colors.whiteColor,
+          borderTopColor: Colors.extraLightGrayColor,
+          borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+        },
+        yesButtonStyle: {
+          borderTopColor: Colors.primaryColor,
+          backgroundColor: Colors.primaryColor,
+          borderBottomRightRadius: Sizes.fixPadding - 5.0,
+        },
+        dialogCancelTextStyle: {
+          marginVertical: Sizes.fixPadding,
+          marginHorizontal: Sizes.fixPadding * 2.0,
+          textAlign: "center",
+          ...Fonts.blackColor18Medium,
+        },
 });
 
 export default ChargingStationDetailScreen;

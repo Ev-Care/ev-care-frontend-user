@@ -1,0 +1,35 @@
+import {apiGetRequest } from "../../../redux/api/get";
+import {apiPostRequest } from "../../../redux/api/post";
+import {apiPatchRequest } from "../../../redux/api/patch";
+
+const API_URL = process.env.APP_BACKEND_API || "http://89.116.34.17:3010";
+
+// API CALLS
+export const postStationAPI = (data) =>
+    apiPostRequest({
+    apiUrl: `${API_URL}/charging-stations/create-station`,
+    content_type: "application/json",
+    data: data.stationData,
+    accessToken: data.accessToken,
+  });
+export const getAllStationsAPI = (data) =>
+    apiGetRequest({
+    apiUrl: `${API_URL}/charging-stations?owner_id=${data.owner_id}`,
+    content_type: "application/json",
+    accessToken: data.accessToken,
+  });
+export const getStationByIdAPI = (data) =>
+    apiGetRequest({
+    apiUrl: `${API_URL}/charging-stations/${data.station_id}`,
+    content_type: "application/json",
+    accessToken: data.accessToken,
+  });
+
+export const updateStationsChargersConnectorsStatusAPI = (data) =>
+    apiPatchRequest({
+    apiUrl: `${API_URL}/charging-stations/change-status/${data.owner_id}`,
+    content_type: "application/json",
+    data: {statusType : data.statusType, status: data.status},
+    accessToken: data.accessToken,
+  });
+

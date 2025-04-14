@@ -13,7 +13,7 @@ import AddStations from "../screens/vendor/pages/addStations/addStations";
 import VendorHome from "../screens/vendor/pages/vendorHome/vendorHome";
 import AllStations from "../screens/vendor/pages/allStations/allStations";
 import StationManagement from "../screens/vendor/pages/stationManagement/stationManagement";
-import EditProfileScreen from "../screens/user/editProfile/editProfileScreen";
+
 import TermsAndConditionsScreen from "../screens/user/termsAndConditions/termsAndConditionsScreen";
 import FaqScreen from "../screens/user/faq/faqScreen";
 import PrivacyPolicyScreen from "../screens/user/privacyPolicy/privacyPolicyScreen";
@@ -23,6 +23,8 @@ import PreviewPage from "../screens/vendor/pages/previewPage/previewPage";
 import { useSelector } from "react-redux";
 import { selectProfileStatus, selectUser } from "../screens/auth/services/selector"; // Ensure correct import
 import { selectloader } from "../screens/auth/services/selector"; // Ensure correct import
+import UpdateStation from "../screens/vendor/pages/updateStation/UpdateStation";
+import EditProfileVendor from "../screens/vendor/pages/vendorProfile/EditProfileVendor";
 // import VendorProfile from "../screens/vendor/pages/vendorProfile/vendorProfile";
 const Stack = createStackNavigator();
 
@@ -57,7 +59,7 @@ export function VendorStack() {
           <Stack.Screen name="VendorBottomTabBar" component={VendorBottomTabBar} />
           <Stack.Screen name="VendorHome" component={VendorHome} />
           <Stack.Screen name="AllStations" component={AllStations} />
-          <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
+          <Stack.Screen name="EditProfileVendor" component={EditProfileVendor} />
           <Stack.Screen name="TermsAndConditionsScreen" component={TermsAndConditionsScreen} />
           <Stack.Screen name="FaqScreen" component={FaqScreen} />
           <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
@@ -66,6 +68,7 @@ export function VendorStack() {
           <Stack.Screen name="PickLocation" component={PickLocationScreen} />
           <Stack.Screen name="PreviewPage" component={PreviewPage} />
           <Stack.Screen name="StationManagement" component={StationManagement} />
+          <Stack.Screen name="UpdateStation" component={UpdateStation} />
         </>
       )}
     </Stack.Navigator>

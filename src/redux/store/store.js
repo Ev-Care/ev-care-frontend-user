@@ -1,10 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import authReducer, { restoreUser } from "./userSlice";
-
+import vendorReducer from "../../screens/vendor/services/vendorSlice";
+import stationReducer from "../../screens/user/service/stationSlice"; // Import the stationReducer
 const store = configureStore({
   reducer: {
     auth: authReducer,
+    vendor: vendorReducer,
+    stations: stationReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
 });

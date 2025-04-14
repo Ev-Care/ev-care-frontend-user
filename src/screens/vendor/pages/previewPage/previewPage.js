@@ -1,5 +1,5 @@
 
-import React, { useState, useRef,useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,15 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  Alert,
   FlatList,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MapView, { Marker } from 'react-native-maps';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectToken } from '../../../auth/services/selector';
+import { addStation, postStation } from '../../services/crudFunction';
 
 // Define colors at the top for easy customization
 const COLORS = {
@@ -33,14 +37,29 @@ const { width } = Dimensions.get('window');
 const PreviewPage = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const scrollViewRef = useRef(null);
-  const mapRef = useRef(null); 
-
+  const mapRef = useRef(null);
+  const dispatch = useDispatch(); // Get the dispatch function
   const route = useRoute();
   const { stationData } = route.params; // Retrieve the passed data
 
   console.log('Station Data:', stationData); // Log the station data for debugging
   console.log('Chargers:', JSON.stringify(stationData.chargers, null, 2));
 
+  const connectorTypeMap = {
+    1: { name: "CCS-2", icon: "ev-plug-ccs2" },
+    2: { name: "CHAdeMO", icon: "ev-plug-chademo" },
+    3: { name: "Type-2", icon: "ev-plug-type2" },
+    4: { name: "Wall", icon: "ev-plug-type1" },
+    5: { name: "GBT", icon: "ev-plug-type2" },
+  };
+  const amenityMap = {
+    "Restroom": "toilet",
+    "Cafe": "coffee",
+    "Wifi": "wifi",
+    "Store": "cart",
+    "Car Care": "car",
+    "Lodging": "bed"
+  };
   useEffect(() => {
     if (mapRef.current && stationData.coordinates) {
       const { latitude, longitude } = stationData.coordinates;
@@ -58,13 +77,41 @@ const PreviewPage = ({ navigation }) => {
     try {
       console.log('Submitting station data:', stationData);
 
+      // Validate chargers
+      if (!stationData.chargers || stationData.chargers.length === 0) {
+        Alert.alert('Validation Error', 'At least one charger must be added.');
+        return;
+      }
+
+      for (let i = 0; i < stationData.chargers.length; i++) {
+        const charger = stationData.chargers[i];
+        if (!charger.charger_type || !charger.power_rating || !charger.connectors || charger.connectors.length === 0) {
+          Alert.alert(
+            'Validation Error',
+            `Charger ${i + 1} details is incomplete. Please ensure all fields are filled.`
+          );
+          return;
+        }
+
+        for (let j = 0; j < charger.connectors.length; j++) {
+          const connector = charger.connectors[j];
+          if (!connector.connector_type_id) {
+            Alert.alert(
+              'Validation Error',
+              `Connector ${j + 1} details of Charger ${i + 1} is incomplete. Please ensure all fields are filled.`
+            );
+            return;
+          }
+        }
+      }
+
       // Call the API (replace with your actual API call)
-      const response = await fakeApiCall(stationData); // Replace `fakeApiCall` with your API function
-      console.log('Station added successfully:', response);
+      const response = await dispatch(addStation(stationData));
+      console.log('after dispatching add response:', response.payload);
 
       // Show success message
       Alert.alert('Success', 'Station added successfully!');
-      navigation.goBack(); // Navigate back after successful submission
+      navigation.navigate('VendorBottomTabBar'); // Navigate back after successful submission
     } catch (error) {
       console.error('Error adding station:', error);
       Alert.alert('Error', 'Failed to add station. Please try again.');
@@ -83,7 +130,12 @@ const PreviewPage = ({ navigation }) => {
       setActiveTab(index);
     }
   };
-
+  function trimName(threshold, str) {
+    if (str.length <= threshold) {
+      return str;
+    }
+    return str.substring(0, threshold) + ".....";
+  }
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -96,10 +148,10 @@ const PreviewPage = ({ navigation }) => {
         />
         <View style={styles.overlay}>
           <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>Community Listed</Text>
+            <Text style={styles.communityText}>Public</Text>
           </View>
-          <Text style={styles.stationName}>{stationData.station_name}</Text>
-          <Text style={styles.stationAddress}>{stationData.address}</Text>
+          <Text style={styles.stationName}>{trimName(30,stationData.station_name)}</Text>
+          <Text style={styles.stationAddress}>{trimName(50,stationData.address)}</Text>
           <View style={styles.statusContainer}>
             <Text style={styles.openHour}>Open Hours</Text>
             <Text style={styles.statusTime}>
@@ -196,15 +248,16 @@ const PreviewPage = ({ navigation }) => {
                     Connector {connectorIndex + 1}
                   </Text>
                   <View style={styles.connectorType}>
-                    <Icon
-                      name="ev-plug-type1"
-                      size={20}
-                      color={COLORS.primary}
-                    />
-                    <Text style={styles.connectorTypeText}>
-                      Type {connector.connector_type_id}
-                    </Text>
-                  </View>
+  <Icon
+    name={connectorTypeMap[connector.connector_type_id]?.icon || "alert-circle"}
+    size={20}
+    color={COLORS.primary}
+  />
+  <Text style={styles.connectorTypeText}>
+    {connectorTypeMap[connector.connector_type_id]?.name || "Unknown Type"}
+  </Text>
+</View>
+
                 </View>
               ))}
             </View>
@@ -219,36 +272,41 @@ const PreviewPage = ({ navigation }) => {
       <ScrollView style={styles.tabContent}>
         <Text style={styles.sectionTitle}>Location Details</Text>
         <View style={styles.mapContainer}>
-        <MapView
-        ref={mapRef} // Attach the ref to the MapView
-        style={styles.map}
-        initialRegion={{
-          latitude: stationData.coordinates.latitude || 0,
-          longitude: stationData.coordinates.longitude || 0,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }}
-      >
-        <Marker
-          coordinate={{
-            latitude: stationData.coordinates.latitude || 0,
-            longitude: stationData.coordinates.longitude || 0,
-          }}
-          title={stationData.station_name}
-          description={stationData.address}
-        />
-      </MapView>
+          <MapView
+            ref={mapRef} // Attach the ref to the MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: stationData.coordinates.latitude || 0,
+              longitude: stationData.coordinates.longitude || 0,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }}
+          >
+            <Marker
+              coordinate={{
+                latitude: stationData.coordinates.latitude || 0,
+                longitude: stationData.coordinates.longitude || 0,
+              }}
+              title={stationData.station_name}
+              description={stationData.address}
+            />
+          </MapView>
         </View>
 
         <Text style={styles.sectionTitle}>Amenities</Text>
-        <View style={styles.amenitiesContainer}>
-          {stationData.amenities.split(',').map((amenity, index) => (
-            <View key={index} style={styles.amenityItem}>
-              <Icon name="check-circle" size={24} color={COLORS.primary} />
-              <Text style={styles.connectorTypeText}>{amenity.trim()}</Text>
-            </View>
-          ))}
-        </View>
+     <View style={styles.amenitiesContainer}>
+     {stationData.amenities.split(',').map((amenityName, index) => {
+     const trimmedName = amenityName.trim();
+     const iconName = amenityMap[trimmedName] || "help-circle";
+
+    return (
+      <View key={index} style={styles.amenityItem}>
+        <Icon name={iconName} size={24} color={COLORS.primary} />
+        <Text style={styles.connectorTypeText}>{trimmedName}</Text>
+      </View>
+    );
+  })}
+</View>
       </ScrollView>
     );
   }
@@ -370,7 +428,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-    marginBottom:10,
+    marginBottom: 10,
   },
   chargerTitle: {
     fontSize: 16,
@@ -412,6 +470,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   connectorTypeText: {
+    fontSize: 10,
     marginLeft: 8,
     color: COLORS.gray,
   },
@@ -445,6 +504,7 @@ const styles = StyleSheet.create({
   },
   amenitiesContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',  
     marginBottom: 24,
   },
   amenityItem: {
@@ -455,13 +515,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+    marginBottom:10,
   },
 
   seeAllText: {
     color: COLORS.accent,
     fontWeight: 'bold',
   },
- 
+
   bottomButtons: {
     flexDirection: 'row',
     padding: 16,

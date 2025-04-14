@@ -81,7 +81,7 @@ const UploadPAN = ({ route, navigation }) => {
             console.log("Image URI set successfully:", response?.payload?.data?.filePathUrl);
           }
         } else {
-          Alert.alert("Error", "Failed to upload image. Please try again.");
+          Alert.alert("Error", "File Should be less than 5 MB");
         }
       } catch (error) {
         Alert.alert("Error", "Something went wrong while uploading.");

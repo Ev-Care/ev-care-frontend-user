@@ -24,7 +24,7 @@ const authSlice = createSlice({
       console.log("User logged out successfully");
     },
     restoreUser: (state, action) => {
-      state.user = action.payload.user;
+      state.user = extractUser(action.payload.user);
       state.accessToken = action.payload.accessToken;
       console.log("User data restored from AsyncStorage:", action.payload.user);
       console.log("Access token restored from AsyncStorage:", action.payload.accessToken);
@@ -129,6 +129,7 @@ const authSlice = createSlice({
 });
 
 const extractUser = (data) => ({
+  id: data.id,
   user_key: data.user_key,
   email: data.email,
   role: data.role,

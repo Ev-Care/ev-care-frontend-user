@@ -20,7 +20,9 @@ import {
 } from "../../../../constants/styles";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MapView, { Marker } from "react-native-maps";
+import { Overlay } from "@rneui/themed";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -63,55 +65,28 @@ const reviews = [
       "Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.",
   },
 ];
-const Station = [
-  {
-    id: "station1",
-    name: "Sunfuel Station 1",
-    isAvailable: true,
-    chargers: [
-      {
-        id: "charger1",
-        name: "Sunfuel AC 1",
-        type: "AC",
-        power: "60kW",
-        connectors: [
-          {
-            id: "conn1",
-            type: "Wall",
-            icon: "ev-plug-type1",
-            isAvailable: true,
-          },
-          {
-            id: "conn2",
-            type: "CHAdeMO",
-            icon: "ev-plug-chademo",
-            isAvailable: false,
-          },
-        ],
-      },
-      {
-        id: "charger2",
-        name: "Sunfuel DC 2",
-        type: "DC",
-        power: "120kW",
-        connectors: [
-          {
-            id: "conn3",
-            type: "CCS2",
-            icon: "ev-plug-ccs2",
-            isAvailable: true,
-          },
-        ],
-      },
-    ],
-  },
-];
+//Wifi,Cafe,Restroom,Lodging,Store,Car Care
+const connectorIcons = {
+  "CCS-2": "ev-plug-ccs2",
+  "CHAdeMO": "ev-plug-chademo",
+  "Type-2": "ev-plug-type2",
+  "Wall": "ev-plug-type1",
+  "GBT": "ev-plug-type2",
+};
+const amenityMap = {
+  "Restroom": "toilet",
+  "Cafe": "coffee",
+  "Wifi": "wifi",
+  "Store": "cart",
+  "Car Care": "car",
+  "Lodging": "bed"
+};
 
-const StationManagement = ({navigation}) => {
+const StationManagement = ({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState(0);
   const scrollViewRef = useRef(null);
-  const [stations, setStations] = useState(Station);
-
+  const [station, setStation] = useState(route.params?.station);
+  const [showDeleteDialogue, setshowDeleteDialogue] = useState(false);
   const handleTabPress = (index) => {
     setActiveTab(index);
     scrollViewRef.current.scrollTo({ x: index * width, animated: true });
@@ -124,86 +99,92 @@ const StationManagement = ({navigation}) => {
       setActiveTab(index);
     }
   };
-  const toggleChargerAvailability = (stationId, chargerId) => {
-    setStations((prev) =>
-      prev.map((station) =>
-        station.id === stationId
-          ? {
-              ...station,
-              chargers: station.chargers.map((charger) => {
-                if (charger.id === chargerId) {
-                  const newAvailability = station.isAvailable ? !charger.isAvailable : false;
-                  return {
-                    ...charger,
-                    isAvailable: newAvailability,
-                    connectors: charger.connectors.map((conn) => ({
-                      ...conn,
-                      isAvailable: newAvailability ? conn.isAvailable : false,
-                    })),
-                  };
-                }
-                return charger;
-              }),
-            }
-          : station
-      )
-    );
-  };
-  const toggleStationAvailability = (stationId) => {
-    setStations((prev) =>
-      prev.map((station) => {
-        if (station.id === stationId) {
-          const newAvailability = !station.isAvailable;
-          return {
-            ...station,
-            isAvailable: newAvailability,
-            chargers: station.chargers.map((charger) => ({
+//  console.log(station.amenities)
+  
+  const toggleChargerAvailability = (chargerId) => {
+    setStation((prev) => {
+      if (prev.status === "Inactive") {
+        console.log("Station is Inactive — can't toggle charger.");
+        return prev;
+      }
+  
+      return {
+        ...prev,
+        chargers: prev.chargers.map((charger) => {
+          if (charger.charger_id === chargerId) {
+            const newStatus = charger.status === "Available" ? "Out-Of-Service" : "Available";
+  
+            const updatedConnectors =
+              newStatus === "Available"
+              ? [...charger.connectors] // leave them as they are
+                : charger.connectors.map((conn) => ({
+                    ...conn,
+                    connector_status: "out-of-service",
+                  }));
+  
+            const updatedCharger = {
               ...charger,
-              isAvailable: newAvailability ? charger.isAvailable : false,
-              connectors: charger.connectors.map((conn) => ({
-                ...conn,
-                isAvailable: newAvailability && charger.isAvailable ? conn.isAvailable : false,
-              })),
-            })),
-          };
-        }
-        return station;
-      })
-    );
+              status: newStatus,
+              connectors: updatedConnectors,
+            };
+  
+            console.log("Charger after toggle:", updatedCharger);
+            return updatedCharger;
+          }
+          return charger;
+        }),
+      };
+    });
   };
   
   
-  const toggleConnectorAvailability = (stationId, chargerId, connectorId) => {
-    setStations((prev) =>
-      prev.map((station) =>
-        station.id === stationId
-          ? {
-              ...station,
-              chargers: station.chargers.map((charger) =>
-                charger.id === chargerId
-                  ? {
-                      ...charger,
-                      connectors: charger.connectors.map((conn) =>
-                        conn.id === connectorId
-                          ? {
-                              ...conn,
-                              isAvailable:
-                                station.isAvailable && charger.isAvailable
-                                  ? !conn.isAvailable
-                                  : false, // disable if parent is off
-                            }
-                          : conn
-                      ),
-                    }
-                  : charger
-              ),
+  const toggleConnectorAvailability = (chargerId, chargerConnectorId) => {
+    setStation((prev) => {
+      if (prev.status === "Inactive") {
+        console.log("Station is Inactive — can't toggle connector.");
+        return prev;
+      }
+  
+      return {
+        ...prev,
+        chargers: prev.chargers.map((charger) => {
+          if (charger.charger_id === chargerId) {
+            if (charger.status !== "Available") {
+              console.log("Charger is not Available — connectors must stay out-of-service.");
+              return {
+                ...charger,
+                connectors: charger.connectors.map((conn) => ({
+                  ...conn,
+                  connector_status: "out-of-service",
+                })),
+              };
             }
-          : station
-      )
-    );
+  
+            return {
+              ...charger,
+              connectors: charger.connectors.map((conn) => {
+                if (conn.charger_connector_id === chargerConnectorId) {
+                  const newStatus =
+                    conn.connector_status === "operational" ? "out-of-service" : "operational";
+  
+                  const updatedConnector = { ...conn, connector_status: newStatus };
+                  console.log("Connector after toggle:", updatedConnector);
+                  return updatedConnector;
+                }
+                return conn;
+              }),
+            };
+          }
+          return charger;
+        }),
+      };
+    });
   };
   
   
+  
+
+
   const renderStars = (rating) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -219,12 +200,17 @@ const StationManagement = ({navigation}) => {
     }
     return <View style={{ flexDirection: "row" }}>{stars}</View>;
   };
+  function trimName(threshold, str) {
+    if (str.length <= threshold) {
+      return str;
+    }
+    return str.substring(0, threshold) + ".....";
+  }
 
   return (
     <View style={styles.container}>
       {/* Header with map background */}
       <View style={styles.header}>
-       
         <Image
           source={{
             uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -232,31 +218,46 @@ const StationManagement = ({navigation}) => {
           style={styles.mapBackground}
         />
         <View style={styles.overlay}>
-       
-       
-        <View style={styles.communityBadgeAndBack}>
-          <MaterialIcons
-          name="arrow-back"
-          color={Colors.whiteColor}
-          size={26}
-          onPress={() => {
-            navigation.pop();
-           }}
-          />
-          <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>Community Listed</Text>
-          </View>
+          <View style={styles.communityBadgeAndBack}>
+            <MaterialIcons
+              name="arrow-back"
+              color={Colors.whiteColor}
+              size={26}
+              onPress={() => {
+                navigation.pop();
+              }}
+            />
+            <View style={styles.communityBadge}>
+              <Text style={styles.communityText}>Public</Text>
+            </View>
           </View>
 
           <Text style={styles.stationName}>
-            Gurukul apartment near cafe paramour
+          {trimName(50, station.station_name)}
           </Text>
           <Text style={styles.stationAddress}>
-            Pune Vadgaon Budruk, Sinhgad College Rd
-          </Text>
+  {trimName(50, station.address)}
+</Text>
           <View style={styles.statusContainer}>
-            <Text style={styles.statusClosed}>Closed</Text>
-            <Text style={styles.statusTime}>• 04:05 - 06:09</Text>
+          <Text
+  style={[
+    styles.statusClosed,
+    {
+      color:
+        station.status === "Active"
+          ? "green"
+          : station.status === "Inactive"
+          ? "#FF5722"
+          : station.status === "Planned"
+          ? "blue"
+          : "black", // fallback color
+    },
+  ]}
+>
+  {station.status}
+</Text>
+
+            <Text style={styles.statusTime}>• {station.open_hours_opening_time} - {station.open_hours_closing_time}</Text>
             <View style={styles.newBadge}>
               <Text style={styles.newText}>4.5 ⭐</Text>
             </View>
@@ -311,7 +312,7 @@ const StationManagement = ({navigation}) => {
         scrollEventThrottle={16}
       >
         {/* Charger Tab */}
-        {chargerTab(stations)}
+        {chargerTab(station)}
         {/* Details Tab */}
         {detailTab()}
         {/* Reviews Tab */}
@@ -320,64 +321,77 @@ const StationManagement = ({navigation}) => {
 
       {/* Bottom Buttons */}
       <View style={styles.bottomButtons}>
-        <TouchableOpacity style={styles.editButton}>
+        <TouchableOpacity onPress={() => {
+          setshowDeleteDialogue(true);
+        }} style={styles.editButton}>
           <Text style={styles.editButtonText}>Delete</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.submitButton}>
-          <Text style={styles.submitButtonText}>Edit</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("UpdateStation")} style={styles.submitButton}>
+          <Text style={styles.submitButtonText}>Update</Text>
         </TouchableOpacity>
       </View>
+      {deleteDialogue()}
     </View>
   );
-  function chargerTab(stations) {
+  function chargerTab(station) {
+    // Log chargers
+    console.log('Chargers:', station.chargers);
+    // Log connectors for each charger
+    station.chargers.forEach((charger, index) => {
+      // console.log(`Connectors for Charger ${index + 1}:`, charger?.connectors);
+    });
+
     return (
       <ScrollView style={styles.tabContent}>
-        {stations.map((station) =>
-          station.chargers.map((charger) => (
-            <View key={charger.id} style={styles.chargerCard}>
-              <View style={styles.titleContainer}>
-                <Text style={styles.chargerTitle}>{charger.name}</Text>
-                <Switch
-                  value={charger.isAvailable}
-                  onValueChange={() =>
-                    toggleChargerAvailability(station.id, charger.id)
-                  }
-                  trackColor={{ false: "#FF8C00", true: COLORS.primary }} // orange when off, green when on
-                  thumbColor={charger.isAvailable ? "#ffffff" : "#ffffff"} // stays white
-                />
-              </View>
-
-              <View style={styles.chargerSpecs}>
-                <Text style={styles.chargerSpecText}>{charger.type}</Text>
-                <Text style={styles.chargerSpecText}>|</Text>
-                <Text style={styles.chargerSpecText}>{charger.power}</Text>
-              </View>
-
-              <View style={styles.connectorContainer}>
-                {charger.connectors.map((conn) => (
-                  <View key={conn.id} style={styles.connector}>
-                    <View style={styles.connectorType}>
-                      <Icon name={conn.icon} size={20} color={COLORS.primary} />
-                      <Text style={styles.connectorTypeText}>{conn.type}</Text>
-                    </View>
-                    <Switch
-                      value={conn.isAvailable}
-                      onValueChange={() =>
-                        toggleConnectorAvailability(
-                          station.id,
-                          charger.id,
-                          conn.id
-                        )
-                      }
-                      trackColor={{ false: "#FF8C00", true: COLORS.primary }} // orange when off, green when on
-                      thumbColor={conn.isAvailable ? "#ffffff" : "#ffffff"}
-                    />
-                  </View>
-                ))}
-              </View>
+        {station.chargers.map((charger, index) => (
+          <View key={charger.charger_id} style={styles.chargerCard}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.chargerTitle}>{"Charger " + (index + 1)}</Text>
+              <Switch
+                value={charger.status === "Available"}
+                onValueChange={() => toggleChargerAvailability(charger.charger_id)}
+                trackColor={{ false: "#FF8C00", true: COLORS.primary }}
+                thumbColor="#ffffff"
+              />
             </View>
-          ))
-        )}
+
+            <View style={styles.chargerSpecs}>
+              <Text style={styles.chargerSpecText}>Type: {charger.charger_type}</Text>
+              <Text style={styles.chargerSpecText}>|</Text>
+              <Text style={styles.chargerSpecText}>Power: {charger.max_power_kw} kW</Text>
+            </View>
+
+            <View style={styles.connectorContainer}>
+              {charger.connectors.map((conn, index) => (
+                <View key={index} style={styles.connector}>
+                  <View style={styles.connectorType}>
+                    <Icon
+                      name={connectorIcons[conn.connectorType.description] || "ev-plug-type1"} // Default to "ev-plug-type1" if no match
+                      size={20}
+                      color={COLORS.primary}
+                    />
+                    <Text style={styles.connectorTypeText}>
+                      {conn.connectorType.description}
+                    </Text>
+                  </View>
+                  <Switch
+                    value={conn.connector_status === "operational"
+                    } // Use backend enum value
+                    onValueChange={() =>
+                      toggleConnectorAvailability(charger.charger_id, conn.charger_connector_id)
+                    } // Call the toggle function
+                    trackColor={{ false: "#FF8C00", true: COLORS.primary }} // Orange when off, green when on
+                    thumbColor={
+                      conn.connector_status === "operational"
+                        ? "#ffffff"
+                        : "#ffffff"
+                    } // Thumb color stays white
+                  />
+                </View>
+              ))}
+            </View>
+          </View>
+        ))}
       </ScrollView>
     );
   }
@@ -390,36 +404,38 @@ const StationManagement = ({navigation}) => {
           <MapView
             style={styles.map}
             initialRegion={{
-              latitude: 18.4575,
-              longitude: 73.8508,
+              latitude: station.coordinates.latitude,
+              longitude: station.coordinates.longitude,
               latitudeDelta: 0.01,
               longitudeDelta: 0.01,
             }}
           >
             <Marker
-              coordinate={{ latitude: 18.4575, longitude: 73.8508 }}
-              title="Sinhgad College"
-              description="Wadgaon Campus"
+              coordinate={{ latitude: station.coordinates.latitude, longitude: station.coordinates.longitude }}
+              title={station.station_name}
+              description={station.address}
             />
           </MapView>
         </View>
 
         <View style={styles.landmarkContainer}>
-          <Text style={styles.landmarkTitle}>Landmark - Cafe Paramour</Text>
+          <Text style={styles.landmarkTitle}>{station.address}</Text>
         </View>
 
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
-          <View style={styles.amenityItem}>
-            <Icon name="coffee" size={24} color={COLORS.primary} />
-          </View>
-          <View style={styles.amenityItem}>
-            <Icon name="wifi" size={24} color={COLORS.primary} />
-          </View>
-          <View style={styles.amenityItem}>
-            <Icon name="cart" size={24} color={COLORS.primary} />
-          </View>
-        </View>
+     {station.amenities.split(',').map((amenityName, index) => {
+     const trimmedName = amenityName.trim();
+     const iconName = amenityMap[trimmedName] || "help-circle";
+
+    return (
+      <View key={index} style={styles.amenityItem}>
+        <Icon name={iconName} size={24} color={COLORS.primary} />
+        <Text style={styles.connectorTypeText}>{trimmedName}</Text>
+      </View>
+    );
+  })}
+</View>
       </ScrollView>
     );
   }
@@ -446,6 +462,81 @@ const StationManagement = ({navigation}) => {
       </View>
     );
   }
+  function deleteDialogue() {
+    return (
+      <Overlay
+        isVisible={showDeleteDialogue}
+        onBackdropPress={() => setshowDeleteDialogue(false)}
+        overlayStyle={styles.dialogStyle}
+      >
+        <View>
+
+
+          <Text
+            style={{
+              ...Fonts.blackColor18Medium,
+              textAlign: "center",
+              marginHorizontal: Sizes.fixPadding * 2.0,
+              marginVertical: Sizes.fixPadding * 2.0,
+            }}
+          >
+            Do You Want To Delete?
+          </Text>
+          <View
+            style={{
+              alignSelf: 'center',
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              borderWidth: 2,
+              borderColor: '#ff4d4d',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: Sizes.fixPadding * 1.5,
+            }}
+          >
+            <MaterialCommunityIcons name="trash-can-outline" size={40} color="#ff7f50" />
+          </View>
+
+          <View
+            style={{
+              ...commonStyles.rowAlignCenter,
+              marginTop: Sizes.fixPadding,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setshowDeleteDialogue(false);
+              }}
+              style={{
+                ...styles.noButtonStyle,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+            >
+              <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setshowDeleteDialogue(false);
+                // handle delete logic here
+              }}
+              style={{
+
+                backgroundColor: '#ff7f50',  // Coral Orange
+                ...styles.dialogYesNoButtonStyle,
+              }}
+            >
+              <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Overlay>
+    );
+  }
+
 };
 
 const styles = StyleSheet.create({
@@ -480,10 +571,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     top: 16,
-    paddingHorizontal: 12,
+    paddingLeft:0,
+    paddingRight: 5,
     paddingVertical: 6,
     borderRadius: 4,
+    // backgroundColor:"cyan",
     width: "100%",
+    marginLeft:18,
   },
   communityText: {
     color: COLORS.primary,
@@ -506,7 +600,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   statusClosed: {
-    color: COLORS.red,
+   
     fontWeight: "bold",
     fontSize: 12,
   },
@@ -591,6 +685,7 @@ const styles = StyleSheet.create({
   },
   connectorContainer: {
     marginBottom: 16,
+
   },
   connector: {
     flexDirection: "row",
@@ -618,6 +713,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   connectorTypeText: {
+    fontSize: 10,
     marginLeft: 8,
     color: COLORS.gray,
   },
@@ -650,17 +746,19 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   amenitiesContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
+    flexWrap: 'wrap',  
     marginBottom: 24,
   },
   amenityItem: {
-    width: 50,
+    width: 60,
     height: 50,
     borderRadius: 8,
     backgroundColor: COLORS.lightGray,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 16,
+    marginBottom:10,
   },
   reviewsHeader: {
     flexDirection: "row",
@@ -728,6 +826,49 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 14,
     fontWeight: "bold",
+  },
+  dialogStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderRadius: Sizes.fixPadding - 5.0,
+    width: "85%",
+    padding: 0.0,
+    elevation: 0,
+  },
+  ratingImageStyle: {
+    marginTop: Sizes.fixPadding * 1.5,
+    width: 70.0,
+    height: 60.0,
+    resizeMode: "contain",
+    alignSelf: "center",
+  },
+  ratingWrapStyle: {
+    ...commonStyles.rowAlignCenter,
+    justifyContent: "center",
+    marginVertical: Sizes.fixPadding + 5.0,
+  },
+  dialogYesNoButtonStyle: {
+    flex: 1,
+    ...commonStyles.shadow,
+
+    padding: Sizes.fixPadding,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noButtonStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderTopColor: Colors.extraLightGrayColor,
+    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+  },
+  yesButtonStyle: {
+    borderTopColor: Colors.primaryColor,
+    backgroundColor: Colors.primaryColor,
+    borderBottomRightRadius: Sizes.fixPadding - 5.0,
+  },
+  dialogCancelTextStyle: {
+    marginVertical: Sizes.fixPadding,
+    marginHorizontal: Sizes.fixPadding * 2.0,
+    textAlign: "center",
+    ...Fonts.blackColor18Medium,
   },
 });
 

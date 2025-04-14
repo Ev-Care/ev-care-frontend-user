@@ -10,7 +10,13 @@ import {
   Dimensions,
   SafeAreaView,
 } from 'react-native';
-
+import {
+  Colors,
+  Fonts,
+  Sizes,
+  commonStyles,
+  screenWidth,
+} from "../../../constants/styles";
 import { LineChart } from 'react-native-chart-kit';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -84,9 +90,9 @@ const AdminHome = () => {
   // Feature cards data
   const featureCards = [
     {
-      title: 'Station Management',
-      description: 'Manage all EV stations',
-      icon: 'ev-station',
+      title: 'Create User',
+      description: 'Create New User or Vendor',
+      icon: 'account-plus',
       gradient: [COLORS.primary, '#2A3990'],
     },
     {
@@ -94,7 +100,19 @@ const AdminHome = () => {
       description: 'Verify Pending Profiles',
       icon: 'check-decagram',
       gradient: [COLORS.accent, '#FF8A65'],
-    },
+    }, 
+    {
+      title: 'Support Issues',
+      description: 'View Support Issues',
+      icon: 'face-agent',
+      gradient: [ '#AE275F','#F58CA6']
+    }, 
+    {
+      title: 'Add Stations',
+      description: 'Add New Stations',
+      icon: 'ev-station',
+      gradient: ['#3EB489', '#2E8B57']
+    }, 
   ];
 
   return (
@@ -297,7 +315,7 @@ function monthlyGrowth(){
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: Colors.bodyBackColor ,
   },
   header: {
     flexDirection: 'row',
@@ -360,7 +378,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.primary,
     marginBottom: 15,
@@ -382,12 +400,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   metricCount: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
     color: COLORS.text,
   },
   metricLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: COLORS.gray,
     marginTop: 4,
   },
@@ -434,9 +452,12 @@ const styles = StyleSheet.create({
   featureCardsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
+    flexWrap: 'wrap',
+
+},
   featureCardWrapper: {
     width: '48%',
+    marginBottom: 15,
   },
   featureCard: {
     borderRadius: 12,
@@ -454,13 +475,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   featureTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: COLORS.white,
     marginBottom: 5,
   },
   featureDescription: {
-    fontSize: 12,
+    fontSize: 10,
     color: 'rgba(255, 255, 255, 0.8)',
     lineHeight: 18,
   },

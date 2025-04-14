@@ -18,14 +18,59 @@ import {
 } from "../../../constants/styles";
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import * as ImagePicker from "expo-image-picker";
 import { BottomSheet } from "@rneui/themed";
+import { Alert } from "react-native";
 
 const EditProfileScreen = ({ navigation }) => {
-  const [name, setname] = useState("Peter Jones");
-  const [email, setemail] = useState("peterjones@abc.com");
-  const [mobileNumber, setmobileNumber] = useState("1234567890");
-  const [showChangeProfilePicSheet, setshowChangeProfilePicSheet] =
-    useState(false);
+  const [name, setname] = useState("Ravi Kumar");
+  const [email, setemail] = useState("ravi@abc.com");
+  const [showChangeProfilePicSheet, setshowChangeProfilePicSheet] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
+
+
+  const handleSubmit = () => {
+    Alert.alert("Profile Updated", "Your profile has been updated successfully.");
+  }
+
+
+
+  const pickImage = async (source) => {
+    let permissionResult;
+  
+    if (source === "camera") {
+      permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    } else {
+      permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    }
+  
+    if (permissionResult.granted === false) {
+      alert("Permission is required!");
+      return;
+    }
+  
+    let result;
+    if (source === "camera") {
+      result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+    } else {
+      result = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+    }
+  
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+      setProfileImage(imageUri);
+    }
+  };
+  
+
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -43,7 +88,7 @@ const EditProfileScreen = ({ navigation }) => {
           {profilePicInfo()}
           {nameInfo()}
           {emailInfo()}
-          {mobileNumberInfo()}
+         
         </ScrollView>
       </View>
       {updateProfileButton()}
@@ -87,6 +132,13 @@ const EditProfileScreen = ({ navigation }) => {
         activeOpacity={0.8}
         onPress={() => {
           setshowChangeProfilePicSheet(false);
+          if (option === "Camera") {
+            pickImage("camera");
+          } else if (option === "Choose from gallery") {
+            pickImage("gallery");
+          } else if (option === "Remove profile picture") {
+            setProfileImage(null);
+          }
         }}
         style={{
           ...commonStyles.rowSpaceBetween,
@@ -119,12 +171,14 @@ const EditProfileScreen = ({ navigation }) => {
       </TouchableOpacity>
     );
   }
+  
+  
 
   function updateProfileButton() {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => {navigation.pop()}}
+        onPress={handleSubmit }
         style={{ ...commonStyles.button, borderRadius: 0 }}
       >
         <Text style={{ ...Fonts.whiteColor18Medium }}>Update profile</Text>
@@ -132,25 +186,6 @@ const EditProfileScreen = ({ navigation }) => {
     );
   }
 
-  function mobileNumberInfo() {
-    return (
-      <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.grayColor18SemiBold }}>Mobile number</Text>
-        <View style={styles.textFieldWrapper}>
-          <TextInput
-            placeholder="Enter your mobile number here"
-            placeholderTextColor={Colors.grayColor}
-            value={mobileNumber}
-            onChangeText={(text) => setmobileNumber(text)}
-            style={{ ...Fonts.blackColor16Medium }}
-            keyboardType="phone-pad"
-            cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
-          />
-        </View>
-      </View>
-    );
-  }
 
   function emailInfo() {
     return (
@@ -200,10 +235,19 @@ const EditProfileScreen = ({ navigation }) => {
           marginBottom: Sizes.fixPadding + 5.0,
         }}
       >
-        <Image
-          source={require("../../../../assets/images/users/user4.png")}
-          style={styles.profilePicStyle}
+        {profileImage ? (
+          <Image
+            source={{ uri: profileImage }}
+            style={styles.profilePicStyle}
+          />
+        ) : (
+          <MaterialIcons
+          name="account-circle"
+          size={screenWidth / 4.0}
+          color={Colors.grayColor}
+          style={{ textAlign: "center" }}
         />
+        )}
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => {
@@ -216,6 +260,7 @@ const EditProfileScreen = ({ navigation }) => {
       </View>
     );
   }
+  
 
   function header() {
     return (

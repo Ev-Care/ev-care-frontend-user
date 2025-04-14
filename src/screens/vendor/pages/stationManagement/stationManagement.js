@@ -323,7 +323,7 @@ const StationManagement = ({navigation}) => {
         <TouchableOpacity style={styles.editButton}>
           <Text style={styles.editButtonText}>Delete</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.submitButton}>
+        <TouchableOpacity onPress={()=>navigation.navigate("UpdateStation")} style={styles.submitButton}>
           <Text style={styles.submitButtonText}>Edit</Text>
         </TouchableOpacity>
       </View>

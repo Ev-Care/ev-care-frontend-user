@@ -1,19 +1,23 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Colors, Fonts, Sizes, commonStyles } from "../../constants/styles";
-import { View, StyleSheet, Platform, TouchableOpacity, BackHandler, Text } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Platform,
+  TouchableOpacity,
+  BackHandler,
+  Text,
+} from "react-native";
 import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AdminHome from "../../screens/admin/adminHome/AdminHomePage";
 import AdminProfilePage from "../../screens/admin/adminProfile/AdminProfile";
-// import ViewAllStations from "../../screens/admin/viewAllstations/ViewAllStations";
-import ViewAllUsers from "../../screens/admin/viewAllUsers/ViewAllUsersPage";
 
+import ViewAllUserPage from "../../screens/admin/viewAllUsers/ViewAllUsersPage";
+import ViewAllStationsPage from "../../screens/admin/viewAllStations/ViewAllStationsPage";
 
 const Tab = createBottomTabNavigator();
-
-
-
 const AdminBottomTabBar = ({ navigation }) => {
   const [backClickCount, setBackClickCount] = useState(0);
 
@@ -72,37 +76,33 @@ const AdminBottomTabBar = ({ navigation }) => {
             ),
           }}
         />
-{/* <Tab.Screen
-  name="ViewAllStations"
-  component={ViewAllStations}
-  options={{
-    tabBarButton: (props) => (
-      <TouchableOpacity
-        {...props}
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          width: 60,
-          height: 60,
-          borderRadius: 40,
-          backgroundColor: Colors.primaryColor,
-          position: "absolute",
-          bottom: 20,
-          left: "50%",
-          marginLeft: -40, // Half of width to center it
-          shadowColor: Colors.primaryColor,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.4,
-          shadowRadius: 5,
-          elevation: 8,
-        }}
-      >
-        <MaterialIcons name="search" size={35} color={Colors.whiteColor} />
-      </TouchableOpacity>
-    ),
-  }}
-/> */}
-
+        <Tab.Screen
+          name="ViewAllStationsPage"
+          component={ViewAllStationsPage}
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <MaterialIcons
+                name="ev-station"
+                size={26}
+                color={focused ? Colors.primaryColor : Colors.grayColor}
+              />
+            ),
+          }}
+        />
+      
+        <Tab.Screen
+          name="ViewAllUserPage"
+          component={ViewAllUserPage}
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <MaterialIcons
+                name="people-outline"
+                size={26}
+                color={focused ? Colors.primaryColor : Colors.grayColor}
+              />
+            ),
+          }}
+        />
 
         <Tab.Screen
           name="AdminProfilePage"

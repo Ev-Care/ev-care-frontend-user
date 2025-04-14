@@ -23,6 +23,8 @@ import PreviewPage from "../screens/vendor/pages/previewPage/previewPage";
 import { useSelector } from "react-redux";
 import { selectProfileStatus, selectUser } from "../screens/auth/services/selector"; // Ensure correct import
 import { selectloader } from "../screens/auth/services/selector"; // Ensure correct import
+import UpdateStation from "../screens/vendor/pages/updateStation/UpdateStation";
+
 // import VendorProfile from "../screens/vendor/pages/vendorProfile/vendorProfile";
 const Stack = createStackNavigator();
 
@@ -38,7 +40,7 @@ export function VendorStack() {
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {user && user.role.toLowerCase() === "vendor" && (user.pan_no === null || user.tan_no === null || user.adhar_no === null) ? (
+      {!user && user.role.toLowerCase() === "vendor" && (user.pan_no === null || user.tan_no === null || user.adhar_no === null) ? (
         <>
         {console.log("inside vendor stack")}
           <Stack.Screen name="Instruction" component={Instruction} />
@@ -66,6 +68,7 @@ export function VendorStack() {
           <Stack.Screen name="PickLocation" component={PickLocationScreen} />
           <Stack.Screen name="PreviewPage" component={PreviewPage} />
           <Stack.Screen name="StationManagement" component={StationManagement} />
+          <Stack.Screen name="UpdateStation" component={UpdateStation} />
         </>
       )}
     </Stack.Navigator>

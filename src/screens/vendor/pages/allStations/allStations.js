@@ -42,6 +42,8 @@ const AllStations = () => {
 
   const stations = useSelector(selectStation);
 
+  console.log("Stations in AllStations:", stations.length);
+
   // Initialize availability state after stations are loaded
   const [availability, setAvailability] = useState({});
 

@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { logoutUser } from "../../../redux/store/userSlice";
+import { selectUser } from "../../auth/services/selector";
 import {  useDispatch } from "react-redux";
 import { color } from "@rneui/base";
 import {Colors} from "../../../constants/styles";
@@ -25,11 +26,11 @@ const PendingApprovalScreen = (route) => {
     style={[styles.button, { backgroundColor: Colors.primaryColor }]} 
     onPress={() => navigation.navigate("VendorBottomTabBar")}
 >
-  <Text style={styles.buttonText}>Continue</Text>
-</TouchableOpacity>
+     <Text style={styles.buttonText}>continue</Text>
+    </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Text style={styles.goBackText}>Go Back</Text>
+      <TouchableOpacity  onPress={() => dispatch(logoutUser())}>
+        <Text style={styles.goBackText}>Log out</Text>
       </TouchableOpacity>
     </View>
   );
@@ -44,5 +45,5 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 12, color: "grey", textAlign: "center", marginVertical: 10 },
   button: { width: "100%", backgroundColor: "#F4721E", paddingVertical: 10, borderRadius: 8, alignItems: "center", marginVertical: 30 },
   buttonText: { fontSize: 14, color: "white", fontWeight: "bold" },
-  goBackText: { fontSize: 14, color: "#F4721E", textAlign: "center" },
+  goBackText: { fontSize: 14, color: "#F4721E", textAlign: "center" ,marginTop: 80},
 });

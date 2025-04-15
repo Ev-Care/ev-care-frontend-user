@@ -1,2 +1,4 @@
 // Selector to get stations from the state
-export const selectStations = (state) => state.stations.stations;
+export const selectStations = (state) => state.station.stations;
+export const selectFavoriteStations = (state) => state.station.favorite;
+export const selectRecentStations = (state) => state.station.recent;

@@ -49,6 +49,7 @@ const VendorDetailForm = () => {
   const navigation = useNavigation();
   const [businessName, setBusinessName] = useState("");
   const [address, setAddress] = useState("");
+  const [coordinate,setCoordinate] = useState(null);
   const [aadharNumber, setAadharNumber] = useState("");
   const [panNumber, setPanNumber] = useState("");
   const [tanNumber, setTanNumber] = useState("");
@@ -91,6 +92,7 @@ const VendorDetailForm = () => {
     navigation.push("PickLocation", {
       addressFor: "stationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
+      setCoordinate:(newCoordinate )=>setCoordinate(newCoordinate)
     });
   };
 

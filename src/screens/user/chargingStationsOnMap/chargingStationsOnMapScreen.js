@@ -21,101 +21,104 @@ import {
 } from "../../../constants/styles";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import * as Location from "expo-location";
+import { useSelector } from "react-redux";
+import { selectStations } from "../service/selector";
 
 const width = screenWidth;
 const cardWidth = width / 1.15;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
 
-const chargingSpotsList = [
-  {
-    coordinate: {
-      latitude: 28.613939, // Delhi
-      longitude: 77.209021,
-    },
-    id: "1",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
-    stationName: "BYD Charging Point",
-    stationAddress: "Near Connaught Place",
-    rating: 4.7,
-    totalStations: 8,
-    distance: "4.5 km",
-    isOpen: true,
-  },
-  {
-    coordinate: {
-      latitude: 19.076090, // Mumbai
-      longitude: 72.877426,
-    },
-    id: "2",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
-    stationName: "TATA EStation",
-    stationAddress: "Near Bandra Kurla Complex",
-    rating: 3.9,
-    totalStations: 15,
-    distance: "5.7 km",
-    isOpen: false,
-  },
-  {
-    coordinate: {
-      latitude: 13.082680, // Chennai
-      longitude: 80.270721,
-    },
-    id: "3",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station3.png"),
-    stationName: "HP Charging Station",
-    stationAddress: "Near Marina Beach",
-    rating: 4.9,
-    totalStations: 6,
-    distance: "2.1 km",
-    isOpen: true,
-  },
-  {
-    coordinate: {
-      latitude: 12.971899, // Bengaluru
-      longitude: 77.595566,
-    },
-    id: "4",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station6.png"),
-    stationName: "VIDA Station V1",
-    stationAddress: "Near MG Road",
-    rating: 4.2,
-    totalStations: 15,
-    distance: "3.5 km",
-    isOpen: false,
-  },
-  {
-    coordinate: {
-      latitude: 18.4663366, // pune
-      longitude: 73.8348392,
-    },
-    id: "5",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
-    stationName: "BYD Charging Point",
-    stationAddress: "Near Park Street",
-    rating: 4.7,
-    totalStations: 8,
-    distance: "4.5 km",
-    isOpen: true,
-  },
-  {
-    coordinate: {
-      latitude: 17.385045, // Hyderabad
-      longitude: 78.486671,
-    },
-    id: "6",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station1.png"),
-    stationName: "TATA EStation",
-    stationAddress: "Near HITEC City",
-    rating: 3.9,
-    totalStations: 15,
-    distance: "5.7 km",
-    isOpen: false,
-  },
+// const chargingSpotsList = [
+//   {
+//     coordinate: {
+//       latitude: 28.613939, // Delhi
+//       longitude: 77.209021,
+//     },
+//     id: "1",
+//     stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
+//     stationName: "BYD Charging Point",
+//     stationAddress: "Near Connaught Place",
+//     rating: 4.7,
+//     totalStations: 8,
+//     distance: "4.5 km",
+//     isOpen: true,
+//   },
+//   {
+//     coordinate: {
+//       latitude: 19.076090, // Mumbai
+//       longitude: 72.877426,
+//     },
+//     id: "2",
+//     stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
+//     stationName: "TATA EStation",
+//     stationAddress: "Near Bandra Kurla Complex",
+//     rating: 3.9,
+//     totalStations: 15,
+//     distance: "5.7 km",
+//     isOpen: false,
+//   },
+//   {
+//     coordinate: {
+//       latitude: 13.082680, // Chennai
+//       longitude: 80.270721,
+//     },
+//     id: "3",
+//     stationImage: require("../../../../assets/images/chargingStations/charging_station3.png"),
+//     stationName: "HP Charging Station",
+//     stationAddress: "Near Marina Beach",
+//     rating: 4.9,
+//     totalStations: 6,
+//     distance: "2.1 km",
+//     isOpen: true,
+//   },
+//   {
+//     coordinate: {
+//       latitude: 12.971899, // Bengaluru
+//       longitude: 77.595566,
+//     },
+//     id: "4",
+//     stationImage: require("../../../../assets/images/chargingStations/charging_station6.png"),
+//     stationName: "VIDA Station V1",
+//     stationAddress: "Near MG Road",
+//     rating: 4.2,
+//     totalStations: 15,
+//     distance: "3.5 km",
+//     isOpen: false,
+//   },
+//   {
+//     coordinate: {
+//       latitude: 18.4663366, // pune
+//       longitude: 73.8348392,
+//     },
+//     id: "5",
+//     stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
+//     stationName: "BYD Charging Point",
+//     stationAddress: "Near Park Street",
+//     rating: 4.7,
+//     totalStations: 8,
+//     distance: "4.5 km",
+//     isOpen: true,
+//   },
+//   {
+//     coordinate: {
+//       latitude: 17.385045, // Hyderabad
+//       longitude: 78.486671,
+//     },
+//     id: "6",
+//     stationImage: require("../../../../assets/images/chargingStations/charging_station1.png"),
+//     stationName: "TATA EStation",
+//     stationAddress: "Near HITEC City",
+//     rating: 3.9,
+//     totalStations: 15,
+//     distance: "5.7 km",
+//     isOpen: false,
+//   },
   
-];
+// ];
+
 
 const ChargingStationsOnMapScreen = ({ navigation }) => {
-  const [markerList] = useState(chargingSpotsList);
+ 
   const [currentLocation, setCurrentLocation] = useState(null);
   const _map = useRef();
   const [region,setRegion] = useState({
@@ -125,15 +128,18 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
     longitudeDelta: 0.03,
   });
 
+  const stations = useSelector(selectStations);
+  // console.log("stations in map page ",stations.length);
+  const [stationsList] = useState(stations);
   let mapAnimation = new Animated.Value(0);
   let mapIndex = 0;
 
-
   useEffect(() => {
+    console.log(" map page rendered")
     mapAnimation.addListener(({ value }) => {
       let index = Math.floor(value / cardWidth + 0.3);
-      if (index >= markerList.length) {
-        index = markerList.length - 1;
+      if (index >= stationsList.length) {
+        index = stationsList.length - 1;
       }
       if (index <= 0) {
         index = 0;
@@ -144,10 +150,10 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
       const regionTimeout = setTimeout(() => {
         if (mapIndex !== index) {
           mapIndex = index;
-          const { coordinate } = markerList[index];
+          const { coordinates } = stationsList[index];
           _map.current.animateToRegion(
             {
-              ...coordinate,
+              ...coordinates,
               latitudeDelta: region.latitudeDelta,
               longitudeDelta: region.longitudeDelta,
             },
@@ -211,7 +217,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
      }
    };
  
-  const interpolation = markerList.map((marker, index) => {
+  const interpolation = stationsList.map((marker, index) => {
     const inputRange = [
       (index - 1) * cardWidth,
       index * cardWidth,
@@ -226,17 +232,24 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
 
     return { scale };
   });
-  const latitude = 28.6139;  
-  const longitude = 77.2090;
-  
- 
-  const openGoogleMaps = () => {
-   const url = Platform.select({
-     ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-     android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`
-   });
-   Linking.openURL(url);
- };
+  const formatDistance = (distance) => {
+    if (distance >= 1000) {
+      return (distance / 1000).toFixed(1).replace(/\.0$/, '') + 'k km';
+    } else if (distance % 1 !== 0) {
+      return distance.toFixed(1) + ' km';
+    } else {
+      return distance + ' km';
+    }
+  };
+
+  const openGoogleMaps = (latitude,longitude) => {
+    const url = Platform.select({
+      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
+      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
+    });
+    Linking.openURL(url);
+  };
+
   const onMarkerPress = (mapEventData) => {
     const markerID = mapEventData._targetInst.return.key;
 
@@ -291,7 +304,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
       initialRegion={region}
       provider={PROVIDER_GOOGLE}
     >
-      {markerList.map((marker, index) => {
+      {stationsList.map((marker, index) => {
         const scaleStyle = {
           transform: [
             {
@@ -302,7 +315,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
         return (
           <Marker
             key={index}
-            coordinate={marker.coordinate}
+            coordinate={marker.coordinates}
             onPress={(e) => onMarkerPress(e)}
             anchor={{ x: 0.5, y: 0.5 }} 
             // onPress={() => navigation.push("ChargingStationDetail")}
@@ -364,21 +377,33 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
           { useNativeDriver: true }
         )}
       >
-        {markerList.map((item, index) => (
+        {stationsList.map((item, index) => (
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => navigation.push("ChargingStationDetail")}
+         onPress={() => navigation.push("ChargingStationDetail",{item})}
             key={index}
             style={styles.enrouteChargingStationWrapStyle}
           >
-            <Image
-              source={item.stationImage}
-              style={styles.enrouteChargingStationImage}
-            />
+          <Image
+  source={
+    item?.station_images
+      ? item.station_images
+      : { uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
+  }
+  style={styles.enrouteChargingStationImage}
+/>
+
             <View style={styles.enrouteStationOpenCloseWrapper}>
-              <Text style={{ ...Fonts.whiteColor18Regular }}>
-                {item.isOpen ? "Open" : "Closed"}
-              </Text>
+            <Text
+       style={[
+     styles.statusClosed,
+    {
+      color: item.status === "Inactive" ? "#FF5722" : "white",
+    },
+  ]}
+>
+  {item.status === "Inactive" ? "Closed" : "Open"}
+</Text>
             </View>
             <View style={{ flex: 1 }}>
               <View style={{ margin: Sizes.fixPadding }}>
@@ -386,10 +411,10 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                   numberOfLines={1}
                   style={{ ...Fonts.blackColor18SemiBold }}
                 >
-                  {item.stationName}
+                  {item.station_name}
                 </Text>
                 <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
-                  {item.stationAddress}
+                  {item.address}
                 </Text>
                 <View
                   style={{
@@ -399,7 +424,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                 >
                   <View style={{ ...commonStyles.rowAlignCenter }}>
                     <Text style={{ ...Fonts.blackColor18Medium }}>
-                      {item.rating}
+                     4.5
                     </Text>
                     <MaterialIcons
                       name="star"
@@ -423,7 +448,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                         flex: 1,
                       }}
                     >
-                      {item.totalStations} Charging Points
+                      {item.chargers.length} Charging Points
                     </Text>
                   </View>
                 </View>
@@ -443,17 +468,11 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                     marginRight: Sizes.fixPadding - 5.0,
                   }}
                 >
-                  {item.distance}
+                 {formatDistance(item.distance_km)}
                 </Text>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={openGoogleMaps}
-                  style={styles.getDirectionButton}
-                >
-                  <Text style={{ ...Fonts.whiteColor16Medium }}>
-                    Get Direction
-                  </Text>
-                </TouchableOpacity>
+                <TouchableOpacity onPress={()=>openGoogleMaps(item.coordinates.latitude, item.coordinates.longitude)} style={styles.getDirectionButton}>
+                <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
+               </TouchableOpacity>
               </View>
             </View>
           </TouchableOpacity>

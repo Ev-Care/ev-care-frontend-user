@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, TouchableOpacity,Text, Image, View } from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity,Text, Image, View, Linking, Platform, } from "react-native";
 import React from "react";
 import {
   Colors,
@@ -6,74 +6,99 @@ import {
   Sizes,
   commonStyles,
   screenWidth,
+ 
 } from "../../../constants/styles";
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useSelector } from "react-redux";
+import { selectStations } from "../service/selector";
 
-const allStationsList = [
-  {
-    id: "1",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
-    stationName: "Apex Charging Point",
-    stationAddress: "Near shell petrol station",
-    rating: 4.7,
-    totalStations: 8,
-    distance: "5.7 km",
-    isOpen: true,
-  },
-  {
-    id: "2",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station3.png"),
-    stationName: "Horizon EV Station",
-    stationAddress: "Near apex hospital",
-    rating: 4.2,
-    totalStations: 18,
-    distance: "5.7 km",
-    isOpen: true,
-  },
-  {
-    id: "3",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station1.png"),
-    stationName: "Rapid EV Charge",
-    stationAddress: "Near shelby play ground",
-    rating: 4.2,
-    totalStations: 12,
-    distance: "5.7 km",
-    isOpen: false,
-  },
-  {
-    id: "4",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
-    stationName: "Tesla Recharge",
-    stationAddress: "Near nissan show room",
-    rating: 4.9,
-    totalStations: 22,
-    distance: "5.7 km",
-    isOpen: true,
-  },
-  {
-    id: "5",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
-    stationName: "BYD Charging Point",
-    stationAddress: "Near shell petrol station",
-    rating: 4.7,
-    totalStations: 8,
-    distance: "4.5 km",
-    isOpen: true,
-  },
-  {
-    id: "6",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
-    stationName: "TATA EStation",
-    stationAddress: "Near orange business hub",
-    rating: 3.9,
-    totalStations: 15,
-    distance: "5.7 km",
-    isOpen: false,
-  },
-];
+// const allStationsList = [
+//   {
+//     id: "1",
+//     stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
+//     stationName: "Apex Charging Point",
+//     stationAddress: "Near shell petrol station",
+//     rating: 4.7,
+//     totalStations: 8,
+//     distance: "5.7 km",
+//     isOpen: true,
+//   },
+//   {
+//     id: "2",
+//     stationImage: require("../../../../assets/images/chargingStations/charging_station3.png"),
+//     stationName: "Horizon EV Station",
+//     stationAddress: "Near apex hospital",
+//     rating: 4.2,
+//     totalStations: 18,
+//     distance: "5.7 km",
+//     isOpen: true,
+//   },
+//   {
+//     id: "3",
+//     stationImage: require("../../../../assets/images/chargingStations/charging_station1.png"),
+//     stationName: "Rapid EV Charge",
+//     stationAddress: "Near shelby play ground",
+//     rating: 4.2,
+//     totalStations: 12,
+//     distance: "5.7 km",
+//     isOpen: false,
+//   },
+//   {
+//     id: "4",
+//     stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
+//     stationName: "Tesla Recharge",
+//     stationAddress: "Near nissan show room",
+//     rating: 4.9,
+//     totalStations: 22,
+//     distance: "5.7 km",
+//     isOpen: true,
+//   },
+//   {
+//     id: "5",
+//     stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
+//     stationName: "BYD Charging Point",
+//     stationAddress: "Near shell petrol station",
+//     rating: 4.7,
+//     totalStations: 8,
+//     distance: "4.5 km",
+//     isOpen: true,
+//   },
+//   {
+//     id: "6",
+//     stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
+//     stationName: "TATA EStation",
+//     stationAddress: "Near orange business hub",
+//     rating: 3.9,
+//     totalStations: 15,
+//     distance: "5.7 km",
+//     isOpen: false,
+//   },
+// ];
 
 const AllChargingStationsScreen = ({ navigation }) => {
+  const stations = useSelector(selectStations);
+
+  console.log("stations in all charging stations screen ", stations.length);
+
+  const openGoogleMaps = (latitude,longitude) => {
+    const url = Platform.select({
+      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
+      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
+    });
+    Linking.openURL(url);
+  };
+
+  const formatDistance = (distance) => {
+    if (distance >= 1000) {
+      return (distance / 1000).toFixed(1).replace(/\.0$/, '') + 'k km';
+    } else if (distance % 1 !== 0) {
+      return distance.toFixed(1) + ' km';
+    } else {
+      return distance + ' km';
+    }
+  };
+  
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -87,24 +112,29 @@ const AllChargingStationsScreen = ({ navigation }) => {
   function allStationsInfo() {
     const renderItem = ({ item }) => (
       <TouchableOpacity  onPress={() => {
-        navigation.navigate("ChargingStationDetail");
+        navigation.navigate("ChargingStationDetail", {item});
       }} style={styles.enrouteChargingStationWrapStyle}>
-        <Image
-          source={item.stationImage}
-          style={styles.enrouteChargingStationImage}
-        />
+       <Image
+  source={
+    item?.station_images
+      ? item.station_images
+      : { uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
+  }
+  style={styles.enrouteChargingStationImage}
+/>
+
         <View style={styles.enrouteStationOpenCloseWrapper}>
           <Text style={{ ...Fonts.whiteColor18Regular }}>
-            {item.isOpen ? "Open" : "Closed"}
+            {item?.status==="Planned" || item?.status === "Active" ? "Open" : "Closed"}
           </Text>
         </View>
         <View style={{ flex: 1 }}>
           <View style={{ margin: Sizes.fixPadding }}>
             <Text numberOfLines={1} style={{ ...Fonts.blackColor18SemiBold }}>
-              {item.stationName}
+              {item?.station_name}
             </Text>
             <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
-              {item.stationAddress}
+              {item?.address}
             </Text>
             <View
               style={{
@@ -114,7 +144,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
             >
               <View style={{ ...commonStyles.rowAlignCenter }}>
                 <Text style={{ ...Fonts.blackColor18Medium }}>
-                  {item.rating}
+                  4.8
                 </Text>
                 <MaterialIcons
                   name="star"
@@ -138,7 +168,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
                     flex: 1,
                   }}
                 >
-                  {item.totalStations} Charging Points
+                  {item?.chargers.length} Charging Points
                 </Text>
               </View>
             </View>
@@ -158,19 +188,19 @@ const AllChargingStationsScreen = ({ navigation }) => {
                 marginRight: Sizes.fixPadding - 5.0,
               }}
             >
-              {item.distance}
+              {formatDistance(item?.distance_km)}
             </Text>
-            <View style={styles.getDirectionButton}>
+            <TouchableOpacity onPress={()=>openGoogleMaps(item?.coordinates.latitude, item?.coordinates.longitude)} style={styles.getDirectionButton}>
               <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
       </TouchableOpacity>
     );
     return (
       <FlatList
-        data={allStationsList}
-        keyExtractor={(item) => `${item.id}`}
+        data={stations}
+        keyExtractor={(item) => `${item?.id}`}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
       />

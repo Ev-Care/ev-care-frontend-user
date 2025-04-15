@@ -29,6 +29,7 @@ import { selectUser } from "../../../auth/services/selector";
 import { useSelector, useDispatch } from "react-redux";
 import { selectStation } from "../../services/selector";
 import { fetchStations } from "../../services/crudFunction";
+import { selectStations } from "../../../user/service/selector";
 // Colors
 const COLORS = {
   primary: "#101942",
@@ -46,15 +47,17 @@ const VendorHome =  () => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
   
+
   useEffect(() => {
     // console.log("useEffect called");
-  
     const fetchData = async () => {
       if (user?.id) {
         console.log("Dispatching fetchStations for user ID:", user?.id);
         await dispatch(fetchStations(user?.id));
       } else {
         console.log("User ID is not available");
+        console.log(useSelector(selectStation));
+
       }
     };
   
@@ -63,8 +66,13 @@ const VendorHome =  () => {
     return () => {
       console.log("Cleaning up VendorHome...");
     };
-  }, [user?.id, dispatch]);
+  }, [user, dispatch]);
+
+
   // Get current time to display appropriate greeting
+  
+  
+  
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good Morning";

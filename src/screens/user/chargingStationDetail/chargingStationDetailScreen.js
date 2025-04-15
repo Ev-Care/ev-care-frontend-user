@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -24,10 +24,13 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MapView, { Marker } from 'react-native-maps';
 import { Overlay } from "@rneui/themed";
+import { addToFavorite } from '../service/stationSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectFavoriteStations } from '../service/selector';
 // Define colors at the top for easy customization
 const COLORS = {
   primary: '#101942',
-  accent: '#ff7f50', // Orange
+  accent: '#FF5722', // Orange
   lightPurple: '#E6D8F2',
   white: '#FFFFFF',
   gray: '#8A94A6',
@@ -39,8 +42,8 @@ const COLORS = {
 };
 
 const { width } = Dimensions.get('window');
- // Sample review data
- const reviews = [
+// Sample review data
+const reviews = [
   {
     id: '1',
     name: 'Andrew Anderson',
@@ -63,21 +66,45 @@ const { width } = Dimensions.get('window');
     comment: 'Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.',
   },
 ];
-const ChargingStationDetailScreen = () => {
+
+
+
+const ChargingStationDetailScreen = ({ route }) => {
   // for  rating Start 
-   const [showRateNowDialog, setshowRateNowDialog] = useState(false);
-   const [reviewComment, setReviewComment] = useState('');
-    const [rate1, setRate1] = useState(false);
-    const [rate2, setRate2] = useState(false);
-    const [rate3, setRate3] = useState(false);
-    const [rate4, setRate4] = useState(false);
-    const [rate5, setRate5] = useState(false);
- // for  rating end
+  const [showRateNowDialog, setshowRateNowDialog] = useState(false);
+  const [reviewComment, setReviewComment] = useState('');
+  const [rate1, setRate1] = useState(false);
+  const [rate2, setRate2] = useState(false);
+  const [rate3, setRate3] = useState(false);
+  const [rate4, setRate4] = useState(false);
+  const [rate5, setRate5] = useState(false);
+  // for  rating end
 
   const [activeTab, setActiveTab] = useState(0);
-  const [inFavorite, setinFavorite] = useState(false);
+  const favStations = useSelector(selectFavoriteStations);
   const [showSnackBar, setshowSnackBar] = useState(false);
   const scrollViewRef = useRef(null);
+  const dispatch = useDispatch();
+  const station = route?.params?.item;
+  const [inFavorite, setinFavorite] = useState(favStations.has(station));
+  const favoriteStations = useSelector(selectFavoriteStations)
+
+
+  const connectorIcons = {
+    "CCS-2": "ev-plug-ccs2",
+    "CHAdeMO": "ev-plug-chademo",
+    "Type-2": "ev-plug-type2",
+    "Wall": "ev-plug-type1",
+    "GBT": "ev-plug-type2",
+  };
+  const amenityMap = {
+    "Restroom": "toilet",
+    "Cafe": "coffee",
+    "Wifi": "wifi",
+    "Store": "cart",
+    "Car Care": "car",
+    "Lodging": "bed"
+  };
 
   const handleTabPress = (index) => {
     setActiveTab(index);
@@ -91,18 +118,32 @@ const ChargingStationDetailScreen = () => {
       setActiveTab(index);
     }
   };
-  const latitude = 28.6139;  
- const longitude = 77.2090;
+  //   const latitude = 28.6139;  
+  //  const longitude = 77.2090;
 
- const openGoogleMaps = () => {
-  const url = Platform.select({
-    ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-    android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`
-  });
-  Linking.openURL(url);
-};
+  const openGoogleMaps = (latitude, longitude) => {
+    const url = Platform.select({
+      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
+      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
+    });
+    Linking.openURL(url);
+  };
 
- 
+  const handleAddToFavorite = (stationId) => {
+    if (station) {
+      dispatch(addToFavorite(station));
+      setinFavorite(!inFavorite);
+      setshowSnackBar(true);
+    }
+
+  };
+
+  function trimName(threshold, str) {
+    if (str?.length <= threshold) {
+      return str;
+    }
+    return str?.substring(0, threshold) + ".....";
+  };
 
 
   return (
@@ -110,30 +151,43 @@ const ChargingStationDetailScreen = () => {
       {/* Header with map background */}
       <View style={styles.header}>
         <Image
-          source={{ uri:'https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }}
+          source={{ uri: 'https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }}
           style={styles.mapBackground}
         />
         <View style={styles.overlay}>
           <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>Community Listed</Text>
+            <Text style={styles.communityText}>Public</Text>
           </View>
-          <Text style={styles.stationName}>Gurukul apartment near cafe paramour</Text>
-          <Text style={styles.stationAddress}>Pune Vadgaon Budruk, Sinhgad College Rd</Text>
-         <View style={[{flexDirection:"row",justifyContent:"space-between"}]}>
-          <View style={styles.statusContainer}>
-            <Text style={styles.statusClosed}>Closed</Text>
-            <Text style={styles.statusTime}>• 04:05 - 06:09</Text>
-            <View style={styles.newBadge}>
-              <Text style={styles.newText}>4.5 ⭐</Text>
-            </View> 
-          </View>
-          <MaterialIcons
+          <Text style={styles.stationName}>
+            {trimName(50, station?.station_name)}
+          </Text>
+          <Text style={styles.stationAddress}>
+            {trimName(50, station?.address)}
+          </Text>
+          <View style={[{ flexDirection: "row", justifyContent: "space-between" }]}>
+            <View style={styles.statusContainer}>
+              <Text
+                style={[
+                  styles.statusClosed,
+                  {
+                    color: station?.status === "Inactive" ? "#FF5722" : "green",
+                  },
+                ]}
+              >
+                {station?.status === "Inactive" ? "Closed" : "Open"}
+              </Text>
+              <Text style={styles.statusTime}>• {station?.open_hours_opening_time} - {station?.open_hours_closing_time}</Text>
+              <View style={styles.newBadge}>
+                <Text style={styles.newText}>4.5 ⭐</Text>
+              </View>
+            </View>
+            <MaterialIcons
               name={inFavorite ? "favorite" : "favorite-border"}
-              color={inFavorite ? Colors.redColor: Colors.primaryColor}
+              color={inFavorite ? Colors.redColor : Colors.primaryColor}
               size={35}
               onPress={() => {
-                setinFavorite(!inFavorite);
-                setshowSnackBar(true);
+                handleAddToFavorite(station);
+
               }}
             />
           </View>
@@ -176,125 +230,125 @@ const ChargingStationDetailScreen = () => {
       >
         {/* Charger Tab */}
         {chargerTab()}
-        {/* Details Tab */} 
+        {/* Details Tab */}
         {detailTab()}
         {/* Reviews Tab */}
-       {reviewsTab()}
+        {reviewsTab()}
       </ScrollView>
 
 
 
       {/* Bottom Buttons */}
       <View style={styles.bottomButtons}>
-        <TouchableOpacity onPress={openGoogleMaps} style={styles. directionButton}>
-          <Text style={styles. directionButtonText}>Get Direction</Text>
-       
+        <TouchableOpacity onPress={() => openGoogleMaps(station?.coordinates.latitude, station?.coordinates.longitude)} style={styles.directionButton}>
+          <Text style={styles.directionButtonText}>Get Direction</Text>
+
         </TouchableOpacity>
         <TouchableOpacity onPress={() => {
-                setshowRateNowDialog(true);
-              }} style={styles. rateNowButton}>
-          <Text style={styles. directionButtonText}>Rate Now</Text>
+          setshowRateNowDialog(true);
+        }} style={styles.rateNowButton}>
+          <Text style={styles.directionButtonText}>Rate Now</Text>
         </TouchableOpacity>
       </View>
       {rateNowDialog()}
     </View>
   );
-  function chargerTab(){
-    return( <ScrollView style={styles.tabContent}>
-      <View style={styles.chargerCard}>
-        <Text style={styles.chargerTitle}>Sunfuel AC 1</Text>
-        <View style={styles.chargerSpecs}>
-          <Text style={styles.chargerSpecText}>AC</Text>
-          <Text style={styles.chargerSpecText}>|</Text>
-          <Text style={styles.chargerSpecText}>60kW</Text>
-        </View>
-  
-        <View style={styles.connectorContainer}>
-          <View style={styles.connector}>
-            <Text style={styles.connectorTitle}>Connector 1</Text>
-            <View style={styles.connectorType}>
-              <Icon name="ev-plug-type1" size={20} color={COLORS.primary} />
-              <Text style={styles.connectorTypeText}>Wall</Text>
+  function chargerTab() {
+    return (
+      <ScrollView style={styles.tabContent}>
+        {station?.chargers?.map((charger, index) => (
+          <View key={index} style={styles.chargerCard}>
+            <Text style={styles.chargerTitle}>{charger.name || `Charger ${index + 1}`}</Text>
+            <View style={styles.chargerSpecs}>
+              <Text style={styles.chargerSpecText}>Type {charger.charger_type || "Unknown Type"}</Text>
+              <Text style={styles.chargerSpecText}>|</Text>
+              <Text style={styles.chargerSpecText}>Power {charger.max_power_kw || "Unknown Power"}</Text>
             </View>
-          </View>
-  
-          <View style={styles.connector}>
-            <Text style={styles.connectorTitle}>Connector 2</Text>
-            <View style={styles.connectorType}>
-              <Icon name="ev-plug-chademo" size={20} color={COLORS.primary} />
-              <Text style={styles.connectorTypeText}>CHAdeMO</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-      <View style={styles.chargerCard}>
-        <Text style={styles.chargerTitle}>Sunfuel AC 1</Text>
-        <View style={styles.chargerSpecs}>
-          <Text style={styles.chargerSpecText}>AC</Text>
-          <Text style={styles.chargerSpecText}>|</Text>
-          <Text style={styles.chargerSpecText}>60kW</Text>
-        </View>
-  
-        <View style={styles.connectorContainer}>
-          <View style={styles.connector}>
-            <Text style={styles.connectorTitle}>Connector 1</Text>
-            <View style={styles.connectorType}>
-              <Icon name="ev-plug-type1" size={20} color={COLORS.primary} />
-              <Text style={styles.connectorTypeText}>Wall</Text>
-            </View>
-          </View>
-  
-          <View style={styles.connector}>
-            <Text style={styles.connectorTitle}>Connector 2</Text>
-            <View style={styles.connectorType}>
-              <Icon name="ev-plug-chademo" size={20} color={COLORS.primary} />
-              <Text style={styles.connectorTypeText}>CHAdeMO</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-    </ScrollView>);
-  };
-  function detailTab(){
-    return(<ScrollView style={styles.tabContent}>
-      <Text style={styles.sectionTitle}>Location Details</Text>
-      <View style={styles.mapContainer}>
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: 18.4575,
-            longitude: 73.8508,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
-        >
-          <Marker
-            coordinate={{ latitude: 18.4575, longitude: 73.8508 }}
-            title="Sinhgad College"
-            description="Wadgaon Campus"
-          />
-        </MapView>
-      </View>
 
-      <View style={styles.landmarkContainer}>
-        <Text style={styles.landmarkTitle}>Landmark - Cafe Paramour</Text>
-      </View>
+            {/* Map over connectors */}
+            <View style={styles.connectorContainer}>
+              {charger.connectors?.map((connector, connectorIndex) => (
+                <View key={connectorIndex} style={styles.connector}>
+                  <Text style={styles.connectorTitle}>{connector.name || `Connector ${connectorIndex + 1}`}</Text>
+                  <View style={styles.connectorType}>
+                    <Icon
+                      name={connectorIcons[connector.connectorType?.description] || "ev-plug-type1"}
+                      size={20}
+                      color={COLORS.primary}
+                    />
+                    <Text style={styles.connectorTypeText}>{connector?.connectorType?.description}</Text>
+                    {/* <Text style={styles.connectorTypeText}>{console.log("hi", connector)}</Text> */}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    );
+  }
+  function detailTab() {
+    return (
+      <ScrollView style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Location Details</Text>
+        <View style={styles.mapContainer}>
+          <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: station?.coordinates.latitude,
+              longitude: station?.coordinates.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }}
+          >
+            <Marker
+              coordinate={{
+                latitude: station?.coordinates.latitude,
+                longitude: station?.coordinates.longitude,
+              }}
+              title={station?.station_name}
+              description={station?.address}
+            />
+          </MapView>
+        </View>
 
-      <Text style={styles.sectionTitle}>Amenities</Text>
-      <View style={styles.amenitiesContainer}>
-        <View style={styles.amenityItem}>
-          <Icon name="coffee" size={24} color={COLORS.primary} />
+        <View style={styles.landmarkContainer}>
+          <Text style={styles.landmarkTitle}>{station?.address}</Text>
         </View>
-        <View style={styles.amenityItem}>
-          <Icon name="wifi" size={24} color={COLORS.primary} />
+
+        <Text style={styles.sectionTitle}>Amenities</Text>
+        <View style={styles.amenitiesContainer}>
+          {station?.amenities.split(",").map((amenityName, index) => {
+            const trimmedName = amenityName.trim();
+            let iconName = "help-circle"; // default fallback
+
+            if (trimmedName === "Restroom") {
+              iconName = "toilet";
+            } else if (trimmedName === "Cafe") {
+              iconName = "coffee";
+            } else if (trimmedName === "Wifi") {
+              iconName = "wifi";
+            } else if (trimmedName === "Store") {
+              iconName = "cart";
+            } else if (trimmedName === "Car Care") {
+              iconName = "car";
+            } else if (trimmedName === "Lodging") {
+              iconName = "bed";
+            }
+
+            return (
+              <View key={index} style={styles.amenityItem}>
+                <Icon name={iconName} size={24} color={COLORS.primary} />
+                <Text style={styles.connectorTypeText}>{trimmedName}</Text>
+              </View>
+            );
+          })}
         </View>
-        <View style={styles.amenityItem}>
-          <Icon name="cart" size={24} color={COLORS.primary} />
-        </View>
-      
-      </View>
-    </ScrollView>);
-  };
+
+      </ScrollView>
+    );
+  }
+
   function reviewsTab() {
     return (
       <ScrollView style={styles.tabContent}>
@@ -305,213 +359,216 @@ const ChargingStationDetailScreen = () => {
       </ScrollView>
     );
   };
-  
-  function renderReviewItem ({ item }){return(
-    <View style={styles.reviewItem}>
-      <Image source={{ uri: item.avatar }} style={styles.reviewAvatar} />
-      <View style={styles.reviewContent}>
-        <Text style={styles.reviewName}>{item.name}</Text>
-        {renderStars(item.rating)}
-        <Text style={styles.reviewText}>{item.comment}</Text>
-      </View>
-    </View>
-  );
-};
-function renderStars(rating) {
-  const stars = [];
-  for (let i = 1; i <= 5; i++) {
-    stars.push(
-      <Icon
-        key={i}
-        name={i <= rating ? 'star' : 'star-outline'}
-        size={16}
-        color={COLORS.yellow}
-        style={{ marginRight: 2 }}
-      />
-    );
-  }
-  return <View style={{ flexDirection: 'row' }}>{stars}</View>;
-};
-function snackBarInfo() {
-  return (
-    <Snackbar
-      style={{ backgroundColor: Colors.lightBlackColor }}
-      visible={showSnackBar}
-      onDismiss={() => setshowSnackBar(false)}
-      elevation={0}
-    >
-      <Text style={{ ...Fonts.whiteColor14Medium }}>
-        {inFavorite ? "Added to favorite" : "Removed from favorite"}
-      </Text>
-    </Snackbar>
-  );
-}
-function rateNowDialog() {
-  return (
-    <Overlay
-      isVisible={showRateNowDialog}
-      onBackdropPress={() => setshowRateNowDialog(false)}
-      overlayStyle={styles.dialogStyle}
-    >
-      <View>
-        <Image
-          source={require("../../../../assets/images/icons/rating.png")}
-          style={styles.ratingImageStyle}
-        />
-        <Text
-          style={{
-            ...Fonts.blackColor18Medium,
-            textAlign: "center",
-            marginHorizontal: Sizes.fixPadding * 2.0,
-          }}
-        >
-          Rate your charging experience..
-        </Text>
-        {rating()}
 
-        <TextInput
-          value={reviewComment}
-          onChangeText={(text) => setReviewComment(text)}
-          placeholder="Write your feedback here..."
-          placeholderTextColor="#999"
-          multiline
-          style={{
-            borderWidth: 1,
-            borderColor: '#ccc',
-            borderRadius: 8,
-            padding: 10,
-            marginTop: Sizes.fixPadding * 1.5,
-            marginHorizontal: Sizes.fixPadding * 1.5,
-            textAlignVertical: 'top',
-            minHeight: 80,
-            fontSize: 12,
-            color: '#333',
-          }}
-        />
-
-        <View
-          style={{
-            ...commonStyles.rowAlignCenter,
-            marginTop: Sizes.fixPadding,
-          }}
-        >
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => {
-              setshowRateNowDialog(false);
-            }}
-            style={{
-              ...styles.noButtonStyle,
-              ...styles.dialogYesNoButtonStyle,
-            }}
-          >
-            <Text style={{ ...Fonts.blackColor16Medium }}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => {
-              setshowRateNowDialog(false);
-              // You can handle reviewComment submission here
-            }}
-            style={{
-              ...styles.yesButtonStyle,
-              ...styles.dialogYesNoButtonStyle,
-            }}
-          >
-            <Text style={{ ...Fonts.whiteColor16Medium }}>Submit</Text>
-          </TouchableOpacity>
+  function renderReviewItem({ item }) {
+    return (
+      <View style={styles.reviewItem}>
+        <Image source={{ uri: item.avatar }} style={styles.reviewAvatar} />
+        <View style={styles.reviewContent}>
+          <Text style={styles.reviewName}>{item.name}</Text>
+          {renderStars(item.rating)}
+          <Text style={styles.reviewText}>{item.comment}</Text>
         </View>
       </View>
-    </Overlay>
-  );
-}
+    );
+  };
+  function renderStars(rating) {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <Icon
+          key={i}
+          name={i <= rating ? 'star' : 'star-outline'}
+          size={16}
+          color={COLORS.yellow}
+          style={{ marginRight: 2 }}
+        />
+      );
+    }
+    return <View style={{ flexDirection: 'row' }}>{stars}</View>;
+  };
+  function snackBarInfo() {
+    return (
+      <Snackbar
+        style={{ backgroundColor: Colors.lightBlackColor }}
+        visible={showSnackBar}
+        onDismiss={() => setshowSnackBar(false)}
+        elevation={0}
+      >
+        <Text style={{ ...Fonts.whiteColor14Medium }}>
+          {inFavorite ? "Added to favorite" : "Removed from favorite"}
+        </Text>
+      </Snackbar>
+    );
+  }
 
 
-function rating() {
-  return (
-    <View style={{ ...styles.ratingWrapStyle }}>
-      <MaterialIcons
-        name={rate1 ? "star" : "star-border"}
-        size={screenWidth / 12.5}
-        color={Colors.primaryColor}
-        onPress={() => {
-          if (rate1) {
-            setRate2(false);
-            setRate3(false);
-            setRate4(false);
-            setRate5(false);
-          } else {
-            setRate1(true);
-          }
-        }}
-      />
-      <MaterialIcons
-        name={rate2 ? "star" : "star-border"}
-        size={screenWidth / 12.5}
-        color={Colors.primaryColor}
-        onPress={() => {
-          if (rate2) {
-            setRate1(true);
-            setRate3(false);
-            setRate4(false);
-            setRate5(false);
-          } else {
-            setRate2(true);
-            setRate1(true);
-          }
-        }}
-      />
-      <MaterialIcons
-        name={rate3 ? "star" : "star-border"}
-        size={screenWidth / 12.5}
-        color={Colors.primaryColor}
-        onPress={() => {
-          if (rate3) {
-            setRate4(false);
-            setRate5(false);
-            setRate2(true);
-          } else {
-            setRate3(true);
-            setRate2(true);
-            setRate1(true);
-          }
-        }}
-      />
-      <MaterialIcons
-        name={rate4 ? "star" : "star-border"}
-        size={screenWidth / 12.5}
-        color={Colors.primaryColor}
-        onPress={() => {
-          if (rate4) {
-            setRate5(false);
-            setRate3(true);
-          } else {
-            setRate4(true);
-            setRate3(true);
-            setRate2(true);
-            setRate1(true);
-          }
-        }}
-      />
-      <MaterialIcons
-        name={rate5 ? "star" : "star-border"}
-        size={screenWidth / 12.5}
-        color={Colors.primaryColor}
-        onPress={() => {
-          if (rate5) {
-            setRate4(true);
-          } else {
-            setRate5(true);
-            setRate4(true);
-            setRate3(true);
-            setRate2(true);
-            setRate1(true);
-          }
-        }}
-      />
-    </View>
-  );
-}
+  function rateNowDialog() {
+    return (
+      <Overlay
+        isVisible={showRateNowDialog}
+        onBackdropPress={() => setshowRateNowDialog(false)}
+        overlayStyle={styles.dialogStyle}
+      >
+        <View>
+          <Image
+            source={require("../../../../assets/images/icons/rating.png")}
+            style={styles.ratingImageStyle}
+          />
+          <Text
+            style={{
+              ...Fonts.blackColor18Medium,
+              textAlign: "center",
+              marginHorizontal: Sizes.fixPadding * 2.0,
+            }}
+          >
+            Rate your charging experience..
+          </Text>
+          {rating()}
+
+          <TextInput
+            value={reviewComment}
+            onChangeText={(text) => setReviewComment(text)}
+            placeholder="Write your feedback here..."
+            placeholderTextColor="#999"
+            multiline
+            style={{
+              borderWidth: 1,
+              borderColor: '#ccc',
+              borderRadius: 8,
+              padding: 10,
+              marginTop: Sizes.fixPadding * 1.5,
+              marginHorizontal: Sizes.fixPadding * 1.5,
+              textAlignVertical: 'top',
+              minHeight: 80,
+              fontSize: 12,
+              color: '#333',
+            }}
+          />
+
+          <View
+            style={{
+              ...commonStyles.rowAlignCenter,
+              marginTop: Sizes.fixPadding,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setshowRateNowDialog(false);
+              }}
+              style={{
+                ...styles.noButtonStyle,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+            >
+              <Text style={{ ...Fonts.blackColor16Medium }}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setshowRateNowDialog(false);
+                // You can handle reviewComment submission here
+              }}
+              style={{
+                ...styles.yesButtonStyle,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+            >
+              <Text style={{ ...Fonts.whiteColor16Medium }}>Submit</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Overlay>
+    );
+  }
+
+
+  function rating() {
+    return (
+      <View style={{ ...styles.ratingWrapStyle }}>
+        <MaterialIcons
+          name={rate1 ? "star" : "star-border"}
+          size={screenWidth / 12.5}
+          color={Colors.primaryColor}
+          onPress={() => {
+            if (rate1) {
+              setRate2(false);
+              setRate3(false);
+              setRate4(false);
+              setRate5(false);
+            } else {
+              setRate1(true);
+            }
+          }}
+        />
+        <MaterialIcons
+          name={rate2 ? "star" : "star-border"}
+          size={screenWidth / 12.5}
+          color={Colors.primaryColor}
+          onPress={() => {
+            if (rate2) {
+              setRate1(true);
+              setRate3(false);
+              setRate4(false);
+              setRate5(false);
+            } else {
+              setRate2(true);
+              setRate1(true);
+            }
+          }}
+        />
+        <MaterialIcons
+          name={rate3 ? "star" : "star-border"}
+          size={screenWidth / 12.5}
+          color={Colors.primaryColor}
+          onPress={() => {
+            if (rate3) {
+              setRate4(false);
+              setRate5(false);
+              setRate2(true);
+            } else {
+              setRate3(true);
+              setRate2(true);
+              setRate1(true);
+            }
+          }}
+        />
+        <MaterialIcons
+          name={rate4 ? "star" : "star-border"}
+          size={screenWidth / 12.5}
+          color={Colors.primaryColor}
+          onPress={() => {
+            if (rate4) {
+              setRate5(false);
+              setRate3(true);
+            } else {
+              setRate4(true);
+              setRate3(true);
+              setRate2(true);
+              setRate1(true);
+            }
+          }}
+        />
+        <MaterialIcons
+          name={rate5 ? "star" : "star-border"}
+          size={screenWidth / 12.5}
+          color={Colors.primaryColor}
+          onPress={() => {
+            if (rate5) {
+              setRate4(true);
+            } else {
+              setRate5(true);
+              setRate4(true);
+              setRate3(true);
+              setRate2(true);
+              setRate1(true);
+            }
+          }}
+        />
+      </View>
+    );
+  }
 };
 
 const styles = StyleSheet.create({
@@ -630,7 +687,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-    marginBottom:10,
+    marginBottom: 10,
   },
   chargerTitle: {
     fontSize: 16,
@@ -672,6 +729,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   connectorTypeText: {
+    fontSize: 10,
     marginLeft: 8,
     color: COLORS.gray,
   },
@@ -705,16 +763,18 @@ const styles = StyleSheet.create({
   },
   amenitiesContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     marginBottom: 24,
   },
   amenityItem: {
-    width: 50,
+    width: 60,
     height: 50,
     borderRadius: 8,
     backgroundColor: COLORS.lightGray,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+    marginBottom: 10,
   },
   reviewsHeader: {
     flexDirection: 'row',
@@ -761,7 +821,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#E0E0E0',
     gap: 10,
   },
- 
+
   directionButton: {
     flex: 1,
     backgroundColor: COLORS.primary,
@@ -772,7 +832,7 @@ const styles = StyleSheet.create({
   },
   rateNowButton: {
     flex: 1,
-    backgroundColor:COLORS.accent ,
+    backgroundColor: COLORS.accent,
     paddingVertical: 12,
     borderRadius: 8,
     justifyContent: 'center',
@@ -783,49 +843,49 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
-    dialogStyle: {
-      backgroundColor: Colors.whiteColor,
-      borderRadius: Sizes.fixPadding - 5.0,
-      width: "85%",
-      padding: 0.0,
-      elevation: 0,
-    },
-      ratingImageStyle: {
-        marginTop: Sizes.fixPadding * 1.5,
-        width: 70.0,
-        height: 60.0,
-        resizeMode: "contain",
-        alignSelf: "center",
-      },
-      ratingWrapStyle: {
-        ...commonStyles.rowAlignCenter,
-        justifyContent: "center",
-        marginVertical: Sizes.fixPadding + 5.0,
-      },
-        dialogYesNoButtonStyle: {
-          flex: 1,
-          ...commonStyles.shadow,
-          borderTopWidth: Platform.OS == "ios" ? 0 : 1.0,
-          padding: Sizes.fixPadding,
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        noButtonStyle: {
-          backgroundColor: Colors.whiteColor,
-          borderTopColor: Colors.extraLightGrayColor,
-          borderBottomLeftRadius: Sizes.fixPadding - 5.0,
-        },
-        yesButtonStyle: {
-          borderTopColor: Colors.primaryColor,
-          backgroundColor: Colors.primaryColor,
-          borderBottomRightRadius: Sizes.fixPadding - 5.0,
-        },
-        dialogCancelTextStyle: {
-          marginVertical: Sizes.fixPadding,
-          marginHorizontal: Sizes.fixPadding * 2.0,
-          textAlign: "center",
-          ...Fonts.blackColor18Medium,
-        },
+  dialogStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderRadius: Sizes.fixPadding - 5.0,
+    width: "85%",
+    padding: 0.0,
+    elevation: 0,
+  },
+  ratingImageStyle: {
+    marginTop: Sizes.fixPadding * 1.5,
+    width: 70.0,
+    height: 60.0,
+    resizeMode: "contain",
+    alignSelf: "center",
+  },
+  ratingWrapStyle: {
+    ...commonStyles.rowAlignCenter,
+    justifyContent: "center",
+    marginVertical: Sizes.fixPadding + 5.0,
+  },
+  dialogYesNoButtonStyle: {
+    flex: 1,
+    ...commonStyles.shadow,
+    borderTopWidth: Platform.OS == "ios" ? 0 : 1.0,
+    padding: Sizes.fixPadding,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noButtonStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderTopColor: Colors.extraLightGrayColor,
+    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+  },
+  yesButtonStyle: {
+    borderTopColor: Colors.primaryColor,
+    backgroundColor: Colors.primaryColor,
+    borderBottomRightRadius: Sizes.fixPadding - 5.0,
+  },
+  dialogCancelTextStyle: {
+    marginVertical: Sizes.fixPadding,
+    marginHorizontal: Sizes.fixPadding * 2.0,
+    textAlign: "center",
+    ...Fonts.blackColor18Medium,
+  },
 });
 
 export default ChargingStationDetailScreen;

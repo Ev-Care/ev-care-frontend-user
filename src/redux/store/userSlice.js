@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createSlice } from "@reduxjs/toolkit";
 import { postSignIn, postSignUp, postSingleFile, postVerifyOtp, patchUpdateVendorProfile } from "../../screens/auth/services/crudFunction";
-
+import { patchUpdateUserProfile } from "../../screens/user/service/crudFunction";
 
 const initialState = {
   user: null,
@@ -59,10 +59,7 @@ const authSlice = createSlice({
       })
       .addCase(postVerifyOtp.fulfilled, (state, action) => {
         state.loading = false;
-        //console.log("OTP verification response:", action.payload);
-        // console.log("OTP Verified by user and action.payload is: ", action.payload);
-
-        // console.log("OTP verified successfully:", response.data);
+        
         if (action.payload.data.user.status !== "New") {
           state.user = extractUser(action.payload.data.user); // Extract user data from the response
 
@@ -121,6 +118,21 @@ const authSlice = createSlice({
         console.log("User data after update in slice:", state.user);
       })
       .addCase(patchUpdateVendorProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Profile update failed";
+      })
+      .addCase(patchUpdateUserProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(patchUpdateUserProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        console.log("User profile updated successfully:", action.payload);
+        // state.user = action.payload; // Assuming the API returns the updated user data
+        state.user = extractUser(action.payload.data); // Extract user data from the response
+        console.log("User data after update in slice:", state.user);
+      })
+      .addCase(patchUpdateUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Profile update failed";
       });

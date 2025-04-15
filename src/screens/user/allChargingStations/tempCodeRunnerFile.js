@@ -1,0 +1,1 @@
+ {item.distance_km}

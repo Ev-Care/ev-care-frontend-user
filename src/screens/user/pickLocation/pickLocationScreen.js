@@ -15,14 +15,14 @@ import Geolocation from "react-native-geolocation-service";
 import Key from "../../../constants/key";
 import { Colors, Fonts, commonStyles } from "../../../constants/styles";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation,StackActions } from "@react-navigation/native";
+import { useNavigation, StackActions } from "@react-navigation/native";
 import * as Location from "expo-location";
 
 const PickLocationScreen = ({ navigation, route }) => {
   // const navigation = useNavigation();
   const mapRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
-   const [currentLocation, setCurrentLocation] = useState(null);
+  const [currentLocation, setCurrentLocation] = useState(null);
   const [address, setAddress] = useState(""); // Store address
   const [region, setRegion] = useState({
     latitude: 28.6139, // Default to Delhi
@@ -30,21 +30,22 @@ const PickLocationScreen = ({ navigation, route }) => {
     latitudeDelta: 0.03,
     longitudeDelta: 0.03,
   });
-useEffect(() => {
+  useEffect(() => {
     const timeout = setTimeout(() => {
       if (mapRef.current) {
         getUserLocation();
       } else {
         console.log("Map reference is not ready yet");
       }
-    }, 500); 
-  
-    return () => clearTimeout(timeout); 
+    }, 500);
+
+    return () => clearTimeout(timeout);
   }, []);
+
   const getUserLocation = async () => {
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
-      
+
       if (status !== "granted") {
         setErrorMsg("Permission to access location was denied");
         Alert.alert("Permission Denied", "Using default location (Delhi).");
@@ -56,9 +57,9 @@ useEffect(() => {
         });
         return;
       }
-  
+
       let location = await Location.getCurrentPositionAsync({});
-  
+
       const { latitude, longitude } = location.coords;
       // console.log("location fetched:", latitude, longitude);
       // ✅ Update state instantly
@@ -68,9 +69,9 @@ useEffect(() => {
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
       });
-  
+
       setCurrentLocation({ latitude, longitude });
-  
+
       // ✅ Animate camera IMMEDIATELY without waiting for state update
       if (mapRef.current) {
         console.log("Animating camera to..:", latitude, longitude);
@@ -93,8 +94,8 @@ useEffect(() => {
       });
     }
   };
-  
-  
+
+
 
   // Fetch address from coordinates using Google Maps API
   const fetchAddressFromCoordinates = async (latitude, longitude) => {
@@ -139,41 +140,29 @@ useEffect(() => {
 
   // Submit function
   const handleSubmit = () => {
-  
-  
+
+
     if (!selectedLocation || !address) {
       Alert.alert("No Location Selected", "Please select a location first.");
       return;
     }
-    if(route.params?.addressFor==="destination"){
-   route.params.setDestinationAddress(address);
-   route.params.setDestinationCoordinate(selectedLocation);
-  }else if(route.params?.addressFor==="pickup"){
-    route.params.setPickupAddress(address);
-    route.params.setPickupCoordinate(selectedLocation);
-  }
-  else{
-    route.params.setAddress(address);
-    route.params.setCoordinate(selectedLocation);
+    if (route.params?.addressFor === "destination") {
+      route.params.setDestinationAddress(address);
+      route.params.setDestinationCoordinate(selectedLocation);
+    } else if (route.params?.addressFor === "pickup") {
+      route.params.setPickupAddress(address);
+      route.params.setPickupCoordinate(selectedLocation);
+    }else if(route.params?.addressFor==="vendorAddress"){
+      route.params.setAddress(address);
+      route.params.setCoordinate(selectedLocation);
+    }
+    else {
+      route.params.setAddress(address);
+      route.params.setCoordinate(selectedLocation);
+    }
 
-  }
-    // Replace current screen with Enroute instead of stacking
     navigation.dispatch(StackActions.pop(1));
-    // navigation.pop("Enroute", {
-    //   coordinate: selectedLocation,
-    //   address: address,
-    //   addressFor: route.params?.addressFor || "default",
-    // });
-  
-    // console.log("Navigating back...");
   };
-  
-  
-  
-  
-  
-  
-  
 
   return (
     <View style={styles.container}>
@@ -193,23 +182,23 @@ useEffect(() => {
         style={styles.map}
         region={region}
         onPress={handleMapPress}
-        showsUserLocation={false}  
-        showsMyLocationButton={false}  
+        showsUserLocation={false}
+        showsMyLocationButton={false}
       >
         {selectedLocation && <Marker coordinate={selectedLocation} />}
-         {/* Custom Current Location Marker */}
-          {currentLocation && (
-           <Marker 
-           coordinate={currentLocation}
-           anchor={{ x: 0.5, y: 0.5 }} 
-         >
-           <Image
-             source={require("../../../../assets/images/userMarker.png")}
-             style={{ width: 50, height: 50 }}
-             resizeMode="contain"
-           />
-         </Marker>
-          )}
+        {/* Custom Current Location Marker */}
+        {currentLocation && (
+          <Marker
+            coordinate={currentLocation}
+            anchor={{ x: 0.5, y: 0.5 }}
+          >
+            <Image
+              source={require("../../../../assets/images/userMarker.png")}
+              style={{ width: 50, height: 50 }}
+              resizeMode="contain"
+            />
+          </Marker>
+        )}
       </MapView>
 
       {/* Display Selected Address */}

@@ -7,7 +7,7 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState,useRef  } from "react";
 import {
   Colors,
   Fonts,
@@ -20,60 +20,41 @@ import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { SwipeListView } from "react-native-swipe-list-view";
 import { Snackbar } from "react-native-paper";
+import { useSelector } from "react-redux";
+import { selectFavoriteStations, selectStations } from "../service/selector";
 
-const favoritesList = [
-  {
-    key: "1",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
-    stationName: "BYD Charging Point",
-    stationAddress: "Near shell petrol station",
-    rating: 4.7,
-    totalStations: 8,
-    distance: "4.5 km",
-    isOpen: true,
-  },
-  {
-    key: "2",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
-    stationName: "TATA EStation",
-    stationAddress: "Near orange business hub",
-    rating: 3.9,
-    totalStations: 15,
-    distance: "5.7 km",
-    isOpen: false,
-  },
-  {
-    key: "3",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
-    stationName: "HP Charging Station",
-    stationAddress: "Near ananta business park",
-    rating: 4.9,
-    totalStations: 6,
-    distance: "2.1 km",
-    isOpen: true,
-  },
-];
 
 const FavoriteScreen = ({navigation}) => {
   const [showSnackBar, setShowSnackBar] = useState(false);
-  const [listData, setListData] = useState(favoritesList);
-const latitude = 28.6139;  
- const longitude = 77.2090;
- 
+ const stations = useSelector(selectStations);
+ const favStations = useSelector(selectFavoriteStations);
+ const [listData, setListData] = useState([...favStations]);
+console.log("stations in favorite",stations.length);
 
- const openGoogleMaps = () => {
+ const formatDistance = (distance) => {
+  if (distance >= 1000) {
+    return (distance / 1000).toFixed(1).replace(/\.0$/, '') + 'k km';
+  } else if (distance % 1 !== 0) {
+    return distance.toFixed(1) + ' km';
+  } else {
+    return distance + ' km';
+  }
+};
+
+const openGoogleMaps = (latitude,longitude) => {
   const url = Platform.select({
     ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-    android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`
+    android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
   });
   Linking.openURL(url);
 };
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
       <View style={{ flex: 1 }}>
         {header()}
-        {listData.length === 0 ? noItemsInfo() : favoriteItems()}
+        {listData?.length === 0 ? noItemsInfo() : favoriteItems()}
       </View>
       {snackBar()}
     </View>
@@ -133,26 +114,37 @@ const latitude = 28.6139;
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => {
-            navigation.navigate("ChargingStationDetail");
+            navigation.navigate("ChargingStationDetail",{item:data.item});
           }}
           style={styles.enrouteChargingStationWrapStyle}
         >
-          <Image
-            source={data.item.stationImage}
-            style={styles.enrouteChargingStationImage}
-          />
+           <Image
+  source={
+    data.item.station_images
+      ? data.item.station_images
+      : { uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
+  }
+  style={styles.enrouteChargingStationImage}
+/>
           <View style={styles.enrouteStationOpenCloseWrapper}>
-            <Text style={{ ...Fonts.whiteColor18Regular }}>
-              {data.item.isOpen ? "Open" : "Closed"}
-            </Text>
+          <Text
+       style={[
+     styles.statusClosed,
+    {
+      color: data.item.status === "Inactive" ? "#FF5722" : "white",
+    },
+  ]}
+>
+  {data.item.status === "Inactive" ? "Closed" : "Open"}
+</Text>
           </View>
           <View style={{ flex: 1 }}>
             <View style={{ margin: Sizes.fixPadding }}>
               <Text numberOfLines={1} style={{ ...Fonts.blackColor18SemiBold }}>
-                {data.item.stationName}
+                {data.item.station_name}
               </Text>
               <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
-                {data.item.stationAddress}
+                {data.item.address}
               </Text>
               <View
                 style={{
@@ -162,7 +154,7 @@ const latitude = 28.6139;
               >
                 <View style={{ ...commonStyles.rowAlignCenter }}>
                   <Text style={{ ...Fonts.blackColor18Medium }}>
-                    {data.item.rating}
+                   3.5
                   </Text>
                   <MaterialIcons
                     name="star"
@@ -186,7 +178,7 @@ const latitude = 28.6139;
                       flex: 1,
                     }}
                   >
-                    {data.item.totalStations} Charging Points
+                    {data.item.chargers.length} Charging Points
                   </Text>
                 </View>
               </View>
@@ -206,13 +198,10 @@ const latitude = 28.6139;
                   marginRight: Sizes.fixPadding - 5.0,
                 }}
               >
-                {data.item.distance}
+                {formatDistance(data.item.distance_km)}
               </Text>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={openGoogleMaps}
-                style={styles.getDirectionButton}
-              >
+               <TouchableOpacity onPress={()=>openGoogleMaps(data.item.coordinates.latitude,data.item.coordinates.longitude)} style={styles.getDirectionButton}>
+               
                 <Text style={{ ...Fonts.whiteColor16Medium }}>
                   Get Direction
                 </Text>
@@ -259,6 +248,7 @@ const latitude = 28.6139;
         style={{
           ...Fonts.blackColor20SemiBold,
           margin: Sizes.fixPadding * 2.0,
+          // marginTop:50,
         }}
       >
         Favorite

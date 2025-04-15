@@ -25,11 +25,13 @@ const vendorSlice = createSlice({
       })
       .addCase(fetchStations.fulfilled, (state, action) => {
         state.loading = false;
-        state.stations = action.payload.chargingStations;
+        state.stations = action.payload.data.chargingStations;
+        console.log("fetch stations fullfilled called", action.payload.data.chargingStations)
       })
       .addCase(fetchStations.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        console.log("fetch stations rejected called", action.payload)
       });
 
     // Add Station

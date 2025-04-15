@@ -2,8 +2,8 @@ import axios from "axios";
 
 export const apiGetRequest = async (request) => {
     try {
-        console.log("Calling API:", request.apiUrl);
-        console.log("Headers:", { Authorization: `Bearer ${request.accessToken}` });
+        // console.log("Calling API:", request.apiUrl);
+        // console.log("Headers:", { Authorization: `Bearer ${request.accessToken}` });
 
         const response = await axios.get(request.apiUrl, {
             headers: {
@@ -14,9 +14,9 @@ export const apiGetRequest = async (request) => {
         });
 
         // Log the raw response for debugging
-        // console.log("Raw API Response:", response);
+        // console.log("Raw API Response:", response.data);
 
-        return response.data; // Axios automatically parses JSON
+        return response; // Axios automatically parses JSON
     } catch (error) {
         console.log("Error in apiGetRequest:", error?.response?.data || error.message);
         throw error;

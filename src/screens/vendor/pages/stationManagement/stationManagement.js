@@ -181,7 +181,9 @@ const StationManagement = ({ navigation, route }) => {
     });
   };
   
-  
+ const  handleDelete =()=>{
+  console.log("handleDelete Called");
+ }
   
 
 
@@ -326,7 +328,10 @@ const StationManagement = ({ navigation, route }) => {
         }} style={styles.editButton}>
           <Text style={styles.editButtonText}>Delete</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate("UpdateStation")} style={styles.submitButton}>
+        {/* onPress={() => navigation.navigate("UpdateStation")} */}
+        <TouchableOpacity  style={styles.submitButton}
+        onPress={() => navigation.navigate("UpdateStation",{station})}
+        >
           <Text style={styles.submitButtonText}>Update</Text>
         </TouchableOpacity>
       </View>
@@ -335,12 +340,7 @@ const StationManagement = ({ navigation, route }) => {
   );
   function chargerTab(station) {
     // Log chargers
-    console.log('Chargers:', station.chargers);
-    // Log connectors for each charger
-    station.chargers.forEach((charger, index) => {
-      // console.log(`Connectors for Charger ${index + 1}:`, charger?.connectors);
-    });
-
+   
     return (
       <ScrollView style={styles.tabContent}>
         {station.chargers.map((charger, index) => (
@@ -366,7 +366,7 @@ const StationManagement = ({ navigation, route }) => {
                 <View key={index} style={styles.connector}>
                   <View style={styles.connectorType}>
                     <Icon
-                      name={connectorIcons[conn.connectorType.description] || "ev-plug-type1"} // Default to "ev-plug-type1" if no match
+                      name={connectorIcons[conn.connectorType.description] || "ev-plug-type1"} 
                       size={20}
                       color={COLORS.primary}
                     />
@@ -471,7 +471,6 @@ const StationManagement = ({ navigation, route }) => {
       >
         <View>
 
-
           <Text
             style={{
               ...Fonts.blackColor18Medium,
@@ -520,6 +519,7 @@ const StationManagement = ({ navigation, route }) => {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => {
+                handleDelete();
                 setshowDeleteDialogue(false);
                 // handle delete logic here
               }}
@@ -529,7 +529,7 @@ const StationManagement = ({ navigation, route }) => {
                 ...styles.dialogYesNoButtonStyle,
               }}
             >
-              <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
+              <Text  style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -3,6 +3,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  ActivityIndicator,
   Text,
   TextInput,
   TouchableOpacity,
@@ -21,34 +22,53 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import * as ImagePicker from "expo-image-picker";
 import { BottomSheet } from "@rneui/themed";
 import { Alert } from "react-native";
+import { useSelector, useDispatch } from "react-redux";
+import { selectToken, selectUser } from "../../auth/services/selector";
+import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
+import { postSingleFile } from "../../auth/services/crudFunction";
+import { patchUpdateUserProfile } from "../service/crudFunction";
+
+
 
 const EditProfileScreen = ({ navigation }) => {
-  const [name, setname] = useState("Ravi Kumar");
-  const [email, setemail] = useState("ravi@abc.com");
+  const user = useSelector(selectUser);
+  const [name, setname] = useState(user?.name || "Anonymous User");
+  const [email, setemail] = useState(user?.email);
   const [showChangeProfilePicSheet, setshowChangeProfilePicSheet] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [profileImageURI, setProfileImageURI] = useState(null);
+  const dispatch = useDispatch(); // Get the dispatch function
+  const accessToken = useSelector(selectToken); // Get access token from Redux store
+  
 
-
-  const handleSubmit = () => {
+  const handleSubmit = async() => {
+    var updatedData = {
+      owner_legal_name: name,
+      email: email,
+      avatar: profileImageURI,
+      business_name: user?.business_name,
+      user_key: user?.user_key,
+    }
+    console.log("Updated Data:", updatedData);
+    const response = await dispatch(patchUpdateUserProfile(updatedData));
     Alert.alert("Profile Updated", "Your profile has been updated successfully.");
   }
 
-
-
   const pickImage = async (source) => {
     let permissionResult;
-  
+
     if (source === "camera") {
       permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     } else {
       permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     }
-  
+
     if (permissionResult.granted === false) {
       alert("Permission is required!");
       return;
     }
-  
+
     let result;
     if (source === "camera") {
       result = await ImagePicker.launchCameraAsync({
@@ -63,13 +83,36 @@ const EditProfileScreen = ({ navigation }) => {
         quality: 1,
       });
     }
-  
+
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
-      setProfileImage(imageUri);
+    
+      setImageLoading(true);
+      const file = await setupImagePicker(imageUri);
+
+      try {
+        const response = await dispatch(
+          postSingleFile({ file: file, accessToken: accessToken })
+        );
+
+        if (response?.payload?.code === 200 || response?.payload?.code === 201) {
+         
+            setProfileImageURI(response?.payload?.data?.filePathUrl);
+            console.log("profile Image URI set successfully:", response?.payload?.data?.filePathUrl);
+            setProfileImage(imageUri);
+            setImageLoading(false);
+            // Alert.alert("Success", "File uploaded successfully!");
+        } else {
+          Alert.alert("Error", "File Should be less than 5 MB");
+        }
+      } catch (error) {
+        setImageLoading(false);
+        console.log("Error uploading file:", error);
+        Alert.alert("Error", "Upload failed. Please try again.");
+      } 
     }
   };
-  
+
 
 
   return (
@@ -88,7 +131,7 @@ const EditProfileScreen = ({ navigation }) => {
           {profilePicInfo()}
           {nameInfo()}
           {emailInfo()}
-         
+
         </ScrollView>
       </View>
       {updateProfileButton()}
@@ -171,14 +214,14 @@ const EditProfileScreen = ({ navigation }) => {
       </TouchableOpacity>
     );
   }
-  
-  
+
+
 
   function updateProfileButton() {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={handleSubmit }
+        onPress={handleSubmit}
         style={{ ...commonStyles.button, borderRadius: 0 }}
       >
         <Text style={{ ...Fonts.whiteColor18Medium }}>Update profile</Text>
@@ -235,19 +278,24 @@ const EditProfileScreen = ({ navigation }) => {
           marginBottom: Sizes.fixPadding + 5.0,
         }}
       >
-        {profileImage ? (
-          <Image
-            source={{ uri: profileImage }}
-            style={styles.profilePicStyle}
-          />
-        ) : (
-          <MaterialIcons
-          name="account-circle"
-          size={screenWidth / 4.0}
-          color={Colors.grayColor}
-          style={{ textAlign: "center" }}
-        />
-        )}
+       {profileImage ? (
+    <>
+      {imageLoading && <ActivityIndicator size={40} color="#ccc" />}
+      <Image
+        source={{ uri: profileImage }}
+        style={styles.profilePicStyle}
+        onLoadStart={() => setImageLoading(true)}
+        onLoadEnd={() => setImageLoading(false)}
+      />
+    </>
+  ) : (
+    <MaterialIcons
+      name="account-circle"
+      size={screenWidth / 4.0}
+      color={Colors.grayColor}
+      style={{ textAlign: "center" }}
+    />
+  )}
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => {
@@ -260,7 +308,7 @@ const EditProfileScreen = ({ navigation }) => {
       </View>
     );
   }
-  
+
 
   function header() {
     return (

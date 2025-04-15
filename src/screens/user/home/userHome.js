@@ -1,5 +1,5 @@
 // HomePage.js
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -25,8 +25,12 @@ import {
   commonStyles,
   screenWidth,
 } from "../../../constants/styles";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../../auth/services/selector";
+import { selectStation } from "../../vendor/services/selector";
+import * as Location from "expo-location";
+import { fetchStationsByLocation } from "../service/crudFunction";
+import { selectStations } from "../service/selector";
 
 const COLORS = {
   primary: "#101942",
@@ -99,11 +103,16 @@ const allStationsList = [
     isOpen: false,
   },
 ];
+
+
 const UserHome = ({ navigation }) => {
   const [count, setCount] = useState(0);
   const scrollY = useRef(new Animated.Value(0)).current;
   const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
   const user = useSelector(selectUser);
+  const [radius ,setRadius]=useState(30000);
+ 
+  const [currentLocation, setCurrentLocation] = useState(null);
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good Morning";
@@ -111,16 +120,125 @@ const UserHome = ({ navigation }) => {
     return "Good Evening";
   };
 
-  const latitude = 28.6139;
-  const longitude = 77.2090;
+  // const isFirstRender = React.useRef(true);
+  // const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const dispatch = useDispatch();
 
-  const openGoogleMaps = () => {
+  // Helper to fetch user location
+  // const getUserLocation = async () => {
+  //   try {
+  //     let { status } = await Location.requestForegroundPermissionsAsync();
+  //     if (status !== "granted") {
+  //       Alert.alert("Permission Denied", "Using default location (Delhi).");
+  //       setCurrentLocation({ latitude: 28.6139, longitude: 77.2090 });
+  //       return;
+  //     }
+  //     let location = await Location.getCurrentPositionAsync({});
+  //     const { latitude, longitude } = location.coords;
+  //     setCurrentLocation({ latitude, longitude });
+  //   } catch (error) {
+  //     console.error("Error requesting location:", error);
+  //     Alert.alert("Error", "Failed to fetch location. Using default (Delhi).");
+  //     setCurrentLocation({ latitude: 28.6139, longitude: 77.2090 });
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   if(stations.length > 0) {
+  //     console.log("stations in userHome: ", stations);
+  //   } else {
+  //     console.log("No stations found in userHome");
+  //   }
+  // }, [stations]);
+  // On render/update logic
+  // useEffect(() => {
+  //   if (!isFirstRender.current) {
+  //     if (currentLocation) {
+  //       console.log("Fetching stations for location:", currentLocation);
+  //       dispatch(fetchStationsByLocation({
+  //         userId: user?.id,
+  //         currentLocation,
+  //         radius
+  //       }));
+  //     }
+  //   } else {
+  //     getUserLocation();
+  //   }
+  //   isFirstRender.current = false;
+  // }, [currentLocation]);
+
+
+  useEffect(() => {
+    let subscription = null;
+
+    const startLocationUpdates = async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          setErrorMsg("Permission to access location was denied");
+          return;
+        }
+
+        subscription = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 5000, // minimum time (ms) between updates
+            distanceInterval: 50, // minimum distance (m) between updates
+          },
+          (loc) => {
+            const coords = loc.coords;
+            setCurrentLocation(coords);
+            dispatch(fetchStationsByLocation({userId:user.id, radius,coords})); // dispatch when location updates
+          }
+        );
+      } catch (err) {
+        console.error("Error watching location:", err);
+      }
+    };
+
+    startLocationUpdates();
+
+    return () => {
+      // Cleanup subscription on unmount
+      if (subscription) subscription.remove();
+    };
+  }, []);
+
+
+
+const stations = useSelector(selectStations);
+
+  // useEffect(() => {
+  //   if(stations.length > 0) {
+  //     console.log("stations in userHome useeffect 5: ", stations);
+  //   }
+  //   else {
+  //     console.log("No stations found in userHome");
+  //   }
+  // }, [stations]);
+
+
+ 
+  const formatDistance = (distance) => {
+    if (distance >= 1000) {
+      return (distance / 1000).toFixed(1).replace(/\.0$/, '') + 'k km';
+    } else if (distance % 1 !== 0) {
+      return distance.toFixed(1) + ' km';
+    } else {
+      return distance + ' km';
+    }
+  };
+
+  const openGoogleMaps = (latitude,longitude) => {
     const url = Platform.select({
       ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
       android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
     });
     Linking.openURL(url);
   };
+
+  
 
   const animatedHeaderStyle = {
     paddingBottom: scrollY.interpolate({
@@ -140,6 +258,17 @@ const UserHome = ({ navigation }) => {
     }),
   };
 
+  // getUserLocation();
+
+  // console.log("location : ", currentLocation);
+  // dispatch(fetchStationsByLocation({
+  //   userId: user?.userId, currentLocation
+  // }))
+
+  function getFirstName(fullName) {
+    if (!fullName) return "";
+    return fullName.trim().split(" ")[0];
+  }
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -186,7 +315,7 @@ const UserHome = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.greetingContainer}>
-          <Text style={styles.greeting}>Hi {user?.name}!</Text>
+          <Text style={styles.greeting}>Hi  {getFirstName(user?.name)}{" "}!</Text>
           <Text style={styles.subGreeting}>{getGreeting()}</Text>
         </View>
 
@@ -263,9 +392,9 @@ const UserHome = ({ navigation }) => {
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Explore more</Text>
           <TouchableOpacity onPress={() => {
-        navigation.push("FavoriteScreen");
-      }}
-           style={styles.exploreCard}>
+            navigation.push("FavoriteScreen");
+          }}
+            style={styles.exploreCard}>
             <View style={styles.exploreInfo}>
               <View style={styles.exploreCardContainer}>
                 <Text style={styles.exploreCardText}>Favorites</Text>
@@ -287,29 +416,40 @@ const UserHome = ({ navigation }) => {
         <View style={{ height: 20 }} />
       </Animated.ScrollView>
     </SafeAreaView>
-    
+
   );
   function recentStationsInfo() {
     const renderItem = ({ item }) => (
-      <TouchableOpacity  onPress={() => {
+      <TouchableOpacity onPress={() => {
         navigation.push("ChargingStationDetail");
       }} style={styles.enrouteChargingStationWrapStyle}>
         <Image
-          source={item.stationImage}
-          style={styles.enrouteChargingStationImage}
-        />
+  source={
+    item?.station_images
+      ? item.station_images
+      : { uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
+  }
+  style={styles.enrouteChargingStationImage}
+/>
         <View style={styles.enrouteStationOpenCloseWrapper}>
-          <Text style={{ ...Fonts.whiteColor18Regular }}>
-            {item.isOpen ? "Open" : "Closed"}
-          </Text>
+        <Text
+       style={[
+     styles.statusClosed,
+    {
+      color: item?.status === "Inactive" ? "#FF5722" : "white",
+    },
+  ]}
+>
+  {item?.status === "Inactive" ? "Closed" : "Open"}
+</Text>
         </View>
         <View style={{ flex: 1 }}>
           <View style={{ margin: Sizes.fixPadding }}>
             <Text numberOfLines={1} style={{ ...Fonts.blackColor18SemiBold }}>
-              {item.stationName}
+              {item?.station_name}
             </Text>
             <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
-              {item.stationAddress}
+              {item?.address}
             </Text>
             <View
               style={{
@@ -319,7 +459,7 @@ const UserHome = ({ navigation }) => {
             >
               <View style={{ ...commonStyles.rowAlignCenter }}>
                 <Text style={{ ...Fonts.blackColor18Medium }}>
-                  {item.rating}
+                  3.5
                 </Text>
                 <MaterialIcons
                   name="star"
@@ -343,7 +483,7 @@ const UserHome = ({ navigation }) => {
                     flex: 1,
                   }}
                 >
-                  {item.totalStations} Charging Points
+                  {item.chargers.length} Charging Points
                 </Text>
               </View>
             </View>
@@ -363,10 +503,10 @@ const UserHome = ({ navigation }) => {
                 marginRight: Sizes.fixPadding - 5.0,
               }}
             >
-              {item.distance}
+                {formatDistance(item.distance_km)}
             </Text>
-            <TouchableOpacity onPress={openGoogleMaps} style={styles.getDirectionButton}>
-              <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
+            <TouchableOpacity onPress={()=>openGoogleMaps(item.coordinates.latitude, item.coordinates.longitude)} style={styles.getDirectionButton}>
+            <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -374,7 +514,7 @@ const UserHome = ({ navigation }) => {
     );
     return (
       <FlatList
-        data={allStationsList}
+        data={stations}
         keyExtractor={(item) => `${item.id}`}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
@@ -462,7 +602,7 @@ const styles = StyleSheet.create({
     // marginTop: 3,
     padding: 20,
     shadowColor: COLORS.black,
-   
+
     elevation: 3,
   },
   welcomeTextContainer: {
@@ -604,6 +744,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryColor,
   },
 })
-;
+  ;
 
 export default UserHome;

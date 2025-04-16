@@ -104,14 +104,14 @@ const allStationsList = [
   },
 ];
 
-
 const UserHome = ({ navigation }) => {
   const [count, setCount] = useState(0);
   const scrollY = useRef(new Animated.Value(0)).current;
-  const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
+  const AnimatedLinearGradient =
+    Animated.createAnimatedComponent(LinearGradient);
   const user = useSelector(selectUser);
-  const [radius ,setRadius]=useState(30000);
- 
+  const [radius, setRadius] = useState(30000);
+
   const [currentLocation, setCurrentLocation] = useState(null);
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -168,7 +168,6 @@ const UserHome = ({ navigation }) => {
   //   isFirstRender.current = false;
   // }, [currentLocation]);
 
-
   useEffect(() => {
     let subscription = null;
 
@@ -189,7 +188,9 @@ const UserHome = ({ navigation }) => {
           (loc) => {
             const coords = loc.coords;
             setCurrentLocation(coords);
-            dispatch(fetchStationsByLocation({userId:user.id, radius,coords})); // dispatch when location updates
+            dispatch(
+              fetchStationsByLocation({ userId: user.id, radius, coords })
+            ); // dispatch when location updates
           }
         );
       } catch (err) {
@@ -205,9 +206,7 @@ const UserHome = ({ navigation }) => {
     };
   }, []);
 
-
-
-const stations = useSelector(selectStations);
+  const stations = useSelector(selectStations);
 
   // useEffect(() => {
   //   if(stations.length > 0) {
@@ -218,19 +217,17 @@ const stations = useSelector(selectStations);
   //   }
   // }, [stations]);
 
-
- 
   const formatDistance = (distance) => {
     if (distance >= 1000) {
-      return (distance / 1000).toFixed(1).replace(/\.0$/, '') + 'k km';
+      return (distance / 1000).toFixed(1).replace(/\.0$/, "") + "k km";
     } else if (distance % 1 !== 0) {
-      return distance.toFixed(1) + ' km';
+      return distance.toFixed(1) + " km";
     } else {
-      return distance + ' km';
+      return distance + " km";
     }
   };
 
-  const openGoogleMaps = (latitude,longitude) => {
+  const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
       ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
       android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
@@ -238,23 +235,21 @@ const stations = useSelector(selectStations);
     Linking.openURL(url);
   };
 
-  
-
   const animatedHeaderStyle = {
     paddingBottom: scrollY.interpolate({
       inputRange: [0, 100],
       outputRange: [70, 20],
-      extrapolate: 'clamp',
+      extrapolate: "clamp",
     }),
     borderBottomLeftRadius: scrollY.interpolate({
       inputRange: [0, 100],
       outputRange: [100, 30],
-      extrapolate: 'clamp',
+      extrapolate: "clamp",
     }),
     borderBottomRightRadius: scrollY.interpolate({
       inputRange: [0, 100],
       outputRange: [100, 30],
-      extrapolate: 'clamp',
+      extrapolate: "clamp",
     }),
   };
 
@@ -315,7 +310,7 @@ const stations = useSelector(selectStations);
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.greetingContainer}>
-          <Text style={styles.greeting}>Hi  {getFirstName(user?.name)}{" "}!</Text>
+          <Text style={styles.greeting}>Hi {getFirstName(user?.name)} !</Text>
           <Text style={styles.subGreeting}>{getGreeting()}</Text>
         </View>
 
@@ -378,10 +373,13 @@ const stations = useSelector(selectStations);
                 style={styles.featureCardTouchOpacity}
               >
                 <View>
-                  <Text style={styles.featureCardTitle}>24x7 Help & Support</Text>
+                  <Text style={styles.featureCardTitle}>
+                    24x7 Help & Support
+                  </Text>
                   <Text style={styles.featureText}>
-                    Get 24 x 7 assistance for all your queries with our dedicated
-                    support team, ensuring seamless station management.
+                    Get 24 x 7 assistance for all your queries with our
+                    dedicated support team, ensuring seamless station
+                    management.
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -391,10 +389,12 @@ const stations = useSelector(selectStations);
 
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Explore more</Text>
-          <TouchableOpacity onPress={() => {
-            navigation.push("FavoriteScreen");
-          }}
-            style={styles.exploreCard}>
+          <TouchableOpacity
+            onPress={() => {
+              navigation.push("FavoriteScreen");
+            }}
+            style={styles.exploreCard}
+          >
             <View style={styles.exploreInfo}>
               <View style={styles.exploreCardContainer}>
                 <Text style={styles.exploreCardText}>Favorites</Text>
@@ -416,32 +416,35 @@ const stations = useSelector(selectStations);
         <View style={{ height: 20 }} />
       </Animated.ScrollView>
     </SafeAreaView>
-
   );
   function recentStationsInfo() {
     const renderItem = ({ item }) => (
-      <TouchableOpacity onPress={() => {
-        navigation.push("ChargingStationDetail");
-      }} style={styles.enrouteChargingStationWrapStyle}>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.push("ChargingStationDetail");
+        }}
+        style={styles.enrouteChargingStationWrapStyle}
+      >
         <Image
-  source={
-    item?.station_images
-      ? item.station_images
-      : { uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
-  }
-  style={styles.enrouteChargingStationImage}
-/>
+          source={
+            item?.station_images
+              ? item.station_images
+              : require("../../../../assets/images/chargingStations/charging_station3.png")
+          }
+          style={styles.enrouteChargingStationImage}
+        />
+
         <View style={styles.enrouteStationOpenCloseWrapper}>
-        <Text
-       style={[
-     styles.statusClosed,
-    {
-      color: item?.status === "Inactive" ? "#FF5722" : "white",
-    },
-  ]}
->
-  {item?.status === "Inactive" ? "Closed" : "Open"}
-</Text>
+          <Text
+            style={[
+              styles.statusClosed,
+              {
+                color: item?.status === "Inactive" ? "#FF5722" : "white",
+              },
+            ]}
+          >
+            {item?.status === "Inactive" ? "Closed" : "Open"}
+          </Text>
         </View>
         <View style={{ flex: 1 }}>
           <View style={{ margin: Sizes.fixPadding }}>
@@ -458,9 +461,7 @@ const stations = useSelector(selectStations);
               }}
             >
               <View style={{ ...commonStyles.rowAlignCenter }}>
-                <Text style={{ ...Fonts.blackColor18Medium }}>
-                  3.5
-                </Text>
+                <Text style={{ ...Fonts.blackColor18Medium }}>3.5</Text>
                 <MaterialIcons
                   name="star"
                   color={Colors.yellowColor}
@@ -503,10 +504,18 @@ const stations = useSelector(selectStations);
                 marginRight: Sizes.fixPadding - 5.0,
               }}
             >
-                {formatDistance(item.distance_km)}
+              {formatDistance(item.distance_km)}
             </Text>
-            <TouchableOpacity onPress={()=>openGoogleMaps(item.coordinates.latitude, item.coordinates.longitude)} style={styles.getDirectionButton}>
-            <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
+            <TouchableOpacity
+              onPress={() =>
+                openGoogleMaps(
+                  item.coordinates.latitude,
+                  item.coordinates.longitude
+                )
+              }
+              style={styles.getDirectionButton}
+            >
+              <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -522,7 +531,6 @@ const stations = useSelector(selectStations);
     );
   }
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -743,7 +751,5 @@ const styles = StyleSheet.create({
     borderRadius: 5.0,
     backgroundColor: Colors.primaryColor,
   },
-})
-  ;
-
+});
 export default UserHome;

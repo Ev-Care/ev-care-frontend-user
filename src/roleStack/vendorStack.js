@@ -69,6 +69,7 @@ export function VendorStack() {
           <Stack.Screen name="PreviewPage" component={PreviewPage} />
           <Stack.Screen name="StationManagement" component={StationManagement} />
           <Stack.Screen name="UpdateStation" component={UpdateStation} />
+          <Stack.Screen name="VendorDetailForm" component={VendorDetailForm} />
         </>
       )}
     </Stack.Navigator>

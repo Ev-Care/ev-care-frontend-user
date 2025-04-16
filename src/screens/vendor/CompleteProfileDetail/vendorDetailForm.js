@@ -50,6 +50,7 @@ const VendorDetailForm = () => {
   const [businessName, setBusinessName] = useState("");
   const [address, setAddress] = useState("");
   const [aadharNumber, setAadharNumber] = useState("");
+  const [coordinate,setCoordinate] = useState(null);
   const [panNumber, setPanNumber] = useState("");
   const [tanNumber, setTanNumber] = useState("");
   const [avatar, setAvatar] = useState(null);
@@ -57,19 +58,15 @@ const VendorDetailForm = () => {
   const accessToken = useSelector(selectToken); // Get access token from Redux store
   const [avatarUri, setAvatarUri] = useState(null); // State to hold the image URI
   const dispatch = useDispatch(); // Get the dispatch function
-  const userKey = useSelector(selectUser).user_key;
+  // const userKey = useSelector(selectUser).user_key;
 
   let vendorDetail = {};
-
-   
-
   const handleSubmit = () => {
     // if (!businessName || !address || !aadharNumber || !panNumber || !tanNumber || !avatarUri) {
     if (!avatarUri) {
       Alert.alert("Error", "All fields are required!");
       return;
     }
-
     // Fill the vendor detail object
     let vendorDetail = {
       business_name: businessName,
@@ -89,8 +86,9 @@ const VendorDetailForm = () => {
 
   const selectOnMap = () => {
     navigation.push("PickLocation", {
-      addressFor: "stationAddress",
+      addressFor: "vendorAddress",
       setAddress: (newAddress) => setAddress(newAddress),
+      setCoordinate:(newCoordinate )=>setCoordinate(newCoordinate)
     });
   };
 

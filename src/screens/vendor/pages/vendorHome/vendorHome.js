@@ -74,8 +74,7 @@ const VendorHome = () => {
             <Text style={styles.greeting}>Hi {user?.name} !</Text>
             <Text style={styles.subGreeting}>{getGreeting()}</Text>
           </View>
-
-          <TouchableOpacity style={styles.notificationButton}>
+          <TouchableOpacity onPress={navigation.navigate("VendorDetailForm")} style={styles.notificationButton}>
             <Feather name="bell" size={24} color={COLORS.black} />
           </TouchableOpacity>
         </View>

@@ -23,6 +23,7 @@ const PickLocationScreen = ({ navigation, route }) => {
   const mapRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
    const [currentLocation, setCurrentLocation] = useState(null);
+ 
   const [address, setAddress] = useState(""); // Store address
   const [region, setRegion] = useState({
     latitude: 28.6139, // Default to Delhi
@@ -41,7 +42,8 @@ useEffect(() => {
   
     return () => clearTimeout(timeout); 
   }, []);
-  const getUserLocation = async () => {
+  
+const getUserLocation = async () => {
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
       
@@ -60,14 +62,7 @@ useEffect(() => {
       let location = await Location.getCurrentPositionAsync({});
   
       const { latitude, longitude } = location.coords;
-      // console.log("location fetched:", latitude, longitude);
-      // ✅ Update state instantly
-      setRegion({
-        latitude,
-        longitude,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      });
+    
   
       setCurrentLocation({ latitude, longitude });
   
@@ -151,11 +146,14 @@ useEffect(() => {
   }else if(route.params?.addressFor==="pickup"){
     route.params.setPickupAddress(address);
     route.params.setPickupCoordinate(selectedLocation);
+  }else if(route.params?.addressFor==="vendorAddress"){
+   
+    route.params.setAddress(address);
+    route.params.setCoordinate(selectedLocation);
   }
   else{
     route.params.setAddress(address);
     route.params.setCoordinate(selectedLocation);
-
   }
     // Replace current screen with Enroute instead of stacking
     navigation.dispatch(StackActions.pop(1));

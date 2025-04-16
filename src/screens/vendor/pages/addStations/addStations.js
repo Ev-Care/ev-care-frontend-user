@@ -125,7 +125,6 @@ const AddStations = () => {
       addressFor: "stationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
       setCoordinate:(newCoordinate )=>setCoordinate(newCoordinate)
-
     });
   };
   const handlePreview = () => {

@@ -338,7 +338,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                >
                  <Image
                    source={require("../../../../assets/images/userMarker.png")}
-                   style={{ width: 50, height: 50 }}
+                   style={{ width: 40, height: 40 }}
                    resizeMode="contain"
                  />
                </Marker>

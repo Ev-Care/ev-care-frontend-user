@@ -23,98 +23,12 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import * as Location from "expo-location";
 import { useSelector } from "react-redux";
 import { selectStations } from "../service/selector";
+import imageURL from "../../../constants/baseURL";
 
 const width = screenWidth;
 const cardWidth = width / 1.15;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
 
-// const chargingSpotsList = [
-//   {
-//     coordinate: {
-//       latitude: 28.613939, // Delhi
-//       longitude: 77.209021,
-//     },
-//     id: "1",
-//     stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
-//     stationName: "BYD Charging Point",
-//     stationAddress: "Near Connaught Place",
-//     rating: 4.7,
-//     totalStations: 8,
-//     distance: "4.5 km",
-//     isOpen: true,
-//   },
-//   {
-//     coordinate: {
-//       latitude: 19.076090, // Mumbai
-//       longitude: 72.877426,
-//     },
-//     id: "2",
-//     stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
-//     stationName: "TATA EStation",
-//     stationAddress: "Near Bandra Kurla Complex",
-//     rating: 3.9,
-//     totalStations: 15,
-//     distance: "5.7 km",
-//     isOpen: false,
-//   },
-//   {
-//     coordinate: {
-//       latitude: 13.082680, // Chennai
-//       longitude: 80.270721,
-//     },
-//     id: "3",
-//     stationImage: require("../../../../assets/images/chargingStations/charging_station3.png"),
-//     stationName: "HP Charging Station",
-//     stationAddress: "Near Marina Beach",
-//     rating: 4.9,
-//     totalStations: 6,
-//     distance: "2.1 km",
-//     isOpen: true,
-//   },
-//   {
-//     coordinate: {
-//       latitude: 12.971899, // Bengaluru
-//       longitude: 77.595566,
-//     },
-//     id: "4",
-//     stationImage: require("../../../../assets/images/chargingStations/charging_station6.png"),
-//     stationName: "VIDA Station V1",
-//     stationAddress: "Near MG Road",
-//     rating: 4.2,
-//     totalStations: 15,
-//     distance: "3.5 km",
-//     isOpen: false,
-//   },
-//   {
-//     coordinate: {
-//       latitude: 18.4663366, // pune
-//       longitude: 73.8348392,
-//     },
-//     id: "5",
-//     stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
-//     stationName: "BYD Charging Point",
-//     stationAddress: "Near Park Street",
-//     rating: 4.7,
-//     totalStations: 8,
-//     distance: "4.5 km",
-//     isOpen: true,
-//   },
-//   {
-//     coordinate: {
-//       latitude: 17.385045, // Hyderabad
-//       longitude: 78.486671,
-//     },
-//     id: "6",
-//     stationImage: require("../../../../assets/images/chargingStations/charging_station1.png"),
-//     stationName: "TATA EStation",
-//     stationAddress: "Near HITEC City",
-//     rating: 3.9,
-//     totalStations: 15,
-//     distance: "5.7 km",
-//     isOpen: false,
-//   },
-  
-// ];
 
 
 const ChargingStationsOnMapScreen = ({ navigation }) => {
@@ -387,7 +301,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
           <Image
   source={
     item?.station_images
-      ? item.station_images
+     ? { uri: imageURL + item.station_images }
       : { uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
   }
   style={styles.enrouteChargingStationImage}

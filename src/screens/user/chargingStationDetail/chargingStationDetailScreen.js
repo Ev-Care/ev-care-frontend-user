@@ -26,6 +26,7 @@ import { Overlay } from "@rneui/themed";
 import { addToFavorite } from "../service/stationSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { selectFavoriteStations } from "../service/selector";
+import imageURL from "../../../constants/baseURL";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -88,7 +89,6 @@ const ChargingStationDetailScreen = ({ route,navigation }) => {
   const station = route?.params?.item;
   const [inFavorite, setinFavorite] = useState(favStations.has(station));
   const favoriteStations = useSelector(selectFavoriteStations);
-
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",
     CHAdeMO: "ev-plug-chademo",

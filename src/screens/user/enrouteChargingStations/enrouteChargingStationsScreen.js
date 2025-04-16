@@ -403,7 +403,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
         {markerList.map((item, index) => (
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => navigation.push("ChargingStationDetail")}
+            // onPress={() => navigation.push("ChargingStationDetail")}
             key={index}
             style={styles.enrouteChargingStationWrapStyle}
           >

@@ -17,7 +17,7 @@ export const postSignIn = createAsyncThunk(
         try {
            
             const response = await signInAPI(data);
-
+          
             if (response.status === 200 || response.status === 201) {
                 // console.log("API Response:", response.data);
                 return response.data;
@@ -52,6 +52,8 @@ export const postVerifyOtp = createAsyncThunk(
       }
     }
   );
+
+
   
 export const postSignUp = createAsyncThunk(
     "auth/signUp",
@@ -60,7 +62,7 @@ export const postSignUp = createAsyncThunk(
         const response = await signupAPI(data);
         
         if (response.status === 200 || response.status === 201) {
-          return data;
+          return response.data; // or `bodyData` if you want
         } else {
           throw new Error("Signup failed");
         }

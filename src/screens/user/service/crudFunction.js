@@ -1,7 +1,7 @@
 //get Access Token from Async Storage
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { getAllStationsByLocationAPI, updateUserProfileAPI } from "./api"; // Import the API function
+import { getAllStationsByLocationAPI, updateUserProfileAPI , getUserByKeyAPI} from "./api"; // Import the API function
 // Async thunk to fetch stations
 export const fetchStationsByLocation = createAsyncThunk(
   "stations/fetchStations",
@@ -13,6 +13,22 @@ export const fetchStationsByLocation = createAsyncThunk(
       return response.data; // Assuming the API returns a list of stations
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+
+//Get vendor details by key
+export const getUserDetailsByKey = createAsyncThunk(
+  'auth/getUserDetailsByKey',
+  async (user_key, { rejectWithValue }) => {
+    try {
+      console.log("inside thunk", );
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve accessToken inside the thunk
+      const response = await getUserByKeyAPI({ user_key, accessToken });
+      return response.data; // Assuming the API returns the vendor details
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to fetch vendor details');
     }
   }
 );

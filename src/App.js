@@ -31,7 +31,7 @@ const Stack = createStackNavigator();
 function AppNavigator() {
   const [userType, setUserType] = useState(null);
   const user = useSelector( selectUser); // Get user data
-  const profileStatus = useSelector(selectProfileStatus);
+
 
   useEffect(() => {
 

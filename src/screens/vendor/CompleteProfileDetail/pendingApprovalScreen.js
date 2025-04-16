@@ -3,14 +3,16 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from "react-na
 import { useNavigation } from "@react-navigation/native";
 import { logoutUser } from "../../../redux/store/userSlice";
 import { selectUser } from "../../auth/services/selector";
-import {  useDispatch } from "react-redux";
+import {  useDispatch, useSelector } from "react-redux";
 import { color } from "@rneui/base";
 import {Colors} from "../../../constants/styles";
+import { getUserDetailsByKey } from "../../user/service/crudFunction";
 
 const PendingApprovalScreen = (route) => {  
   const navigation = useNavigation();  
   const dispatch = useDispatch();
   // const { setApproved } = route.params;
+  const user = useSelector(selectUser); // Get user data
 
   return (
     <View style={styles.container}>
@@ -24,13 +26,16 @@ const PendingApprovalScreen = (route) => {
       </TouchableOpacity> */}
     <TouchableOpacity 
     style={[styles.button, { backgroundColor: Colors.primaryColor }]} 
-    onPress={() => navigation.navigate("VendorBottomTabBar")}
+    onPress={() => dispatch(getUserDetailsByKey(user.user_key))}
 >
      <Text style={styles.buttonText}>continue</Text>
     </TouchableOpacity>
 
       <TouchableOpacity  onPress={() => dispatch(logoutUser())}>
         <Text style={styles.goBackText}>Log out</Text>
+      </TouchableOpacity>
+      <TouchableOpacity  >
+        <Text style={styles.goBackText}>{user.user_key}</Text>
       </TouchableOpacity>
     </View>
   );

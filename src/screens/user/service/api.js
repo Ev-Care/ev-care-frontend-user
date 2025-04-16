@@ -22,3 +22,10 @@ export const updateUserProfileAPI = (data) =>
       },
       accessToken: data.accessToken,
     });
+
+export const getUserByKeyAPI = (data) =>
+  apiGetRequest({
+    apiUrl: `${API_URL}/users/get-user/${data.user_key}`,
+    content_type: "application/json",
+    accessToken: data.accessToken,
+  });

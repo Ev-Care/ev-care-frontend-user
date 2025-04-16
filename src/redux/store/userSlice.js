@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createSlice } from "@reduxjs/toolkit";
 import { postSignIn, postSignUp, postSingleFile, postVerifyOtp, patchUpdateVendorProfile } from "../../screens/auth/services/crudFunction";
-import { patchUpdateUserProfile } from "../../screens/user/service/crudFunction";
+import { patchUpdateUserProfile , getUserDetailsByKey} from "../../screens/user/service/crudFunction";
 
 const initialState = {
   user: null,
@@ -21,19 +21,19 @@ const authSlice = createSlice({
       state.accessToken = null;
       AsyncStorage.removeItem("user");
       AsyncStorage.removeItem("accessToken");
-      console.log("User logged out successfully");
+      // console.log("User logged out successfully");
     },
     restoreUser: (state, action) => {
       state.user = extractUser(action.payload.user);
       state.accessToken = action.payload.accessToken;
-      console.log("User data restored from AsyncStorage:", action.payload.user);
-      console.log("Access token restored from AsyncStorage:", action.payload.accessToken);
+      // console.log("User data restored from AsyncStorage:", action.payload.user);
+      // console.log("Access token restored from AsyncStorage:", action.payload.accessToken);
     },
     signUpUser: (state, action) => {
-      console.log("singup is called in redux");
+      // console.log("singup is called in redux");
       state.user = extractUser(action.payload);
       state.loading = false;
-      console.log("User signed up successfully in redux:", action.payload);
+      // console.log("User signed up successfully in redux:", action.payload);
     }
   },
   extraReducers: (builder) => {
@@ -63,10 +63,8 @@ const authSlice = createSlice({
         if (action.payload.data.user.status !== "New") {
           state.user = extractUser(action.payload.data.user); // Extract user data from the response
 
-          state.accessToken = action.payload.data.access_token;
         }
-
-
+        state.accessToken = action.payload.data.access_token;
       }
       )
       .addCase(postVerifyOtp.rejected, (state, action) => {
@@ -84,11 +82,8 @@ const authSlice = createSlice({
         state.loading = false;
         console.log("User signed up successfully:", action.payload);
         // Extract user data from the response
-        if (action.payload.role === "Vendor") {
-          state.profileStatus = "Details_Pending";
-          console.log("User profile status:", state.profileStatus);
-          // state.user = action.payload;
-        }
+        state.user = extractUser(action.payload.data.user);
+        console.log("User data after signup in slice:", state.user);
       })
       .addCase(postSignUp.rejected, (state, action) => {
         state.loading = false;
@@ -107,15 +102,16 @@ const authSlice = createSlice({
         state.error = action.payload || "File upload failed";
       })
       .addCase(patchUpdateVendorProfile.pending, (state) => {
+        // console.log("inside update vendor profile pending");
         state.loading = true;
         state.error = null;
       })
       .addCase(patchUpdateVendorProfile.fulfilled, (state, action) => {
         state.loading = false;
-        console.log("User profile updated successfully:", action.payload);
+        // console.log("User profile updated successfully:", action.payload);
         // state.user = action.payload; // Assuming the API returns the updated user data
         state.user = extractUser(action.payload.data); // Extract user data from the response
-        console.log("User data after update in slice:", state.user);
+        // console.log("User data after update in slice:", state.user);
       })
       .addCase(patchUpdateVendorProfile.rejected, (state, action) => {
         state.loading = false;
@@ -127,14 +123,25 @@ const authSlice = createSlice({
       })
       .addCase(patchUpdateUserProfile.fulfilled, (state, action) => {
         state.loading = false;
-        console.log("User profile updated successfully:", action.payload);
-        // state.user = action.payload; // Assuming the API returns the updated user data
         state.user = extractUser(action.payload.data); // Extract user data from the response
-        console.log("User data after update in slice:", state.user);
       })
       .addCase(patchUpdateUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Profile update failed";
+      })
+      .addCase(getUserDetailsByKey.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getUserDetailsByKey.fulfilled, (state, action) => {
+        state.loading = false;
+        // console.log("User details fetched successfully:", action.payload);
+        state.user = extractUser(action.payload.data); // Extract user data from the response
+        // console.log("User data after fetching in slice:", state.user);
+      })
+      .addCase(getUserDetailsByKey.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch user details";
       });
 
   },

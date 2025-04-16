@@ -3,11 +3,9 @@ import { getAllStationsAPI, getStationByIdAPI, postStationAPI, updateStationsCha
 
 //get Access Token from Async Storage
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useSelector } from "react-redux";
-import { selectToken, selectUser } from "../../auth/services/selector";
 
-const accessToken = AsyncStorage.getItem("accessToken");
-// Async Thunks
+
+
 
 // Fetch all stations for a vendor
 export const fetchStations = createAsyncThunk(
@@ -62,6 +60,7 @@ export const fetchStations = createAsyncThunk(
       }
     }
   );
+
   
   // Delete a station
   export const deleteStation = createAsyncThunk(

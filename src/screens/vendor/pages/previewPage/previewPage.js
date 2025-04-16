@@ -85,7 +85,8 @@ const PreviewPage = ({ navigation }) => {
 
       for (let i = 0; i < stationData.chargers.length; i++) {
         const charger = stationData.chargers[i];
-        if (!charger.charger_type || !charger.power_rating || !charger.connectors || charger.connectors.length === 0) {
+        console.log(charger.charger_type, charger.max_power_kw, charger.connectors);
+        if (!charger.charger_type || !charger.max_power_kw || !charger.connectors || charger.connectors.length === 0) {
           Alert.alert(
             'Validation Error',
             `Charger ${i + 1} details is incomplete. Please ensure all fields are filled.`
@@ -95,7 +96,8 @@ const PreviewPage = ({ navigation }) => {
 
         for (let j = 0; j < charger.connectors.length; j++) {
           const connector = charger.connectors[j];
-          if (!connector.connector_type_id) {
+          console.log(connector.connectorType.connector_type_id);
+          if (!connector.connectorType.connector_type_id) {
             Alert.alert(
               'Validation Error',
               `Connector ${j + 1} details of Charger ${i + 1} is incomplete. Please ensure all fields are filled.`
@@ -106,12 +108,14 @@ const PreviewPage = ({ navigation }) => {
       }
 
       // Call the API (replace with your actual API call)
-      const response = await dispatch(addStation(stationData));
-      console.log('after dispatching add response:', response.payload);
+      // const response = await dispatch(addStation(stationData));
+      // console.log('after dispatching add response:', response.payload);
 
       // Show success message
-      Alert.alert('Success', 'Station added successfully!');
-      navigation.navigate('VendorBottomTabBar'); // Navigate back after successful submission
+      Alert.alert('Success', 'Currently, this is a preview. The station will be added to the database soon.');
+      // navigation.navigate('VendorBottomTabBar'); // Navigate back after successful submission
+      navigation.goBack(); // Go back to the previous screen
+      navigation.goBack(); // Go back to the previous screen
     } catch (error) {
       console.error('Error adding station:', error);
       Alert.alert('Error', 'Failed to add station. Please try again.');

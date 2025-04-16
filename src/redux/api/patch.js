@@ -11,9 +11,10 @@ export const apiPatchRequest = async (request) => {
         console.log("request in apiPatchRequest", request);
 
         const response = await axios.patch(request.apiUrl, request.data, { headers });
-
+        console.log("response in apiPatchRequest", response);
         return response;
     } catch (error) {
+        console.error("Error in apiPatchRequest", error);
         return Promise.reject(error.response ? error.response.data : error.message);
     }
 };

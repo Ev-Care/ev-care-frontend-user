@@ -49,7 +49,7 @@ const VendorDetailForm = () => {
   const navigation = useNavigation();
   const [businessName, setBusinessName] = useState("");
   const [address, setAddress] = useState("");
-  const [coordinate,setCoordinate] = useState(null);
+  const [coordinate, setCoordinate] = useState(null);
   const [aadharNumber, setAadharNumber] = useState("");
   const [panNumber, setPanNumber] = useState("");
   const [tanNumber, setTanNumber] = useState("");
@@ -58,18 +58,38 @@ const VendorDetailForm = () => {
   const accessToken = useSelector(selectToken); // Get access token from Redux store
   const [avatarUri, setAvatarUri] = useState(null); // State to hold the image URI
   const dispatch = useDispatch(); // Get the dispatch function
-  const userKey = useSelector(selectUser).user_key;
+  const user = useSelector(selectUser);
+  const userKey = user?.user_key; // Get the user key from the Redux store
 
+  console.log("User =:", user); // Log the user key for debugging
   let vendorDetail = {};
 
-   
+
 
   const handleSubmit = () => {
-    // if (!businessName || !address || !aadharNumber || !panNumber || !tanNumber || !avatarUri) {
-    if (!avatarUri ,!businessName || !address || !aadharNumber || !panNumber || !tanNumber ) {
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    const tanRegex = /^[A-Z]{4}[0-9]{5}[A-Z]{1}$/;
+
+    if (!avatarUri || !businessName || !address || !aadharNumber || !panNumber || !tanNumber) {
       Alert.alert("Error", "All fields are required!");
       return;
     }
+
+    if (aadharNumber.length !== 12 || !/^\d+$/.test(aadharNumber)) {
+      Alert.alert("Error", "Aadhaar number must be number and of 12 digits.");
+      return;
+    }
+
+    if (!panRegex.test(panNumber)) {
+      Alert.alert("Error", "Invalid PAN number format.");
+      return;
+    }
+
+    if (!tanRegex.test(tanNumber)) {
+      Alert.alert("Error", "Invalid TAN number format.");
+      return;
+    }
+
 
     // Fill the vendor detail object
     let vendorDetail = {
@@ -92,7 +112,7 @@ const VendorDetailForm = () => {
     navigation.push("PickLocation", {
       addressFor: "stationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
-      setCoordinate:(newCoordinate )=>setCoordinate(newCoordinate)
+      setCoordinate: (newCoordinate) => setCoordinate(newCoordinate)
     });
   };
 
@@ -115,18 +135,18 @@ const VendorDetailForm = () => {
         allowsEditing: true,
         quality: 1,
       });
-     
+
       if (!result.canceled) {
-    
+
         const selectedImageUri = result.assets[0].uri;
-      
+
         const file = setupImagePicker(selectedImageUri);
-      
+
         setImageLoading(true);
         const response = await dispatch(
           postSingleFile({ file: file, accessToken: accessToken })
         );
-      
+
         if (response?.payload?.code === 200 || response?.payload?.code === 201) {
           setAvatar(selectedImageUri);
           setAvatarUri(response?.payload?.data?.filePathUrl); // Set the avatar URI to the response path
@@ -212,7 +232,7 @@ const VendorDetailForm = () => {
         placeholder="Enter PAN number"
         placeholderTextColor="gray"
         value={panNumber}
-        onChangeText={setPanNumber}
+        onChangeText={(text) => setPanNumber(text.toUpperCase())}
       />
 
       {/* <Text style={styles.label}>TAN Number</Text> */}
@@ -221,8 +241,9 @@ const VendorDetailForm = () => {
         placeholder="Enter TAN number"
         placeholderTextColor="gray"
         value={tanNumber}
-        onChangeText={setTanNumber}
+        onChangeText={(text) => setTanNumber(text.toUpperCase())}
       />
+
 
       {/* <Text style={styles.label}>Address</Text> */}
       <TextInput

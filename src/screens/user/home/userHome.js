@@ -208,15 +208,7 @@ const UserHome = ({ navigation }) => {
 
   const stations = useSelector(selectStations);
 
-  // useEffect(() => {
-  //   if(stations.length > 0) {
-  //     console.log("stations in userHome useeffect 5: ", stations);
-  //   }
-  //   else {
-  //     console.log("No stations found in userHome");
-  //   }
-  // }, [stations]);
-
+ 
   const formatDistance = (distance) => {
     if (distance >= 1000) {
       return (distance / 1000).toFixed(1).replace(/\.0$/, "") + "k km";
@@ -253,13 +245,7 @@ const UserHome = ({ navigation }) => {
     }),
   };
 
-  // getUserLocation();
-
-  // console.log("location : ", currentLocation);
-  // dispatch(fetchStationsByLocation({
-  //   userId: user?.userId, currentLocation
-  // }))
-
+ 
   function getFirstName(fullName) {
     if (!fullName) return "";
     return fullName.trim().split(" ")[0];

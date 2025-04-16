@@ -14,7 +14,7 @@ export const apiPostRequest = async (request) => {
             },
         });
 
-        // console.log("Raw API Response:", response.data);
+        console.log("Raw API Response:", response.data);
 
         return response;  // Axios automatically parses JSON
     } catch (error) {

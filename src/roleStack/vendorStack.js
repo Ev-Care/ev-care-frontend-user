@@ -29,33 +29,35 @@ import EditProfileVendor from "../screens/vendor/pages/vendorProfile/EditProfile
 const Stack = createStackNavigator();
 
 export function VendorStack() {
-  // const [isApproved, setApproved] = useState(null);
   const user = useSelector(selectUser); // Get user data
-  // console.log("user in vendor stack", user);
-  console.log("user role in vendor stack", user?.role.toLowerCase());
 
-  useEffect(() => {
-
-  }, []);
+  const role = user?.role?.toLowerCase();
+  const isVendor = role === "vendor";
+  const isActive = user?.status === "Active";
+  const isCompleted = user?.status === "Completed";
+  const isKYCIncomplete = !user?.pan_no || !user?.tan_no || !user?.adhar_no;
+  const isKYCComplete = user?.pan_no && user?.tan_no && user?.adhar_no;
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {user && user.role.toLowerCase() === "vendor" && (user.pan_no === null || user.tan_no === null || user.adhar_no === null) ? (
+      {isVendor && isActive && isKYCIncomplete && (
         <>
-        {console.log("inside vendor stack")}
           <Stack.Screen name="Instruction" component={Instruction} />
           <Stack.Screen name="UploadAadhar" component={UploadAadhar} />
           <Stack.Screen name="UploadPAN" component={UploadPAN} />
           <Stack.Screen name="UploadTAN" component={UploadTAN} />
-      
           <Stack.Screen name="VendorDetailForm" component={VendorDetailForm} />
           <Stack.Screen name="PickLocation" component={PickLocationScreen} />
           <Stack.Screen name="VendorAccountDetailsForm" component={VendorAccountDetailsForm} />
-          <Stack.Screen name="PendingApprovalScreen" component={PendingApprovalScreen} />
         </>
-      ) : (
+      )}
+
+      {isVendor && isCompleted && (
+        <Stack.Screen name="PendingApprovalScreen" component={PendingApprovalScreen} />
+      )}
+
+      {isVendor && isActive && isKYCComplete && (
         <>
-        {user && user.role.toLowerCase() === "vendor" && (user.pan_no !== null && user.tan_no !== null && user.adhar_no !== null)}
           <Stack.Screen name="VendorBottomTabBar" component={VendorBottomTabBar} />
           <Stack.Screen name="VendorHome" component={VendorHome} />
           <Stack.Screen name="AllStations" component={AllStations} />
@@ -74,3 +76,4 @@ export function VendorStack() {
     </Stack.Navigator>
   );
 }
+

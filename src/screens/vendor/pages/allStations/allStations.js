@@ -18,9 +18,9 @@ import {
   commonStyles
 } from "../../../../constants/styles";
 import { selectUser } from "../../../auth/services/selector";
-import { selectStation } from "../../services/selector";
+import { selectStation, selectVendorStation } from "../../services/selector";
 import { updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
-import { toggleStationStatus } from "../../services/vendorSlice";
+
 
 const COLORS = {
   primary: "#101942",
@@ -41,63 +41,12 @@ const AllStations = () => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
 
+  const stations = useSelector(selectVendorStation);
 
-  const stations = useSelector(selectStation);
+  // console.log("Stations in AllStations:", stations?.length);
 
-  console.log("Stations in AllStations:", stations.length);
+ 
 
-  // Initialize availability state after stations are loaded
-  const [availability, setAvailability] = useState({});
-
-  React.useEffect(() => {
-    if (stations) {
-      setAvailability(
-        stations.reduce((acc, station) => ({ ...acc, [station.id]: true }), {})
-      );
-    }
-  }, [stations]);
-
-  const toggleStationAvailability = (id) => {
-    // dispatch(toggleStationStatus({ id }));
-    console.log("Toggling station availability for station ID:", id);
-    availability[station.id] = !availability[station.id];
-    console.log("Updated availability state:", availability[station.id]);
-  };
-    /*console.log("Toggling station availability for ID:", id);
-    setAvailability((prev) => {
-      const updatedAvailability = { ...prev };
-
-      const updatedStations = stations.map((station) => {
-        if (station.id === id) {
-          const updatedStatus = station.status === "Active" ? "Inactive" : "Active";
-
-          // Update chargers and connectors based on station status
-          const updatedChargers = station.chargers.map((charger) => ({
-            ...charger,
-            status: charger.status !== "Inactive" ? "Inactive" : charger.status, // Set charger status to match station status
-            connectors: charger.connectors.map((connector) => ({
-              ...connector,
-              connector_status: connector.connector_status !== "out-of-service" ? "out-of-service" : connector.connector_status, // Update connector status
-            })),
-          }));
-
-          // Return the updated station
-          return {
-            ...station,
-            status: updatedStatus,
-            chargers: updatedChargers,
-          };
-        }
-        return station;
-      });
-
-      // console.log("Updated Stations:", updatedStations);
-
-      // Update availability state
-      updatedAvailability[id] = !prev[id];
-      return updatedAvailability;
-    }); */
-  
 
   const updateStationStatus = async (stationData) => {
     try {
@@ -128,7 +77,7 @@ const AllStations = () => {
 
       <ScrollView style={styles.scrollContainer}>
         {/* Check if stations is defined and not empty */}
-        {stations && stations.length > 0 ? (
+        {stations && stations?.length > 0 ? (
           stations.map((station) => (
             <TouchableOpacity
               onPress={() => navigation.navigate("StationManagement", { station })}
@@ -158,7 +107,7 @@ const AllStations = () => {
                     value={station.status !== "Inactive"}
                     onValueChange={async () => {
 
-                      console.log("Station Status Before toggle:", availability[station.id]);
+                      // console.log("Station Status Before toggle:", availability[station.id]);
 
                     //  await toggleStationAvailability(station.id);
 
@@ -184,19 +133,19 @@ const AllStations = () => {
                   Status:{" "}
                   <Text
                     style={{
-                      color: availability[station.id]
+                      color: station?.status !== "Inactive"
                         ? COLORS.green
                         : COLORS.secondary,
                     }}
                   >
-                    {availability[station.id] ? "Live" : "Offline"}
+                    {station?.status !== "Inactive" ? "Live" : "Offline"}
                   </Text>
                 </Text>
 
                 <Text style={styles.text}>
-                  Chargers: {station.chargers.length}
+                  Chargers: {station?.chargers?.length || 0}
                 </Text>
-                <Text style={styles.addressText}>{trimText(station.address, 100)}</Text>
+                <Text style={styles.addressText}>{trimText(station?.address, 100)}</Text>
               </View>
             </TouchableOpacity>
           ))

@@ -25,7 +25,11 @@ const vendorSlice = createSlice({
         state.stations[stationIndex] = updatedStation;
       }
       console.log("toggle station availability success",state.stations[stationIndex] );
+    },
+    setStations(state, action) {
+      state.stations = action.payload.stations;
     }
+
   },
   extraReducers: (builder) => {
     // Fetch Stations
@@ -124,5 +128,5 @@ const vendorSlice = createSlice({
       });
   },
 });
-export const { toggleStationStatus } = vendorSlice.actions; // Export the action
+export const { toggleStationStatus,setStations } = vendorSlice.actions; // Export the action
 export default vendorSlice.reducer;

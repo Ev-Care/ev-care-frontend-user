@@ -151,20 +151,26 @@ const ChargingStationMap = () => {
 >
   {/* Charging Stations Markers with Custom Image */}
   {stations?.map((item, index) => (
-    <Marker
-      key={item?.id}
-      coordinate={{
-        latitude: item?.coordinates.latitude,
-        longitude: item?.coordinates.longitude
-      }}
-      onPress={() => navigation.navigate("ChargingStationDetail",{item})}
-    >
-      <Image
-        source={require("../../../../assets/images/stationMarker.png")}
-        style={{ width: 50, height: 50 }}
-        resizeMode="contain"
-      />
-    </Marker>
+   <Marker
+   key={item?.id}
+   coordinate={{
+     latitude: item?.coordinates.latitude,
+     longitude: item?.coordinates.longitude
+   }}
+   onPress={() => navigation.navigate("ChargingStationDetail", { item })}
+ >
+   <View style={{ alignItems: 'center' }}>
+     <Image
+       source={require("../../../../assets/images/stationMarker.png")}
+       style={{ width: 40, height: 40 }}
+       resizeMode="contain"
+     />
+     <Text style={{ fontSize: 12, color: 'black', backgroundColor: 'white', paddingHorizontal: 4, borderRadius: 4 }}>
+       {item?.station_name || "Dummy Station"}
+     </Text>
+   </View>
+ </Marker>
+ 
   ))}
 
   {/* Custom Current Location Marker */}
@@ -177,6 +183,7 @@ const ChargingStationMap = () => {
         source={require("../../../../assets/images/userMarker.png")}
         style={{ width: 50, height: 50 }}
         resizeMode="contain"
+       
       />
     </Marker>
   )}

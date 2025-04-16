@@ -14,6 +14,18 @@ const vendorSlice = createSlice({
   initialState,
   reducers: {
     // Optional: Add any synchronous reducers if needed
+    toggleStationStatus: (state, action) => {
+      const { id } = action.payload;
+      const stationIndex = state.stations.findIndex((station) => station.id === id);
+      if (stationIndex !== -1) {
+        const updatedStation = {
+          ...state.stations[stationIndex],
+          status: state.stations[stationIndex].status !== 'Inactive' ? 'Inactive' : 'Active',
+        };
+        state.stations[stationIndex] = updatedStation;
+      }
+      console.log("toggle station availability success",state.stations[stationIndex] );
+    }
   },
   extraReducers: (builder) => {
     // Fetch Stations
@@ -97,8 +109,9 @@ const vendorSlice = createSlice({
         // console.log("update station Fullfilled called", action.payload[0]);
 
         // Extract the updated station from the payload
-        const updatedStation = action.payload[0];
+        const updatedStation = action.payload.data[0];
 
+        console.log("Updated station:", updatedStation);
         // Iterate over the stations and replace the matching station
         state.stations = state.stations.map((station) =>
           station.id === updatedStation.id ? updatedStation : station
@@ -114,5 +127,5 @@ const vendorSlice = createSlice({
       });
   },
 });
-
+export const { toggleStationStatus } = vendorSlice.actions; // Export the action
 export default vendorSlice.reducer;

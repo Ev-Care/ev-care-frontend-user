@@ -23,7 +23,7 @@ const FirstSplashScreen = ({ navigation }) => {
       textOpacity.value = withTiming(1, { duration: 1000 }); // Fade in text
       textScale.value = withTiming(1, { duration: 1000 }); // Scale up text
     }, 0);
-    
+    setTimeout(() => {navigation.navigate("Onboarding")},3500)
     
   }, []);
 

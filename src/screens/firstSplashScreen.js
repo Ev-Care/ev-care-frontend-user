@@ -24,7 +24,7 @@ const FirstSplashScreen = ({ navigation }) => {
       textScale.value = withTiming(1, { duration: 1000 }); // Scale up text
     }, 0);
 
-    // setTimeout(() => {navigation.navigate("Onboarding")},4000)
+    setTimeout(() => {navigation.navigate("Onboarding")},4000)
     
   }, []);
 

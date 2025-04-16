@@ -111,14 +111,11 @@ const vendorSlice = createSlice({
         // Extract the updated station from the payload
         const updatedStation = action.payload.data[0];
 
-        console.log("Updated station:", updatedStation);
+      
         // Iterate over the stations and replace the matching station
         state.stations = state.stations.map((station) =>
           station.id === updatedStation.id ? updatedStation : station
         );
-
-        // console.log("Updated stations:", state.stations);
-
 
       })
       .addCase(updateStationsChargersConnectorsStatus.rejected, (state, action) => {

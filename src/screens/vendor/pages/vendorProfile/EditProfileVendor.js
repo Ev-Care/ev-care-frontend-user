@@ -31,11 +31,9 @@ import { Ionicons } from "@expo/vector-icons";
 
 const EditProfileScreen = ({ navigation }) => {
   const user = useSelector(selectUser);
-  const [businessName, setBusinessName] =
-    user?.business_name || "Anonymous User";
+  const [businessName, setBusinessName] =useState( user?.business_name || "Anonymous User");
   const [name, setname] = useState(user?.name || "Anonymous User");
   const [email, setemail] = useState(user?.email);
-
   const [showChangeProfilePicSheet, setshowChangeProfilePicSheet] =
     useState(false);
   const [profileImage, setProfileImage] = useState(null);

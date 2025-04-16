@@ -27,34 +27,46 @@ import { selectToken, selectUser } from "../../../auth/services/selector";
 import { setupImagePicker } from "../../../vendor/CompleteProfileDetail/vendorDetailForm";
 import { postSingleFile } from "../../../auth/services/crudFunction";
 import { patchUpdateUserProfile } from "../../../user/service/crudFunction";
-
- 
+import { Ionicons } from "@expo/vector-icons";
 
 const EditProfileScreen = ({ navigation }) => {
   const user = useSelector(selectUser);
-  const [businessName,setBusinessName]=(user?.business_name || "Anonymous User");
+  const [businessName, setBusinessName] =
+    user?.business_name || "Anonymous User";
   const [name, setname] = useState(user?.name || "Anonymous User");
   const [email, setemail] = useState(user?.email);
-  const [showChangeProfilePicSheet, setshowChangeProfilePicSheet] = useState(false);
+
+  const [showChangeProfilePicSheet, setshowChangeProfilePicSheet] =
+    useState(false);
   const [profileImage, setProfileImage] = useState(null);
   const [imageLoading, setImageLoading] = useState(false);
   const [profileImageURI, setProfileImageURI] = useState(null);
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
-  
+  const [aadharimageUri, setAadharImageUri] = useState(
+    "https://media.istockphoto.com/id/1154042526/photo/maski-karnataka-india-december-22-2018-aadhaar-card-which-is-issued-by-government-of-india-as.jpg?s=2048x2048&w=is&k=20&c=pahX9npRpBMDr4YT2z-pRKZX2tGXWAOtJ18tHP-KonE="
+  );
+  const [aadharNumber, setAadharNumber] = useState(
+    user?.adhar_no || "Anonymous User"
+  );
+  const [panNumber, setPanNumber] = useState(user?.tan_no || "Anonymous User");
+  const [tanNumber, setTanNumber] = useState(user?.pan_no || "Anonymous User");
 
-  const handleSubmit = async() => {
+  const handleSubmit = async () => {
     var updatedData = {
       owner_legal_name: name,
       email: email,
       avatar: profileImageURI,
       business_name: user?.business_name,
       user_key: user?.user_key,
-    }
+    };
     console.log("Updated Data:", updatedData);
     const response = await dispatch(patchUpdateUserProfile(updatedData));
-    Alert.alert("Profile Updated", "Your profile has been updated successfully.");
-  }
+    Alert.alert(
+      "Profile Updated",
+      "Your profile has been updated successfully."
+    );
+  };
 
   const pickImage = async (source) => {
     let permissionResult;
@@ -62,7 +74,8 @@ const EditProfileScreen = ({ navigation }) => {
     if (source === "camera") {
       permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     } else {
-      permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
     }
 
     if (permissionResult.granted === false) {
@@ -87,7 +100,7 @@ const EditProfileScreen = ({ navigation }) => {
 
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
-    
+
       setImageLoading(true);
       const file = await setupImagePicker(imageUri);
 
@@ -96,13 +109,18 @@ const EditProfileScreen = ({ navigation }) => {
           postSingleFile({ file: file, accessToken: accessToken })
         );
 
-        if (response?.payload?.code === 200 || response?.payload?.code === 201) {
-         
-            setProfileImageURI(response?.payload?.data?.filePathUrl);
-            console.log("profile Image URI set successfully:", response?.payload?.data?.filePathUrl);
-            setProfileImage(imageUri);
-            setImageLoading(false);
-            // Alert.alert("Success", "File uploaded successfully!");
+        if (
+          response?.payload?.code === 200 ||
+          response?.payload?.code === 201
+        ) {
+          setProfileImageURI(response?.payload?.data?.filePathUrl);
+          console.log(
+            "profile Image URI set successfully:",
+            response?.payload?.data?.filePathUrl
+          );
+          setProfileImage(imageUri);
+          setImageLoading(false);
+          // Alert.alert("Success", "File uploaded successfully!");
         } else {
           Alert.alert("Error", "File Should be less than 5 MB");
         }
@@ -110,11 +128,9 @@ const EditProfileScreen = ({ navigation }) => {
         setImageLoading(false);
         console.log("Error uploading file:", error);
         Alert.alert("Error", "Upload failed. Please try again.");
-      } 
+      }
     }
   };
-
-
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -133,7 +149,14 @@ const EditProfileScreen = ({ navigation }) => {
           {nameInfo()}
           {businessNameInfo()}
           {emailInfo()}
-
+          <View  style={{ marginBottom: 20, alignItems: "center",justifyContent: "center" }}> 
+            <Text style={{ ...Fonts.grayColor18SemiBold,color:"red"}}>
+              You Can't Edit Below Fields
+            </Text>
+          </View>
+          {aadharInfo()}
+          {panInfo()}
+          {tanInfo()}
         </ScrollView>
       </View>
       {updateProfileButton()}
@@ -217,8 +240,6 @@ const EditProfileScreen = ({ navigation }) => {
     );
   }
 
-
-
   function updateProfileButton() {
     return (
       <TouchableOpacity
@@ -230,7 +251,6 @@ const EditProfileScreen = ({ navigation }) => {
       </TouchableOpacity>
     );
   }
-
 
   function emailInfo() {
     return (
@@ -255,7 +275,9 @@ const EditProfileScreen = ({ navigation }) => {
   function businessNameInfo() {
     return (
       <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.grayColor18SemiBold }}>Business Name</Text>
+        <Text style={{ ...Fonts.grayColor18SemiBold, marginTop: 10 }}>
+          Business Name
+        </Text>
         <View style={styles.textFieldWrapper}>
           <TextInput
             placeholder="Enter your Business name here"
@@ -298,24 +320,24 @@ const EditProfileScreen = ({ navigation }) => {
           marginBottom: Sizes.fixPadding + 5.0,
         }}
       >
-       {profileImage ? (
-    <>
-      {imageLoading && <ActivityIndicator size={40} color="#ccc" />}
-      <Image
-        source={{ uri: profileImage }}
-        style={styles.profilePicStyle}
-        onLoadStart={() => setImageLoading(true)}
-        onLoadEnd={() => setImageLoading(false)}
-      />
-    </>
-  ) : (
-    <MaterialIcons
-      name="account-circle"
-      size={screenWidth / 4.0}
-      color={Colors.grayColor}
-      style={{ textAlign: "center" }}
-    />
-  )}
+        {profileImage ? (
+          <>
+            {imageLoading && <ActivityIndicator size={40} color="#ccc" />}
+            <Image
+              source={{ uri: profileImage }}
+              style={styles.profilePicStyle}
+              onLoadStart={() => setImageLoading(true)}
+              onLoadEnd={() => setImageLoading(false)}
+            />
+          </>
+        ) : (
+          <MaterialIcons
+            name="account-circle"
+            size={screenWidth / 4.0}
+            color={Colors.grayColor}
+            style={{ textAlign: "center" }}
+          />
+        )}
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => {
@@ -328,7 +350,6 @@ const EditProfileScreen = ({ navigation }) => {
       </View>
     );
   }
-
 
   function header() {
     return (
@@ -356,6 +377,107 @@ const EditProfileScreen = ({ navigation }) => {
           Edit Profile
         </Text>
       </View>
+    );
+  }
+  function aadharInfo() {
+    return (
+      <>
+        <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
+          <Text style={{ ...Fonts.grayColor18SemiBold }}>Aadhar Card</Text>
+          <View style={styles.textFieldWrapper}>
+            <TextInput
+              placeholder="Enter your name here"
+              placeholderTextColor={Colors.grayColor}
+              value={aadharNumber}
+              style={{ ...Fonts.blackColor16Medium }}
+              cursorColor={Colors.primaryColor}
+              selectionColor={Colors.primaryColor}
+              editable={false}
+            />
+          </View>
+        </View>
+
+        <View style={styles.docContainer}>
+          <View style={styles.box}>
+            <Image
+              source={{ uri: aadharimageUri }}
+              style={styles.docImage}
+              resizeMode="contain"
+            />
+            <TouchableOpacity style={styles.editIconContainer}>
+              <Ionicons name="pencil" size={24} color="green" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </>
+    );
+  }
+  function panInfo() {
+    return (
+      <>
+        <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
+          <Text style={{ ...Fonts.grayColor18SemiBold }}>Pan Card</Text>
+          <View style={styles.textFieldWrapper}>
+            <TextInput
+              placeholder="Enter your name here"
+              placeholderTextColor={Colors.grayColor}
+              value={panNumber}
+              onChangeText={(text) => setname(text)}
+              style={{ ...Fonts.blackColor16Medium }}
+              cursorColor={Colors.primaryColor}
+              selectionColor={Colors.primaryColor}
+              editable={false}
+            />
+          </View>
+        </View>
+
+        <View style={styles.docContainer}>
+          <View style={styles.box}>
+            <Image
+              source={{ uri: aadharimageUri }}
+              style={styles.docImage}
+              resizeMode="contain"
+            />
+            <TouchableOpacity style={styles.editIconContainer}>
+              <Ionicons name="pencil" size={24} color="green" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </>
+    );
+  }
+  function tanInfo() {
+    return (
+      <>
+        <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
+          <Text style={{ ...Fonts.grayColor18SemiBold }}>Tan Card</Text>
+          <View style={styles.textFieldWrapper}>
+            <TextInput
+              placeholder="Enter your name here"
+              placeholderTextColor={Colors.grayColor}
+              value={tanNumber}
+              onChangeText={(text) => setname(text)}
+              style={{ ...Fonts.blackColor16Medium }}
+              cursorColor={Colors.primaryColor}
+              selectionColor={Colors.primaryColor}
+              editable={false}
+            />
+          </View>
+        </View>
+
+        <View style={styles.docContainer}>
+          <View style={styles.box}>
+            <Image
+              source={{ uri: aadharimageUri }}
+              style={styles.docImage}
+              resizeMode="contain"
+            />
+            <TouchableOpacity style={styles.editIconContainer}>
+              <Ionicons name="pencil" size={24} color="green" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </>
     );
   }
 };
@@ -406,5 +528,33 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(6, 124, 96, 0.1)",
     alignItems: "center",
     justifyContent: "center",
+  },
+  docContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: Sizes.fixPadding * 2.0,
+  },
+  box: {
+    width: 350, // Width of the box
+    height: 225, // Height to maintain 4:3 aspect ratio (4/3 * 300 = 225)
+    borderColor: Colors.primaryColor,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    position: "relative", // To position the edit icon at the top right
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  docImage: {
+    width: "100%",
+    height: "100%",
+  },
+  editIconContainer: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "white", // Optional: make the icon stand out more
+    borderRadius: 20,
+    padding: 5,
   },
 });

@@ -17,13 +17,14 @@ const FirstSplashScreen = ({ navigation }) => {
 
   useEffect(() => {
     setTimeout(() => {
-      iconPosition.value = withTiming(-10, { duration: 1000 }); // Move left
+      iconPosition.value = withTiming(-10, { duration: 700 }); // Move left
       iconScale.value = withTiming(1, { duration: 700 }); // Shrink icon
-      iconScale.value = withTiming(1, { duration: 700 }); 
+      iconScale.value = withTiming(1, { duration: 500 }); 
       textOpacity.value = withTiming(1, { duration: 1000 }); // Fade in text
       textScale.value = withTiming(1, { duration: 1000 }); // Scale up text
     }, 0);
-    setTimeout(() => {navigation.navigate("Onboarding")},3500)
+
+    // setTimeout(() => {navigation.navigate("Onboarding")},4000)
     
   }, []);
 

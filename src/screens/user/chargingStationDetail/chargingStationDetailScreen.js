@@ -311,7 +311,7 @@ const ChargingStationDetailScreen = ({ route }) => {
             />
           </MapView>
         </View>
-
+        <Text style={styles.sectionTitle}>Address</Text>
         <View style={styles.landmarkContainer}>
           <Text style={styles.landmarkTitle}>{station?.address}</Text>
         </View>

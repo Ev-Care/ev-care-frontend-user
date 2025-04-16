@@ -42,8 +42,8 @@ const PreviewPage = ({ navigation }) => {
   const route = useRoute();
   const { stationData } = route.params; // Retrieve the passed data
 
-  console.log('Station Data:', stationData); // Log the station data for debugging
-  console.log('Chargers:', JSON.stringify(stationData.chargers, null, 2));
+
+  console.log('Transformed station data preview:', JSON.stringify(stationData, null, 2));
 
   const connectorTypeMap = {
     1: { name: "CCS-2", icon: "ev-plug-ccs2" },
@@ -150,8 +150,8 @@ const PreviewPage = ({ navigation }) => {
           <View style={styles.communityBadge}>
             <Text style={styles.communityText}>Public</Text>
           </View>
-          <Text style={styles.stationName}>{trimName(30,stationData.station_name)}</Text>
-          <Text style={styles.stationAddress}>{trimName(50,stationData.address)}</Text>
+          <Text style={styles.stationName}>{trimName(30, stationData.station_name)}</Text>
+          <Text style={styles.stationAddress}>{trimName(50, stationData.address)}</Text>
           <View style={styles.statusContainer}>
             <Text style={styles.openHour}>Open Hours</Text>
             <Text style={styles.statusTime}>
@@ -245,18 +245,18 @@ const PreviewPage = ({ navigation }) => {
               {charger.connectors.map((connector, connectorIndex) => (
                 <View key={connectorIndex} style={styles.connector}>
                   <Text style={styles.connectorTitle}>
-                    Connector {connectorIndex + 1}
+                    Connector {connectorIndex + 1} {}
                   </Text>
                   <View style={styles.connectorType}>
-  <Icon
-    name={connectorTypeMap[connector.connector_type_id]?.icon || "alert-circle"}
-    size={20}
-    color={COLORS.primary}
-  />
-  <Text style={styles.connectorTypeText}>
-    {connectorTypeMap[connector.connector_type_id]?.name || "Unknown Type"}
-  </Text>
-</View>
+                    <Icon
+                      name={connectorTypeMap[connector.connectorType.connector_type_id]?.icon || "alert-circle"}
+                      size={20}
+                      color={COLORS.primary}
+                    />
+                    <Text style={styles.connectorTypeText}>
+                      {connectorTypeMap[connector.connectorType.connector_type_id]?.name || "Unknown Type"}
+                    </Text>
+                  </View>
 
                 </View>
               ))}
@@ -292,21 +292,24 @@ const PreviewPage = ({ navigation }) => {
             />
           </MapView>
         </View>
-
+        <Text style={styles.sectionTitle}>Address</Text>
+        <View style={styles.landmarkContainer}>
+          <Text style={styles.landmarkTitle}>{stationData.address}</Text>
+        </View>
         <Text style={styles.sectionTitle}>Amenities</Text>
-     <View style={styles.amenitiesContainer}>
-     {stationData.amenities.split(',').map((amenityName, index) => {
-     const trimmedName = amenityName.trim();
-     const iconName = amenityMap[trimmedName] || "help-circle";
+        <View style={styles.amenitiesContainer}>
+          {stationData.amenities.split(',').map((amenityName, index) => {
+            const trimmedName = amenityName.trim();
+            const iconName = amenityMap[trimmedName] || "help-circle";
 
-    return (
-      <View key={index} style={styles.amenityItem}>
-        <Icon name={iconName} size={24} color={COLORS.primary} />
-        <Text style={styles.connectorTypeText}>{trimmedName}</Text>
-      </View>
-    );
-  })}
-</View>
+            return (
+              <View key={index} style={styles.amenityItem}>
+                <Icon name={iconName} size={24} color={COLORS.primary} />
+                <Text style={styles.connectorTypeText}>{trimmedName}</Text>
+              </View>
+            );
+          })}
+        </View>
       </ScrollView>
     );
   }
@@ -504,7 +507,7 @@ const styles = StyleSheet.create({
   },
   amenitiesContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',  
+    flexWrap: 'wrap',
     marginBottom: 24,
   },
   amenityItem: {
@@ -515,7 +518,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
-    marginBottom:10,
+    marginBottom: 10,
   },
 
   seeAllText: {

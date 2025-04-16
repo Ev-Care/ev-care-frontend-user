@@ -13,7 +13,6 @@ import { selectUser, selectProfileStatus } from "./screens/auth/services/selecto
 
 // Screens
 import LoadingScreen from "./screens/loadingScreen";
-import SecondSplashScreen from "./screens/secondSplashScreen";
 import FirstSplashScreen from "./screens/firstSplashScreen";
 import OnboardingScreen from "./screens/onboardingScreen";
 import SigninScreen from "./screens/auth/signinScreen";
@@ -75,11 +74,6 @@ function AppNavigator() {
             <Stack.Screen
               name="FirstSplashScreen"
               component={FirstSplashScreen}
-              options={{ ...TransitionPresets.DefaultTransition }}
-            />
-            <Stack.Screen
-              name="SecondSplashScreen"
-              component={SecondSplashScreen}
               options={{ ...TransitionPresets.DefaultTransition }}
             />
             <Stack.Screen name="Loading" component={LoadingScreen} />

@@ -16,6 +16,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from "@react-navigation/native";
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../../auth/services/selector';
 
 const PRIMARY_COLOR = '#101942';
 const amenities = [
@@ -48,10 +50,11 @@ const mapAmenitiesToIds = (amenitiesLabelString) => {
 
   return selectedIds;
 };
-const UpdateStation = ({navigation, route }) => {
+const UpdateStation = ({ navigation, route }) => {
   const station = route?.params?.station;
-  const [selectedAmenities, setSelectedAmenities] = useState(mapAmenitiesToIds(station?.amenities || ''));  
-  const [openHours, setOpenHours] = useState(station.open_hours_opening_time==='00:00:00' && station.open_hours_closing_time==='23:59:59'?'24 Hours':'');
+  const user = useSelector(selectUser);
+  const [selectedAmenities, setSelectedAmenities] = useState(mapAmenitiesToIds(station?.amenities || ''));
+  const [openHours, setOpenHours] = useState(station.open_hours_opening_time === '00:00:00' && station.open_hours_closing_time === '23:59:59' ? '24 Hours' : '');
   const [photo, setPhoto] = useState(station?.photo || null);
   const [address, setAddress] = useState(station?.address || '');
   const [openTime, setOpenTime] = useState('');
@@ -61,45 +64,68 @@ const UpdateStation = ({navigation, route }) => {
   const [stationName, setStationName] = useState(station?.station_name || '');
   const [chargerType, setchargerType] = useState('');
   const [powerRating, setPowerRating] = useState('');
-  const [chargerForms, setChargerForms] = useState(station?.chargers || [{}]); 
+  const [chargerForms, setChargerForms] = useState(station?.chargers || [{}]);
   const [selectedForm, setSelectedForm] = useState(null);
-  const [coordinate ,setCoordinate] = useState(station?.coordinates || null);
-  const addChargerForm = () => setChargerForms(prevForms => [...prevForms, {}]);
+  const [coordinate, setCoordinate] = useState(station?.coordinates || null);
+  const addChargerForm = () => setChargerForms(prevForms => [...prevForms, 
+    {charger_type:null,
+    max_power_kw: null,
+    connectors: [],
+  }
+]);
   const [connectorsList, setConnectorsList] = useState([]);
- 
 
-  
-  
-  // Example usage
  
-   
 
   const incrementConnector = (id, chargerIndex) => {
-    setConnectorsList((prev) => {
-      const exists = prev.find((c) => c.id === id && c.chargerIndex === chargerIndex);
-      if (exists) {
-        return prev.map((c) =>
-          c.id === id && c.chargerIndex === chargerIndex
-            ? { ...c, count: c.count + 1 }
-            : c
-        );
-      } else {
-        return [...prev, { id, count: 1, chargerIndex }];
-      }
-    });
-  };
+    setChargerForms((prev) =>
+      prev.map((charger, i) => {
+        if (i !== chargerIndex) return charger;
   
-  const decrementConnector = (id, chargerIndex) => {
-    setConnectorsList((prev) =>
-      prev
-        .map((c) =>
-          c.id === id && c.chargerIndex === chargerIndex && c.count > 0
-            ? { ...c, count: c.count - 1 }
-            : c
-        )
-        .filter((c) => c.count > 0)
+        const connectorInfo = connectors.find((c) => c.id === id);
+        if (!connectorInfo) return charger;
+  
+        const newConnector = {
+          charger_connector_id: -1, // Or use any unique ID generator
+          connectorType: {
+            connector_type_id: connectorInfo.id,
+            description: connectorInfo.type,
+            
+          },
+          connector_status: "operational",
+        };
+  
+        return {
+          ...charger,
+          connectors: [...(charger.connectors || []), newConnector],
+        };
+      })
     );
   };
+  
+
+  const decrementConnector = (id, chargerIndex) => {
+    setChargerForms((prev) =>
+      prev.map((charger, i) => {
+        if (i !== chargerIndex) return charger;
+  
+        const updatedConnectors = [...(charger.connectors || [])];
+        const indexToRemove = updatedConnectors.findIndex(
+          (c) => c.connectorType?.connector_type_id === id
+        );
+  
+        if (indexToRemove !== -1) {
+          updatedConnectors.splice(indexToRemove, 1); // remove one occurrence
+        }
+  
+        return {
+          ...charger,
+          connectors: updatedConnectors,
+        };
+      })
+    );
+  };
+  
 
   const handleTimeChange = (event, selectedDate) => {
     setShowPicker(false);
@@ -143,7 +169,7 @@ const UpdateStation = ({navigation, route }) => {
     navigation.push("PickLocation", {
       addressFor: "stationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
-      setCoordinate:(newCoordinate )=>setCoordinate(newCoordinate)
+      setCoordinate: (newCoordinate) => setCoordinate(newCoordinate)
 
     });
   };
@@ -155,16 +181,16 @@ const UpdateStation = ({navigation, route }) => {
     //   alert('Please fill in all required fields.');
     //   return;
     // }
-  
+
     // Transform amenities into a comma-separated string
     const amenitiesString = selectedAmenities
       .map((id) => amenities.find((amenity) => amenity.id === id)?.label)
       .join(',');
-  
+
     // Transform chargers and connectors
     const chargers = chargerForms.map((charger, index) => ({
-      charger_type: charger.chargerType || null,
-      power_rating: parseFloat(charger.powerRating) || null,
+      charger_type: chargerType || null,
+      power_rating: parseFloat(charger.max_power_kw) || null,
       connectors: connectorsList
         .filter((connector) => connector.chargerIndex === index)
         .flatMap((connector) =>
@@ -174,10 +200,11 @@ const UpdateStation = ({navigation, route }) => {
           })
         ),
     }));
-  
+
+
     // Prepare the final station data
     const stationData = {
-      owner_id: 1, // Replace with the actual owner ID if available
+      owner_id: user.id, // Replace with the actual owner ID if available
       station_name: stationName,
       address,
       coordinates: {
@@ -187,20 +214,22 @@ const UpdateStation = ({navigation, route }) => {
       amenities: amenitiesString,
       open_hours_opening_time: openHours === '24 Hours' ? '00:00:00' : openTime || '00:00:00',
       open_hours_closing_time: openHours === '24 Hours' ? '23:59:59' : closeTime || '23:59:59',
-      chargers,
+      chargers:chargerForms,
     };
-  
-    console.log('Transformed Station Data:', JSON.stringify(stationData, null, 2));
-  
+
+    console.log('Transformed Station Data in update:', JSON.stringify(stationData, null, 2));
+
     // Navigate to PreviewPage with the transformed data
     navigation.push('PreviewPage', { stationData });
   };
-  
+
   const handleVisibility = (form) => {
-    if (selectedForm !== form) {
-      setSelectedForm(form);
+    const formKey = String(form);
+    if (selectedForm !== formKey) {
+      setSelectedForm(formKey);
     }
   };
+
   const removeChargerForm = (index) => {
     setChargerForms(chargerForms.filter((_, i) => i !== index));
   };
@@ -218,9 +247,9 @@ const UpdateStation = ({navigation, route }) => {
 
       {locationDetail()}
       {additionalDetail()}
-      {chargerForms.map((_, index) => (
+      {chargerForms.map((charger, index) => (
         <View key={`charger-${index}`}>
-          {chargerDetail(index)}
+          {chargerDetail(charger, index)}
         </View>
       ))}
       {/* Bottom Buttons */}
@@ -250,7 +279,7 @@ const UpdateStation = ({navigation, route }) => {
           {/* Display Address */}
           {address && (
             <TextInput
-              style={[styles.input, styles.textArea ,{marginBottom: 20}]}
+              style={[styles.input, styles.textArea, { marginBottom: 20 }]}
               placeholder="Home/Street/Locality, City, State, Pincode"
               placeholderTextColor="gray"
               multiline
@@ -285,12 +314,13 @@ const UpdateStation = ({navigation, route }) => {
         </>)}
       </TouchableOpacity>)
   }
-  function chargerDetail(index) {
-    // console.log("chargerForms", chargerForms[index]?.max_power_kw);
+  function chargerDetail(charger, index) {
+    
+   console.log("charger details", chargerForms[index]);
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() => handleVisibility("chargerdetail")}
+        onPress={() => handleVisibility(index)}
       >
         <View style={styles.chagerTitle}>
           <Text style={styles.sectionTitle}>Charger Details {index + 1}</Text>
@@ -303,8 +333,8 @@ const UpdateStation = ({navigation, route }) => {
             </TouchableOpacity>
           )}
         </View>
-        {/* Charger Type */}
-        {selectedForm === "chargerdetail" && (
+
+        {selectedForm === String(index) && (
           <>
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>Charger Type</Text>
@@ -313,14 +343,12 @@ const UpdateStation = ({navigation, route }) => {
                   style={[
                     styles.hoursButton,
                     chargerForms[index]?.charger_type === "AC" &&
-                      styles.selectedButton,
+                    styles.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
                       prev.map((charger, i) =>
-                        i === index
-                          ? { ...charger, charger_type: "AC" }
-                          : charger
+                        i === index ? { ...charger, charger_type: "AC" } : charger
                       )
                     );
                   }}
@@ -329,24 +357,23 @@ const UpdateStation = ({navigation, route }) => {
                     style={[
                       styles.buttonText,
                       chargerForms[index]?.charger_type === "AC" &&
-                        styles.selectedButtonText,
+                      styles.selectedButtonText,
                     ]}
                   >
                     AC
                   </Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
                   style={[
                     styles.hoursButton,
                     chargerForms[index]?.charger_type === "DC" &&
-                      styles.selectedButton,
+                    styles.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
                       prev.map((charger, i) =>
-                        i === index
-                          ? { ...charger, charger_type: "DC" }
-                          : charger
+                        i === index ? { ...charger, charger_type: "DC" } : charger
                       )
                     );
                   }}
@@ -355,7 +382,7 @@ const UpdateStation = ({navigation, route }) => {
                     style={[
                       styles.buttonText,
                       chargerForms[index]?.charger_type === "DC" &&
-                        styles.selectedButtonText,
+                      styles.selectedButtonText,
                     ]}
                   >
                     DC
@@ -363,7 +390,7 @@ const UpdateStation = ({navigation, route }) => {
                 </TouchableOpacity>
               </View>
             </View>
-            {/* Power Rating */}
+
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>
                 Power Rating <Text style={styles.optional}>(in kW)</Text>
@@ -371,24 +398,27 @@ const UpdateStation = ({navigation, route }) => {
               <TextInput
                 style={styles.input}
                 placeholder="Power Rating In kW"
-                value={chargerForms[index]?.max_power_kw || ""}
+                keyboardType="numeric"
+                value={String(chargerForms[index]?.max_power_kw ?? "")}
                 onChangeText={(text) =>
                   setChargerForms((prev) =>
                     prev.map((charger, i) =>
-                      i === index
-                        ? { ...charger, max_power_kw: text }
-                        : charger
+                      i === index ? { ...charger, max_power_kw: text } : charger
                     )
                   )
                 }
               />
+
             </View>
-            {/* Connectors */}
-            {connectorsInfo(index)}
-            {/* Add More Chargers */}
+
+            {connectorsInfo(charger.connectors,index)}
+
             {index === chargerForms.length - 1 && (
               <View style={styles.nextButtonContainer}>
-                <TouchableOpacity onPress={addChargerForm} style={styles.nextButton}>
+                <TouchableOpacity
+                  onPress={addChargerForm}
+                  style={styles.nextButton}
+                >
                   <Text style={styles.nextButtonText}>+ Add more</Text>
                 </TouchableOpacity>
               </View>
@@ -398,21 +428,30 @@ const UpdateStation = ({navigation, route }) => {
       </TouchableOpacity>
     );
   }
+
+
+
+  function connectorsInfo(connectorsdetails, chargerIndex) {
   
-  function connectorsInfo(chargerIndex) {
-    // console.log("connectorsList", chargerForms[chargerIndex]?.connectors);
-    // console.log("connectors", connectors);
+  
+    // Group connectors by their type and calculate counts
+    const connectorTypeCounts = connectors.reduce((acc, connector) => {
+      const count = connectorsdetails.filter(
+        (c) => c.connectorType?.connector_type_id === connector.id
+      ).length;
+      acc[connector.id] = count;
+      return acc;
+    }, {});
+
+   
   
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>Connectors</Text>
         <View style={styles.connectorsBox}>
           {connectors.map((connector) => {
-            const connectorData = chargerForms[chargerIndex]?.connectors.find(
-              (c) => c.connectorType?.connector_type_id === connector.id
-            );
-           
-            const count = connectorData ? connectorData.count : 0;
+            const count = connectorTypeCounts[connector.id] || 0; // Get the count for the current connector type
+            console.log(`count of connectors for ${connector.type}:`, count);
   
             return (
               <View key={`connector-${connector.id}`} style={styles.connectorsItem}>
@@ -445,7 +484,7 @@ const UpdateStation = ({navigation, route }) => {
       </View>
     );
   }
-  
+
   function connectorsInfo1(chargerIndex) {
     console.log("connectorsList", chargerForms[chargerIndex]?.connectors);
     console.log("connectors", connectors);
@@ -460,7 +499,7 @@ const UpdateStation = ({navigation, route }) => {
             );
             console.log("connectorData", connectorData);
             const count = connectorData ? connectorData.count : 0;
-  
+
             return (
               <View
                 key={`connector-${connector.id}`}
@@ -471,7 +510,7 @@ const UpdateStation = ({navigation, route }) => {
                   <Icon name={connector.icon} size={24} color="#101942" />
                   <Text style={[styles.optional]}>{connector.type}</Text>
                 </View>
-  
+
                 {/* Increment Decrement Counter */}
                 <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
                   <TouchableOpacity
@@ -480,9 +519,9 @@ const UpdateStation = ({navigation, route }) => {
                   >
                     <Text style={{ color: "#fff", fontSize: 14 }}>−</Text>
                   </TouchableOpacity>
-  
+
                   <Text style={styles.countText}>{count}</Text>
-  
+
                   <TouchableOpacity
                     onPress={() => incrementConnector(connector.id, chargerIndex)}
                     style={[styles.incDecButton, { backgroundColor: "#101942" }]}
@@ -497,6 +536,8 @@ const UpdateStation = ({navigation, route }) => {
       </View>
     );
   }
+
+
   function amenitiesSection() {
     return (
       <View style={styles.section}>
@@ -532,6 +573,8 @@ const UpdateStation = ({navigation, route }) => {
       </View>
     )
   }
+
+
   function openHoursSection() {
     {/* Open Hours Section */ }
     return (
@@ -817,6 +860,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 12,
+    color: 'black',
   },
   textArea: {
     borderWidth: 1,

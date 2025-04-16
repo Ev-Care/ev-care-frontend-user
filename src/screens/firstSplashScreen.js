@@ -18,7 +18,7 @@ const FirstSplashScreen = ({ navigation }) => {
     },0);
 
     setTimeout(() => {
-      navigation.replace("SecondSplashScreen");
+      navigation.push("Onboarding");
     }, 3500);
   }, []);
 

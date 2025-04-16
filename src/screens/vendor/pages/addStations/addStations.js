@@ -209,8 +209,9 @@ const AddStations = () => {
   };
 
   const handleVisibility = (form) => {
-    if (selectedForm !== form) {
-      setSelectedForm(form);
+    const formKey = String(form);
+    if (selectedForm !== formKey) {
+      setSelectedForm(formKey);
     }
   };
   const removeChargerForm = (index) => {
@@ -301,7 +302,7 @@ const AddStations = () => {
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() => handleVisibility("chargerdetail")}
+        onPress={() => handleVisibility(index)}
       >
         <View style={styles.chagerTitle}>
           <Text style={styles.sectionTitle}>Charger Details {index + 1}</Text>
@@ -314,8 +315,8 @@ const AddStations = () => {
             </TouchableOpacity>
           )}
         </View>
-        {/* Charger Type */}
-        {selectedForm === "chargerdetail" && (
+  
+        {selectedForm === String(index)  && (
           <>
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>Charger Type</Text>
@@ -324,7 +325,7 @@ const AddStations = () => {
                   style={[
                     styles.hoursButton,
                     chargerForms[index]?.chargerType === "AC" &&
-                    styles.selectedButton,
+                      styles.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -340,17 +341,18 @@ const AddStations = () => {
                     style={[
                       styles.buttonText,
                       chargerForms[index]?.chargerType === "AC" &&
-                      styles.selectedButtonText,
+                        styles.selectedButtonText,
                     ]}
                   >
                     AC
                   </Text>
                 </TouchableOpacity>
+  
                 <TouchableOpacity
                   style={[
                     styles.hoursButton,
                     chargerForms[index]?.chargerType === "DC" &&
-                    styles.selectedButton,
+                      styles.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -366,7 +368,7 @@ const AddStations = () => {
                     style={[
                       styles.buttonText,
                       chargerForms[index]?.chargerType === "DC" &&
-                      styles.selectedButtonText,
+                        styles.selectedButtonText,
                     ]}
                   >
                     DC
@@ -374,7 +376,7 @@ const AddStations = () => {
                 </TouchableOpacity>
               </View>
             </View>
-            {/* Power Rating */}
+  
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>
                 Power Rating <Text style={styles.optional}>(in kW)</Text>
@@ -386,20 +388,21 @@ const AddStations = () => {
                 onChangeText={(text) =>
                   setChargerForms((prev) =>
                     prev.map((charger, i) =>
-                      i === index
-                        ? { ...charger, powerRating: text }
-                        : charger
+                      i === index ? { ...charger, powerRating: text } : charger
                     )
                   )
                 }
               />
             </View>
-            {/* Connectors */}
+  
             {connectorsInfo(index)}
-            {/* Add More Chargers */}
+  
             {index === chargerForms.length - 1 && (
               <View style={styles.nextButtonContainer}>
-                <TouchableOpacity onPress={addChargerForm} style={styles.nextButton}>
+                <TouchableOpacity
+                  onPress={addChargerForm}
+                  style={styles.nextButton}
+                >
                   <Text style={styles.nextButtonText}>+ Add more</Text>
                 </TouchableOpacity>
               </View>
@@ -409,6 +412,7 @@ const AddStations = () => {
       </TouchableOpacity>
     );
   }
+  
 
   function connectorsInfo(chargerIndex) {
     return (

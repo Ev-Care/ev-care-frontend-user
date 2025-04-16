@@ -19,14 +19,14 @@ const vendorSlice = createSlice({
     // Fetch Stations
     builder
       .addCase(fetchStations.pending, (state) => {
-        console.log("fetch stations pending called")
+        // console.log("fetch stations pending called")
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchStations.fulfilled, (state, action) => {
         state.loading = false;
         state.stations = action.payload.data.chargingStations;
-        console.log("fetch stations fullfilled called", action.payload.data.chargingStations)
+        // console.log("fetch stations fullfilled called", action.payload.data.chargingStations)
       })
       .addCase(fetchStations.rejected, (state, action) => {
         state.loading = false;

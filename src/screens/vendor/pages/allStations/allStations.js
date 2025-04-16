@@ -173,13 +173,8 @@ const AllStations = () => {
                         status: station.status === "Active" || station.status === "Planned" ? "Inactive" : "active",
 
                       }
-                      console.log("Station Status before toggle:", station.status);
-                      console.log("Station Data to be updated:", stationData);
-
+                      
                      await updateStationStatus(stationData);
-
-                      console.log("Station Status after toggle:", station.status);
-
 
                     }
                     }

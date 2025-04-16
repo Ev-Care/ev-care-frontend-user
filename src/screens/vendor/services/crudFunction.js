@@ -48,13 +48,13 @@ export const fetchStations = createAsyncThunk(
     'vendorStations/updateStationsChargersConnectorsStatus',
     async (data, { rejectWithValue }) => {
       try {
-        console.log("api called in crud vendor");
+        
         const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve accessToken inside the thunk
-        console.log("data in thunk", data);
+       
         const UpdateStatusResponse = await updateStationsChargersConnectorsStatusAPI({ ...data, accessToken });
         console.log("UpdateStatusResponse", UpdateStatusResponse.data);
         const getStationresponse = await getStationByIdAPI({ station_id: data.station_id, accessToken });
-        console.log("getStationresponse", getStationresponse.data);
+        console.log("getStationresponse", JSON.stringify(getStationresponse.data, null, 2));
         return getStationresponse.data; // Assuming the API returns the updated station
       } catch (error) {
         console.log("Catch block api calling failed in crud vendor", error);

@@ -1,5 +1,5 @@
 import { FlatList, StyleSheet, TouchableOpacity,Text, Image, View, Linking, Platform, } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import {
   Colors,
   Fonts,
@@ -12,69 +12,9 @@ import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useSelector } from "react-redux";
 import { selectStations } from "../service/selector";
+import { filterStations } from "../../../utils/filter";
 
-// const allStationsList = [
-//   {
-//     id: "1",
-//     stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
-//     stationName: "Apex Charging Point",
-//     stationAddress: "Near shell petrol station",
-//     rating: 4.7,
-//     totalStations: 8,
-//     distance: "5.7 km",
-//     isOpen: true,
-//   },
-//   {
-//     id: "2",
-//     stationImage: require("../../../../assets/images/chargingStations/charging_station3.png"),
-//     stationName: "Horizon EV Station",
-//     stationAddress: "Near apex hospital",
-//     rating: 4.2,
-//     totalStations: 18,
-//     distance: "5.7 km",
-//     isOpen: true,
-//   },
-//   {
-//     id: "3",
-//     stationImage: require("../../../../assets/images/chargingStations/charging_station1.png"),
-//     stationName: "Rapid EV Charge",
-//     stationAddress: "Near shelby play ground",
-//     rating: 4.2,
-//     totalStations: 12,
-//     distance: "5.7 km",
-//     isOpen: false,
-//   },
-//   {
-//     id: "4",
-//     stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
-//     stationName: "Tesla Recharge",
-//     stationAddress: "Near nissan show room",
-//     rating: 4.9,
-//     totalStations: 22,
-//     distance: "5.7 km",
-//     isOpen: true,
-//   },
-//   {
-//     id: "5",
-//     stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
-//     stationName: "BYD Charging Point",
-//     stationAddress: "Near shell petrol station",
-//     rating: 4.7,
-//     totalStations: 8,
-//     distance: "4.5 km",
-//     isOpen: true,
-//   },
-//   {
-//     id: "6",
-//     stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
-//     stationName: "TATA EStation",
-//     stationAddress: "Near orange business hub",
-//     rating: 3.9,
-//     totalStations: 15,
-//     distance: "5.7 km",
-//     isOpen: false,
-//   },
-// ];
+
 
 const AllChargingStationsScreen = ({ navigation }) => {
   const stations = useSelector(selectStations);
@@ -88,6 +28,17 @@ const AllChargingStationsScreen = ({ navigation }) => {
     });
     Linking.openURL(url);
   };
+
+  const [initialStations, setInitialStations] = useState(stations); // your fetched data
+  const [filteredStations, setFilteredStations] = useState(stations); // to display
+
+  const handleFilterApply = (filters) => {
+    const result = filterStations(stations, filters);
+    setFilteredStations(result);
+  };
+
+
+
 
   const formatDistance = (distance) => {
     if (distance >= 1000) {
@@ -199,7 +150,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
     );
     return (
       <FlatList
-        data={stations}
+        data={filteredStations}
         keyExtractor={(item) => `${item?.id}`}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
@@ -240,9 +191,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
           name="filter-list"
           color={Colors.blackColor}
           size={26}
-          onPress={() => {
-            navigation.push("Filter");
-          }}
+          onPress={() => navigation.navigate('Filter', { onApplyFilter: handleFilterApply })}
         />
       </View>
     );

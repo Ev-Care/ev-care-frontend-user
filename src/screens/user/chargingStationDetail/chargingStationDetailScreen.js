@@ -1,5 +1,4 @@
-
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,7 +11,7 @@ import {
   Snackbar,
   TextInput,
   Linking,
-} from 'react-native';
+} from "react-native";
 import {
   Colors,
   Sizes,
@@ -20,59 +19,60 @@ import {
   commonStyles,
   screenWidth,
 } from "../../../constants/styles";
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker } from "react-native-maps";
 import { Overlay } from "@rneui/themed";
-import { addToFavorite } from '../service/stationSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectFavoriteStations } from '../service/selector';
+import { addToFavorite } from "../service/stationSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { selectFavoriteStations } from "../service/selector";
 // Define colors at the top for easy customization
 const COLORS = {
-  primary: '#101942',
-  accent: '#FF5722', // Orange
-  lightPurple: '#E6D8F2',
-  white: '#FFFFFF',
-  gray: '#8A94A6',
-  lightGray: '#F5F7FA',
-  red: '#FF3B30',
-  green: '#4CAF50',
-  yellow: '#FFC107',
-  black: '#333333',
+  primary: "#101942",
+  accent: "#FF5722", // Orange
+  lightPurple: "#E6D8F2",
+  white: "#FFFFFF",
+  gray: "#8A94A6",
+  lightGray: "#F5F7FA",
+  red: "#FF3B30",
+  green: "#4CAF50",
+  yellow: "#FFC107",
+  black: "#333333",
 };
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 // Sample review data
 const reviews = [
   {
-    id: '1',
-    name: 'Andrew Anderson',
-    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+    id: "1",
+    name: "Andrew Anderson",
+    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
     rating: 5,
-    comment: 'Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.',
+    comment:
+      "Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.",
   },
   {
-    id: '2',
-    name: 'Peter Jones',
-    avatar: 'https://randomuser.me/api/portraits/men/44.jpg',
+    id: "2",
+    name: "Peter Jones",
+    avatar: "https://randomuser.me/api/portraits/men/44.jpg",
     rating: 3,
-    comment: 'Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.',
+    comment:
+      "Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.",
   },
   {
-    id: '3',
-    name: 'Emily Wood',
-    avatar: 'https://randomuser.me/api/portraits/women/65.jpg',
+    id: "3",
+    name: "Emily Wood",
+    avatar: "https://randomuser.me/api/portraits/women/65.jpg",
     rating: 4,
-    comment: 'Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.',
+    comment:
+      "Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.",
   },
 ];
 
-
-
-const ChargingStationDetailScreen = ({ route }) => {
-  // for  rating Start 
+const ChargingStationDetailScreen = ({ route,navigation }) => {
+  // for  rating Start
   const [showRateNowDialog, setshowRateNowDialog] = useState(false);
-  const [reviewComment, setReviewComment] = useState('');
+  const [reviewComment, setReviewComment] = useState("");
   const [rate1, setRate1] = useState(false);
   const [rate2, setRate2] = useState(false);
   const [rate3, setRate3] = useState(false);
@@ -87,23 +87,22 @@ const ChargingStationDetailScreen = ({ route }) => {
   const dispatch = useDispatch();
   const station = route?.params?.item;
   const [inFavorite, setinFavorite] = useState(favStations.has(station));
-  const favoriteStations = useSelector(selectFavoriteStations)
-
+  const favoriteStations = useSelector(selectFavoriteStations);
 
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",
-    "CHAdeMO": "ev-plug-chademo",
+    CHAdeMO: "ev-plug-chademo",
     "Type-2": "ev-plug-type2",
-    "Wall": "ev-plug-type1",
-    "GBT": "ev-plug-type2",
+    Wall: "ev-plug-type1",
+    GBT: "ev-plug-type2",
   };
   const amenityMap = {
-    "Restroom": "toilet",
-    "Cafe": "coffee",
-    "Wifi": "wifi",
-    "Store": "cart",
+    Restroom: "toilet",
+    Cafe: "coffee",
+    Wifi: "wifi",
+    Store: "cart",
     "Car Care": "car",
-    "Lodging": "bed"
+    Lodging: "bed",
   };
 
   const handleTabPress = (index) => {
@@ -118,7 +117,7 @@ const ChargingStationDetailScreen = ({ route }) => {
       setActiveTab(index);
     }
   };
-  //   const latitude = 28.6139;  
+  //   const latitude = 28.6139;
   //  const longitude = 77.2090;
 
   const openGoogleMaps = (latitude, longitude) => {
@@ -135,7 +134,6 @@ const ChargingStationDetailScreen = ({ route }) => {
       setinFavorite(!inFavorite);
       setshowSnackBar(true);
     }
-
   };
 
   function trimName(threshold, str) {
@@ -143,20 +141,31 @@ const ChargingStationDetailScreen = ({ route }) => {
       return str;
     }
     return str?.substring(0, threshold) + ".....";
-  };
-
+  }
 
   return (
     <View style={styles.container}>
       {/* Header with map background */}
       <View style={styles.header}>
         <Image
-          source={{ uri: 'https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }}
+          source={{
+            uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          }}
           style={styles.mapBackground}
         />
         <View style={styles.overlay}>
-          <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>Public</Text>
+          <View style={styles.communityBadgeAndBack}>
+            <MaterialIcons
+              name="arrow-back"
+              color={Colors.whiteColor}
+              size={26}
+              onPress={() => {
+                navigation.pop();
+              }}
+            />
+            <View style={styles.communityBadge}>
+              <Text style={styles.communityText}>Public</Text>
+            </View>
           </View>
           <Text style={styles.stationName}>
             {trimName(50, station?.station_name)}
@@ -164,7 +173,9 @@ const ChargingStationDetailScreen = ({ route }) => {
           <Text style={styles.stationAddress}>
             {trimName(50, station?.address)}
           </Text>
-          <View style={[{ flexDirection: "row", justifyContent: "space-between" }]}>
+          <View
+            style={[{ flexDirection: "row", justifyContent: "space-between" }]}
+          >
             <View style={styles.statusContainer}>
               <Text
                 style={[
@@ -176,7 +187,10 @@ const ChargingStationDetailScreen = ({ route }) => {
               >
                 {station?.status === "Inactive" ? "Closed" : "Open"}
               </Text>
-              <Text style={styles.statusTime}>• {station?.open_hours_opening_time} - {station?.open_hours_closing_time}</Text>
+              <Text style={styles.statusTime}>
+                • {station?.open_hours_opening_time} -{" "}
+                {station?.open_hours_closing_time}
+              </Text>
               <View style={styles.newBadge}>
                 <Text style={styles.newText}>4.5 ⭐</Text>
               </View>
@@ -187,7 +201,6 @@ const ChargingStationDetailScreen = ({ route }) => {
               size={35}
               onPress={() => {
                 handleAddToFavorite(station);
-
               }}
             />
           </View>
@@ -200,21 +213,33 @@ const ChargingStationDetailScreen = ({ route }) => {
           style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
           onPress={() => handleTabPress(0)}
         >
-          <Text style={[styles.tabText, activeTab === 0 && styles.activeTabText]}>Charger</Text>
+          <Text
+            style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
+          >
+            Charger
+          </Text>
           {activeTab === 0 && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
           onPress={() => handleTabPress(1)}
         >
-          <Text style={[styles.tabText, activeTab === 1 && styles.activeTabText]}>Details</Text>
+          <Text
+            style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
+          >
+            Details
+          </Text>
           {activeTab === 1 && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 2 && styles.activeTabButton]}
           onPress={() => handleTabPress(2)}
         >
-          <Text style={[styles.tabText, activeTab === 2 && styles.activeTabText]}>Reviews</Text>
+          <Text
+            style={[styles.tabText, activeTab === 2 && styles.activeTabText]}
+          >
+            Reviews
+          </Text>
           {activeTab === 2 && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
       </View>
@@ -236,17 +261,25 @@ const ChargingStationDetailScreen = ({ route }) => {
         {reviewsTab()}
       </ScrollView>
 
-
-
       {/* Bottom Buttons */}
       <View style={styles.bottomButtons}>
-        <TouchableOpacity onPress={() => openGoogleMaps(station?.coordinates.latitude, station?.coordinates.longitude)} style={styles.directionButton}>
+        <TouchableOpacity
+          onPress={() =>
+            openGoogleMaps(
+              station?.coordinates.latitude,
+              station?.coordinates.longitude
+            )
+          }
+          style={styles.directionButton}
+        >
           <Text style={styles.directionButtonText}>Get Direction</Text>
-
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => {
-          setshowRateNowDialog(true);
-        }} style={styles.rateNowButton}>
+        <TouchableOpacity
+          onPress={() => {
+            setshowRateNowDialog(true);
+          }}
+          style={styles.rateNowButton}
+        >
           <Text style={styles.directionButtonText}>Rate Now</Text>
         </TouchableOpacity>
       </View>
@@ -258,25 +291,38 @@ const ChargingStationDetailScreen = ({ route }) => {
       <ScrollView style={styles.tabContent}>
         {station?.chargers?.map((charger, index) => (
           <View key={index} style={styles.chargerCard}>
-            <Text style={styles.chargerTitle}>{charger.name || `Charger ${index + 1}`}</Text>
+            <Text style={styles.chargerTitle}>
+              {charger.name || `Charger ${index + 1}`}
+            </Text>
             <View style={styles.chargerSpecs}>
-              <Text style={styles.chargerSpecText}>Type {charger.charger_type || "Unknown Type"}</Text>
+              <Text style={styles.chargerSpecText}>
+                Type {charger.charger_type || "Unknown Type"}
+              </Text>
               <Text style={styles.chargerSpecText}>|</Text>
-              <Text style={styles.chargerSpecText}>Power {charger.max_power_kw || "Unknown Power"}</Text>
+              <Text style={styles.chargerSpecText}>
+                Power {charger.max_power_kw || "Unknown Power"}
+              </Text>
             </View>
 
             {/* Map over connectors */}
             <View style={styles.connectorContainer}>
               {charger.connectors?.map((connector, connectorIndex) => (
                 <View key={connectorIndex} style={styles.connector}>
-                  <Text style={styles.connectorTitle}>{connector.name || `Connector ${connectorIndex + 1}`}</Text>
+                  <Text style={styles.connectorTitle}>
+                    {connector.name || `Connector ${connectorIndex + 1}`}
+                  </Text>
                   <View style={styles.connectorType}>
                     <Icon
-                      name={connectorIcons[connector.connectorType?.description] || "ev-plug-type1"}
+                      name={
+                        connectorIcons[connector.connectorType?.description] ||
+                        "ev-plug-type1"
+                      }
                       size={20}
                       color={COLORS.primary}
                     />
-                    <Text style={styles.connectorTypeText}>{connector?.connectorType?.description}</Text>
+                    <Text style={styles.connectorTypeText}>
+                      {connector?.connectorType?.description}
+                    </Text>
                     {/* <Text style={styles.connectorTypeText}>{console.log("hi", connector)}</Text> */}
                   </View>
                 </View>
@@ -344,7 +390,6 @@ const ChargingStationDetailScreen = ({ route }) => {
             );
           })}
         </View>
-
       </ScrollView>
     );
   }
@@ -358,7 +403,7 @@ const ChargingStationDetailScreen = ({ route }) => {
         {reviews.map((item) => renderReviewItem({ item }))}
       </ScrollView>
     );
-  };
+  }
 
   function renderReviewItem({ item }) {
     return (
@@ -371,22 +416,22 @@ const ChargingStationDetailScreen = ({ route }) => {
         </View>
       </View>
     );
-  };
+  }
   function renderStars(rating) {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
       stars.push(
         <Icon
           key={i}
-          name={i <= rating ? 'star' : 'star-outline'}
+          name={i <= rating ? "star" : "star-outline"}
           size={16}
           color={COLORS.yellow}
           style={{ marginRight: 2 }}
         />
       );
     }
-    return <View style={{ flexDirection: 'row' }}>{stars}</View>;
-  };
+    return <View style={{ flexDirection: "row" }}>{stars}</View>;
+  }
   function snackBarInfo() {
     return (
       <Snackbar
@@ -401,7 +446,6 @@ const ChargingStationDetailScreen = ({ route }) => {
       </Snackbar>
     );
   }
-
 
   function rateNowDialog() {
     return (
@@ -434,15 +478,15 @@ const ChargingStationDetailScreen = ({ route }) => {
             multiline
             style={{
               borderWidth: 1,
-              borderColor: '#ccc',
+              borderColor: "#ccc",
               borderRadius: 8,
               padding: 10,
               marginTop: Sizes.fixPadding * 1.5,
               marginHorizontal: Sizes.fixPadding * 1.5,
-              textAlignVertical: 'top',
+              textAlignVertical: "top",
               minHeight: 80,
               fontSize: 12,
-              color: '#333',
+              color: "#333",
             }}
           />
 
@@ -482,7 +526,6 @@ const ChargingStationDetailScreen = ({ route }) => {
       </Overlay>
     );
   }
-
 
   function rating() {
     return (
@@ -578,22 +621,35 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 200,
-    position: 'relative',
+    position: "relative",
   },
   mapBackground: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
+    width: "100%",
+    height: "100%",
+    position: "absolute",
     opacity: 1,
   },
   overlay: {
     padding: 16,
-    height: '100%',
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(230, 216, 242, 0.6)', // Light purple with opacity
+    height: "100%",
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(230, 216, 242, 0.6)", // Light purple with opacity
+  },
+  communityBadgeAndBack: {
+    position: "absolute",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    top: 16,
+    paddingLeft: 0,
+    paddingRight: 5,
+    paddingVertical: 6,
+    borderRadius: 4,
+    // backgroundColor:"cyan",
+    width: "100%",
+    marginLeft: 18,
   },
   communityBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: 16,
     right: 16,
     backgroundColor: COLORS.white,
@@ -603,12 +659,12 @@ const styles = StyleSheet.create({
   },
   communityText: {
     color: COLORS.primary,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 12,
   },
   stationName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 4,
   },
@@ -618,12 +674,12 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   statusClosed: {
     color: COLORS.red,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 12,
   },
   statusTime: {
@@ -641,18 +697,18 @@ const styles = StyleSheet.create({
   newText: {
     color: COLORS.white,
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   tabContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: "#E0E0E0",
   },
   tabButton: {
     flex: 1,
     paddingVertical: 16,
-    alignItems: 'center',
-    position: 'relative',
+    alignItems: "center",
+    position: "relative",
   },
   activeTabButton: {
     borderBottomWidth: 1,
@@ -664,10 +720,10 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     color: COLORS.accent,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   activeTabIndicator: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
@@ -682,7 +738,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: 8,
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -691,13 +747,13 @@ const styles = StyleSheet.create({
   },
   chargerTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 8,
   },
   chargerSpecs: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   chargerSpecText: {
@@ -709,24 +765,24 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   connector: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 16,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#E0E0E0",
     borderRadius: 8,
     paddingHorizontal: 16,
     marginBottom: 12,
   },
   connectorTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
   },
   connectorType: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   connectorTypeText: {
     fontSize: 10,
@@ -735,19 +791,19 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: "#E0E0E0",
     marginVertical: 16,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 16,
   },
   mapContainer: {
     height: 200,
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: 16,
   },
   map: {
@@ -762,8 +818,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   amenitiesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: 24,
   },
   amenityItem: {
@@ -771,23 +827,23 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 8,
     backgroundColor: COLORS.lightGray,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 16,
     marginBottom: 10,
   },
   reviewsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
   },
   seeAllText: {
     color: COLORS.accent,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   reviewItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 20,
     backgroundColor: COLORS.white,
     padding: 12,
@@ -804,7 +860,7 @@ const styles = StyleSheet.create({
   },
   reviewName: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 4,
   },
@@ -815,10 +871,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   bottomButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: "#E0E0E0",
     gap: 10,
   },
 
@@ -827,21 +883,21 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     paddingVertical: 12,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   rateNowButton: {
     flex: 1,
     backgroundColor: COLORS.accent,
     paddingVertical: 12,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   directionButtonText: {
     color: COLORS.white,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   dialogStyle: {
     backgroundColor: Colors.whiteColor,

@@ -20,6 +20,8 @@ import {
 import { selectUser } from "../../../auth/services/selector";
 import { selectStation } from "../../services/selector";
 import { updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
+import { toggleStationStatus } from "../../services/vendorSlice";
+
 const COLORS = {
   primary: "#101942",
   secondary: "#FF8C00",
@@ -56,7 +58,12 @@ const AllStations = () => {
   }, [stations]);
 
   const toggleStationAvailability = (id) => {
-    console.log("Toggling station availability for ID:", id);
+    // dispatch(toggleStationStatus({ id }));
+    console.log("Toggling station availability for station ID:", id);
+    availability[station.id] = !availability[station.id];
+    console.log("Updated availability state:", availability[station.id]);
+  };
+    /*console.log("Toggling station availability for ID:", id);
     setAvailability((prev) => {
       const updatedAvailability = { ...prev };
 
@@ -89,8 +96,8 @@ const AllStations = () => {
       // Update availability state
       updatedAvailability[id] = !prev[id];
       return updatedAvailability;
-    });
-  };
+    }); */
+  
 
   const updateStationStatus = async (stationData) => {
     try {
@@ -148,27 +155,30 @@ const AllStations = () => {
                   <Switch
                     trackColor={{ false: COLORS.secondary, true: COLORS.green }}
                     thumbColor={COLORS.white}
-                    value={availability[station.id]}
+                    value={station.status !== "Inactive"}
                     onValueChange={async () => {
 
                       console.log("Station Status Before toggle:", availability[station.id]);
 
-                      toggleStationAvailability(station.id);
+                    //  await toggleStationAvailability(station.id);
 
                       // Retrieve the updated station data
-                      const updatedStation = stations.find((s) => s.id === station.id);
-                      console.log("Station Status after toggle:", availability[station.id]);
-
+                      // const updatedStation = stations.find((s) => s.id === station.id);
+                      // console.log("Station Status after toggle:", availability[station.id]);
+                      
                       var stationData = {
-                        owner_id: user.id,
+                  
                         station_id: station.id,
                         statusType: "station",
-                        status: station.status === "active" || station.status === "Planned" ? "Inactive" : "active",
+                        status: station.status === "Active" || station.status === "Planned" ? "Inactive" : "active",
 
                       }
+                      console.log("Station Status before toggle:", station.status);
                       console.log("Station Data to be updated:", stationData);
 
-                      updateStationStatus(stationData);
+                     await updateStationStatus(stationData);
+
+                      console.log("Station Status after toggle:", station.status);
 
 
                     }

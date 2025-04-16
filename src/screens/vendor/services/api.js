@@ -27,7 +27,7 @@ export const getStationByIdAPI = (data) =>
 
 export const updateStationsChargersConnectorsStatusAPI = (data) =>
     apiPatchRequest({
-    apiUrl: `${API_URL}/charging-stations/change-status/${data.owner_id}`,
+    apiUrl: `${API_URL}/charging-stations/change-status/${data.station_id}`,
     content_type: "application/json",
     data: {statusType : data.statusType, status: data.status},
     accessToken: data.accessToken,

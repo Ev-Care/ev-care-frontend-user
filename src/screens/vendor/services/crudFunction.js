@@ -50,7 +50,7 @@ export const fetchStations = createAsyncThunk(
       try {
         console.log("api called in crud vendor");
         const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve accessToken inside the thunk
-
+        console.log("data in thunk", data);
         const UpdateStatusResponse = await updateStationsChargersConnectorsStatusAPI({ ...data, accessToken });
         console.log("UpdateStatusResponse", UpdateStatusResponse.data);
         const getStationresponse = await getStationByIdAPI({ station_id: data.station_id, accessToken });

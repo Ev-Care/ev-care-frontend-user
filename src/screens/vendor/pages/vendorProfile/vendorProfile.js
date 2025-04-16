@@ -22,6 +22,7 @@ import { logoutUser } from "../../../../redux/store/userSlice";
 import { selectUser } from "../../../auth/services/selector";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
+import imageURL from "../../../../constants/baseURL";
 const VendorProfile = () => {
   const navigation = useNavigation();
   const user = useSelector(selectUser);
@@ -117,8 +118,12 @@ const VendorProfile = () => {
     return (
       <View style={styles.profileInfoWithOptionsWrapStyle}>
         <View style={{ alignItems: "center" }}>
-          <Image
-            source={require("../../../../../assets/images/users/user4.png")}
+        <Image
+            source={
+              user?.avatar
+                ? { uri: imageURL + user.avatar }
+                : require("../../../../../assets/images/users/user4.png")
+            }
             style={styles.userImageStyle}
           />
         </View>

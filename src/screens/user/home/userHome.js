@@ -31,6 +31,7 @@ import { selectStation } from "../../vendor/services/selector";
 import * as Location from "expo-location";
 import { fetchStationsByLocation } from "../service/crudFunction";
 import { selectStations } from "../service/selector";
+import imageURL from "../../../constants/baseURL";
 
 const COLORS = {
   primary: "#101942",
@@ -41,68 +42,6 @@ const COLORS = {
   white: "#FFFFFF",
   gray: "#8A94A6",
 };
-const allStationsList = [
-  {
-    id: "1",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
-    stationName: "Apex Charging Point",
-    stationAddress: "Near shell petrol station",
-    rating: 4.7,
-    totalStations: 8,
-    distance: "5.7 km",
-    isOpen: true,
-  },
-  {
-    id: "2",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station3.png"),
-    stationName: "Horizon EV Station",
-    stationAddress: "Near apex hospital",
-    rating: 4.2,
-    totalStations: 18,
-    distance: "5.7 km",
-    isOpen: true,
-  },
-  {
-    id: "3",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station1.png"),
-    stationName: "Rapid EV Charge",
-    stationAddress: "Near shelby play ground",
-    rating: 4.2,
-    totalStations: 12,
-    distance: "5.7 km",
-    isOpen: false,
-  },
-  {
-    id: "4",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
-    stationName: "Tesla Recharge",
-    stationAddress: "Near nissan show room",
-    rating: 4.9,
-    totalStations: 22,
-    distance: "5.7 km",
-    isOpen: true,
-  },
-  {
-    id: "5",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
-    stationName: "BYD Charging Point",
-    stationAddress: "Near shell petrol station",
-    rating: 4.7,
-    totalStations: 8,
-    distance: "4.5 km",
-    isOpen: true,
-  },
-  {
-    id: "6",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
-    stationName: "TATA EStation",
-    stationAddress: "Near orange business hub",
-    rating: 3.9,
-    totalStations: 15,
-    distance: "5.7 km",
-    isOpen: false,
-  },
-];
 
 const UserHome = ({ navigation }) => {
   const [count, setCount] = useState(0);
@@ -428,7 +367,7 @@ const UserHome = ({ navigation }) => {
         <Image
           source={
             item?.station_images
-              ? item.station_images
+              ? { uri: imageURL + item.station_images }
               : require("../../../../assets/images/chargingStations/charging_station3.png")
           }
           style={styles.enrouteChargingStationImage}

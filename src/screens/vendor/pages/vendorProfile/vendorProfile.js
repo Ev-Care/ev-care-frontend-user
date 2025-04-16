@@ -28,7 +28,7 @@ const VendorProfile = () => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
-
+console.log("user profile URL", imageURL + user.avatar);
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />

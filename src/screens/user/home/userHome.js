@@ -360,7 +360,7 @@ const UserHome = ({ navigation }) => {
     const renderItem = ({ item }) => (
       <TouchableOpacity
         onPress={() => {
-          navigation.push("ChargingStationDetail");
+          navigation.push("ChargingStationDetail",{item});
         }}
         style={styles.enrouteChargingStationWrapStyle}
       >

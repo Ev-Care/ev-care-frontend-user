@@ -70,7 +70,7 @@ const reviews = [
   },
 ];
 
-const ChargingStationDetailScreen = ({ route,navigation }) => {
+const ChargingStationDetailScreen = ({ route, navigation }) => {
   // for  rating Start
   const [showRateNowDialog, setshowRateNowDialog] = useState(false);
   const [reviewComment, setReviewComment] = useState("");
@@ -148,11 +148,16 @@ const ChargingStationDetailScreen = ({ route,navigation }) => {
       {/* Header with map background */}
       <View style={styles.header}>
         <Image
-          source={{
-            uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-          }}
+          source={
+            station.station_images
+              ? { uri: imageURL.baseURL + station.station_images }
+              : {
+                  uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                }
+          }
           style={styles.mapBackground}
         />
+
         <View style={styles.overlay}>
           <View style={styles.communityBadgeAndBack}>
             <MaterialIcons
@@ -633,7 +638,7 @@ const styles = StyleSheet.create({
     padding: 16,
     height: "100%",
     justifyContent: "flex-end",
-    backgroundColor: "rgba(230, 216, 242, 0.6)", // Light purple with opacity
+    backgroundColor: "rgba(230, 216, 242, 0.44)", // Light purple with opacity
   },
   communityBadgeAndBack: {
     position: "absolute",

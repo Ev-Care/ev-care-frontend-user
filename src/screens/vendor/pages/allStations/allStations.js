@@ -20,6 +20,7 @@ import {
 import { selectUser } from "../../../auth/services/selector";
 import { selectStation, selectVendorStation } from "../../services/selector";
 import { updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
+import imageURL from "../../../../constants/baseURL";
 
 
 const COLORS = {
@@ -42,7 +43,7 @@ const AllStations = () => {
   const dispatch = useDispatch();
 
   const stations = useSelector(selectVendorStation);
-
+  console.log("Stations  image path in all staion vendor", imageURL.baseURL+stations[0].station_images);
   // console.log("Stations in AllStations:", stations?.length);
 
  
@@ -84,8 +85,8 @@ const AllStations = () => {
               key={station.id}
               style={styles.card}
             >
-              {station.image ? (
-                <Image source={{ uri: station.image }} style={styles.image} />
+              {station.station_images ? (
+                <Image source={{ uri: imageURL.baseURL+station.station_images }} style={styles.image} />
               ) : (
                 <View style={[styles.image, { alignItems: "center", justifyContent: "center", backgroundColor: "gray", opacity: 0.1 }]}>
                   <MaterialIcons

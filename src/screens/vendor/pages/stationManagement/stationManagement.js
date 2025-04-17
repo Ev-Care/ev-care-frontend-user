@@ -20,12 +20,14 @@ import {
 } from "../../../../constants/styles";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import MapView, { Marker } from "react-native-maps";
 import { Overlay } from "@rneui/themed";
 import { useDispatch, useSelector } from "react-redux";
 import { updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
 import { selectStation } from "../../services/selector";
+import imageURL from "../../../../constants/baseURL";
+
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -71,25 +73,25 @@ const reviews = [
 //Wifi,Cafe,Restroom,Lodging,Store,Car Care
 const connectorIcons = {
   "CCS-2": "ev-plug-ccs2",
-  "CHAdeMO": "ev-plug-chademo",
+  CHAdeMO: "ev-plug-chademo",
   "Type-2": "ev-plug-type2",
-  "Wall": "ev-plug-type1",
-  "GBT": "ev-plug-type2",
+  Wall: "ev-plug-type1",
+  GBT: "ev-plug-type2",
 };
 const amenityMap = {
-  "Restroom": "toilet",
-  "Cafe": "coffee",
-  "Wifi": "wifi",
-  "Store": "cart",
+  Restroom: "toilet",
+  Cafe: "coffee",
+  Wifi: "wifi",
+  Store: "cart",
   "Car Care": "car",
-  "Lodging": "bed"
+  Lodging: "bed",
 };
 
 const StationManagement = ({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState(0);
   const scrollViewRef = useRef(null);
   const stationId = route.params.station.id;
-  const station = useSelector(selectStation).find(s => s.id === stationId);
+  const station = useSelector(selectStation).find((s) => s.id === stationId);
 
   const [showDeleteDialogue, setshowDeleteDialogue] = useState(false);
   const dispatch = useDispatch();
@@ -151,7 +153,6 @@ const StationManagement = ({ navigation, route }) => {
   //   });
   // };
 
-
   // const toggleConnectorAvailability = (chargerId, chargerConnectorId) => {
   //   setStation((prev) => {
   //     if (prev.status === "Inactive") {
@@ -197,9 +198,7 @@ const StationManagement = ({ navigation, route }) => {
 
   const handleDelete = () => {
     console.log("handleDelete Called");
-  }
-
-
+  };
 
   const renderStars = (rating) => {
     const stars = [];
@@ -228,11 +227,16 @@ const StationManagement = ({ navigation, route }) => {
       {/* Header with map background */}
       <View style={styles.header}>
         <Image
-          source={{
-            uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-          }}
+          source={
+            station.station_images
+              ? { uri: imageURL.baseURL + station.station_images }
+              : {
+                  uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                }
+          }
           style={styles.mapBackground}
         />
+
         <View style={styles.overlay}>
           <View style={styles.communityBadgeAndBack}>
             <MaterialIcons
@@ -263,17 +267,20 @@ const StationManagement = ({ navigation, route }) => {
                     station.status === "Active"
                       ? "green"
                       : station.status === "Inactive"
-                        ? "#FF5722"
-                        : station.status === "Planned"
-                          ? "blue"
-                          : "black", // fallback color
+                      ? "#FF5722"
+                      : station.status === "Planned"
+                      ? "blue"
+                      : "black", // fallback color
                 },
               ]}
             >
               {station.status}
             </Text>
 
-            <Text style={styles.statusTime}>• {station.open_hours_opening_time} - {station.open_hours_closing_time}</Text>
+            <Text style={styles.statusTime}>
+              • {station.open_hours_opening_time} -{" "}
+              {station.open_hours_closing_time}
+            </Text>
             <View style={styles.newBadge}>
               <Text style={styles.newText}>4.5 ⭐</Text>
             </View>
@@ -337,13 +344,17 @@ const StationManagement = ({ navigation, route }) => {
 
       {/* Bottom Buttons */}
       <View style={styles.bottomButtons}>
-        <TouchableOpacity onPress={() => {
-          setshowDeleteDialogue(true);
-        }} style={styles.editButton}>
+        <TouchableOpacity
+          onPress={() => {
+            setshowDeleteDialogue(true);
+          }}
+          style={styles.editButton}
+        >
           <Text style={styles.editButtonText}>Delete</Text>
         </TouchableOpacity>
         {/* onPress={() => navigation.navigate("UpdateStation")} */}
-        <TouchableOpacity style={styles.submitButton}
+        <TouchableOpacity
+          style={styles.submitButton}
           onPress={() => navigation.navigate("UpdateStation", { station })}
         >
           <Text style={styles.submitButtonText}>Update</Text>
@@ -360,19 +371,35 @@ const StationManagement = ({ navigation, route }) => {
         {station.chargers.map((charger, index) => (
           <View key={charger.charger_id} style={styles.chargerCard}>
             <View style={styles.titleContainer}>
-              <Text style={styles.chargerTitle}>{"Charger " + (index + 1)}</Text>
+              <Text style={styles.chargerTitle}>
+                {"Charger " + (index + 1)}
+              </Text>
               <Switch
                 value={charger.status === "Available"}
-                onValueChange={() => dispatch(updateStationsChargersConnectorsStatus({ statusType: "charger", status: charger.status === "Available" ? "inactive" : "active", station_id: station.id, charger_id: charger.charger_id }))}
+                onValueChange={() =>
+                  dispatch(
+                    updateStationsChargersConnectorsStatus({
+                      statusType: "charger",
+                      status:
+                        charger.status === "Available" ? "inactive" : "active",
+                      station_id: station.id,
+                      charger_id: charger.charger_id,
+                    })
+                  )
+                }
                 trackColor={{ false: "#FF8C00", true: COLORS.primary }}
                 thumbColor="#ffffff"
               />
             </View>
 
             <View style={styles.chargerSpecs}>
-              <Text style={styles.chargerSpecText}>Type: {charger.charger_type}</Text>
+              <Text style={styles.chargerSpecText}>
+                Type: {charger.charger_type}
+              </Text>
               <Text style={styles.chargerSpecText}>|</Text>
-              <Text style={styles.chargerSpecText}>Power: {charger.max_power_kw} kW</Text>
+              <Text style={styles.chargerSpecText}>
+                Power: {charger.max_power_kw} kW
+              </Text>
             </View>
 
             <View style={styles.connectorContainer}>
@@ -380,7 +407,10 @@ const StationManagement = ({ navigation, route }) => {
                 <View key={index} style={styles.connector}>
                   <View style={styles.connectorType}>
                     <Icon
-                      name={connectorIcons[conn.connectorType.description] || "ev-plug-type1"}
+                      name={
+                        connectorIcons[conn.connectorType.description] ||
+                        "ev-plug-type1"
+                      }
                       size={20}
                       color={COLORS.primary}
                     />
@@ -389,13 +419,21 @@ const StationManagement = ({ navigation, route }) => {
                     </Text>
                   </View>
                   <Switch
-                    value={conn.connector_status === "operational"
-                    } // Use backend enum value
-                    onValueChange={() => dispatch(updateStationsChargersConnectorsStatus({station_id: station.id,  
-                      statusType: "connector",
-                      charger_id: charger.charger_id,
-                      connector_id: conn.charger_connector_id,
-                      status: conn.connector_status === "operational" ? "inactive" : "active",}))}
+                    value={conn.connector_status === "operational"} // Use backend enum value
+                    onValueChange={() =>
+                      dispatch(
+                        updateStationsChargersConnectorsStatus({
+                          station_id: station.id,
+                          statusType: "connector",
+                          charger_id: charger.charger_id,
+                          connector_id: conn.charger_connector_id,
+                          status:
+                            conn.connector_status === "operational"
+                              ? "inactive"
+                              : "active",
+                        })
+                      )
+                    }
                     trackColor={{ false: "#FF8C00", true: COLORS.primary }} // Orange when off, green when on
                     thumbColor={
                       conn.connector_status === "operational"
@@ -427,7 +465,10 @@ const StationManagement = ({ navigation, route }) => {
             }}
           >
             <Marker
-              coordinate={{ latitude: station.coordinates.latitude, longitude: station.coordinates.longitude }}
+              coordinate={{
+                latitude: station.coordinates.latitude,
+                longitude: station.coordinates.longitude,
+              }}
               title={station.station_name}
               description={station.address}
             />
@@ -440,7 +481,7 @@ const StationManagement = ({ navigation, route }) => {
 
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
-          {station.amenities.split(',').map((amenityName, index) => {
+          {station.amenities.split(",").map((amenityName, index) => {
             const trimmedName = amenityName.trim();
             const iconName = amenityMap[trimmedName] || "help-circle";
 
@@ -486,7 +527,6 @@ const StationManagement = ({ navigation, route }) => {
         overlayStyle={styles.dialogStyle}
       >
         <View>
-
           <Text
             style={{
               ...Fonts.blackColor18Medium,
@@ -499,18 +539,22 @@ const StationManagement = ({ navigation, route }) => {
           </Text>
           <View
             style={{
-              alignSelf: 'center',
+              alignSelf: "center",
               width: 80,
               height: 80,
               borderRadius: 40,
               borderWidth: 2,
-              borderColor: '#ff4d4d',
-              justifyContent: 'center',
-              alignItems: 'center',
+              borderColor: "#ff4d4d",
+              justifyContent: "center",
+              alignItems: "center",
               marginBottom: Sizes.fixPadding * 1.5,
             }}
           >
-            <MaterialCommunityIcons name="trash-can-outline" size={40} color="#ff7f50" />
+            <MaterialCommunityIcons
+              name="trash-can-outline"
+              size={40}
+              color="#ff7f50"
+            />
           </View>
 
           <View
@@ -540,8 +584,7 @@ const StationManagement = ({ navigation, route }) => {
                 // handle delete logic here
               }}
               style={{
-
-                backgroundColor: '#ff7f50',  // Coral Orange
+                backgroundColor: "#ff7f50", // Coral Orange
                 ...styles.dialogYesNoButtonStyle,
               }}
             >
@@ -552,7 +595,6 @@ const StationManagement = ({ navigation, route }) => {
       </Overlay>
     );
   }
-
 };
 
 const styles = StyleSheet.create({
@@ -616,7 +658,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   statusClosed: {
-
     fontWeight: "bold",
     fontSize: 12,
   },
@@ -701,7 +742,6 @@ const styles = StyleSheet.create({
   },
   connectorContainer: {
     marginBottom: 16,
-
   },
   connector: {
     flexDirection: "row",
@@ -762,8 +802,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   amenitiesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: 24,
   },
   amenityItem: {
@@ -771,8 +811,8 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 8,
     backgroundColor: COLORS.lightGray,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 16,
     marginBottom: 10,
   },

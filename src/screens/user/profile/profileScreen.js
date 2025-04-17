@@ -121,7 +121,7 @@ const ProfileScreen = ({ navigation }) => {
           <Image
             source={
               user?.avatar
-                ? { uri: imageURL + user.avatar }
+                ? { uri: imageURL.baseURL  + user.avatar }
                 : require("../../../../assets/images/users/user4.png")
             }
             style={styles.userImageStyle}

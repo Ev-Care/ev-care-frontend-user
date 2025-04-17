@@ -28,10 +28,13 @@ import { setupImagePicker } from "../../../vendor/CompleteProfileDetail/vendorDe
 import { postSingleFile } from "../../../auth/services/crudFunction";
 import { patchUpdateUserProfile } from "../../../user/service/crudFunction";
 import { Ionicons } from "@expo/vector-icons";
+import imageURL from "../../../../constants/baseURL";
 
 const EditProfileScreen = ({ navigation }) => {
   const user = useSelector(selectUser);
-  const [businessName, setBusinessName] =useState( user?.business_name || "Anonymous User");
+  const [businessName, setBusinessName] = useState(
+    user?.business_name || "Anonymous User"
+  );
   const [name, setname] = useState(user?.name || "Anonymous User");
   const [email, setemail] = useState(user?.email);
   const [showChangeProfilePicSheet, setshowChangeProfilePicSheet] =
@@ -41,14 +44,14 @@ const EditProfileScreen = ({ navigation }) => {
   const [profileImageURI, setProfileImageURI] = useState(null);
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
-  const [aadharimageUri, setAadharImageUri] = useState(
-    "https://media.istockphoto.com/id/1154042526/photo/maski-karnataka-india-december-22-2018-aadhaar-card-which-is-issued-by-government-of-india-as.jpg?s=2048x2048&w=is&k=20&c=pahX9npRpBMDr4YT2z-pRKZX2tGXWAOtJ18tHP-KonE="
-  );
+
   const [aadharNumber, setAadharNumber] = useState(
     user?.adhar_no || "Anonymous User"
   );
   const [panNumber, setPanNumber] = useState(user?.tan_no || "Anonymous User");
   const [tanNumber, setTanNumber] = useState(user?.pan_no || "Anonymous User");
+
+  console.log("user profile URL", imageURL.baseURL + user?.adhar_front_pic);
 
   const handleSubmit = async () => {
     var updatedData = {
@@ -147,8 +150,14 @@ const EditProfileScreen = ({ navigation }) => {
           {nameInfo()}
           {businessNameInfo()}
           {emailInfo()}
-          <View  style={{ marginBottom: 20, alignItems: "center",justifyContent: "center" }}> 
-            <Text style={{ ...Fonts.grayColor18SemiBold,color:"red"}}>
+          <View
+            style={{
+              marginBottom: 20,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{ ...Fonts.grayColor18SemiBold, color: "red" }}>
               You Can't Edit Below Fields
             </Text>
           </View>
@@ -398,7 +407,28 @@ const EditProfileScreen = ({ navigation }) => {
         <View style={styles.docContainer}>
           <View style={styles.box}>
             <Image
-              source={{ uri: aadharimageUri }}
+              source={{
+                uri:
+                  user?.adhar_front_pic && user.adhar_front_pic.trim() !== ""
+                    ? imageURL.baseURL + user.adhar_front_pic
+                    : "https://media.istockphoto.com/id/1154042526/photo/maski-karnataka-india-december-22-2018-aadhaar-card-which-is-issued-by-government-of-india-as.jpg?s=2048x2048&w=is&k=20&c=pahX9npRpBMDr4YT2z-pRKZX2tGXWAOtJ18tHP-KonE=",
+              }}
+              style={styles.docImage}
+              resizeMode="contain"
+            />
+            <TouchableOpacity style={styles.editIconContainer}>
+              <Ionicons name="pencil" size={24} color="green" />
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={styles.docContainer}>
+          <View style={styles.box}>
+            <Image
+              source={{
+                uri: user?.adhar_back_pic
+                  ? imageURL.baseURL + user.adhar_back_pic
+                  : "https://media.istockphoto.com/id/1154042526/photo/maski-karnataka-india-december-22-2018-aadhaar-card-which-is-issued-by-government-of-india-as.jpg?s=2048x2048&w=is&k=20&c=pahX9npRpBMDr4YT2z-pRKZX2tGXWAOtJ18tHP-KonE=",
+              }}
               style={styles.docImage}
               resizeMode="contain"
             />
@@ -432,7 +462,11 @@ const EditProfileScreen = ({ navigation }) => {
         <View style={styles.docContainer}>
           <View style={styles.box}>
             <Image
-              source={{ uri: aadharimageUri }}
+              source={{
+                uri: user?.pan_pic
+                  ? imageURL.baseURL + user.pan_pic
+                  : "https://media.istockphoto.com/id/1154042526/photo/maski-karnataka-india-december-22-2018-aadhaar-card-which-is-issued-by-government-of-india-as.jpg?s=2048x2048&w=is&k=20&c=pahX9npRpBMDr4YT2z-pRKZX2tGXWAOtJ18tHP-KonE=",
+              }}
               style={styles.docImage}
               resizeMode="contain"
             />
@@ -466,7 +500,11 @@ const EditProfileScreen = ({ navigation }) => {
         <View style={styles.docContainer}>
           <View style={styles.box}>
             <Image
-              source={{ uri: aadharimageUri }}
+              source={{
+                uri: user?.tan_pic
+                  ? imageURL.baseURL + user.tan_pic
+                  : "https://media.istockphoto.com/id/1154042526/photo/maski-karnataka-india-december-22-2018-aadhaar-card-which-is-issued-by-government-of-india-as.jpg?s=2048x2048&w=is&k=20&c=pahX9npRpBMDr4YT2z-pRKZX2tGXWAOtJ18tHP-KonE=",
+              }}
               style={styles.docImage}
               resizeMode="contain"
             />

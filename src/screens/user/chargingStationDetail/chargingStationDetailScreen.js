@@ -70,7 +70,7 @@ const reviews = [
   },
 ];
 
-const ChargingStationDetailScreen = ({ route,navigation }) => {
+const ChargingStationDetailScreen = ({ route, navigation }) => {
   // for  rating Start
   const [showRateNowDialog, setshowRateNowDialog] = useState(false);
   const [reviewComment, setReviewComment] = useState("");
@@ -142,15 +142,19 @@ const ChargingStationDetailScreen = ({ route,navigation }) => {
     }
     return str?.substring(0, threshold) + ".....";
   }
+  console.log(`${imageURL.baseURL}${station.station_images}`);
+  console.log(station.id, "station id in detail screen");
 
   return (
     <View style={styles.container}>
       {/* Header with map background */}
       <View style={styles.header}>
         <Image
-          source={{
-            uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-          }}
+          source={
+            station?.station_images
+              ? { uri: `${imageURL.baseURL}${station.station_images}` }
+              : { uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
+          }
           style={styles.mapBackground}
         />
         <View style={styles.overlay}>
@@ -290,17 +294,17 @@ const ChargingStationDetailScreen = ({ route,navigation }) => {
     return (
       <ScrollView style={styles.tabContent}>
         {station?.chargers?.map((charger, index) => (
-          <View key={index} style={styles.chargerCard}>
+          <View key={charger.charger_id} style={styles.chargerCard}>
             <Text style={styles.chargerTitle}>
               {charger.name || `Charger ${index + 1}`}
             </Text>
             <View style={styles.chargerSpecs}>
               <Text style={styles.chargerSpecText}>
-                Type {charger.charger_type || "Unknown Type"}
+                Type: {charger.charger_type || "Unknown Type"}
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
               <Text style={styles.chargerSpecText}>
-                Power {charger.max_power_kw || "Unknown Power"}
+                Power: {charger.max_power_kw || "Unknown Power"} KW
               </Text>
             </View>
 
@@ -383,7 +387,7 @@ const ChargingStationDetailScreen = ({ route,navigation }) => {
             }
 
             return (
-              <View key={index} style={styles.amenityItem}>
+              <View key={trimmedName} style={styles.amenityItem}>
                 <Icon name={iconName} size={24} color={COLORS.primary} />
                 <Text style={styles.connectorTypeText}>{trimmedName}</Text>
               </View>
@@ -400,7 +404,10 @@ const ChargingStationDetailScreen = ({ route,navigation }) => {
         <View style={styles.reviewsHeader}>
           <Text style={styles.sectionTitle}>Reviews</Text>
         </View>
-        {reviews.map((item) => renderReviewItem({ item }))}
+        {reviews.map((item) =>
+          <View key={item.id}>
+            {renderReviewItem({ item })}
+          </View>)}
       </ScrollView>
     );
   }

@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, TouchableOpacity,Text, Image, View, Linking, Platform, } from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity, Text, Image, View, Linking, Platform, } from "react-native";
 import React, { useState } from "react";
 import {
   Colors,
@@ -6,7 +6,7 @@ import {
   Sizes,
   commonStyles,
   screenWidth,
- 
+
 } from "../../../constants/styles";
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
@@ -22,7 +22,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
 
   console.log("stations in all charging stations screen ", stations.length);
 
-  const openGoogleMaps = (latitude,longitude) => {
+  const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
       ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
       android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
@@ -50,7 +50,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
       return distance + ' km';
     }
   };
-  
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -63,21 +63,21 @@ const AllChargingStationsScreen = ({ navigation }) => {
 
   function allStationsInfo() {
     const renderItem = ({ item }) => (
-      <TouchableOpacity  onPress={() => {
-        navigation.navigate("ChargingStationDetail", {item});
+      <TouchableOpacity onPress={() => {
+        navigation.navigate("ChargingStationDetail", { item });
       }} style={styles.enrouteChargingStationWrapStyle}>
-       <Image
-  source={
-    item?.station_images
-    ? { uri: imageURL + item.station_images }
-      : { uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
-  }
-  style={styles.enrouteChargingStationImage}
-/>
+        <Image
+          source={
+            item?.station_images
+              ? { uri: `${imageURL.baseURL}${item.station_images}` }
+              : { uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
+          }
+          style={styles.enrouteChargingStationImage}
+        />
 
         <View style={styles.enrouteStationOpenCloseWrapper}>
           <Text style={{ ...Fonts.whiteColor18Regular }}>
-            {item?.status==="Planned" || item?.status === "Active" ? "Open" : "Closed"}
+            {item?.status === "Planned" || item?.status === "Active" ? "Open" : "Closed"}
           </Text>
         </View>
         <View style={{ flex: 1 }}>
@@ -142,7 +142,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
             >
               {formatDistance(item?.distance_km)}
             </Text>
-            <TouchableOpacity onPress={()=>openGoogleMaps(item?.coordinates.latitude, item?.coordinates.longitude)} style={styles.getDirectionButton}>
+            <TouchableOpacity onPress={() => openGoogleMaps(item?.coordinates.latitude, item?.coordinates.longitude)} style={styles.getDirectionButton}>
               <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
             </TouchableOpacity>
           </View>

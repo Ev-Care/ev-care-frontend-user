@@ -20,7 +20,7 @@ import {
 import { selectUser } from "../../../auth/services/selector";
 import { selectStation, selectVendorStation } from "../../services/selector";
 import { updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
-
+import imageURL from "../../../../constants/baseURL";
 
 const COLORS = {
   primary: "#101942",
@@ -84,8 +84,9 @@ const AllStations = () => {
               key={station.id}
               style={styles.card}
             >
-              {station.image ? (
-                <Image source={{ uri: station.image }} style={styles.image} />
+              {console.log("Station Image URL:"+station.id, imageURL.baseURL+station.station_images)}
+              {imageURL.baseURL+station.station_images ? (
+                <Image source={{ uri: station.station_images }} style={styles.image} />
               ) : (
                 <View style={[styles.image, { alignItems: "center", justifyContent: "center", backgroundColor: "gray", opacity: 0.1 }]}>
                   <MaterialIcons

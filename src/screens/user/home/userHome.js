@@ -27,7 +27,6 @@ import {
 } from "../../../constants/styles";
 import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../../auth/services/selector";
-import { selectStation } from "../../vendor/services/selector";
 import * as Location from "expo-location";
 import { fetchStationsByLocation } from "../service/crudFunction";
 import { selectStations } from "../service/selector";
@@ -353,7 +352,7 @@ const UserHome = ({ navigation }) => {
         <Image
           source={
             item?.station_images
-              ? { uri: imageURL + item.station_images }
+              ?  imageURL.baseURL + item.station_images 
               : require("../../../../assets/images/chargingStations/charging_station3.png")
           }
           style={styles.enrouteChargingStationImage}

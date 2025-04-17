@@ -123,6 +123,7 @@ const authSlice = createSlice({
       })
       .addCase(patchUpdateUserProfile.fulfilled, (state, action) => {
         state.loading = false;
+        console.log("User profile updated successfully in slice:", action.payload.data);
         state.user = extractUser(action.payload.data); // Extract user data from the response
       })
       .addCase(patchUpdateUserProfile.rejected, (state, action) => {

@@ -22,7 +22,6 @@ import { selectStation, selectVendorStation } from "../../services/selector";
 import { updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
 import imageURL from "../../../../constants/baseURL";
 
-
 const COLORS = {
   primary: "#101942",
   secondary: "#FF8C00",

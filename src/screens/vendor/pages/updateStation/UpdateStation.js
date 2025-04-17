@@ -68,7 +68,8 @@ const UpdateStation = ({ navigation, route }) => {
   const [selectedForm, setSelectedForm] = useState(null);
   const [coordinate, setCoordinate] = useState(station?.coordinates || null);
   const addChargerForm = () => setChargerForms(prevForms => [...prevForms, 
-    {charger_type:null,
+    {charger_id:-1,
+      charger_type:null,
     max_power_kw: null,
     connectors: [],
   }

@@ -27,6 +27,8 @@ import { selectToken, selectUser } from "../../auth/services/selector";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { patchUpdateUserProfile } from "../service/crudFunction";
+import imageURL from "../../../constants/baseURL";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 
@@ -35,24 +37,32 @@ const EditProfileScreen = ({ navigation }) => {
   const [name, setname] = useState(user?.name || "Anonymous User");
   const [email, setemail] = useState(user?.email);
   const [showChangeProfilePicSheet, setshowChangeProfilePicSheet] = useState(false);
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState(imageURL.baseURL+user?.avatar);
   const [imageLoading, setImageLoading] = useState(false);
   const [profileImageURI, setProfileImageURI] = useState(null);
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
-  
 
-  const handleSubmit = async() => {
+
+  const handleSubmit = async () => {
     var updatedData = {
       owner_legal_name: name,
       email: email,
-      avatar: profileImageURI,
+      avatar: profileImageURI? profileImageURI : user?.avatar,
       business_name: user?.business_name,
       user_key: user?.user_key,
     }
     console.log("Updated Data:", updatedData);
     const response = await dispatch(patchUpdateUserProfile(updatedData));
-    Alert.alert("Profile Updated", "Your profile has been updated successfully.");
+
+    if (response?.payload?.code === 200 || response?.payload?.code === 201) {
+      console.log("Profile updated successfully:", response?.payload?.data);
+      AsyncStorage.setItem("user", JSON.stringify(response?.payload?.data));
+      Alert.alert("Profile Updated", "Your profile has been updated successfully.");
+      navigation.goBack();
+    }else {
+      Alert.alert("Error", "Failed to update profile. Please try again.");
+    }
   }
 
   const pickImage = async (source) => {
@@ -86,7 +96,7 @@ const EditProfileScreen = ({ navigation }) => {
 
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
-    
+
       setImageLoading(true);
       const file = await setupImagePicker(imageUri);
 
@@ -96,12 +106,12 @@ const EditProfileScreen = ({ navigation }) => {
         );
 
         if (response?.payload?.code === 200 || response?.payload?.code === 201) {
-         
-            setProfileImageURI(response?.payload?.data?.filePathUrl);
-            console.log("profile Image URI set successfully:", response?.payload?.data?.filePathUrl);
-            setProfileImage(imageUri);
-            setImageLoading(false);
-            // Alert.alert("Success", "File uploaded successfully!");
+
+          setProfileImageURI(response?.payload?.data?.filePathUrl);
+          console.log("profile Image URI set successfully:", response?.payload?.data?.filePathUrl);
+          setProfileImage(imageURL.baseURL+profileImageURI);
+          setImageLoading(false);
+          // Alert.alert("Success", "File uploaded successfully!");
         } else {
           Alert.alert("Error", "File Should be less than 5 MB");
         }
@@ -109,7 +119,7 @@ const EditProfileScreen = ({ navigation }) => {
         setImageLoading(false);
         console.log("Error uploading file:", error);
         Alert.alert("Error", "Upload failed. Please try again.");
-      } 
+      }
     }
   };
 
@@ -239,7 +249,7 @@ const EditProfileScreen = ({ navigation }) => {
             placeholder="Enter your email address here"
             placeholderTextColor={Colors.grayColor}
             value={email}
-            onChangeText={(text) => setemail(text)}
+            onChangeText={(text) => setemail(text.toLowerCase)}
             style={{ ...Fonts.blackColor16Medium }}
             keyboardType="email-address"
             cursorColor={Colors.primaryColor}
@@ -278,24 +288,25 @@ const EditProfileScreen = ({ navigation }) => {
           marginBottom: Sizes.fixPadding + 5.0,
         }}
       >
-       {profileImage ? (
-    <>
-      {imageLoading && <ActivityIndicator size={40} color="#ccc" />}
-      <Image
-        source={{ uri: profileImage }}
-        style={styles.profilePicStyle}
-        onLoadStart={() => setImageLoading(true)}
-        onLoadEnd={() => setImageLoading(false)}
-      />
-    </>
-  ) : (
-    <MaterialIcons
-      name="account-circle"
-      size={screenWidth / 4.0}
-      color={Colors.grayColor}
-      style={{ textAlign: "center" }}
-    />
-  )}
+        {console.log("Profile Image URI:", user.avatar)}
+        {profileImage ? (
+          <>
+            {imageLoading && <ActivityIndicator size={40} color="#ccc" />}
+            <Image
+              source={profileImage ? { uri: profileImage } : null}
+              style={styles.profilePicStyle}
+              onLoadStart={() => setImageLoading(true)}
+              onLoadEnd={() => setImageLoading(false)}
+            />
+          </>
+        ) : (
+          <MaterialIcons
+            name="account-circle"
+            size={screenWidth / 4.0}
+            color={Colors.grayColor}
+            style={{ textAlign: "center" }}
+          />
+        )}
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => {

@@ -142,6 +142,8 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     }
     return str?.substring(0, threshold) + ".....";
   }
+  console.log(`${imageURL.baseURL}${station.station_images}`);
+  console.log(station.id, "station id in detail screen");
 
   return (
     <View style={styles.container}>
@@ -295,17 +297,17 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     return (
       <ScrollView style={styles.tabContent}>
         {station?.chargers?.map((charger, index) => (
-          <View key={index} style={styles.chargerCard}>
+          <View key={charger.charger_id} style={styles.chargerCard}>
             <Text style={styles.chargerTitle}>
               {charger.name || `Charger ${index + 1}`}
             </Text>
             <View style={styles.chargerSpecs}>
               <Text style={styles.chargerSpecText}>
-                Type {charger.charger_type || "Unknown Type"}
+                Type: {charger.charger_type || "Unknown Type"}
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
               <Text style={styles.chargerSpecText}>
-                Power {charger.max_power_kw || "Unknown Power"}
+                Power: {charger.max_power_kw || "Unknown Power"} KW
               </Text>
             </View>
 
@@ -388,7 +390,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
             }
 
             return (
-              <View key={index} style={styles.amenityItem}>
+              <View key={trimmedName} style={styles.amenityItem}>
                 <Icon name={iconName} size={24} color={COLORS.primary} />
                 <Text style={styles.connectorTypeText}>{trimmedName}</Text>
               </View>
@@ -405,7 +407,10 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         <View style={styles.reviewsHeader}>
           <Text style={styles.sectionTitle}>Reviews</Text>
         </View>
-        {reviews.map((item) => renderReviewItem({ item }))}
+        {reviews.map((item) =>
+          <View key={item.id}>
+            {renderReviewItem({ item })}
+          </View>)}
       </ScrollView>
     );
   }

@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, TouchableOpacity,Text, Image, View, Linking, Platform, } from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity, Text, Image, View, Linking, Platform, } from "react-native";
 import React, { useState } from "react";
 import {
   Colors,
@@ -6,7 +6,7 @@ import {
   Sizes,
   commonStyles,
   screenWidth,
- 
+
 } from "../../../constants/styles";
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
@@ -22,7 +22,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
 
   console.log("stations in all charging stations screen ", stations.length);
 
-  const openGoogleMaps = (latitude,longitude) => {
+  const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
       ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
       android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
@@ -50,7 +50,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
       return distance + ' km';
     }
   };
-  
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -63,8 +63,8 @@ const AllChargingStationsScreen = ({ navigation }) => {
 
   function allStationsInfo() {
     const renderItem = ({ item }) => (
-      <TouchableOpacity  onPress={() => {
-        navigation.navigate("ChargingStationDetail", {item});
+      <TouchableOpacity onPress={() => {
+        navigation.navigate("ChargingStationDetail", { item });
       }} style={styles.enrouteChargingStationWrapStyle}>
        <Image
   source={
@@ -77,7 +77,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
 
         <View style={styles.enrouteStationOpenCloseWrapper}>
           <Text style={{ ...Fonts.whiteColor18Regular }}>
-            {item?.status==="Planned" || item?.status === "Active" ? "Open" : "Closed"}
+            {item?.status === "Planned" || item?.status === "Active" ? "Open" : "Closed"}
           </Text>
         </View>
         <View style={{ flex: 1 }}>
@@ -142,7 +142,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
             >
               {formatDistance(item?.distance_km)}
             </Text>
-            <TouchableOpacity onPress={()=>openGoogleMaps(item?.coordinates.latitude, item?.coordinates.longitude)} style={styles.getDirectionButton}>
+            <TouchableOpacity onPress={() => openGoogleMaps(item?.coordinates.latitude, item?.coordinates.longitude)} style={styles.getDirectionButton}>
               <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
             </TouchableOpacity>
           </View>

@@ -118,10 +118,7 @@ const UploadTAN = ({ route, navigation }) => {
       console.log("vendor Detail Submitted ", response);
       const response = await dispatch(patchUpdateVendorProfile({detail:VendorDetailAtTanPage, user_key:user.user_key, accessToken: accessToken})
       ).unwrap();
-      // console.log(
-      //   "Updated Vendor Detail Response: ",
-      //   response
-      // );
+      
       console.log("code = ",response?.code);
       if (response?.code === 200 || response?.code === 201) {
       
@@ -131,7 +128,7 @@ const UploadTAN = ({ route, navigation }) => {
           console.log("User data saved successfully:", response.payload.data);
       
         
-        Alert.alert("Success", "Vendor details updated successfully.");
+        Alert.alert("Success", "details updated successfully.");
       } else {
         console.error("Error saving user data:", error);
         Alert.alert("Error", "Failed to update vendor details. Please try again.");

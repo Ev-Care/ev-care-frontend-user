@@ -27,7 +27,6 @@ import {
 } from "../../../constants/styles";
 import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../../auth/services/selector";
-import { selectStation } from "../../vendor/services/selector";
 import * as Location from "expo-location";
 import { fetchStationsByLocation } from "../service/crudFunction";
 import { selectStations } from "../service/selector";

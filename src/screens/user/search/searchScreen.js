@@ -28,7 +28,7 @@ const ChargingStationMap = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
 
   const stations = useSelector(selectStations);
-  console.log("0th station in search page ",stations[0].station_name);
+
 
   useEffect(() => {
     const timeout = setTimeout(() => {

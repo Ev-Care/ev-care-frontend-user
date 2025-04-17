@@ -40,14 +40,8 @@ const AllStations = () => {
   const navigation = useNavigation();
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
-
   const stations = useSelector(selectVendorStation);
-  console.log("Stations  image path in all staion vendor", imageURL.baseURL+stations[0].station_images);
   // console.log("Stations in AllStations:", stations?.length);
-
- 
-
-
   const updateStationStatus = async (stationData) => {
     try {
       const response = await dispatch(updateStationsChargersConnectorsStatus(stationData));
@@ -84,8 +78,8 @@ const AllStations = () => {
               key={station.id}
               style={styles.card}
             >
-              {station.station_images ? (
-                <Image source={{ uri: imageURL.baseURL+station.station_images }} style={styles.image} />
+              {station?.station_images ? (
+                <Image source={{ uri: imageURL.baseURL+station?.station_images }} style={styles.image} />
               ) : (
                 <View style={[styles.image, { alignItems: "center", justifyContent: "center", backgroundColor: "gray", opacity: 0.1 }]}>
                   <MaterialIcons

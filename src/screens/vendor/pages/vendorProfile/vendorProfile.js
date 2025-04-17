@@ -97,8 +97,9 @@ console.log("user profile URL", imageURL + user.avatar);
               activeOpacity={0.8}
                onPress={() => {
                              dispatch(logoutUser());  
-                             console.log("User logged out successfully in profileScreen and navigting to Signin");
                              setshowLogoutSheet(false);
+                             console.log("User logged out successfully in profileScreen and navigting to Signin");
+                           
                    
                          }}
               style={{

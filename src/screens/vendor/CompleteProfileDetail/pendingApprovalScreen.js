@@ -13,7 +13,19 @@ const PendingApprovalScreen = (route) => {
   const dispatch = useDispatch();
   // const { setApproved } = route.params;
   const user = useSelector(selectUser); // Get user data
-
+  const handleContinue = async () => {
+    const response = await dispatch(getUserDetailsByKey(user.user_key));
+    const updatedUser = response?.payload.data;
+  
+    if(response?.payload.code === 200 || response?.payload.code === 201) {
+      if(updatedUser.status !== "Active") {
+        Alert.alert("Please wait for admin approval before proceeding.");
+      } else {
+        Alert.alert("Your account is active. Proceeding!");
+      }
+    }
+  }
+  
   return (
     <View style={styles.container}>
       <Image source={require("../../../../assets/images/completed.png")} style={styles.image} />
@@ -26,8 +38,8 @@ const PendingApprovalScreen = (route) => {
       </TouchableOpacity> */}
     <TouchableOpacity 
     style={[styles.button, { backgroundColor: Colors.primaryColor }]} 
-    onPress={() => dispatch(getUserDetailsByKey(user.user_key))}
->
+    onPress={handleContinue }
+    >
      <Text style={styles.buttonText}>continue</Text>
     </TouchableOpacity>
 

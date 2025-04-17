@@ -32,6 +32,12 @@ export function VendorStack() {
   const user = useSelector(selectUser); // Get user data
 
   const role = user?.role?.toLowerCase();
+
+  
+  if (!user) {
+    return null;  
+  }
+
   const isVendor = role === "vendor";
   const isActive = user?.status === "Active";
   const isCompleted = user?.status === "Completed";
@@ -40,7 +46,7 @@ export function VendorStack() {
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {isVendor && isActive && isKYCIncomplete && (
+      {user && isVendor && isActive && isKYCIncomplete && (
         <>
           <Stack.Screen name="Instruction" component={Instruction} />
           <Stack.Screen name="UploadAadhar" component={UploadAadhar} />
@@ -52,11 +58,11 @@ export function VendorStack() {
         </>
       )}
 
-      {isVendor && isCompleted && (
+      {user && isVendor && isCompleted && (
         <Stack.Screen name="PendingApprovalScreen" component={PendingApprovalScreen} />
       )}
 
-      {isVendor && isActive && isKYCComplete && (
+      {user && isVendor && isActive && isKYCComplete && (
         <>
           <Stack.Screen name="VendorBottomTabBar" component={VendorBottomTabBar} />
           <Stack.Screen name="VendorHome" component={VendorHome} />

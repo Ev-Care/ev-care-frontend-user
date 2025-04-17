@@ -26,8 +26,10 @@ export const getUserDetailsByKey = createAsyncThunk(
       console.log("inside thunk", );
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve accessToken inside the thunk
       const response = await getUserByKeyAPI({ user_key, accessToken });
+       await AsyncStorage.setItem('user', JSON.stringify(response.data.data)); // Store the user data in AsyncStorage.
       return response.data; // Assuming the API returns the vendor details
     } catch (error) {
+
       return rejectWithValue(error.response?.data || 'Failed to fetch vendor details');
     }
   }

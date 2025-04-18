@@ -18,18 +18,37 @@ import {
 } from "../../../constants/styles";
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { RefreshControl } from 'react-native';
 
 const HelpScreen = ({ navigation }) => {
   const [name, setname] = useState("");
   const [email, setemail] = useState("");
   const [mobileNumber, setmobileNumber] = useState("");
   const [message, setmessage] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      console.log("Refresh completed!");
+    }, 2000); 
+  }
+
+
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
       <View style={{ flex: 1 }}>
         {header()}
         <ScrollView
+         refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+          />
+        }
           showsVerticalScrollIndicator={false}
           automaticallyAdjustKeyboardInsets={true}
         >

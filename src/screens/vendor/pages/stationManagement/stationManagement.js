@@ -27,7 +27,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
 import { selectStation } from "../../services/selector";
 import imageURL from "../../../../constants/baseURL";
-
+import { RefreshControl } from 'react-native';
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -96,6 +96,7 @@ const StationManagement = ({ navigation, route }) => {
   const [showDeleteDialogue, setshowDeleteDialogue] = useState(false);
   const dispatch = useDispatch();
   const [isChargerAvailable, setIsChargerAvailable] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   console.log("StationManagement", JSON.stringify(station, null, 2));
   const handleTabPress = (index) => {
     setActiveTab(index);
@@ -221,7 +222,13 @@ const StationManagement = ({ navigation, route }) => {
     }
     return str.substring(0, threshold) + ".....";
   }
-
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      console.log("Refresh completed!");
+    }, 2000); 
+  }
   return (
     <View style={styles.container}>
       {/* Header with map background */}
@@ -327,6 +334,11 @@ const StationManagement = ({ navigation, route }) => {
 
       {/* Swipeable Content */}
       <ScrollView
+       refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+        />}
         ref={scrollViewRef}
         horizontal
         pagingEnabled

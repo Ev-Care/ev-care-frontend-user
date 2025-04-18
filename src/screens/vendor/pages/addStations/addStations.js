@@ -22,7 +22,7 @@ import { useNavigation } from "@react-navigation/native";
 import { setupImagePicker } from "../../CompleteProfileDetail/vendorDetailForm";
 import { postSingleFile } from "../../../auth/services/crudFunction";
 import { selectToken, selectUser } from "../../../auth/services/selector";
-
+import { RefreshControl } from 'react-native';
 
 
 const PRIMARY_COLOR = '#101942';
@@ -63,6 +63,7 @@ const AddStations = () => {
   const dispatch = useDispatch(); // Get the dispatch function
   const [imageloading, setImageLoading] = useState(false);
   const [viewImage, setViewImage] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
   const user = useSelector(selectUser); // Get user data
 
   const incrementConnector = (id, chargerIndex) => {
@@ -217,9 +218,22 @@ const AddStations = () => {
   const removeChargerForm = (index) => {
     setChargerForms(chargerForms.filter((_, i) => i !== index));
   };
-
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      console.log("Refresh completed!");
+    }, 2000); 
+  }
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container}
+    refreshControl={
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+      />
+    }
+    >
       <MyStatusBar />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>

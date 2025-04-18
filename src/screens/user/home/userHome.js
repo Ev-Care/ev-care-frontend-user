@@ -31,6 +31,9 @@ import * as Location from "expo-location";
 import { fetchStationsByLocation } from "../service/crudFunction";
 import { selectStations } from "../service/selector";
 import imageURL from "../../../constants/baseURL";
+import { RefreshControl } from 'react-native';
+import MyStatusBar from "../../../components/myStatusBar";
+
 
 const COLORS = {
   primary: "#101942",
@@ -44,6 +47,8 @@ const COLORS = {
 
 const UserHome = ({ navigation }) => {
   const [count, setCount] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+
   const scrollY = useRef(new Animated.Value(0)).current;
   const AnimatedLinearGradient =
     Animated.createAnimatedComponent(LinearGradient);
@@ -190,9 +195,16 @@ const UserHome = ({ navigation }) => {
     if (!fullName) return "";
     return fullName.trim().split(" ")[0];
   }
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      console.log("Refresh completed!");
+    }, 2000); 
+  }
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      <MyStatusBar/>
 
       <AnimatedLinearGradient
         colors={["#101942", "#1C2A5A"]}
@@ -227,6 +239,14 @@ const UserHome = ({ navigation }) => {
       </AnimatedLinearGradient>
 
       <Animated.ScrollView
+       refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          colors={['#9Bd35A', '#101942']}  // Android spinner colors
+          tintColor= "#101942"            // iOS spinner color
+        />
+      }
         style={styles.content}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],

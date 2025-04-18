@@ -29,7 +29,7 @@ import { postSingleFile } from "../../auth/services/crudFunction";
 import { patchUpdateUserProfile } from "../service/crudFunction";
 import imageURL from "../../../constants/baseURL";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { RefreshControl } from 'react-native';
 
 
 const EditProfileScreen = ({ navigation }) => {
@@ -42,7 +42,7 @@ const EditProfileScreen = ({ navigation }) => {
   const [profileImageURI, setProfileImageURI] = useState(null);
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
-
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleSubmit = async () => {
     var updatedData = {
@@ -122,7 +122,13 @@ const EditProfileScreen = ({ navigation }) => {
       }
     }
   };
-
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      console.log("Refresh completed!");
+    }, 2000); 
+  }
 
 
   return (
@@ -131,6 +137,12 @@ const EditProfileScreen = ({ navigation }) => {
       <View style={{ flex: 1 }}>
         {header()}
         <ScrollView
+         refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+          />
+        }
           showsVerticalScrollIndicator={false}
           automaticallyAdjustKeyboardInsets={true}
           contentContainerStyle={{

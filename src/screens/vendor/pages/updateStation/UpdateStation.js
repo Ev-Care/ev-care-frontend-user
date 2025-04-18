@@ -18,7 +18,7 @@ import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from "@react-navigation/native";
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../../auth/services/selector';
-
+import { RefreshControl } from 'react-native';
 const PRIMARY_COLOR = '#101942';
 const amenities = [
   { id: 1, icon: 'toilet', label: 'Restroom' },
@@ -67,6 +67,7 @@ const UpdateStation = ({ navigation, route }) => {
   const [chargerForms, setChargerForms] = useState(station?.chargers || [{}]);
   const [selectedForm, setSelectedForm] = useState(null);
   const [coordinate, setCoordinate] = useState(station?.coordinates || null);
+  const [refreshing, setRefreshing] = useState(false);
   const addChargerForm = () => setChargerForms(prevForms => [...prevForms, 
     {charger_id:-1,
       charger_type:null,
@@ -234,9 +235,22 @@ const UpdateStation = ({ navigation, route }) => {
   const removeChargerForm = (index) => {
     setChargerForms(chargerForms.filter((_, i) => i !== index));
   };
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      console.log("Refresh completed!");
+    }, 2000); 
+  }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container}
+    refreshControl={
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+      />}
+    >
       <MyStatusBar />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>

@@ -21,6 +21,7 @@ import { selectUser } from "../../../auth/services/selector";
 import { selectStation, selectVendorStation } from "../../services/selector";
 import { updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
 import imageURL from "../../../../constants/baseURL";
+import { RefreshControl } from 'react-native';
 
 const COLORS = {
   primary: "#101942",
@@ -41,6 +42,7 @@ const AllStations = () => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const stations = useSelector(selectVendorStation);
+  const [refreshing, setRefreshing] = useState(false); 
   // console.log("Stations in AllStations:", stations?.length);
   const updateStationStatus = async (stationData) => {
     try {
@@ -56,7 +58,13 @@ const AllStations = () => {
       Alert.alert("Error", "Failed to update station status.");
     }
   }
-
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      console.log("Refresh completed!");
+    }, 2000); 
+  }
   return (
     <View style={styles.container}>
       <MyStatusBar />
@@ -69,7 +77,14 @@ const AllStations = () => {
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView style={styles.scrollContainer}>
+      <ScrollView style={styles.scrollContainer}
+       refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+        />
+      }
+      >
         {/* Check if stations is defined and not empty */}
         {stations && stations?.length > 0 ? (
           stations.map((station) => (

@@ -29,7 +29,7 @@ import { postSingleFile } from "../../../auth/services/crudFunction";
 import { patchUpdateUserProfile } from "../../../user/service/crudFunction";
 import { Ionicons } from "@expo/vector-icons";
 import imageURL from "../../../../constants/baseURL";
-
+import { RefreshControl } from 'react-native';
 const EditProfileScreen = ({ navigation }) => {
   const user = useSelector(selectUser);
   const [businessName, setBusinessName] = useState(
@@ -50,8 +50,8 @@ const EditProfileScreen = ({ navigation }) => {
   );
   const [panNumber, setPanNumber] = useState(user?.tan_no || "Anonymous User");
   const [tanNumber, setTanNumber] = useState(user?.pan_no || "Anonymous User");
-
-  console.log("user profile URL", imageURL.baseURL + user?.adhar_front_pic);
+  const [refreshing, setRefreshing] = useState(false);
+  // console.log("user profile URL", imageURL.baseURL + user?.adhar_front_pic);
 
   const handleSubmit = async () => {
     var updatedData = {
@@ -132,13 +132,25 @@ const EditProfileScreen = ({ navigation }) => {
       }
     }
   };
-
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      console.log("Refresh completed!");
+    }, 2000); 
+  }
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
       <View style={{ flex: 1 }}>
         {header()}
         <ScrollView
+         refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+          />
+        }
           showsVerticalScrollIndicator={false}
           automaticallyAdjustKeyboardInsets={true}
           contentContainerStyle={{

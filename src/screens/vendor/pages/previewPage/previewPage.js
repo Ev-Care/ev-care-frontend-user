@@ -27,7 +27,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { selectToken } from '../../../auth/services/selector';
 import { addStation, postStation } from '../../services/crudFunction';
 import { selectVendorLoading } from '../../services/selector';
-
+import { RefreshControl } from 'react-native';
 // Define colors at the top for easy customization
 const COLORS = {
   primary: '#101942',
@@ -52,7 +52,7 @@ const PreviewPage = ({ navigation }) => {
   const route = useRoute();
   const { stationData, type, stationImage } = route.params; // Retrieve the passed data
   const isLoading = useSelector(selectVendorLoading);
-
+  const [refreshing, setRefreshing] = useState(false);
   console.log('Transformed station data preview:', JSON.stringify(stationData, null, 2));
 
   const connectorTypeMap = {
@@ -89,15 +89,15 @@ const PreviewPage = ({ navigation }) => {
         console.log('Submitting station data:', JSON.stringify(stationData));
 
         // Validate chargers
-        if (!stationData.chargers || stationData.chargers.length === 0) {
+        if (!stationData?.chargers || stationData?.chargers?.length === 0) {
           Alert.alert('Validation Error', 'At least one charger must be added.');
           return;
         }
 
-        for (let i = 0; i < stationData.chargers.length; i++) {
-          const charger = stationData.chargers[i];
-          console.log(!charger.charger_type, !charger.power_rating, !charger.connectors, charger.connectors.length === 0);
-          if (!charger.charger_type || !charger.power_rating || !charger.connectors || charger.connectors.length === 0) {
+        for (let i = 0; i < stationData?.chargers?.length; i++) {
+          const charger = stationData?.chargers[i];
+          console.log(!charger.charger_type, !charger.power_rating, !charger.connectors, charger?.connectors?.length === 0);
+          if (!charger.charger_type || !charger.power_rating || !charger.connectors || charger?.connectors?.length === 0) {
             Alert.alert(
               'Validation Error',
               `Charger ${i + 1} details is incomplete. Please ensure all fields are filled.`
@@ -105,7 +105,7 @@ const PreviewPage = ({ navigation }) => {
             return;
           }
 
-          for (let j = 0; j < charger.connectors.length; j++) {
+          for (let j = 0; j < charger?.connectors?.length; j++) {
             const connector = charger.connectors[j];
             // console.log(connector.connectorType.connector_type_id);
             if (!connector?.connector_type_id) {
@@ -160,10 +160,17 @@ const PreviewPage = ({ navigation }) => {
     }
   };
   function trimName(threshold, str) {
-    if (str.length <= threshold) {
+    if (str?.length <= threshold) {
       return str;
     }
-    return str.substring(0, threshold) + ".....";
+    return str?.substring(0, threshold) + ".....";
+  }
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      console.log("Refresh completed!");
+    }, 2000); 
   }
   return (
     <View style={styles.container}>
@@ -222,6 +229,12 @@ const PreviewPage = ({ navigation }) => {
 
       {/* Swipeable Content */}
       <ScrollView
+       refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+        />
+      }
         ref={scrollViewRef}
         horizontal
         pagingEnabled

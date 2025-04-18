@@ -23,7 +23,7 @@ import { Snackbar } from "react-native-paper";
 import { useSelector } from "react-redux";
 import { selectFavoriteStations, selectStations } from "../service/selector";
 import imageURL from "../../../constants/baseURL";
-
+import { RefreshControl } from 'react-native';
 
 
 const FavoriteScreen = ({navigation}) => {
@@ -31,6 +31,7 @@ const FavoriteScreen = ({navigation}) => {
  const stations = useSelector(selectStations);
  const favStations = useSelector(selectFavoriteStations);
  const [listData, setListData] = useState([...favStations]);
+  const [refreshing, setRefreshing] = useState(false);
 console.log("stations in favorite",stations.length);
 
  const formatDistance = (distance) => {
@@ -50,7 +51,13 @@ const openGoogleMaps = (latitude,longitude) => {
   });
   Linking.openURL(url);
 };
-
+const handleRefresh = () => {
+  setRefreshing(true);
+  setTimeout(() => {
+    setRefreshing(false);
+    console.log("Refresh completed!");
+  }, 2000); 
+}
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -217,6 +224,14 @@ const openGoogleMaps = (latitude,longitude) => {
     return (
       <View style={{ flex: 1 }}>
         <SwipeListView
+         refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#9Bd35A', '#689F38']}  // for Android
+            tintColor="#689F38"              // for iOS
+          />
+        }
           data={listData}
           renderItem={renderItem}
           renderHiddenItem={renderHiddenItem}

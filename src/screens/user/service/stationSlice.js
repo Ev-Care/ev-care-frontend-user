@@ -63,8 +63,8 @@ const stationSlice = createSlice({
       .addCase(fetchStationsByLocation.fulfilled, (state, action) => {
         // console.log("Stations fetched successfully 1:", action.payload);
         state.loading = false;
-        state.stations = action.payload; // Update the stations list
-        // console.log("Stations fetched successfully :", state.stations);
+        state.stations = action.payload.data; // Update the stations list
+        
       })
       // Handle rejected state for fetchStations
       .addCase(fetchStationsByLocation.rejected, (state, action) => {

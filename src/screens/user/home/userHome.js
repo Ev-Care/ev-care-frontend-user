@@ -143,8 +143,13 @@ const UserHome = ({ navigation }) => {
       if (subscription) subscription.remove();
     };
   }, []);
-
   const stations = useSelector(selectStations);
+
+  if(stations && stations.length > 0) {
+    console.log("stations in userHome available: ", stations);  
+  }else{
+    console.log("No stations found in userHome available"); 
+  }
 
  
   const formatDistance = (distance) => {

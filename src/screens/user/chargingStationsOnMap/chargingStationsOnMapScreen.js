@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import React, { useState, createRef, useEffect, useRef } from "react";
 import MyStatusBar from "../../../components/myStatusBar";
-import { Ionicons } from "@expo/vector-icons"; 
+import { Ionicons } from "@expo/vector-icons";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import {
   Colors,
@@ -32,10 +32,10 @@ const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
 
 
 const ChargingStationsOnMapScreen = ({ navigation }) => {
- 
+
   const [currentLocation, setCurrentLocation] = useState(null);
   const _map = useRef();
-  const [region,setRegion] = useState({
+  const [region, setRegion] = useState({
     latitude: 22.6292757,
     longitude: 88.444781,
     latitudeDelta: 0.03,
@@ -44,7 +44,8 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
 
   const stations = useSelector(selectStations);
   // console.log("stations in map page ",stations.length);
-  const [stationsList] = useState(stations);
+  const [stationsList] = useState(Array.isArray(stations) ? stations : []); // Ensure stationsList is always an array
+
   let mapAnimation = new Animated.Value(0);
   let mapIndex = 0;
 
@@ -78,59 +79,104 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
     });
   });
 
-   const getUserLocation = async () => {
-     try {
-       let { status } = await Location.requestForegroundPermissionsAsync();
-       
-       if (status !== "granted") {
-         setErrorMsg("Permission to access location was denied");
-         Alert.alert("Permission Denied", "Using default location (Delhi).");
-         setRegion({
-           latitude: 28.6139,
-           longitude: 77.209,
-           latitudeDelta: 0.05,
-           longitudeDelta: 0.05,
-         });
-         return;
-       }
-   
-       let location = await Location.getCurrentPositionAsync({});
-   
-       const { latitude, longitude } = location.coords;
-       // console.log("location fetched:", latitude, longitude);
-       // ✅ Update state instantly
-       setRegion({
-         latitude,
-         longitude,
-         latitudeDelta: 0.05,
-         longitudeDelta: 0.05,
-       });
-   
-       setCurrentLocation({ latitude, longitude });
-   
-       // ✅ Animate camera IMMEDIATELY without waiting for state update
-       if (_map.current) {
-         console.log("Animating camera to..:", latitude, longitude);
-         _map.current.animateCamera(
-           {
-             center: { latitude, longitude },
-             zoom: 15, // Adjust zoom level as needed
-           },
-           { duration: 500 }
-         );
-       }
-     } catch (error) {
-       console.error("Error requesting location:", error);
-       Alert.alert("Error", "Failed to fetch location. Using default (Delhi).");
-       setRegion({
-         latitude: 28.6139,
-         longitude: 77.209,
-         latitudeDelta: 0.05,
-         longitudeDelta: 0.05,
-       });
-     }
-   };
- 
+  const customMapStyle = [
+    {
+      featureType: "poi",
+      elementType: "all",
+      stylers: [{ visibility: "off" }],
+    },
+    {
+      featureType: "poi.government",
+      elementType: "all",
+      stylers: [{ visibility: "on" }],
+    },
+    {
+      featureType: "poi.medical",
+      elementType: "all",
+      stylers: [{ visibility: "on" }],
+    },
+    {
+      featureType: "poi.park",
+      elementType: "all",
+      stylers: [{ visibility: "on" }],
+    },
+    {
+      featureType: "poi.sports_complex",
+      elementType: "all",
+      stylers: [{ visibility: "on" }],
+    },
+    {
+      featureType: "poi.airport",
+      elementType: "all",
+      stylers: [{ visibility: "on" }],
+    },
+    {
+      featureType: "poi.train_station",
+      elementType: "all",
+      stylers: [{ visibility: "on" }],
+    },
+    {
+      featureType: "transit.station",
+      elementType: "all",
+      stylers: [{ visibility: "off" }],
+    },
+  ];
+  
+  
+
+  const getUserLocation = async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        Alert.alert("Permission Denied", "Using default location (Delhi).");
+        setRegion({
+          latitude: 28.6139,
+          longitude: 77.209,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        });
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+
+      const { latitude, longitude } = location.coords;
+      // console.log("location fetched:", latitude, longitude);
+      // ✅ Update state instantly
+      setRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
+
+      setCurrentLocation({ latitude, longitude });
+
+      // ✅ Animate camera IMMEDIATELY without waiting for state update
+      if (_map.current) {
+        console.log("Animating camera to..:", latitude, longitude);
+        _map.current.animateCamera(
+          {
+            center: { latitude, longitude },
+            zoom: 15, // Adjust zoom level as needed
+          },
+          { duration: 500 }
+        );
+      }
+    } catch (error) {
+      console.error("Error requesting location:", error);
+      Alert.alert("Error", "Failed to fetch location. Using default (Delhi).");
+      setRegion({
+        latitude: 28.6139,
+        longitude: 77.209,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
+    }
+  };
+
   const interpolation = stationsList.map((marker, index) => {
     const inputRange = [
       (index - 1) * cardWidth,
@@ -156,7 +202,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
     }
   };
 
-  const openGoogleMaps = (latitude,longitude) => {
+  const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
       ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
       android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
@@ -178,18 +224,18 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
   const _scrollView = useRef(null);
 
   return (
-    <View style={{ flex: 1,backgroundColor:Colors.bodyBackColor }}>
+    <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
       <View style={{ flex: 1 }}>
         {markersInfo()}
         {backArrow()}
         {chargingSpotsInfo()}
         {/* Floating Button to Get Current Location */}
-              <TouchableOpacity style={styles.locationButton} onPress={getUserLocation}>
-                <Ionicons name="locate-outline" size={28} color="white" />
-              </TouchableOpacity>
+        <TouchableOpacity style={styles.locationButton} onPress={getUserLocation}>
+          <Ionicons name="locate-outline" size={28} color="white" />
+        </TouchableOpacity>
       </View>
-      
+
     </View>
   );
 
@@ -213,51 +259,54 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
   function markersInfo() {
     return (
       <MapView
-      ref={_map}
-      style={{ flex: 1 }}
-      initialRegion={region}
-      provider={PROVIDER_GOOGLE}
-    >
-      {stationsList.map((marker, index) => {
-        const scaleStyle = {
-          transform: [
-            {
-              scale: interpolation[index].scale,
-            },
-          ],
-        };
-        return (
+        ref={_map}
+        style={{ flex: 1 }}
+        initialRegion={region}
+        provider={PROVIDER_GOOGLE}
+        customMapStyle={customMapStyle}
+
+      >
+        {stationsList.map((marker, index) => {
+          const scaleStyle = {
+            transform: [
+              {
+                scale: interpolation[index].scale,
+              },
+            ],
+          };
+          return (
+            <Marker
+              key={index}
+              coordinate={marker.coordinates}
+              
+              onPress={(e) => onMarkerPress(e)}
+              anchor={{ x: 0.5, y: 0.5 }}
+              // onPress={() => navigation.push("ChargingStationDetail")}
+              pinColor="green"
+            >
+              <Image
+                source={require("../../../../assets/images/stationMarker.png")}
+                style={{ width: 50, height: 50 }}
+                resizeMode="contain"
+              />
+            </Marker>
+
+          );
+        })}
+        {/* Custom Current Location Marker */}
+        {currentLocation && (
           <Marker
-            key={index}
-            coordinate={marker.coordinates}
-            onPress={(e) => onMarkerPress(e)}
-            anchor={{ x: 0.5, y: 0.5 }} 
-            // onPress={() => navigation.push("ChargingStationDetail")}
-            pinColor="green" 
+            coordinate={currentLocation}
+            anchor={{ x: 0.5, y: 0.5 }}
           >
             <Image
-                   source={require("../../../../assets/images/stationMarker.png")}
-                   style={{ width: 50, height: 50 }}
-                   resizeMode="contain"
-                 />
+              source={require("../../../../assets/images/userMarker.png")}
+              style={{ width: 40, height: 40 }}
+              resizeMode="contain"
+            />
           </Marker>
-          
-        );
-      })}
-      {/* Custom Current Location Marker */}
-                {currentLocation && (
-                 <Marker 
-                 coordinate={currentLocation}
-                 anchor={{ x: 0.5, y: 0.5 }} 
-               >
-                 <Image
-                   source={require("../../../../assets/images/userMarker.png")}
-                   style={{ width: 40, height: 40 }}
-                   resizeMode="contain"
-                 />
-               </Marker>
-                )}
-    </MapView>
+        )}
+      </MapView>
     );
   }
 
@@ -294,30 +343,30 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
         {stationsList.map((item, index) => (
           <TouchableOpacity
             activeOpacity={0.8}
-         onPress={() => navigation.push("ChargingStationDetail",{item})}
+            onPress={() => navigation.push("ChargingStationDetail", { item })}
             key={index}
             style={styles.enrouteChargingStationWrapStyle}
           >
-          <Image
-  source={
-    item?.station_images
-     ? { uri: imageURL.baseURL + item.station_images }
-      : { uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
-  }
-  style={styles.enrouteChargingStationImage}
-/>
+            <Image
+              source={
+                item?.station_images
+                  ? { uri: imageURL.baseURL + item.station_images }
+                  : { uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
+              }
+              style={styles.enrouteChargingStationImage}
+            />
 
             <View style={styles.enrouteStationOpenCloseWrapper}>
-            <Text
-       style={[
-     styles.statusClosed,
-    {
-      color: item.status === "Inactive" ? "#FF5722" : "white",
-    },
-  ]}
->
-  {item.status === "Inactive" ? "Closed" : "Open"}
-</Text>
+              <Text
+                style={[
+                  styles.statusClosed,
+                  {
+                    color: item.status === "Inactive" ? "#FF5722" : "white",
+                  },
+                ]}
+              >
+                {item.status === "Inactive" ? "Closed" : "Open"}
+              </Text>
             </View>
             <View style={{ flex: 1 }}>
               <View style={{ margin: Sizes.fixPadding }}>
@@ -338,7 +387,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                 >
                   <View style={{ ...commonStyles.rowAlignCenter }}>
                     <Text style={{ ...Fonts.blackColor18Medium }}>
-                     4.5
+                      4.5
                     </Text>
                     <MaterialIcons
                       name="star"
@@ -382,11 +431,11 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                     marginRight: Sizes.fixPadding - 5.0,
                   }}
                 >
-                 {formatDistance(item.distance_km)}
+                  {formatDistance(item.distance_km)}
                 </Text>
-                <TouchableOpacity onPress={()=>openGoogleMaps(item.coordinates.latitude, item.coordinates.longitude)} style={styles.getDirectionButton}>
-                <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
-               </TouchableOpacity>
+                <TouchableOpacity onPress={() => openGoogleMaps(item.coordinates.latitude, item.coordinates.longitude)} style={styles.getDirectionButton}>
+                  <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </TouchableOpacity>
@@ -434,7 +483,7 @@ const styles = StyleSheet.create({
   markerStyle: {
     alignItems: "center",
     justifyContent: "center",
-    
+
   },
   getDirectionButton: {
     backgroundColor: Colors.primaryColor,
@@ -468,7 +517,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 30,
-    backgroundColor: "#101942", 
+    backgroundColor: "#101942",
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",

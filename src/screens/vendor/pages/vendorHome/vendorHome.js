@@ -43,7 +43,7 @@ const COLORS = {
 
 const VendorHome =  () => {
   const navigation = useNavigation();
-  const [isLive, setIsLive] = useState(false);
+  const [isLive, setIsLive] = useState(true);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
   

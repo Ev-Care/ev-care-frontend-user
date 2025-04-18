@@ -221,7 +221,7 @@ const UpdateStation = ({ navigation, route }) => {
     console.log('Transformed Station Data in update:', JSON.stringify(stationData, null, 2));
 
     // Navigate to PreviewPage with the transformed data
-    navigation.push('PreviewPage', { stationData });
+    navigation.push('PreviewPage', { stationData, type: "update" , stationImage:photo});
   };
 
   const handleVisibility = (form) => {

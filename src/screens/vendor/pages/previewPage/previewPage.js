@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { Overlay } from "@rneui/themed";
 import {
   View,
   Text,
@@ -10,13 +11,22 @@ import {
   Dimensions,
   Alert,
   FlatList,
+  ActivityIndicator
 } from 'react-native';
+import {
+  Colors,
+  screenWidth,
+  Fonts,
+  Sizes,
+  commonStyles,
+} from "../../../../constants/styles";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MapView, { Marker } from 'react-native-maps';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectToken } from '../../../auth/services/selector';
 import { addStation, postStation } from '../../services/crudFunction';
+import { selectVendorLoading } from '../../services/selector';
 
 // Define colors at the top for easy customization
 const COLORS = {
@@ -40,8 +50,8 @@ const PreviewPage = ({ navigation }) => {
   const mapRef = useRef(null);
   const dispatch = useDispatch(); // Get the dispatch function
   const route = useRoute();
-  const { stationData } = route.params; // Retrieve the passed data
-
+  const { stationData, type, stationImage } = route.params; // Retrieve the passed data
+  const isLoading = useSelector(selectVendorLoading);
 
   console.log('Transformed station data preview:', JSON.stringify(stationData, null, 2));
 
@@ -75,47 +85,62 @@ const PreviewPage = ({ navigation }) => {
 
   const handleSubmit = async () => {
     try {
-      console.log('Submitting station data:', stationData);
+      if (type === "add") {
+        console.log('Submitting station data:', JSON.stringify(stationData));
 
-      // Validate chargers
-      if (!stationData.chargers || stationData.chargers.length === 0) {
-        Alert.alert('Validation Error', 'At least one charger must be added.');
-        return;
-      }
-
-      for (let i = 0; i < stationData.chargers.length; i++) {
-        const charger = stationData.chargers[i];
-        console.log(charger.charger_type, charger.max_power_kw, charger.connectors);
-        if (!charger.charger_type || !charger.max_power_kw || !charger.connectors || charger.connectors.length === 0) {
-          Alert.alert(
-            'Validation Error',
-            `Charger ${i + 1} details is incomplete. Please ensure all fields are filled.`
-          );
+        // Validate chargers
+        if (!stationData.chargers || stationData.chargers.length === 0) {
+          Alert.alert('Validation Error', 'At least one charger must be added.');
           return;
         }
 
-        for (let j = 0; j < charger.connectors.length; j++) {
-          const connector = charger.connectors[j];
-          console.log(connector.connectorType.connector_type_id);
-          if (!connector.connectorType.connector_type_id) {
+        for (let i = 0; i < stationData.chargers.length; i++) {
+          const charger = stationData.chargers[i];
+          console.log(!charger.charger_type, !charger.power_rating, !charger.connectors, charger.connectors.length === 0);
+          if (!charger.charger_type || !charger.power_rating || !charger.connectors || charger.connectors.length === 0) {
             Alert.alert(
               'Validation Error',
-              `Connector ${j + 1} details of Charger ${i + 1} is incomplete. Please ensure all fields are filled.`
+              `Charger ${i + 1} details is incomplete. Please ensure all fields are filled.`
             );
             return;
           }
+
+          for (let j = 0; j < charger.connectors.length; j++) {
+            const connector = charger.connectors[j];
+            // console.log(connector.connectorType.connector_type_id);
+            if (!connector?.connector_type_id) {
+              Alert.alert(
+                'Validation Error',
+                `Connector ${j + 1} details of Charger ${i + 1} is incomplete. Please ensure all fields are filled.`
+              );
+              return;
+            }
+          }
         }
+
+        // Call the API (replace with your actual API call)
+        // const response = await dispatch(addStation(stationData));
+        // console.log('after dispatching add response:', response.payload);
+
+        // Show success message
+
+        const response = await dispatch(addStation(stationData));
+        if (response.payload.code == 200 || response.payload.code == 201) {
+          Alert.alert('Success', 'Station added successfully!');
+          navigation.goBack(); // Go back to the previous screen
+          navigation.goBack(); // Go back to the previous screen
+        } else {
+          Alert.alert('Error', response.payload.message || 'Failed to add station. Please try again.');
+        }
+      } else {
+        Alert.alert('Success', 'Currently, this is a preview. The station will be added to the database soon.');
       }
 
-      // Call the API (replace with your actual API call)
-      // const response = await dispatch(addStation(stationData));
-      // console.log('after dispatching add response:', response.payload);
 
-      // Show success message
-      Alert.alert('Success', 'Currently, this is a preview. The station will be added to the database soon.');
+      // Alert.alert('Success', 'Currently, this is a preview. The station will be added to the database soon.');
       // navigation.navigate('VendorBottomTabBar'); // Navigate back after successful submission
-      navigation.goBack(); // Go back to the previous screen
-      navigation.goBack(); // Go back to the previous screen
+      // navigation.goBack(); // Go back to the previous screen
+      // navigation.goBack(); // Go back to the previous screen
     } catch (error) {
       console.error('Error adding station:', error);
       Alert.alert('Error', 'Failed to add station. Please try again.');
@@ -146,7 +171,7 @@ const PreviewPage = ({ navigation }) => {
       <View style={styles.header}>
         <Image
           source={{
-            uri: stationData.photo || 'https://via.placeholder.com/400x200',
+            uri: stationImage || 'https://via.placeholder.com/400x200',
           }}
           style={styles.mapBackground}
         />
@@ -208,6 +233,7 @@ const PreviewPage = ({ navigation }) => {
         {chargerTab()}
         {/* Details Tab */}
         {detailTab()}
+        {loadingDialog()}
       </ScrollView>
 
       {/* Bottom Buttons */}
@@ -228,48 +254,128 @@ const PreviewPage = ({ navigation }) => {
   );
 
   function chargerTab() {
-    return (
-      <ScrollView style={styles.tabContent}>
-        {stationData.chargers.map((charger, index) => (
-          <View key={index} style={styles.chargerCard}>
-            <Text style={styles.chargerTitle}>
-              Charger {index + 1} - {charger.charger_type}
-            </Text>
-            <View style={styles.chargerSpecs}>
-              <Text style={styles.chargerSpecText}>
-                {charger.charger_type}
+    if (type === "add") {
+      return (
+        <ScrollView style={styles.tabContent}>
+          {stationData?.chargers.map((charger, index) => (
+            <View key={index} style={styles.chargerCard}>
+              <Text style={styles.chargerTitle}>
+                Charger {index + 1} - {charger.charger_type}
               </Text>
-              <Text style={styles.chargerSpecText}>|</Text>
-              <Text style={styles.chargerSpecText}>
-                {charger.power_rating || charger.max_power_kw} kW
-              </Text>
-            </View>
+              <View style={styles.chargerSpecs}>
+                <Text style={styles.chargerSpecText}>
+                  {charger.charger_type}
+                </Text>
+                <Text style={styles.chargerSpecText}>|</Text>
+                <Text style={styles.chargerSpecText}>
+                  {charger.power_rating || charger.max_power_kw} kW
+                </Text>
+              </View>
 
-            <View style={styles.connectorContainer}>
-              {charger.connectors.map((connector, connectorIndex) => (
-                <View key={connectorIndex} style={styles.connector}>
-                  <Text style={styles.connectorTitle}>
-                    Connector {connectorIndex + 1} {}
-                  </Text>
-                  <View style={styles.connectorType}>
-                    <Icon
-                      name={connectorTypeMap[connector.connectorType.connector_type_id]?.icon || "alert-circle"}
-                      size={20}
-                      color={COLORS.primary}
-                    />
-                    <Text style={styles.connectorTypeText}>
-                      {connectorTypeMap[connector.connectorType.connector_type_id]?.name || "Unknown Type"}
+              <View style={styles.connectorContainer}>
+                {charger?.connectors.map((connector, connectorIndex) => (
+                  <View key={connectorIndex} style={styles.connector}>
+                    <Text style={styles.connectorTitle}>
+                      Connector {connectorIndex + 1} { }
                     </Text>
-                  </View>
+                    <View style={styles.connectorType}>
+                      <Icon
+                        name={connectorTypeMap[connector?.connector_type_id]?.icon || "alert-circle"}
+                        size={20}
+                        color={COLORS.primary}
+                      />
+                      <Text style={styles.connectorTypeText}>
+                        {connectorTypeMap[connector?.connector_type_id]?.name || "Unknown Type"}
+                      </Text>
+                    </View>
 
-                </View>
-              ))}
+                  </View>
+                ))}
+              </View>
             </View>
-          </View>
-        ))}
-      </ScrollView>
+          ))}
+        </ScrollView>
+      );
+    } else {
+      return (
+
+        <ScrollView style={styles.tabContent}>
+          {stationData?.chargers.map((charger, index) => (
+            <View key={index} style={styles.chargerCard}>
+              <Text style={styles.chargerTitle}>
+                Charger {index + 1} - {charger.charger_type}
+              </Text>
+              <View style={styles.chargerSpecs}>
+                <Text style={styles.chargerSpecText}>
+                  {charger.charger_type}
+                </Text>
+                <Text style={styles.chargerSpecText}>|</Text>
+                <Text style={styles.chargerSpecText}>
+                  {charger.power_rating || charger.max_power_kw} kW
+                </Text>
+              </View>
+
+              <View style={styles.connectorContainer}>
+                {charger?.connectors.map((connector, connectorIndex) => (
+                  <View key={connectorIndex} style={styles.connector}>
+                    <Text style={styles.connectorTitle}>
+                      Connector {connectorIndex + 1} { }
+                    </Text>
+                    <View style={styles.connectorType}>
+                      <Icon
+                        name={connectorTypeMap[connector?.connectorType?.connector_type_id]?.icon || "alert-circle"}
+                        size={20}
+                        color={COLORS.primary}
+                      />
+                      <Text style={styles.connectorTypeText}>
+                        {connectorTypeMap[connector?.connectorType?.connector_type_id]?.name || "Unknown Type"}
+                      </Text>
+                    </View>
+
+                  </View>
+                ))}
+              </View>
+            </View>
+          ))}
+        </ScrollView>)
+    }
+  }
+
+  function loadingDialog() {
+    return (
+      <Overlay isVisible={isLoading} overlayStyle={styles.dialogStyle}>
+        <ActivityIndicator size={50} color={COLORS.primary} style={{ alignSelf: "center" }} />
+        <Text style={{ marginTop: Sizes.fixPadding, textAlign: "center", ...Fonts.blackColor16Regular }}>
+          Please wait...
+        </Text>
+      </Overlay>
     );
   }
+
+  //This will be used to show the error dialog in future
+  function errorDialog() {
+    return (
+      <Overlay isVisible={isError} overlayStyle={styles.dialogStyle}>
+        <ActivityIndicator
+          size={50}
+          color={Colors.primaryColor}
+          style={{ alignSelf: "center" }}
+        />
+        <Text
+          style={{
+            marginTop: 16,
+            textAlign: "center",
+            color: Colors.red,
+            fontSize: 16,
+            fontWeight: "bold",
+          }}
+        >
+          {errorMessage || "An error occurred. Please try again."}
+        </Text>
+      </Overlay>
+    );
+  }
+
 
   function detailTab() {
     return (

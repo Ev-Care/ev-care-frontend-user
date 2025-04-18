@@ -19,9 +19,9 @@ const PendingApprovalScreen = (route) => {
   
     if(response?.payload.code === 200 || response?.payload.code === 201) {
       if(updatedUser.status !== "Active") {
-        Alert.alert("Please wait for admin approval before proceeding.");
+        Alert.alert("Pending","Please wait for admin approval before proceeding. You can contact admin with the below displayed number");
       } else {
-        Alert.alert("Your account is active. Proceeding!");
+        Alert.alert("Success","Your account is active. Proceeding!");
       }
     }
   }

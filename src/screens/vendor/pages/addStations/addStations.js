@@ -163,10 +163,10 @@ const AddStations = () => {
   };
   const handlePreview = () => {
     // Validate required fields
-    if (!stationName || !address || chargerForms.length === 0) {
-      alert('Please fill in all required fields.');
-      return;
-    }
+    // if (!stationName || !address || chargerForms.length === 0) {
+    //   alert('Please fill in all required fields.');
+    //   return;
+    // }
 
     // Transform amenities into a comma-separated string
     const amenitiesString = selectedAmenities
@@ -205,7 +205,7 @@ const AddStations = () => {
     console.log('Transformed Station Data:', JSON.stringify(stationData, null, 2));
 
     // Navigate to PreviewPage with the transformed data
-    navigation.push('PreviewPage', { stationData });
+    navigation.push('PreviewPage', { stationData, type:"add", stationImage: viewImage });
   };
 
   const handleVisibility = (form) => {

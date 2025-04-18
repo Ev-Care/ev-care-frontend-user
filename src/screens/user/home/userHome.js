@@ -126,9 +126,8 @@ const UserHome = ({ navigation }) => {
           (loc) => {
             const coords = loc.coords;
             setCurrentLocation(coords);
-            dispatch(
-              fetchStationsByLocation({ userId: user.id, radius, coords })
-            ); // dispatch when location updates
+            console.log({ user });
+            dispatch(fetchStationsByLocation({ radius, coords })); // dispatch when location updates
           }
         );
       } catch (err) {
@@ -145,13 +144,12 @@ const UserHome = ({ navigation }) => {
   }, []);
   const stations = useSelector(selectStations);
 
-  if(stations && stations.length > 0) {
-    console.log("stations in userHome available: ", stations);  
-  }else{
-    console.log("No stations found in userHome available"); 
+  if (stations && stations.length > 0) {
+    console.log("stations in userHome available: ", stations);
+  } else {
+    console.log("No stations found in userHome available");
   }
 
- 
   const formatDistance = (distance) => {
     if (distance >= 1000) {
       return (distance / 1000).toFixed(1).replace(/\.0$/, "") + "k km";
@@ -188,7 +186,6 @@ const UserHome = ({ navigation }) => {
     }),
   };
 
- 
   function getFirstName(fullName) {
     if (!fullName) return "";
     return fullName.trim().split(" ")[0];
@@ -350,7 +347,7 @@ const UserHome = ({ navigation }) => {
     const renderItem = ({ item }) => (
       <TouchableOpacity
         onPress={() => {
-          navigation.push("ChargingStationDetail",{item});
+          navigation.push("ChargingStationDetail", { item });
         }}
         style={styles.enrouteChargingStationWrapStyle}
       >

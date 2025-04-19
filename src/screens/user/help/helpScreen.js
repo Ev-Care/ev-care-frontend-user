@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     borderRadius: Sizes.fixPadding,
     paddingHorizontal: Sizes.fixPadding * 1.5,
     paddingVertical:
-      Platform.OS == "ios" ? Sizes.fixPadding - 2.0 : Sizes.fixPadding - 5.0,
+    6,
     marginTop: Sizes.fixPadding,
   },
   submitButtonStyle: {

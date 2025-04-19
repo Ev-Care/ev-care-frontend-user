@@ -52,7 +52,7 @@ const EditProfileScreen = ({ navigation }) => {
       business_name: user?.business_name,
       user_key: user?.user_key,
     }
-    console.log("Updated Data:", updatedData);
+    // console.log("Updated Data:", updatedData);
     const response = await dispatch(patchUpdateUserProfile(updatedData));
 
     if (response?.payload?.code === 200 || response?.payload?.code === 201) {
@@ -282,7 +282,7 @@ const EditProfileScreen = ({ navigation }) => {
             placeholderTextColor={Colors.grayColor}
             value={name}
             onChangeText={(text) => setname(text)}
-            style={{ ...Fonts.blackColor16Medium }}
+            style={[{ ...Fonts.blackColor16Medium ,}]}
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}
           />
@@ -300,7 +300,7 @@ const EditProfileScreen = ({ navigation }) => {
           marginBottom: Sizes.fixPadding + 5.0,
         }}
       >
-        {console.log("Profile Image URI:", user.avatar)}
+        {/* {console.log("Profile Image URI:", user.avatar)} */}
         {profileImage ? (
           <>
             {imageLoading && <ActivityIndicator size={40} color="#ccc" />}
@@ -379,6 +379,20 @@ const styles = StyleSheet.create({
     borderColor: Colors.whiteColor,
     borderWidth: 1.0,
   },
+  textInput: {
+    height: 50,
+    borderRadius: 4,
+    backgroundColor: "white",
+    paddingHorizontal: 10,
+    fontSize: 16,
+    borderWidth: 0.5,
+    borderColor: "gray",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 2, height: 4 },
+    shadowRadius: 6,
+    elevation: 10,
+  },
   profilePicStyle: {
     width: screenWidth / 4.0,
     height: screenWidth / 4.0,
@@ -391,8 +405,7 @@ const styles = StyleSheet.create({
     ...commonStyles.shadow,
     borderRadius: Sizes.fixPadding,
     paddingHorizontal: Sizes.fixPadding * 1.5,
-    paddingVertical:
-      Platform.OS == "ios" ? Sizes.fixPadding - 2.0 : Sizes.fixPadding - 5.0,
+    paddingVertical:6,
     marginTop: Sizes.fixPadding,
   },
   sheetWrapStyle: {

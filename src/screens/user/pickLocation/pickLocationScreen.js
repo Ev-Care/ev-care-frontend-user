@@ -95,8 +95,6 @@ const PickLocationScreen = ({ navigation, route }) => {
     }
   };
 
-
-
   // Fetch address from coordinates using Google Maps API
   const fetchAddressFromCoordinates = async (latitude, longitude) => {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${Key.apiKey}`;

@@ -10,8 +10,6 @@ import * as Location from "expo-location";
 import { useSelector } from "react-redux";
 import { selectStations } from "../service/selector";
 
-
-
 const ChargingStationMap = () => {
   const navigation = useNavigation();
   const mapRef = useRef(null);
@@ -24,11 +22,8 @@ const ChargingStationMap = () => {
   const [search, setSearch] = useState("");
   const [filteredStations, setFilteredStations] = useState([]);
   const [permission, setPermission] = useState("");
-  
   const [currentLocation, setCurrentLocation] = useState(null);
-
   const stations = useSelector(selectStations);
-
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -99,8 +94,8 @@ const ChargingStationMap = () => {
     setSearch(text);
     if (text) {
       const results =stations?.filter((station) =>
-        station.station_name.toLowerCase().includes(text.toLowerCase()) ||
-        station.address.toLowerCase().includes(text.toLowerCase())
+        station?.station_name.toLowerCase().includes(text.toLowerCase()) ||
+        station?.address.toLowerCase().includes(text.toLowerCase())
       );
       setFilteredStations(results);
     } else {
@@ -111,13 +106,13 @@ const ChargingStationMap = () => {
   const handleSelectStation = (station) => {
    
     mapRef.current.animateToRegion({
-      latitude: station.coordinates.latitude,
-      longitude: station.coordinates.longitude,
+      latitude: station?.coordinates.latitude,
+      longitude: station?.coordinates.longitude,
       latitudeDelta: 0.02,
       longitudeDelta: 0.02,
     }, 1000);
     setFilteredStations([]);
-    setSearch(station.station_name);
+    setSearch(station?.station_name);
   };
 
   return (
@@ -128,14 +123,14 @@ const ChargingStationMap = () => {
         value={search}
         onChangeText={handleSearch}
       />
-      {filteredStations.length > 0 && (
+      {filteredStations?.length > 0 && (
       <FlatList
       data={filteredStations}
-      keyExtractor={(item) => item.id.toString()}
+      keyExtractor={(item) => item?.id.toString()}
       style={styles.suggestionList}
       renderItem={({ item }) => (
         <TouchableOpacity style={styles.suggestionItem} onPress={() => handleSelectStation(item)}>
-          <Text>{item.station_name} - {item.address}</Text>
+          <Text>{item?.station_name} - {item?.address}</Text>
         </TouchableOpacity>
       )}
     />
@@ -154,8 +149,8 @@ const ChargingStationMap = () => {
    <Marker
    key={item?.id}
    coordinate={{
-     latitude: item?.coordinates.latitude,
-     longitude: item?.coordinates.longitude
+     latitude: item?.coordinates?.latitude,
+     longitude: item?.coordinates?.longitude
    }}
    onPress={() => navigation.navigate("ChargingStationDetail", { item })}
  >
@@ -165,9 +160,7 @@ const ChargingStationMap = () => {
        style={{ width: 40, height: 40 }}
        resizeMode="contain"
      />
-     <Text style={{ fontSize: 12, color: 'black', backgroundColor: 'white', paddingHorizontal: 4, borderRadius: 4 }}>
-       {item?.station_name || "Dummy Station"}
-     </Text>
+    
    </View>
  </Marker>
  
@@ -188,8 +181,6 @@ const ChargingStationMap = () => {
     </Marker>
   )}
 </MapView>
-
-  
       {/* Floating Button to Get Current Location */}
       <TouchableOpacity style={styles.locationButton} onPress={getUserLocation}>
         <Ionicons name="locate-outline" size={28} color="white" />

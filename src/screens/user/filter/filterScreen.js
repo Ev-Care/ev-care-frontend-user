@@ -85,15 +85,19 @@ const FilterScreen = ({ navigation,route }) => {
       connectionTypes: connectionTypes.filter(item => item.selected),
       powerRating: powerRating.filter(item => item.selected)
     };
-    route.params.onApplyFilter(selectedFilters);
+  
+    // Add optional chaining here to avoid potential errors if `route.params` is undefined
+    route.params?.onApplyFilter(selectedFilters);
     navigation.dispatch(StackActions.pop(1));
   };
+  
   const handleCancel = () => {
     setconnectionTypes(connectionTypesList.map(item => ({ ...item, selected: false })));
     setPowerRating(powerRatingList.map(item => ({ ...item, selected: false })));
     setselectedDistanceIndex(0);
     navigation.goBack();
-  }
+  };
+  
   
 
   return (

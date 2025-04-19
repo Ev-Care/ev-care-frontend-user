@@ -26,7 +26,7 @@ const PickLocationScreen = ({ navigation, route }) => {
   const [address, setAddress] = useState(""); // Store address
   const [region, setRegion] = useState({
     latitude: 28.6139, // Default to Delhi
-    longitude: 77.2090,
+    longitude: 77.209,
     latitudeDelta: 0.03,
     longitudeDelta: 0.03,
   });
@@ -61,8 +61,7 @@ const PickLocationScreen = ({ navigation, route }) => {
       let location = await Location.getCurrentPositionAsync({});
 
       const { latitude, longitude } = location.coords;
-      // console.log("location fetched:", latitude, longitude);
-      // ✅ Update state instantly
+    
       setRegion({
         latitude,
         longitude,
@@ -94,8 +93,6 @@ const PickLocationScreen = ({ navigation, route }) => {
       });
     }
   };
-
-
 
   // Fetch address from coordinates using Google Maps API
   const fetchAddressFromCoordinates = async (latitude, longitude) => {
@@ -134,31 +131,32 @@ const PickLocationScreen = ({ navigation, route }) => {
     fetchAddressFromCoordinates(lat, lng);
 
     if (mapRef.current) {
-      mapRef.current.animateCamera({ center: newRegion, zoom: 15 }, { duration: 1000 });
+      mapRef.current.animateCamera(
+        { center: newRegion, zoom: 15 },
+        { duration: 1000 }
+      );
     }
   };
 
   // Submit function
   const handleSubmit = () => {
-
-
     if (!selectedLocation || !address) {
       Alert.alert("No Location Selected", "Please select a location first.");
       return;
     }
+
     if (route.params?.addressFor === "destination") {
-      route.params.setDestinationAddress(address);
-      route.params.setDestinationCoordinate(selectedLocation);
+      route.params?.setDestinationAddress(address);
+      route.params?.setDestinationCoordinate(selectedLocation);
     } else if (route.params?.addressFor === "pickup") {
-      route.params.setPickupAddress(address);
-      route.params.setPickupCoordinate(selectedLocation);
-    }else if(route.params?.addressFor==="vendorAddress"){
-      route.params.setAddress(address);
-      route.params.setCoordinate(selectedLocation);
-    }
-    else {
-      route.params.setAddress(address);
-      route.params.setCoordinate(selectedLocation);
+      route.params?.setPickupAddress(address);
+      route.params?.setPickupCoordinate(selectedLocation);
+    } else if (route.params?.addressFor === "vendorAddress") {
+      route.params?.setAddress(address);
+      route.params?.setCoordinate(selectedLocation);
+    } else {
+      route.params?.setAddress(address);
+      route.params?.setCoordinate(selectedLocation);
     }
 
     navigation.dispatch(StackActions.pop(1));
@@ -172,7 +170,10 @@ const PickLocationScreen = ({ navigation, route }) => {
         fetchDetails={true}
         onPress={handleSearchSelect}
         query={{ key: Key.apiKey, language: "en" }}
-        styles={{ container: styles.searchContainer, textInput: styles.searchInput }}
+        styles={{
+          container: styles.searchContainer,
+          textInput: styles.searchInput,
+        }}
       />
 
       {/* Map View */}
@@ -188,10 +189,7 @@ const PickLocationScreen = ({ navigation, route }) => {
         {selectedLocation && <Marker coordinate={selectedLocation} />}
         {/* Custom Current Location Marker */}
         {currentLocation && (
-          <Marker
-            coordinate={currentLocation}
-            anchor={{ x: 0.5, y: 0.5 }}
-          >
+          <Marker coordinate={currentLocation} anchor={{ x: 0.5, y: 0.5 }}>
             <Image
               source={require("../../../../assets/images/userMarker.png")}
               style={{ width: 50, height: 50 }}
@@ -209,12 +207,18 @@ const PickLocationScreen = ({ navigation, route }) => {
       ) : null}
 
       {/* Current Location Button */}
-      <TouchableOpacity style={styles.currentLocationButton} onPress={getUserLocation}>
+      <TouchableOpacity
+        style={styles.currentLocationButton}
+        onPress={getUserLocation}
+      >
         <Ionicons name="locate-outline" size={28} color="black" />
       </TouchableOpacity>
 
       {/* Submit Button */}
-      <TouchableOpacity style={[commonStyles.button, styles.submitButton]} onPress={handleSubmit}>
+      <TouchableOpacity
+        style={[commonStyles.button, styles.submitButton]}
+        onPress={handleSubmit}
+      >
         <Text style={Fonts.whiteColor18Medium}>Select Location</Text>
       </TouchableOpacity>
     </View>

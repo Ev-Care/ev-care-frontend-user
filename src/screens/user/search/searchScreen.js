@@ -57,7 +57,6 @@ const ChargingStationMap = () => {
   
       const { latitude, longitude } = location.coords;
   
-      // ✅ Update state instantly
       setRegion({
         latitude,
         longitude,
@@ -67,13 +66,12 @@ const ChargingStationMap = () => {
   
       setCurrentLocation({ latitude, longitude });
   
-      // ✅ Animate camera IMMEDIATELY without waiting for state update
       if (mapRef.current) {
         console.log("Animating camera to:", latitude, longitude);
         mapRef.current.animateCamera(
           {
             center: { latitude, longitude },
-            zoom: 15, // Adjust zoom level as needed
+            zoom: 15,
           },
           { duration: 0 }
         );
@@ -93,9 +91,9 @@ const ChargingStationMap = () => {
   const handleSearch = (text) => {
     setSearch(text);
     if (text) {
-      const results =stations?.filter((station) =>
-        station?.station_name.toLowerCase().includes(text.toLowerCase()) ||
-        station?.address.toLowerCase().includes(text.toLowerCase())
+      const results = stations?.filter((station) =>
+        station?.station_name?.toLowerCase().includes(text.toLowerCase()) ||
+        station?.address?.toLowerCase().includes(text.toLowerCase())
       );
       setFilteredStations(results);
     } else {
@@ -104,16 +102,16 @@ const ChargingStationMap = () => {
   };
   
   const handleSelectStation = (station) => {
-   
-    mapRef.current.animateToRegion({
-      latitude: station?.coordinates.latitude,
-      longitude: station?.coordinates.longitude,
+    mapRef.current?.animateToRegion({
+      latitude: station?.coordinates?.latitude ?? 0,
+      longitude: station?.coordinates?.longitude ?? 0,
       latitudeDelta: 0.02,
       longitudeDelta: 0.02,
     }, 1000);
     setFilteredStations([]);
-    setSearch(station?.station_name);
+    setSearch(station?.station_name ?? "");
   };
+
 
   return (
     <View style={styles.container}>
@@ -123,70 +121,73 @@ const ChargingStationMap = () => {
         value={search}
         onChangeText={handleSearch}
       />
+  
+      {search.length > 0 && filteredStations?.length === 0 && (
+        <Text style={{ textAlign: 'center', marginVertical: 10, color: 'gray' }}>
+          Stations not found.
+        </Text>
+      )}
+  
       {filteredStations?.length > 0 && (
-      <FlatList
-      data={filteredStations}
-      keyExtractor={(item) => item?.id.toString()}
-      style={styles.suggestionList}
-      renderItem={({ item }) => (
-        <TouchableOpacity style={styles.suggestionItem} onPress={() => handleSelectStation(item)}>
-          <Text>{item?.station_name} - {item?.address}</Text>
-        </TouchableOpacity>
+        <FlatList
+          data={filteredStations}
+          keyExtractor={(item) => item?.id?.toString() ?? item?.station_name}
+          style={styles.suggestionList}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.suggestionItem}
+              onPress={() => handleSelectStation(item)}
+            >
+              <Text>{item?.station_name} - {item?.address}</Text>
+            </TouchableOpacity>
+          )}
+        />
       )}
-    />
-    
-      )}
-      
+  
       <MapView
-  ref={mapRef}
-  style={styles.map}
-  initialRegion={region}
-  showsUserLocation={false}
-  showsMyLocationButton={false}
->
-  {/* Charging Stations Markers with Custom Image */}
-  {stations?.map((item, index) => (
-   <Marker
-   key={item?.id}
-   coordinate={{
-     latitude: item?.coordinates?.latitude,
-     longitude: item?.coordinates?.longitude
-   }}
-   onPress={() => navigation.navigate("ChargingStationDetail", { item })}
- >
-   <View style={{ alignItems: 'center' }}>
-     <Image
-       source={require("../../../../assets/images/stationMarker.png")}
-       style={{ width: 40, height: 40 }}
-       resizeMode="contain"
-     />
-    
-   </View>
- </Marker>
- 
-  ))}
-
-  {/* Custom Current Location Marker */}
-  {currentLocation && (
-    <Marker 
-      coordinate={currentLocation}
-      anchor={{ x: 0.5, y: 0.5 }}
-    >
-      <Image
-        source={require("../../../../assets/images/userMarker.png")}
-        style={{ width: 50, height: 50 }}
-        resizeMode="contain"
-       
-      />
-    </Marker>
-  )}
-</MapView>
-      {/* Floating Button to Get Current Location */}
+        ref={mapRef}
+        style={styles.map}
+        initialRegion={region}
+        showsUserLocation={false}
+        showsMyLocationButton={false}
+      >
+        {stations?.map((item) => (
+          <Marker
+            key={item?.id}
+            coordinate={{
+              latitude: item?.coordinates?.latitude ?? 0,
+              longitude: item?.coordinates?.longitude ?? 0,
+            }}
+            onPress={() => navigation.navigate("ChargingStationDetail", { item })}
+          >
+            <View style={{ alignItems: 'center' }}>
+              <Image
+                source={require("../../../../assets/images/stationMarker.png")}
+                style={{ width: 40, height: 40 }}
+                resizeMode="contain"
+              />
+            </View>
+          </Marker>
+        ))}
+  
+        {currentLocation && (
+          <Marker coordinate={currentLocation} anchor={{ x: 0.5, y: 0.5 }}>
+            <Image
+              source={require("../../../../assets/images/userMarker.png")}
+              style={{ width: 50, height: 50 }}
+              resizeMode="contain"
+            />
+          </Marker>
+        )}
+      </MapView>
+  
       <TouchableOpacity style={styles.locationButton} onPress={getUserLocation}>
         <Ionicons name="locate-outline" size={28} color="white" />
       </TouchableOpacity>
     </View>
   );
+  
+  
   
 };
 

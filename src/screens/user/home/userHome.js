@@ -45,8 +45,7 @@ const COLORS = {
 const UserHome = ({ navigation }) => {
   const [count, setCount] = useState(0);
   const scrollY = useRef(new Animated.Value(0)).current;
-  const AnimatedLinearGradient =
-    Animated.createAnimatedComponent(LinearGradient);
+  const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
   const user = useSelector(selectUser);
   const [radius, setRadius] = useState(30000);
 
@@ -58,53 +57,8 @@ const UserHome = ({ navigation }) => {
     return "Good Evening";
   };
 
-  // const isFirstRender = React.useRef(true);
-  // const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const dispatch = useDispatch();
-
-  // Helper to fetch user location
-  // const getUserLocation = async () => {
-  //   try {
-  //     let { status } = await Location.requestForegroundPermissionsAsync();
-  //     if (status !== "granted") {
-  //       Alert.alert("Permission Denied", "Using default location (Delhi).");
-  //       setCurrentLocation({ latitude: 28.6139, longitude: 77.2090 });
-  //       return;
-  //     }
-  //     let location = await Location.getCurrentPositionAsync({});
-  //     const { latitude, longitude } = location.coords;
-  //     setCurrentLocation({ latitude, longitude });
-  //   } catch (error) {
-  //     console.error("Error requesting location:", error);
-  //     Alert.alert("Error", "Failed to fetch location. Using default (Delhi).");
-  //     setCurrentLocation({ latitude: 28.6139, longitude: 77.2090 });
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   if(stations.length > 0) {
-  //     console.log("stations in userHome: ", stations);
-  //   } else {
-  //     console.log("No stations found in userHome");
-  //   }
-  // }, [stations]);
-  // On render/update logic
-  // useEffect(() => {
-  //   if (!isFirstRender.current) {
-  //     if (currentLocation) {
-  //       console.log("Fetching stations for location:", currentLocation);
-  //       dispatch(fetchStationsByLocation({
-  //         userId: user?.id,
-  //         currentLocation,
-  //         radius
-  //       }));
-  //     }
-  //   } else {
-  //     getUserLocation();
-  //   }
-  //   isFirstRender.current = false;
-  // }, [currentLocation]);
 
   useEffect(() => {
     let subscription = null;
@@ -188,7 +142,7 @@ const UserHome = ({ navigation }) => {
 
   function getFirstName(fullName) {
     if (!fullName) return "";
-    return fullName.trim().split(" ")[0];
+    return fullName?.trim()?.split(" ")[0] ?? ""; // optional chaining here
   }
   return (
     <SafeAreaView style={styles.container}>
@@ -344,6 +298,14 @@ const UserHome = ({ navigation }) => {
     </SafeAreaView>
   );
   function recentStationsInfo() {
+    if (!stations || stations.length === 0) {
+      return (
+        <Text style={{ textAlign: 'center', marginVertical: 10, color: 'gray' }}>
+          No stations found.
+        </Text>
+      );
+    }
+  
     const renderItem = ({ item }) => (
       <TouchableOpacity
         onPress={() => {
@@ -354,51 +316,43 @@ const UserHome = ({ navigation }) => {
         <Image
           source={
             item?.station_images
-              ? { uri: imageURL.baseURL + item.station_images }
+              ? { uri: imageURL.baseURL + item?.station_images }
               : require("../../../../assets/images/chargingStations/charging_station3.png")
           }
           style={styles.enrouteChargingStationImage}
         />
-
+  
         <View style={styles.enrouteStationOpenCloseWrapper}>
           <Text
             style={[
               styles.statusClosed,
-              {
-                color: item?.status === "Inactive" ? "#FF5722" : "white",
-              },
+              { color: item?.status === "Inactive" ? "#FF5722" : "white" }
             ]}
           >
             {item?.status === "Inactive" ? "Closed" : "Open"}
           </Text>
         </View>
+  
         <View style={{ flex: 1 }}>
           <View style={{ margin: Sizes.fixPadding }}>
             <Text numberOfLines={1} style={{ ...Fonts.blackColor18SemiBold }}>
-              {item?.station_name}
+              {item?.station_name ?? "Unnamed Station"}
             </Text>
             <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
-              {item?.address}
+              {item?.address ?? "Address not available"}
             </Text>
-            <View
-              style={{
-                marginTop: Sizes.fixPadding,
-                ...commonStyles.rowAlignCenter,
-              }}
-            >
+  
+            <View style={{ marginTop: Sizes.fixPadding, ...commonStyles.rowAlignCenter }}>
               <View style={{ ...commonStyles.rowAlignCenter }}>
                 <Text style={{ ...Fonts.blackColor18Medium }}>3.5</Text>
-                <MaterialIcons
-                  name="star"
-                  color={Colors.yellowColor}
-                  size={20}
-                />
+                <MaterialIcons name="star" color={Colors.yellowColor} size={20} />
               </View>
+  
               <View
                 style={{
                   marginLeft: Sizes.fixPadding * 2.0,
                   ...commonStyles.rowAlignCenter,
-                  flex: 1,
+                  flex: 1
                 }}
               >
                 <View style={styles.primaryColorDot} />
@@ -407,19 +361,20 @@ const UserHome = ({ navigation }) => {
                   style={{
                     marginLeft: Sizes.fixPadding,
                     ...Fonts.grayColor14Medium,
-                    flex: 1,
+                    flex: 1
                   }}
                 >
-                  {item.chargers.length} Charging Points
+                  {item?.chargers?.length ?? 0} Charging Points
                 </Text>
               </View>
             </View>
           </View>
+  
           <View
             style={{
               ...commonStyles.rowAlignCenter,
               paddingLeft: Sizes.fixPadding,
-              marginTop: Sizes.fixPadding,
+              marginTop: Sizes.fixPadding
             }}
           >
             <Text
@@ -427,16 +382,17 @@ const UserHome = ({ navigation }) => {
               style={{
                 ...Fonts.blackColor16Medium,
                 flex: 1,
-                marginRight: Sizes.fixPadding - 5.0,
+                marginRight: Sizes.fixPadding - 5.0
               }}
             >
-              {formatDistance(item.distance_km)}
+              {formatDistance(item?.distance_km)}
             </Text>
+  
             <TouchableOpacity
               onPress={() =>
                 openGoogleMaps(
-                  item.coordinates.latitude,
-                  item.coordinates.longitude
+                  item?.coordinates?.latitude ?? 0,
+                  item?.coordinates?.longitude ?? 0
                 )
               }
               style={styles.getDirectionButton}
@@ -447,15 +403,17 @@ const UserHome = ({ navigation }) => {
         </View>
       </TouchableOpacity>
     );
+  
     return (
       <FlatList
         data={stations}
-        keyExtractor={(item) => `${item.id}`}
+        keyExtractor={(item) => `${item?.id}`}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
       />
     );
   }
+  
 };
 
 const styles = StyleSheet.create({

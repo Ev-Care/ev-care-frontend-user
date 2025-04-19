@@ -30,40 +30,44 @@ import { patchUpdateUserProfile } from "../service/crudFunction";
 import imageURL from "../../../constants/baseURL";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-
-
 const EditProfileScreen = ({ navigation }) => {
   const user = useSelector(selectUser);
   const [name, setname] = useState(user?.name || "Anonymous User");
   const [email, setemail] = useState(user?.email);
-  const [showChangeProfilePicSheet, setshowChangeProfilePicSheet] = useState(false);
-  const [profileImage, setProfileImage] = useState(imageURL.baseURL+user?.avatar);
+  const [showChangeProfilePicSheet, setshowChangeProfilePicSheet] =
+    useState(false);
+  const [profileImage, setProfileImage] = useState(
+    imageURL.baseURL + (user?.avatar || "")
+  );
   const [imageLoading, setImageLoading] = useState(false);
   const [profileImageURI, setProfileImageURI] = useState(null);
-  const dispatch = useDispatch(); // Get the dispatch function
-  const accessToken = useSelector(selectToken); // Get access token from Redux store
-
+  const dispatch = useDispatch();
+  const accessToken = useSelector(selectToken);
 
   const handleSubmit = async () => {
-    var updatedData = {
+    const updatedData = {
       owner_legal_name: name,
       email: email,
-      avatar: profileImageURI? profileImageURI : user?.avatar,
+      avatar: profileImageURI ? profileImageURI : user?.avatar,
       business_name: user?.business_name,
       user_key: user?.user_key,
-    }
+    };
     console.log("Updated Data:", updatedData);
+
     const response = await dispatch(patchUpdateUserProfile(updatedData));
 
     if (response?.payload?.code === 200 || response?.payload?.code === 201) {
       console.log("Profile updated successfully:", response?.payload?.data);
       AsyncStorage.setItem("user", JSON.stringify(response?.payload?.data));
-      Alert.alert("Profile Updated", "Your profile has been updated successfully.");
+      Alert.alert(
+        "Profile Updated",
+        "Your profile has been updated successfully."
+      );
       navigation.goBack();
-    }else {
+    } else {
       Alert.alert("Error", "Failed to update profile. Please try again.");
     }
-  }
+  };
 
   const pickImage = async (source) => {
     let permissionResult;
@@ -71,10 +75,11 @@ const EditProfileScreen = ({ navigation }) => {
     if (source === "camera") {
       permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     } else {
-      permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
     }
 
-    if (permissionResult.granted === false) {
+    if (permissionResult?.granted === false) {
       alert("Permission is required!");
       return;
     }
@@ -94,8 +99,13 @@ const EditProfileScreen = ({ navigation }) => {
       });
     }
 
-    if (!result.canceled) {
-      const imageUri = result.assets[0].uri;
+    if (!result?.canceled) {
+      const imageUri = result?.assets?.[0]?.uri;
+
+      if (!imageUri) {
+        Alert.alert("Error", "Unable to pick image.");
+        return;
+      }
 
       setImageLoading(true);
       const file = await setupImagePicker(imageUri);
@@ -105,13 +115,16 @@ const EditProfileScreen = ({ navigation }) => {
           postSingleFile({ file: file, accessToken: accessToken })
         );
 
-        if (response?.payload?.code === 200 || response?.payload?.code === 201) {
-
+        if (
+          response?.payload?.code === 200 ||
+          response?.payload?.code === 201
+        ) {
           setProfileImageURI(response?.payload?.data?.filePathUrl);
-          console.log("profile Image URI set successfully:", response?.payload?.data?.filePathUrl);
-          setProfileImage(imageURL.baseURL+profileImageURI);
+          // console.log("profile Image URI set successfully:", response?.payload?.data?.filePathUrl);
+          setProfileImage(
+            imageURL.baseURL + (response?.payload?.data?.filePathUrl || "")
+          );
           setImageLoading(false);
-          // Alert.alert("Success", "File uploaded successfully!");
         } else {
           Alert.alert("Error", "File Should be less than 5 MB");
         }
@@ -122,8 +135,6 @@ const EditProfileScreen = ({ navigation }) => {
       }
     }
   };
-
-
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -141,7 +152,6 @@ const EditProfileScreen = ({ navigation }) => {
           {profilePicInfo()}
           {nameInfo()}
           {emailInfo()}
-
         </ScrollView>
       </View>
       {updateProfileButton()}
@@ -225,8 +235,6 @@ const EditProfileScreen = ({ navigation }) => {
     );
   }
 
-
-
   function updateProfileButton() {
     return (
       <TouchableOpacity
@@ -239,17 +247,16 @@ const EditProfileScreen = ({ navigation }) => {
     );
   }
 
-
   function emailInfo() {
     return (
-      <View style={{ margin: Sizes.fixPadding * 2.0 }}>
+      <View style={{ margin: Sizes?.fixPadding * 2.0 }}>
         <Text style={{ ...Fonts.grayColor18SemiBold }}>Email address</Text>
         <View style={styles.textFieldWrapper}>
           <TextInput
             placeholder="Enter your email address here"
             placeholderTextColor={Colors.grayColor}
-            value={email}
-            onChangeText={(text) => setemail(text.toLowerCase)}
+            value={email || ""}
+            onChangeText={(text) => setemail(text?.toLowerCase?.())}
             style={{ ...Fonts.blackColor16Medium }}
             keyboardType="email-address"
             cursorColor={Colors.primaryColor}
@@ -262,13 +269,13 @@ const EditProfileScreen = ({ navigation }) => {
 
   function nameInfo() {
     return (
-      <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
+      <View style={{ marginHorizontal: Sizes?.fixPadding * 2.0 }}>
         <Text style={{ ...Fonts.grayColor18SemiBold }}>Name</Text>
         <View style={styles.textFieldWrapper}>
           <TextInput
             placeholder="Enter your name here"
             placeholderTextColor={Colors.grayColor}
-            value={name}
+            value={name || ""}
             onChangeText={(text) => setname(text)}
             style={{ ...Fonts.blackColor16Medium }}
             cursorColor={Colors.primaryColor}
@@ -284,11 +291,11 @@ const EditProfileScreen = ({ navigation }) => {
       <View
         style={{
           alignSelf: "center",
-          marginHorizontal: Sizes.fixPadding * 2.0,
-          marginBottom: Sizes.fixPadding + 5.0,
+          marginHorizontal: Sizes?.fixPadding * 2.0,
+          marginBottom: Sizes?.fixPadding + 5.0,
         }}
       >
-        {console.log("Profile Image URI:", user.avatar)}
+        {/* {console.log("Profile Image URI:", user?.avatar)} */}
         {profileImage ? (
           <>
             {imageLoading && <ActivityIndicator size={40} color="#ccc" />}
@@ -309,9 +316,7 @@ const EditProfileScreen = ({ navigation }) => {
         )}
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={() => {
-            setshowChangeProfilePicSheet(true);
-          }}
+          onPress={() => setshowChangeProfilePicSheet(true)}
           style={styles.editIconWrapper}
         >
           <MaterialIcons name="edit" color={Colors.whiteColor} size={16} />
@@ -319,7 +324,6 @@ const EditProfileScreen = ({ navigation }) => {
       </View>
     );
   }
-
 
   function header() {
     return (

@@ -28,6 +28,48 @@ import imageURL from "../../../constants/baseURL";
 const width = screenWidth;
 const cardWidth = width / 1.15;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
+const customMapStyle = [
+  {
+    featureType: "poi",
+    elementType: "all",
+    stylers: [{ visibility: "off" }],
+  },
+  {
+    featureType: "poi.government",
+    elementType: "all",
+    stylers: [{ visibility: "on" }],
+  },
+  {
+    featureType: "poi.medical",
+    elementType: "all",
+    stylers: [{ visibility: "on" }],
+  },
+  {
+    featureType: "poi.park",
+    elementType: "all",
+    stylers: [{ visibility: "on" }],
+  },
+  {
+    featureType: "poi.sports_complex",
+    elementType: "all",
+    stylers: [{ visibility: "on" }],
+  },
+  {
+    featureType: "poi.airport",
+    elementType: "all",
+    stylers: [{ visibility: "on" }],
+  },
+  {
+    featureType: "poi.train_station",
+    elementType: "all",
+    stylers: [{ visibility: "on" }],
+  },
+  {
+    featureType: "transit.station",
+    elementType: "all",
+    stylers: [{ visibility: "off" }],
+  },
+];
 
 
 
@@ -43,14 +85,13 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
   });
 
   const stations = useSelector(selectStations);
-  // console.log("stations in map page ",stations.length);
   const [stationsList] = useState(Array.isArray(stations) ? stations : []); // Ensure stationsList is always an array
 
   let mapAnimation = new Animated.Value(0);
   let mapIndex = 0;
 
   useEffect(() => {
-    console.log(" map page rendered")
+    console.log(" map page rendered");
     mapAnimation.addListener(({ value }) => {
       let index = Math.floor(value / cardWidth + 0.3);
       if (index >= stationsList.length) {
@@ -65,8 +106,8 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
       const regionTimeout = setTimeout(() => {
         if (mapIndex !== index) {
           mapIndex = index;
-          const { coordinates } = stationsList[index];
-          _map.current.animateToRegion(
+          const { coordinates } = stationsList[index] ?? {}; // Optional chaining
+          _map.current?.animateToRegion(
             {
               ...coordinates,
               latitudeDelta: region.latitudeDelta,
@@ -77,52 +118,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
         }
       }, 10);
     });
-  });
-
-  const customMapStyle = [
-    {
-      featureType: "poi",
-      elementType: "all",
-      stylers: [{ visibility: "off" }],
-    },
-    {
-      featureType: "poi.government",
-      elementType: "all",
-      stylers: [{ visibility: "on" }],
-    },
-    {
-      featureType: "poi.medical",
-      elementType: "all",
-      stylers: [{ visibility: "on" }],
-    },
-    {
-      featureType: "poi.park",
-      elementType: "all",
-      stylers: [{ visibility: "on" }],
-    },
-    {
-      featureType: "poi.sports_complex",
-      elementType: "all",
-      stylers: [{ visibility: "on" }],
-    },
-    {
-      featureType: "poi.airport",
-      elementType: "all",
-      stylers: [{ visibility: "on" }],
-    },
-    {
-      featureType: "poi.train_station",
-      elementType: "all",
-      stylers: [{ visibility: "on" }],
-    },
-    {
-      featureType: "transit.station",
-      elementType: "all",
-      stylers: [{ visibility: "off" }],
-    },
-  ];
-  
-  
+  }, [mapAnimation, stationsList]);
 
   const getUserLocation = async () => {
     try {
@@ -141,9 +137,8 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
       }
 
       let location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords ?? {}; // Optional chaining
 
-      const { latitude, longitude } = location.coords;
-      // console.log("location fetched:", latitude, longitude);
       // ✅ Update state instantly
       setRegion({
         latitude,
@@ -177,7 +172,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
     }
   };
 
-  const interpolation = stationsList.map((marker, index) => {
+  const interpolation = stationsList?.map((marker, index) => { // Optional chaining
     const inputRange = [
       (index - 1) * cardWidth,
       index * cardWidth,
@@ -192,6 +187,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
 
     return { scale };
   });
+
   const formatDistance = (distance) => {
     if (distance >= 1000) {
       return (distance / 1000).toFixed(1).replace(/\.0$/, '') + 'k km';
@@ -211,51 +207,40 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
   };
 
   const onMarkerPress = (mapEventData) => {
-    const markerID = mapEventData._targetInst.return.key;
+    const markerID = mapEventData?._targetInst?.return?.key; // Optional chaining
 
     let x = markerID * cardWidth + markerID * 20;
     if (Platform.OS === "ios") {
       x = x - SPACING_FOR_CARD_INSET;
     }
 
-    _scrollView.current.scrollTo({ x: x, y: 0, animated: true });
+    _scrollView.current?.scrollTo({ x: x, y: 0, animated: true }); // Optional chaining
   };
 
   const _scrollView = useRef(null);
 
+
+
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
-      <MyStatusBar />
-      <View style={{ flex: 1 }}>
-        {markersInfo()}
-        {backArrow()}
-        {chargingSpotsInfo()}
-        {/* Floating Button to Get Current Location */}
-        <TouchableOpacity style={styles.locationButton} onPress={getUserLocation}>
-          <Ionicons name="locate-outline" size={28} color="white" />
-        </TouchableOpacity>
+    stations ? (
+      <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
+        <MyStatusBar />
+        <View style={{ flex: 1 }}>
+          {markersInfo()}
+          {chargingSpotsInfo()}
+          {/* Floating Button to Get Current Location */}
+          <TouchableOpacity style={styles.locationButton} onPress={getUserLocation}>
+            <Ionicons name="locate-outline" size={28} color="white" />
+          </TouchableOpacity>
+        </View>
       </View>
-
-    </View>
+    ) : (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.bodyBackColor }}>
+        <Text style={{ fontSize: 18, color: 'gray' }}>Stations not found</Text>
+      </View>
+    )
   );
-
-  function backArrow() {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => navigation.pop()}
-        style={styles.backArrowWrapStyle}
-      >
-        <MaterialIcons
-          name={"arrow-back"}
-          size={24}
-          color={Colors.blackColor}
-          onPress={() => navigation.pop()}
-        />
-      </TouchableOpacity>
-    );
-  }
-
+  
   function markersInfo() {
     return (
       <MapView
@@ -264,24 +249,21 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
         initialRegion={region}
         provider={PROVIDER_GOOGLE}
         customMapStyle={customMapStyle}
-
       >
-        {stationsList.map((marker, index) => {
+        {stationsList?.map((marker, index) => { // Optional chaining to prevent errors if stationsList is undefined or null
           const scaleStyle = {
             transform: [
               {
-                scale: interpolation[index].scale,
+                scale: interpolation[index]?.scale, // Optional chaining for interpolation
               },
             ],
           };
           return (
             <Marker
               key={index}
-              coordinate={marker.coordinates}
-              
+              coordinate={marker?.coordinates} // Optional chaining for coordinates
               onPress={(e) => onMarkerPress(e)}
               anchor={{ x: 0.5, y: 0.5 }}
-              // onPress={() => navigation.push("ChargingStationDetail")}
               pinColor="green"
             >
               <Image
@@ -290,7 +272,6 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                 resizeMode="contain"
               />
             </Marker>
-
           );
         })}
         {/* Custom Current Location Marker */}
@@ -309,7 +290,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
       </MapView>
     );
   }
-
+  
   function chargingSpotsInfo() {
     return <View style={styles.chargingInfoWrapStyle}>{chargingSpots()}</View>;
   }
@@ -340,7 +321,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
           { useNativeDriver: true }
         )}
       >
-        {stationsList.map((item, index) => (
+        {stationsList?.map((item, index) => (
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={() => navigation.push("ChargingStationDetail", { item })}
@@ -350,22 +331,24 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
             <Image
               source={
                 item?.station_images
-                  ? { uri: imageURL.baseURL + item.station_images }
-                  : { uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
+                  ? { uri: imageURL.baseURL + item?.station_images }
+                  : {
+                      uri:
+                        "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                    }
               }
               style={styles.enrouteChargingStationImage}
             />
-
             <View style={styles.enrouteStationOpenCloseWrapper}>
               <Text
                 style={[
                   styles.statusClosed,
                   {
-                    color: item.status === "Inactive" ? "#FF5722" : "white",
+                    color: item?.status === "Inactive" ? "#FF5722" : "white",
                   },
                 ]}
               >
-                {item.status === "Inactive" ? "Closed" : "Open"}
+                {item?.status === "Inactive" ? "Closed" : "Open"}
               </Text>
             </View>
             <View style={{ flex: 1 }}>
@@ -374,10 +357,10 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                   numberOfLines={1}
                   style={{ ...Fonts.blackColor18SemiBold }}
                 >
-                  {item.station_name}
+                  {item?.station_name}
                 </Text>
                 <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
-                  {item.address}
+                  {item?.address}
                 </Text>
                 <View
                   style={{
@@ -386,14 +369,8 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                   }}
                 >
                   <View style={{ ...commonStyles.rowAlignCenter }}>
-                    <Text style={{ ...Fonts.blackColor18Medium }}>
-                      4.5
-                    </Text>
-                    <MaterialIcons
-                      name="star"
-                      color={Colors.yellowColor}
-                      size={20}
-                    />
+                    <Text style={{ ...Fonts.blackColor18Medium }}>4.5</Text>
+                    <MaterialIcons name="star" color={Colors.yellowColor} size={20} />
                   </View>
                   <View
                     style={{
@@ -411,7 +388,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                         flex: 1,
                       }}
                     >
-                      {item.chargers.length} Charging Points
+                      {item?.chargers?.length} Charging Points
                     </Text>
                   </View>
                 </View>
@@ -431,9 +408,14 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                     marginRight: Sizes.fixPadding - 5.0,
                   }}
                 >
-                  {formatDistance(item.distance_km)}
+                  {formatDistance(item?.distance_km)}
                 </Text>
-                <TouchableOpacity onPress={() => openGoogleMaps(item.coordinates.latitude, item.coordinates.longitude)} style={styles.getDirectionButton}>
+                <TouchableOpacity
+                  onPress={() =>
+                    openGoogleMaps(item?.coordinates?.latitude, item?.coordinates?.longitude)
+                  }
+                  style={styles.getDirectionButton}
+                >
                   <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
                 </TouchableOpacity>
               </View>
@@ -443,6 +425,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
       </Animated.ScrollView>
     );
   }
+  
 };
 
 export default ChargingStationsOnMapScreen;
@@ -498,18 +481,7 @@ const styles = StyleSheet.create({
     left: 0.0,
     right: 0.0,
   },
-  backArrowWrapStyle: {
-    width: 40.0,
-    height: 40.0,
-    backgroundColor: Colors.whiteColor,
-    borderRadius: 20.0,
-    ...commonStyles.shadow,
-    position: "absolute",
-    top: 20.0,
-    left: 20.0,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+ 
   locationButton: {
     position: "absolute",
     bottom: 200,

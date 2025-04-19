@@ -71,7 +71,6 @@ const reviews = [
 ];
 
 const ChargingStationDetailScreen = ({ route, navigation }) => {
-  // for  rating Start
   const [showRateNowDialog, setshowRateNowDialog] = useState(false);
   const [reviewComment, setReviewComment] = useState("");
   const [rate1, setRate1] = useState(false);
@@ -79,16 +78,20 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
   const [rate3, setRate3] = useState(false);
   const [rate4, setRate4] = useState(false);
   const [rate5, setRate5] = useState(false);
-  // for  rating end
 
   const [activeTab, setActiveTab] = useState(0);
   const favStations = useSelector(selectFavoriteStations);
   const [showSnackBar, setshowSnackBar] = useState(false);
   const scrollViewRef = useRef(null);
   const dispatch = useDispatch();
+  
   const station = route?.params?.item;
+  
+  if (!station) {
+    return <Text>Loading...</Text>; // Handle when station is not available
+  }
+
   const [inFavorite, setinFavorite] = useState(favStations.has(station));
-  const favoriteStations = useSelector(selectFavoriteStations);
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",
     CHAdeMO: "ev-plug-chademo",
@@ -96,6 +99,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     Wall: "ev-plug-type1",
     GBT: "ev-plug-type2",
   };
+  
   const amenityMap = {
     Restroom: "toilet",
     Cafe: "coffee",
@@ -117,8 +121,6 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
       setActiveTab(index);
     }
   };
-  //   const latitude = 28.6139;
-  //  const longitude = 77.2090;
 
   const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
@@ -131,35 +133,51 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
   const handleAddToFavorite = (stationId) => {
     if (station) {
       dispatch(addToFavorite(station));
-      setinFavorite(!inFavorite);
+      setinFavorite(prev => !prev);
       setshowSnackBar(true);
     }
   };
 
-  function trimName(threshold, str) {
+  const trimName = (threshold, str) => {
     if (str?.length <= threshold) {
       return str;
     }
     return str?.substring(0, threshold) + ".....";
-  }
-  console.log(`${imageURL.baseURL}${station.station_images}`);
-  console.log(station.id, "station id in detail screen");
+  };
 
+  
   return (
     <View style={styles.container}>
-      {/* Header with map background */}
-      <View style={styles.header}>
-        <Image
-          source={
-            station.station_images
-              ? { uri: imageURL.baseURL + station.station_images }
-              : {
-                  uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                }
-          }
-          style={styles.mapBackground}
-        />
+      {/* Header*/}
+     {header()}
+      {/* Tab Navigation */}
+    {navigationTab()}
+      {/* Swipeable Content */}
+     {SwipeableContent()}
 
+      {/* Bottom Buttons */}
+     {buttons()}
+      {/* Rating dialog */}
+      {rateNowDialog()}
+    </View>
+  );
+
+
+  function header() {
+    if (!station) {
+      return <Text>Loading...</Text>; // Or show a fallback UI
+    }
+  
+    const imageUrl = station?.station_images
+      ? { uri: imageURL.baseURL + station.station_images }
+      : {
+          uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        };
+  
+    return (
+      <View style={styles.header}>
+        <Image source={imageUrl} style={styles.mapBackground} />
+  
         <View style={styles.overlay}>
           <View style={styles.communityBadgeAndBack}>
             <MaterialIcons
@@ -167,7 +185,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
               color={Colors.whiteColor}
               size={26}
               onPress={() => {
-                navigation.pop();
+                navigation.pop(); // Check if this works as expected
               }}
             />
             <View style={styles.communityBadge}>
@@ -180,9 +198,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
           <Text style={styles.stationAddress}>
             {trimName(50, station?.address)}
           </Text>
-          <View
-            style={[{ flexDirection: "row", justifyContent: "space-between" }]}
-          >
+          <View style={[{ flexDirection: "row", justifyContent: "space-between" }]}>
             <View style={styles.statusContainer}>
               <Text
                 style={[
@@ -195,11 +211,12 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
                 {station?.status === "Inactive" ? "Closed" : "Open"}
               </Text>
               <Text style={styles.statusTime}>
-                • {station?.open_hours_opening_time} -{" "}
-                {station?.open_hours_closing_time}
+                • {station?.open_hours_opening_time} - {station?.open_hours_closing_time}
               </Text>
               <View style={styles.newBadge}>
-                <Text style={styles.newText}>4.5 ⭐</Text>
+                <Text style={styles.newText}>
+                  {station?.rating || "4.5"} ⭐
+                </Text>
               </View>
             </View>
             <MaterialIcons
@@ -213,194 +230,201 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
           </View>
         </View>
       </View>
-
-      {/* Tab Navigation */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
-          onPress={() => handleTabPress(0)}
-        >
-          <Text
-            style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
-          >
-            Charger
-          </Text>
-          {activeTab === 0 && <View style={styles.activeTabIndicator} />}
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
-          onPress={() => handleTabPress(1)}
-        >
-          <Text
-            style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
-          >
-            Details
-          </Text>
-          {activeTab === 1 && <View style={styles.activeTabIndicator} />}
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 2 && styles.activeTabButton]}
-          onPress={() => handleTabPress(2)}
-        >
-          <Text
-            style={[styles.tabText, activeTab === 2 && styles.activeTabText]}
-          >
-            Reviews
-          </Text>
-          {activeTab === 2 && <View style={styles.activeTabIndicator} />}
-        </TouchableOpacity>
-      </View>
-
-      {/* Swipeable Content */}
-      <ScrollView
-        ref={scrollViewRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
+    );
+  }
+  
+function navigationTab(){
+  return(
+    <View style={styles.tabContainer}>
+    <TouchableOpacity
+      style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
+      onPress={() => handleTabPress(0)}
+    >
+      <Text
+        style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
       >
-        {/* Charger Tab */}
-        {chargerTab()}
-        {/* Details Tab */}
-        {detailTab()}
-        {/* Reviews Tab */}
-        {reviewsTab()}
-      </ScrollView>
+        Charger
+      </Text>
+      {activeTab === 0 && <View style={styles.activeTabIndicator} />}
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
+      onPress={() => handleTabPress(1)}
+    >
+      <Text
+        style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
+      >
+        Details
+      </Text>
+      {activeTab === 1 && <View style={styles.activeTabIndicator} />}
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={[styles.tabButton, activeTab === 2 && styles.activeTabButton]}
+      onPress={() => handleTabPress(2)}
+    >
+      <Text
+        style={[styles.tabText, activeTab === 2 && styles.activeTabText]}
+      >
+        Reviews
+      </Text>
+      {activeTab === 2 && <View style={styles.activeTabIndicator} />}
+    </TouchableOpacity>
+  </View>
 
-      {/* Bottom Buttons */}
-      <View style={styles.bottomButtons}>
-        <TouchableOpacity
-          onPress={() =>
-            openGoogleMaps(
-              station?.coordinates.latitude,
-              station?.coordinates.longitude
-            )
-          }
-          style={styles.directionButton}
-        >
-          <Text style={styles.directionButtonText}>Get Direction</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            setshowRateNowDialog(true);
-          }}
-          style={styles.rateNowButton}
-        >
-          <Text style={styles.directionButtonText}>Rate Now</Text>
-        </TouchableOpacity>
-      </View>
-      {rateNowDialog()}
-    </View>
-  );
-  function chargerTab() {
+  )
+}
+function SwipeableContent() {
     return (
-      <ScrollView style={styles.tabContent}>
-        {station?.chargers?.map((charger, index) => (
-          <View key={charger.charger_id} style={styles.chargerCard}>
-            <Text style={styles.chargerTitle}>
-              {charger.name || `Charger ${index + 1}`}
+      <ScrollView
+      ref={scrollViewRef}
+      horizontal
+      pagingEnabled
+      showsHorizontalScrollIndicator={false}
+      onScroll={handleScroll}
+      scrollEventThrottle={16}
+    >
+      {/* Charger Tab */}
+      {chargerTab()}
+      {/* Details Tab */}
+      {detailTab()}
+      {/* Reviews Tab */}
+      {reviewsTab()}
+    </ScrollView>
+    )
+ }
+function buttons(){
+  return(
+    <View style={styles.bottomButtons}>
+    <TouchableOpacity
+      onPress={() =>
+        openGoogleMaps(
+          station?.coordinates?.latitude,
+          station?.coordinates?.longitude
+        )
+      }
+      style={styles.directionButton}
+    >
+      <Text style={styles.directionButtonText}>Get Direction</Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      onPress={() => {
+        setshowRateNowDialog(true);
+      }}
+      style={styles.rateNowButton}
+    >
+      <Text style={styles.directionButtonText}>Rate Now</Text>
+    </TouchableOpacity>
+  </View>
+  )
+}
+function chargerTab() {
+  return (
+    <ScrollView style={styles.tabContent}>
+      {station?.chargers?.map((charger, index) => (
+        <View key={charger.charger_id} style={styles.chargerCard}>
+          <Text style={styles.chargerTitle}>
+            {charger?.name || `Charger ${index + 1}`}
+          </Text>
+          <View style={styles.chargerSpecs}>
+            <Text style={styles.chargerSpecText}>
+              Type: {charger?.charger_type || "Unknown Type"}
             </Text>
-            <View style={styles.chargerSpecs}>
-              <Text style={styles.chargerSpecText}>
-                Type: {charger.charger_type || "Unknown Type"}
-              </Text>
-              <Text style={styles.chargerSpecText}>|</Text>
-              <Text style={styles.chargerSpecText}>
-                Power: {charger.max_power_kw || "Unknown Power"} KW
-              </Text>
-            </View>
-
-            {/* Map over connectors */}
-            <View style={styles.connectorContainer}>
-              {charger.connectors?.map((connector, connectorIndex) => (
-                <View key={connectorIndex} style={styles.connector}>
-                  <Text style={styles.connectorTitle}>
-                    {connector.name || `Connector ${connectorIndex + 1}`}
-                  </Text>
-                  <View style={styles.connectorType}>
-                    <Icon
-                      name={
-                        connectorIcons[connector.connectorType?.description] ||
-                        "ev-plug-type1"
-                      }
-                      size={20}
-                      color={COLORS.primary}
-                    />
-                    <Text style={styles.connectorTypeText}>
-                      {connector?.connectorType?.description}
-                    </Text>
-                    {/* <Text style={styles.connectorTypeText}>{console.log("hi", connector)}</Text> */}
-                  </View>
-                </View>
-              ))}
-            </View>
+            <Text style={styles.chargerSpecText}>|</Text>
+            <Text style={styles.chargerSpecText}>
+              Power: {charger?.max_power_kw || "Unknown Power"} KW
+            </Text>
           </View>
-        ))}
-      </ScrollView>
-    );
-  }
-  function detailTab() {
-    return (
-      <ScrollView style={styles.tabContent}>
-        <Text style={styles.sectionTitle}>Location Details</Text>
-        <View style={styles.mapContainer}>
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: station?.coordinates.latitude,
-              longitude: station?.coordinates.longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }}
-          >
-            <Marker
-              coordinate={{
-                latitude: station?.coordinates.latitude,
-                longitude: station?.coordinates.longitude,
-              }}
-              title={station?.station_name}
-              description={station?.address}
-            />
-          </MapView>
-        </View>
-        <Text style={styles.sectionTitle}>Address</Text>
-        <View style={styles.landmarkContainer}>
-          <Text style={styles.landmarkTitle}>{station?.address}</Text>
-        </View>
 
-        <Text style={styles.sectionTitle}>Amenities</Text>
-        <View style={styles.amenitiesContainer}>
-          {station?.amenities.split(",").map((amenityName, index) => {
-            const trimmedName = amenityName.trim();
-            let iconName = "help-circle"; // default fallback
-
-            if (trimmedName === "Restroom") {
-              iconName = "toilet";
-            } else if (trimmedName === "Cafe") {
-              iconName = "coffee";
-            } else if (trimmedName === "Wifi") {
-              iconName = "wifi";
-            } else if (trimmedName === "Store") {
-              iconName = "cart";
-            } else if (trimmedName === "Car Care") {
-              iconName = "car";
-            } else if (trimmedName === "Lodging") {
-              iconName = "bed";
-            }
-
-            return (
-              <View key={trimmedName} style={styles.amenityItem}>
-                <Icon name={iconName} size={24} color={COLORS.primary} />
-                <Text style={styles.connectorTypeText}>{trimmedName}</Text>
+          {/* Map over connectors */}
+          <View style={styles.connectorContainer}>
+            {charger?.connectors?.map((connector, connectorIndex) => (
+              <View key={connectorIndex} style={styles.connector}>
+                <Text style={styles.connectorTitle}>
+                  {connector?.name || `Connector ${connectorIndex + 1}`}
+                </Text>
+                <View style={styles.connectorType}>
+                  <Icon
+                    name={
+                      connector?.connectorType?.description
+                        ? connectorIcons[connector?.connectorType?.description]
+                        : "ev-plug-type1"
+                    }
+                    size={20}
+                    color={COLORS.primary}
+                  />
+                  <Text style={styles.connectorTypeText}>
+                    {connector?.connectorType?.description}
+                  </Text>
+                </View>
               </View>
-            );
-          })}
+            ))}
+          </View>
         </View>
-      </ScrollView>
-    );
-  }
+      ))}
+    </ScrollView>
+  );
+}
 
+function detailTab() {
+  return (
+    <ScrollView style={styles.tabContent}>
+      <Text style={styles.sectionTitle}>Location Details</Text>
+      <View style={styles.mapContainer}>
+        <MapView
+          style={styles.map}
+          initialRegion={{
+            latitude: station?.coordinates?.latitude,
+            longitude: station?.coordinates?.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          }}
+        >
+          <Marker
+            coordinate={{
+              latitude: station?.coordinates?.latitude,
+              longitude: station?.coordinates?.longitude,
+            }}
+            title={station?.station_name}
+            description={station?.address}
+          />
+        </MapView>
+      </View>
+      <Text style={styles.sectionTitle}>Address</Text>
+      <View style={styles.landmarkContainer}>
+        <Text style={styles.landmarkTitle}>{station?.address}</Text>
+      </View>
+
+      <Text style={styles.sectionTitle}>Amenities</Text>
+      <View style={styles.amenitiesContainer}>
+        {station?.amenities?.split(",").map((amenityName, index) => {
+          const trimmedName = amenityName.trim();
+          let iconName = "help-circle"; // default fallback
+
+          if (trimmedName === "Restroom") {
+            iconName = "toilet";
+          } else if (trimmedName === "Cafe") {
+            iconName = "coffee";
+          } else if (trimmedName === "Wifi") {
+            iconName = "wifi";
+          } else if (trimmedName === "Store") {
+            iconName = "cart";
+          } else if (trimmedName === "Car Care") {
+            iconName = "car";
+          } else if (trimmedName === "Lodging") {
+            iconName = "bed";
+          }
+
+          return (
+            <View key={trimmedName} style={styles.amenityItem}>
+              <Icon name={iconName} size={24} color={COLORS.primary} />
+              <Text style={styles.connectorTypeText}>{trimmedName}</Text>
+            </View>
+          );
+        })}
+      </View>
+    </ScrollView>
+  );
+}
   function reviewsTab() {
     return (
       <ScrollView style={styles.tabContent}>
@@ -414,7 +438,6 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
       </ScrollView>
     );
   }
-
   function renderReviewItem({ item }) {
     return (
       <View style={styles.reviewItem}>

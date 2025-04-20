@@ -41,15 +41,13 @@ const COLORS = {
   green: "#00FF00",
 };
 
-const VendorHome =  () => {
+const VendorHome = () => {
   const navigation = useNavigation();
   const [isLive, setIsLive] = useState(true);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
-  
 
   useEffect(() => {
-    // console.log("useEffect called");
     const fetchData = async () => {
       if (user?.id) {
         console.log("Dispatching fetchStations for user ID:", user?.id);
@@ -57,22 +55,16 @@ const VendorHome =  () => {
       } else {
         console.log("User ID is not available");
         console.log(useSelector(selectStation));
-
       }
     };
-  
+
     fetchData();
-  
+
     return () => {
       console.log("Cleaning up VendorHome...");
     };
   }, [user, dispatch]);
 
-
-  // Get current time to display appropriate greeting
-  
-  
-  
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good Morning";
@@ -81,8 +73,6 @@ const VendorHome =  () => {
   };
 
   const stations = useSelector(selectStation);
-  
-  
 
   const feature = [
     {
@@ -96,37 +86,26 @@ const VendorHome =  () => {
       description: "toggle below button to Enable Desable Availability",
     },
   ];
+
   function getFirstName(fullName) {
     if (!fullName) return "";
-    return fullName.trim().split(" ")[0];
+    return fullName?.trim().split(" ")[0];
   }
+
   return (
     <SafeAreaView style={styles.container}>
       <MyStatusBar />
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View style={styles.header}>
           <View style={styles.greetingContainer}>
-          <Text style={styles.greeting}>
-      Hi {getFirstName(user?.business_name)} {" "}!
-       </Text>
+            <Text style={styles.greeting}>
+              Hi {getFirstName(user?.business_name)}{" "}!
+            </Text>
             <Text style={styles.subGreeting}>{getGreeting()}</Text>
           </View>
-
-          <TouchableOpacity style={styles.notificationButton}>
-            {/* <Feather name="bell" size={24} color={COLORS.black} /> */}
-          </TouchableOpacity>
+          <TouchableOpacity style={styles.notificationButton}></TouchableOpacity>
         </View>
-        {/* Search Bar */}
-        {/* <View style={styles.searchContainer}>
-          <Feather name="search" size={20} color={COLORS.darkGray} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search"
-            placeholderTextColor={COLORS.darkGray}
-          />
-        </View> */}
-        {/* Welcome Card */}
+
         <View style={styles.welcomeCard}>
           <View style={styles.welcomeTextContainer}>
             <Text style={styles.welcomeTitle}>Welcome to EV Care!</Text>
@@ -135,7 +114,6 @@ const VendorHome =  () => {
               business.
             </Text>
           </View>
-
           <Image
             source={require("../../../../../assets/images/vendorWelcome.png")}
             style={styles.welcomeImage}
@@ -145,26 +123,23 @@ const VendorHome =  () => {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Manage App</Text>
-          <TouchableOpacity>
-            {/* <Text style={styles.viewAllText}>view all</Text> manageStationCard */}
-          </TouchableOpacity>
+          <TouchableOpacity></TouchableOpacity>
         </View>
 
         <View style={styles.featuresContainer}>
           {manageStationCard()}
           {helpNSupportCard()}
         </View>
-        {/* <View style={styles.featuresContainer}>
-          {bookingHistoryCard()}
-          {viewBookingsCard()}
-        </View> */}
       </ScrollView>
     </SafeAreaView>
   );
 
   function manageStationCard() {
     return (
-      <TouchableOpacity onPress={() => navigation.navigate("AllStations")} style={[styles.featureCard, { backgroundColor: COLORS.primary }]}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("AllStations")}
+        style={[styles.featureCard, { backgroundColor: COLORS.primary }]}
+      >
         <View style={styles.featureCardHeader}>
           <Text style={[styles.noOfStations, { color: COLORS.white }]}>
             {stations?.length} Stations
@@ -176,9 +151,9 @@ const VendorHome =  () => {
 
         <View style={styles.featureIconContainer}>
           <MaterialCommunityIcons
-            name="ev-station" // Make sure this icon exists in MaterialCommunityIcons
+            name="ev-station"
             size={24}
-            color={COLORS.primary} // Wrap in {}
+            color={COLORS.primary}
           />
         </View>
 
@@ -203,6 +178,7 @@ const VendorHome =  () => {
       </TouchableOpacity>
     );
   }
+
   function viewBookingsCard() {
     return (
       <View style={[styles.featureCard, { backgroundColor: COLORS.primary }]}>
@@ -232,6 +208,7 @@ const VendorHome =  () => {
       </View>
     );
   }
+
   function bookingHistoryCard() {
     return (
       <View style={[styles.featureCard, { backgroundColor: COLORS.white }]}>
@@ -262,9 +239,13 @@ const VendorHome =  () => {
       </View>
     );
   }
+
   function helpNSupportCard() {
     return (
-      <TouchableOpacity onPress={() => navigation.navigate("HelpScreen")} style={[styles.featureCard, { backgroundColor: COLORS.white }]}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("HelpScreen")}
+        style={[styles.featureCard, { backgroundColor: COLORS.white }]}
+      >
         <View style={styles.featureCardHeader}>
           <Text style={[styles.noOfStations, { color: COLORS.black }]}>
             24x7 Support
@@ -292,6 +273,7 @@ const VendorHome =  () => {
     );
   }
 };
+
 
 const styles = StyleSheet.create({
   container: {

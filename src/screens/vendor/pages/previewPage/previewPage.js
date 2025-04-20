@@ -90,7 +90,7 @@ const PreviewPage = ({ navigation }) => {
 
         // Validate chargers
         if (!stationData.chargers || stationData.chargers.length === 0) {
-          Alert.alert('Validation Error', 'At least one charger must be added.');
+          Alert.alert('Validation Error', 'At least one charger must be added. Do you want to add one now?');
           return;
         }
 
@@ -100,50 +100,38 @@ const PreviewPage = ({ navigation }) => {
           if (!charger.charger_type || !charger.power_rating || !charger.connectors || charger.connectors.length === 0) {
             Alert.alert(
               'Validation Error',
-              `Charger ${i + 1} details is incomplete. Please ensure all fields are filled.`
+              `Charger ${i + 1} details are incomplete. Would you like to review them?`
             );
             return;
           }
 
           for (let j = 0; j < charger.connectors.length; j++) {
             const connector = charger.connectors[j];
-            // console.log(connector.connectorType.connector_type_id);
             if (!connector?.connector_type_id) {
               Alert.alert(
                 'Validation Error',
-                `Connector ${j + 1} details of Charger ${i + 1} is incomplete. Please ensure all fields are filled.`
+                `Connector ${j + 1} details of Charger ${i + 1} are incomplete. Want to fill them now?`
               );
               return;
             }
           }
         }
 
-        // Call the API (replace with your actual API call)
-        // const response = await dispatch(addStation(stationData));
-        // console.log('after dispatching add response:', response.payload);
-
-        // Show success message
-
         const response = await dispatch(addStation(stationData));
         if (response.payload.code == 200 || response.payload.code == 201) {
           Alert.alert('Success', 'Station added successfully!');
-          navigation.navigate("AllStations"); // Go back to the previous screen
-      
+          navigation.navigate("AllStations");
         } else {
-          Alert.alert('Error', response.payload.message || 'Failed to add station. Please try again.');
+          Alert.alert('Error', response.payload.message || 'Failed to add station. Would you like to try again?');
         }
       } else {
         Alert.alert('Success', 'Currently, this is a preview. The station will be added to the database soon.');
+        navigation.navigate("AllStations");
       }
-
-
-      // Alert.alert('Success', 'Currently, this is a preview. The station will be added to the database soon.');
-      // navigation.navigate('VendorBottomTabBar'); // Navigate back after successful submission
-      // navigation.goBack(); // Go back to the previous screen
-      // navigation.goBack(); // Go back to the previous screen
+     
     } catch (error) {
       console.error('Error adding station:', error);
-      Alert.alert('Error', 'Failed to add station. Please try again.');
+      Alert.alert('Error', 'Failed to add station. Would you like to try again?');
     }
   };
 
@@ -159,19 +147,36 @@ const PreviewPage = ({ navigation }) => {
       setActiveTab(index);
     }
   };
+
   function trimName(threshold, str) {
     if (str.length <= threshold) {
       return str;
     }
     return str.substring(0, threshold) + ".....";
   }
+
+
   return (
     <View style={styles.container}>
       {/* Header */}
+     { header()}
+
+      {/* Tab Navigation */}
+    {navigationContainer()}
+
+      {/* Swipeable Content */}
+    {swipeableContent()}
+
+      {/* Bottom Buttons */}
+     {bottomButtons()}
+    </View>
+  );
+  function header() {
+    return (
       <View style={styles.header}>
         <Image
           source={{
-            uri: stationImage || 'https://via.placeholder.com/400x200',
+            uri: stationImage || 'https://via.placeholder.com/400x200', // Fallback to placeholder if stationImage is undefined
           }}
           style={styles.mapBackground}
         />
@@ -179,13 +184,17 @@ const PreviewPage = ({ navigation }) => {
           <View style={styles.communityBadge}>
             <Text style={styles.communityText}>Public</Text>
           </View>
-          <Text style={styles.stationName}>{trimName(30, stationData.station_name)}</Text>
-          <Text style={styles.stationAddress}>{trimName(50, stationData.address)}</Text>
+          <Text style={styles.stationName}>
+            {stationData?.station_name ? trimName(30, stationData.station_name) : "Station Name Unavailable"}
+          </Text>
+          <Text style={styles.stationAddress}>
+            {stationData?.address ? trimName(50, stationData.address) : "Address Unavailable"}
+          </Text>
           <View style={styles.statusContainer}>
             <Text style={styles.openHour}>Open Hours</Text>
             <Text style={styles.statusTime}>
-              • {stationData.open_hours_opening_time} -{' '}
-              {stationData.open_hours_closing_time}
+              • {stationData?.open_hours_opening_time || "N/A"} -{' '}
+              {stationData?.open_hours_closing_time || "N/A"}
             </Text>
             <View style={styles.newBadge}>
               <Text style={styles.newText}>New</Text>
@@ -193,153 +202,157 @@ const PreviewPage = ({ navigation }) => {
           </View>
         </View>
       </View>
-
-      {/* Tab Navigation */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
-          onPress={() => handleTabPress(0)}
-        >
-          <Text
-            style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
-          >
-            Charger
-          </Text>
-          {activeTab === 0 && <View style={styles.activeTabIndicator} />}
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
-          onPress={() => handleTabPress(1)}
-        >
-          <Text
-            style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
-          >
-            Details
-          </Text>
-          {activeTab === 1 && <View style={styles.activeTabIndicator} />}
-        </TouchableOpacity>
-      </View>
-
-      {/* Swipeable Content */}
-      <ScrollView
-        ref={scrollViewRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-      >
-        {/* Charger Tab */}
-        {chargerTab()}
-        {/* Details Tab */}
-        {detailTab()}
-        {loadingDialog()}
-      </ScrollView>
-
-      {/* Bottom Buttons */}
-      <View style={styles.bottomButtons}>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.pop();
-          }}
-          style={styles.editButton}
-        >
-          <Text style={styles.editButtonText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
-  function chargerTab() {
-    if (type === "add") {
-      return (
-        <ScrollView style={styles.tabContent}>
-          {stationData?.chargers.map((charger, index) => (
-            <View key={index} style={styles.chargerCard}>
-              <Text style={styles.chargerTitle}>
-                Charger {index + 1} - {charger.charger_type}
-              </Text>
-              <View style={styles.chargerSpecs}>
-                <Text style={styles.chargerSpecText}>
-                  {charger.charger_type}
-                </Text>
-                <Text style={styles.chargerSpecText}>|</Text>
-                <Text style={styles.chargerSpecText}>
-                  {charger.power_rating || charger.max_power_kw} kW
-                </Text>
-              </View>
-
-              <View style={styles.connectorContainer}>
-                {charger?.connectors.map((connector, connectorIndex) => (
-                  <View key={connectorIndex} style={styles.connector}>
-                    <Text style={styles.connectorTitle}>
-                      Connector {connectorIndex + 1} { }
-                    </Text>
-                    <View style={styles.connectorType}>
-                      <Icon
-                        name={connectorTypeMap[connector?.connector_type_id]?.icon || "alert-circle"}
-                        size={20}
-                        color={COLORS.primary}
-                      />
-                      <Text style={styles.connectorTypeText}>
-                        {connectorTypeMap[connector?.connector_type_id]?.name || "Unknown Type"}
-                      </Text>
-                    </View>
-
-                  </View>
-                ))}
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-      );
-    } else {
-      return (
-
-        <ScrollView style={styles.tabContent}>
-          {stationData?.chargers.map((charger, index) => (
-            <View key={index} style={styles.chargerCard}>
-              <Text style={styles.chargerTitle}>
-                Charger {index + 1} - {charger.charger_type}
-              </Text>
-              <View style={styles.chargerSpecs}>
-                <Text style={styles.chargerSpecText}>
-                  {charger.charger_type}
-                </Text>
-                <Text style={styles.chargerSpecText}>|</Text>
-                <Text style={styles.chargerSpecText}>
-                  {charger.power_rating || charger.max_power_kw} kW
-                </Text>
-              </View>
-
-              <View style={styles.connectorContainer}>
-                {charger?.connectors.map((connector, connectorIndex) => (
-                  <View key={connectorIndex} style={styles.connector}>
-                    <Text style={styles.connectorTitle}>
-                      Connector {connectorIndex + 1} { }
-                    </Text>
-                    <View style={styles.connectorType}>
-                      <Icon
-                        name={connectorTypeMap[connector?.connectorType?.connector_type_id]?.icon || "alert-circle"}
-                        size={20}
-                        color={COLORS.primary}
-                      />
-                      <Text style={styles.connectorTypeText}>
-                        {connectorTypeMap[connector?.connectorType?.connector_type_id]?.name || "Unknown Type"}
-                      </Text>
-                    </View>
-
-                  </View>
-                ))}
-              </View>
-            </View>
-          ))}
-        </ScrollView>)
-    }
+    );
   }
+  
+  function navigationContainer(){
+    return(
+      <View style={styles.tabContainer}>
+      <TouchableOpacity
+        style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
+        onPress={() => handleTabPress(0)}
+      >
+        <Text
+          style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
+        >
+          Charger
+        </Text>
+        {activeTab === 0 && <View style={styles.activeTabIndicator} />}
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
+        onPress={() => handleTabPress(1)}
+      >
+        <Text
+          style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
+        >
+          Details
+        </Text>
+        {activeTab === 1 && <View style={styles.activeTabIndicator} />}
+      </TouchableOpacity>
+    </View>
+    )
+  }
+  function swipeableContent() {
+    return (
+      <ScrollView
+      ref={scrollViewRef}
+      horizontal
+      pagingEnabled
+      showsHorizontalScrollIndicator={false}
+      onScroll={handleScroll}
+      scrollEventThrottle={16}
+    >
+      {/* Charger Tab */}
+      {chargerTab()}
+      {/* Details Tab */}
+      {detailTab()}
+      {loadingDialog()}
+    </ScrollView>
+    )
+  }
+function bottomButtons() {
+  return(
+    <View style={styles.bottomButtons}>
+    <TouchableOpacity
+      onPress={() => {
+        navigation?.pop();
+      }}
+      style={styles.editButton}
+    >
+      <Text style={styles.editButtonText}>Edit</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+      <Text style={styles.submitButtonText}>Submit</Text>
+    </TouchableOpacity>
+  </View>
+  )
+}
+function chargerTab() {
+  if (type === "add") {
+    return (
+      <ScrollView style={styles.tabContent}>
+        {stationData?.chargers?.map((charger, index) => (
+          <View key={index} style={styles.chargerCard}>
+            <Text style={styles.chargerTitle}>
+              Charger {index + 1} - {charger?.charger_type}
+            </Text>
+            <View style={styles.chargerSpecs}>
+              <Text style={styles.chargerSpecText}>
+                {charger?.charger_type}
+              </Text>
+              <Text style={styles.chargerSpecText}>|</Text>
+              <Text style={styles.chargerSpecText}>
+                {charger?.power_rating || charger?.max_power_kw} kW
+              </Text>
+            </View>
+
+            <View style={styles.connectorContainer}>
+              {charger?.connectors?.map((connector, connectorIndex) => (
+                <View key={connectorIndex} style={styles.connector}>
+                  <Text style={styles.connectorTitle}>
+                    Connector {connectorIndex + 1} { }
+                  </Text>
+                  <View style={styles.connectorType}>
+                    <Icon
+                      name={connectorTypeMap[connector?.connector_type_id]?.icon || "alert-circle"}
+                      size={20}
+                      color={COLORS.primary}
+                    />
+                    <Text style={styles.connectorTypeText}>
+                      {connectorTypeMap[connector?.connector_type_id]?.name || "Unknown Type"}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    );
+  } else {
+    return (
+      <ScrollView style={styles.tabContent}>
+        {stationData?.chargers?.map((charger, index) => (
+          <View key={index} style={styles.chargerCard}>
+            <Text style={styles.chargerTitle}>
+              Charger {index + 1} - {charger?.charger_type}
+            </Text>
+            <View style={styles.chargerSpecs}>
+              <Text style={styles.chargerSpecText}>
+                {charger?.charger_type}
+              </Text>
+              <Text style={styles.chargerSpecText}>|</Text>
+              <Text style={styles.chargerSpecText}>
+                {charger?.power_rating || charger?.max_power_kw} kW
+              </Text>
+            </View>
+
+            <View style={styles.connectorContainer}>
+              {charger?.connectors?.map((connector, connectorIndex) => (
+                <View key={connectorIndex} style={styles.connector}>
+                  <Text style={styles.connectorTitle}>
+                    Connector {connectorIndex + 1} { }
+                  </Text>
+                  <View style={styles.connectorType}>
+                    <Icon
+                      name={connectorTypeMap[connector?.connectorType?.connector_type_id]?.icon || "alert-circle"}
+                      size={20}
+                      color={COLORS.primary}
+                    />
+                    <Text style={styles.connectorTypeText}>
+                      {connectorTypeMap[connector?.connectorType?.connector_type_id]?.name || "Unknown Type"}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    );
+  }
+}
 
   function loadingDialog() {
     return (
@@ -351,7 +364,6 @@ const PreviewPage = ({ navigation }) => {
       </Overlay>
     );
   }
-
   //This will be used to show the error dialog in future
   function errorDialog() {
     return (
@@ -376,7 +388,6 @@ const PreviewPage = ({ navigation }) => {
     );
   }
 
-
   function detailTab() {
     return (
       <ScrollView style={styles.tabContent}>
@@ -386,32 +397,32 @@ const PreviewPage = ({ navigation }) => {
             ref={mapRef} // Attach the ref to the MapView
             style={styles.map}
             initialRegion={{
-              latitude: stationData.coordinates.latitude || 0,
-              longitude: stationData.coordinates.longitude || 0,
+              latitude: stationData?.coordinates?.latitude || 0,
+              longitude: stationData?.coordinates?.longitude || 0,
               latitudeDelta: 0.01,
               longitudeDelta: 0.01,
             }}
           >
             <Marker
               coordinate={{
-                latitude: stationData.coordinates.latitude || 0,
-                longitude: stationData.coordinates.longitude || 0,
+                latitude: stationData?.coordinates?.latitude || 0,
+                longitude: stationData?.coordinates?.longitude || 0,
               }}
-              title={stationData.station_name}
-              description={stationData.address}
+              title={stationData?.station_name || "Unknown Station"}
+              description={stationData?.address || "No Address"}
             />
           </MapView>
         </View>
         <Text style={styles.sectionTitle}>Address</Text>
         <View style={styles.landmarkContainer}>
-          <Text style={styles.landmarkTitle}>{stationData.address}</Text>
+          <Text style={styles.landmarkTitle}>{stationData?.address || "No Address"}</Text>
         </View>
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
-          {stationData.amenities.split(',').map((amenityName, index) => {
+          {stationData?.amenities?.split(',').map((amenityName, index) => {
             const trimmedName = amenityName.trim();
             const iconName = amenityMap[trimmedName] || "help-circle";
-
+  
             return (
               <View key={index} style={styles.amenityItem}>
                 <Icon name={iconName} size={24} color={COLORS.primary} />
@@ -423,6 +434,7 @@ const PreviewPage = ({ navigation }) => {
       </ScrollView>
     );
   }
+  
 };
 
 const styles = StyleSheet.create({

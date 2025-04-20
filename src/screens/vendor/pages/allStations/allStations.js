@@ -42,20 +42,23 @@ const AllStations = () => {
   const dispatch = useDispatch();
   const stations = useSelector(selectVendorStation);
   // console.log("Stations in AllStations:", stations?.length);
+
   const updateStationStatus = async (stationData) => {
     try {
       const response = await dispatch(updateStationsChargersConnectorsStatus(stationData));
       console.log("Response after update station status:", response.payload);
       if (response.payload) {
-        Alert.alert("Success", "Station status updated successfully.");
+        Alert.alert("Success", "Station status updated successfully!");
       } else {
-        Alert.alert("Error", "Failed to update station status.");
+        Alert.alert("Error", "Failed to update station status. Try again?");
       }
     } catch (error) {
       console.error("Error updating station status:", error);
-      Alert.alert("Error", "Failed to update station status.");
+      Alert.alert("Error", "Something went wrong. Want to retry?");
     }
-  }
+  
+}
+
 
   return (
     <View style={styles.container}>
@@ -68,7 +71,7 @@ const AllStations = () => {
         <Text style={styles.title}>All Charging Stations</Text>
         <View style={{ width: 24 }} />
       </View>
-
+  
       <ScrollView style={styles.scrollContainer}>
         {/* Check if stations is defined and not empty */}
         {stations && stations?.length > 0 ? (
@@ -79,17 +82,17 @@ const AllStations = () => {
               style={styles.card}
             >
               {station?.station_images ? (
-                <Image source={{ uri: imageURL.baseURL+station?.station_images }} style={styles.image} />
+                <Image source={{ uri: imageURL.baseURL + station?.station_images }} style={styles.image} />
               ) : (
                 <View style={[styles.image, { alignItems: "center", justifyContent: "center", backgroundColor: "gray", opacity: 0.1 }]}>
                   <MaterialIcons
                     name="ev-station"
-                    size={50}  // or match your image size
+                    size={50}
                     color="#a3a3c2"
                   />
                 </View>
               )}
-
+  
               <View style={styles.infoContainer}>
                 <View style={styles.headerRow}>
                   <Text style={styles.stationName}>
@@ -100,29 +103,26 @@ const AllStations = () => {
                     thumbColor={COLORS.white}
                     value={station.status !== "Inactive"}
                     onValueChange={async () => {
-
+  
                       // console.log("Station Status Before toggle:", availability[station.id]);
-
-                    //  await toggleStationAvailability(station.id);
-
+  
+                      // await toggleStationAvailability(station.id);
+  
                       // Retrieve the updated station data
                       // const updatedStation = stations.find((s) => s.id === station.id);
                       // console.log("Station Status after toggle:", availability[station.id]);
-                      
+  
                       var stationData = {
-                  
                         station_id: station.id,
                         statusType: "station",
                         status: station.status === "Active" || station.status === "Planned" ? "Inactive" : "active",
-
                       }
-                      
-                     await updateStationStatus(stationData);
-
-                    }
-                    }
+  
+                      await updateStationStatus(stationData);
+                    }}
                   />
                 </View>
+  
                 <Text style={styles.statusText}>
                   Status:{" "}
                   <Text
@@ -135,10 +135,11 @@ const AllStations = () => {
                     {station?.status !== "Inactive" ? "Live" : "Offline"}
                   </Text>
                 </Text>
-
+  
                 <Text style={styles.text}>
                   Chargers: {station?.chargers?.length || 0}
                 </Text>
+  
                 <Text style={styles.addressText}>{trimText(station?.address, 100)}</Text>
               </View>
             </TouchableOpacity>
@@ -146,13 +147,14 @@ const AllStations = () => {
         ) : (
           // Fallback UI when stations is undefined or empty
           <Text style={{ textAlign: "center", marginTop: 20 }}>
-            No stations available.
+            No stations available. Add one?
           </Text>
         )}
       </ScrollView>
       {/* <VendorBottomTabBar/> */}
     </View>
   );
+  
 };
 
 const styles = StyleSheet.create({

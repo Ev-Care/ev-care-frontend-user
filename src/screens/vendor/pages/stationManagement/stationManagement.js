@@ -225,18 +225,32 @@ const StationManagement = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       {/* Header with map background */}
+      { header()}
+      {/* Tab Navigation */}
+     {navigationContainer()}
+
+      {/* Swipeable Content */}
+    { swipeableContent()}
+
+      {/* Bottom Buttons */}
+       {bottomButtons()}
+      {deleteDialogue()}
+    </View>
+  );
+  function header() {
+    return (
       <View style={styles.header}>
         <Image
           source={
-            station.station_images
-              ? { uri: imageURL.baseURL + station.station_images }
+            station?.station_images
+              ? { uri: imageURL.baseURL + station?.station_images }
               : {
                   uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                 }
           }
           style={styles.mapBackground}
         />
-
+  
         <View style={styles.overlay}>
           <View style={styles.communityBadgeAndBack}>
             <MaterialIcons
@@ -251,12 +265,12 @@ const StationManagement = ({ navigation, route }) => {
               <Text style={styles.communityText}>Public</Text>
             </View>
           </View>
-
+  
           <Text style={styles.stationName}>
-            {trimName(50, station.station_name)}
+            {trimName(50, station?.station_name)}
           </Text>
           <Text style={styles.stationAddress}>
-            {trimName(50, station.address)}
+            {trimName(50, station?.address)}
           </Text>
           <View style={styles.statusContainer}>
             <Text
@@ -264,22 +278,22 @@ const StationManagement = ({ navigation, route }) => {
                 styles.statusClosed,
                 {
                   color:
-                    station.status === "Active"
+                    station?.status === "Active"
                       ? "green"
-                      : station.status === "Inactive"
+                      : station?.status === "Inactive"
                       ? "#FF5722"
-                      : station.status === "Planned"
+                      : station?.status === "Planned"
                       ? "blue"
                       : "black", // fallback color
                 },
               ]}
             >
-              {station.status}
+              {station?.status}
             </Text>
-
+  
             <Text style={styles.statusTime}>
-              • {station.open_hours_opening_time} -{" "}
-              {station.open_hours_closing_time}
+              • {station?.open_hours_opening_time} -{" "}
+              {station?.open_hours_closing_time}
             </Text>
             <View style={styles.newBadge}>
               <Text style={styles.newText}>4.5 ⭐</Text>
@@ -287,46 +301,49 @@ const StationManagement = ({ navigation, route }) => {
           </View>
         </View>
       </View>
-
-      {/* Tab Navigation */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
-          onPress={() => handleTabPress(0)}
-        >
-          <Text
-            style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
-          >
-            Charger
-          </Text>
-          {activeTab === 0 && <View style={styles.activeTabIndicator} />}
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
-          onPress={() => handleTabPress(1)}
-        >
-          <Text
-            style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
-          >
-            Details
-          </Text>
-          {activeTab === 1 && <View style={styles.activeTabIndicator} />}
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 2 && styles.activeTabButton]}
-          onPress={() => handleTabPress(2)}
-        >
-          <Text
-            style={[styles.tabText, activeTab === 2 && styles.activeTabText]}
-          >
-            Reviews
-          </Text>
-          {activeTab === 2 && <View style={styles.activeTabIndicator} />}
-        </TouchableOpacity>
-      </View>
-
-      {/* Swipeable Content */}
-      <ScrollView
+    );
+  }
+  
+ function navigationContainer(){
+  return( <View style={styles.tabContainer}>
+    <TouchableOpacity
+      style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
+      onPress={() => handleTabPress(0)}
+    >
+      <Text
+        style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
+      >
+        Charger
+      </Text>
+      {activeTab === 0 && <View style={styles.activeTabIndicator} />}
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
+      onPress={() => handleTabPress(1)}
+    >
+      <Text
+        style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
+      >
+        Details
+      </Text>
+      {activeTab === 1 && <View style={styles.activeTabIndicator} />}
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={[styles.tabButton, activeTab === 2 && styles.activeTabButton]}
+      onPress={() => handleTabPress(2)}
+    >
+      <Text
+        style={[styles.tabText, activeTab === 2 && styles.activeTabText]}
+      >
+        Reviews
+      </Text>
+      {activeTab === 2 && <View style={styles.activeTabIndicator} />}
+    </TouchableOpacity>
+  </View>)
+ }
+ function swipeableContent(){
+return(
+  <ScrollView
         ref={scrollViewRef}
         horizontal
         pagingEnabled
@@ -341,161 +358,162 @@ const StationManagement = ({ navigation, route }) => {
         {/* Reviews Tab */}
         {reviewsTab()}
       </ScrollView>
+)
 
-      {/* Bottom Buttons */}
-      <View style={styles.bottomButtons}>
-        <TouchableOpacity
-          onPress={() => {
-            setshowDeleteDialogue(true);
-          }}
-          style={styles.editButton}
-        >
-          <Text style={styles.editButtonText}>Delete</Text>
-        </TouchableOpacity>
-        {/* onPress={() => navigation.navigate("UpdateStation")} */}
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={() => navigation.navigate("UpdateStation", { station })}
-        >
-          <Text style={styles.submitButtonText}>Update</Text>
-        </TouchableOpacity>
-      </View>
-      {deleteDialogue()}
-    </View>
-  );
-  function chargerTab(station) {
-    // Log chargers
+ }
+ function chargerTab(station) {
+  // Log chargers
 
-    return (
-      <ScrollView style={styles.tabContent}>
-        {station.chargers.map((charger, index) => (
-          <View key={charger.charger_id} style={styles.chargerCard}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.chargerTitle}>
-                {"Charger " + (index + 1)}
-              </Text>
-              <Switch
-                value={charger.status === "Available"}
-                onValueChange={() =>
-                  dispatch(
-                    updateStationsChargersConnectorsStatus({
-                      statusType: "charger",
-                      status:
-                        charger.status === "Available" ? "inactive" : "active",
-                      station_id: station.id,
-                      charger_id: charger.charger_id,
-                    })
-                  )
-                }
-                trackColor={{ false: "#FF8C00", true: COLORS.primary }}
-                thumbColor="#ffffff"
-              />
-            </View>
-
-            <View style={styles.chargerSpecs}>
-              <Text style={styles.chargerSpecText}>
-                Type: {charger.charger_type}
-              </Text>
-              <Text style={styles.chargerSpecText}>|</Text>
-              <Text style={styles.chargerSpecText}>
-                Power: {charger.max_power_kw} kW
-              </Text>
-            </View>
-
-            <View style={styles.connectorContainer}>
-              {charger.connectors.map((conn, index) => (
-                <View key={index} style={styles.connector}>
-                  <View style={styles.connectorType}>
-                    <Icon
-                      name={
-                        connectorIcons[conn.connectorType.description] ||
-                        "ev-plug-type1"
-                      }
-                      size={20}
-                      color={COLORS.primary}
-                    />
-                    <Text style={styles.connectorTypeText}>
-                      {conn.connectorType.description}
-                    </Text>
-                  </View>
-                  <Switch
-                    value={conn.connector_status === "operational"} // Use backend enum value
-                    onValueChange={() =>
-                      dispatch(
-                        updateStationsChargersConnectorsStatus({
-                          station_id: station.id,
-                          statusType: "connector",
-                          charger_id: charger.charger_id,
-                          connector_id: conn.charger_connector_id,
-                          status:
-                            conn.connector_status === "operational"
-                              ? "inactive"
-                              : "active",
-                        })
-                      )
-                    }
-                    trackColor={{ false: "#FF8C00", true: COLORS.primary }} // Orange when off, green when on
-                    thumbColor={
-                      conn.connector_status === "operational"
-                        ? "#ffffff"
-                        : "#ffffff"
-                    } // Thumb color stays white
-                  />
-                </View>
-              ))}
-            </View>
-          </View>
-        ))}
-      </ScrollView>
-    );
-  }
-
-  function detailTab() {
-    return (
-      <ScrollView style={styles.tabContent}>
-        <Text style={styles.sectionTitle}>Location Details</Text>
-        <View style={styles.mapContainer}>
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: station.coordinates.latitude,
-              longitude: station.coordinates.longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }}
-          >
-            <Marker
-              coordinate={{
-                latitude: station.coordinates.latitude,
-                longitude: station.coordinates.longitude,
-              }}
-              title={station.station_name}
-              description={station.address}
+  return (
+    <ScrollView style={styles.tabContent}>
+      {station?.chargers?.map((charger, index) => (
+        <View key={charger?.charger_id} style={styles.chargerCard}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.chargerTitle}>
+              {"Charger " + (index + 1)}
+            </Text>
+            <Switch
+              value={charger?.status === "Available"}
+              onValueChange={() =>
+                dispatch(
+                  updateStationsChargersConnectorsStatus({
+                    statusType: "charger",
+                    status:
+                      charger?.status === "Available" ? "inactive" : "active",
+                    station_id: station?.id,
+                    charger_id: charger?.charger_id,
+                  })
+                )
+              }
+              trackColor={{ false: "#FF8C00", true: COLORS.primary }}
+              thumbColor="#ffffff"
             />
-          </MapView>
-        </View>
-        <Text style={styles.sectionTitle}>Address</Text>
-        <View style={styles.landmarkContainer}>
-          <Text style={styles.landmarkTitle}>{station.address}</Text>
-        </View>
+          </View>
 
-        <Text style={styles.sectionTitle}>Amenities</Text>
-        <View style={styles.amenitiesContainer}>
-          {station.amenities.split(",").map((amenityName, index) => {
-            const trimmedName = amenityName.trim();
-            const iconName = amenityMap[trimmedName] || "help-circle";
+          <View style={styles.chargerSpecs}>
+            <Text style={styles.chargerSpecText}>
+              Type: {charger?.charger_type}
+            </Text>
+            <Text style={styles.chargerSpecText}>|</Text>
+            <Text style={styles.chargerSpecText}>
+              Power: {charger?.max_power_kw} kW
+            </Text>
+          </View>
 
-            return (
-              <View key={index} style={styles.amenityItem}>
-                <Icon name={iconName} size={24} color={COLORS.primary} />
-                <Text style={styles.connectorTypeText}>{trimmedName}</Text>
+          <View style={styles.connectorContainer}>
+            {charger?.connectors?.map((conn, index) => (
+              <View key={index} style={styles.connector}>
+                <View style={styles.connectorType}>
+                  <Icon
+                    name={
+                      connectorIcons[conn?.connectorType?.description] ||
+                      "ev-plug-type1"
+                    }
+                    size={20}
+                    color={COLORS.primary}
+                  />
+                  <Text style={styles.connectorTypeText}>
+                    {conn?.connectorType?.description}
+                  </Text>
+                </View>
+                <Switch
+                  value={conn?.connector_status === "operational"} // Use backend enum value
+                  onValueChange={() =>
+                    dispatch(
+                      updateStationsChargersConnectorsStatus({
+                        station_id: station?.id,
+                        statusType: "connector",
+                        charger_id: charger?.charger_id,
+                        connector_id: conn?.charger_connector_id,
+                        status:
+                          conn?.connector_status === "operational"
+                            ? "inactive"
+                            : "active",
+                      })
+                    )
+                  }
+                  trackColor={{ false: "#FF8C00", true: COLORS.primary }} // Orange when off, green when on
+                  thumbColor={
+                    conn?.connector_status === "operational"
+                      ? "#ffffff"
+                      : "#ffffff"
+                  } // Thumb color stays white
+                />
               </View>
-            );
-          })}
+            ))}
+          </View>
         </View>
-      </ScrollView>
-    );
-  }
+      ))}
+    </ScrollView>
+  );
+}
+
+function bottomButtons() {
+  return( <View style={styles.bottomButtons}>
+    <TouchableOpacity
+      onPress={() => {
+        setshowDeleteDialogue(true);
+      }}
+      style={styles.editButton}
+    >
+      <Text style={styles.editButtonText}>Delete</Text>
+    </TouchableOpacity>
+    {/* onPress={() => navigation.navigate("UpdateStation")} */}
+    <TouchableOpacity
+      style={styles.submitButton}
+      onPress={() => navigation?.navigate("UpdateStation", { station })}
+    >
+      <Text style={styles.submitButtonText}>Update</Text>
+    </TouchableOpacity>
+  </View>)
+}
+function detailTab() {
+  return (
+    <ScrollView style={styles.tabContent}>
+      <Text style={styles.sectionTitle}>Location Details</Text>
+      <View style={styles.mapContainer}>
+        <MapView
+          style={styles.map}
+          initialRegion={{
+            latitude: station?.coordinates?.latitude || 0,
+            longitude: station?.coordinates?.longitude || 0,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          }}
+        >
+          <Marker
+            coordinate={{
+              latitude: station?.coordinates?.latitude || 0,
+              longitude: station?.coordinates?.longitude || 0,
+            }}
+            title={station?.station_name}
+            description={station?.address}
+          />
+        </MapView>
+      </View>
+      <Text style={styles.sectionTitle}>Address</Text>
+      <View style={styles.landmarkContainer}>
+        <Text style={styles.landmarkTitle}>{station?.address}</Text>
+      </View>
+
+      <Text style={styles.sectionTitle}>Amenities</Text>
+      <View style={styles.amenitiesContainer}>
+        {station?.amenities?.split(",").map((amenityName, index) => {
+          const trimmedName = amenityName.trim();
+          const iconName = amenityMap[trimmedName] || "help-circle";
+
+          return (
+            <View key={index} style={styles.amenityItem}>
+              <Icon name={iconName} size={24} color={COLORS.primary} />
+              <Text style={styles.connectorTypeText}>{trimmedName}</Text>
+            </View>
+          );
+        })}
+      </View>
+    </ScrollView>
+  );
+}
+
   function reviewsTab() {
     return (
       <ScrollView style={styles.tabContent}>
@@ -510,11 +528,11 @@ const StationManagement = ({ navigation, route }) => {
   function renderReviewItem({ item }) {
     return (
       <View style={styles.reviewItem}>
-        <Image source={{ uri: item.avatar }} style={styles.reviewAvatar} />
+        <Image source={{ uri: item?.avatar }} style={styles.reviewAvatar} />
         <View style={styles.reviewContent}>
-          <Text style={styles.reviewName}>{item.name}</Text>
-          {renderStars(item.rating)}
-          <Text style={styles.reviewText}>{item.comment}</Text>
+          <Text style={styles.reviewName}>{item?.name}</Text>
+          {renderStars(item?.rating)}
+          <Text style={styles.reviewText}>{item?.comment}</Text>
         </View>
       </View>
     );

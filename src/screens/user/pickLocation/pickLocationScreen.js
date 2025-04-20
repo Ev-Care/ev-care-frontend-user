@@ -8,12 +8,21 @@ import {
   Platform,
   Image,
   Text,
+  ActivityIndicator,
 } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import {
+  Colors,
+  screenWidth,
+  Fonts,
+  Sizes,
+  commonStyles,
+} from "../../../constants/styles";
+import { Overlay } from "@rneui/themed";
+import MapView, { Marker, PROVIDER_GOOGLE,} from "react-native-maps";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import Geolocation from "react-native-geolocation-service";
 import Key from "../../../constants/key";
-import { Colors, Fonts, commonStyles } from "../../../constants/styles";
+
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, StackActions } from "@react-navigation/native";
 import * as Location from "expo-location";
@@ -23,6 +32,7 @@ const PickLocationScreen = ({ navigation, route }) => {
   const mapRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
+  const [isLoading ,setIsLoading] = useState(false);
   const [address, setAddress] = useState(""); // Store address
   const [region, setRegion] = useState({
     latitude: 28.6139, // Default to Delhi
@@ -31,21 +41,26 @@ const PickLocationScreen = ({ navigation, route }) => {
     longitudeDelta: 0.03,
   });
   useEffect(() => {
+    setIsLoading(true);
     const timeout = setTimeout(() => {
       if (mapRef.current) {
         getUserLocation();
       } else {
         console.log("Map reference is not ready yet");
       }
+      setIsLoading(false);
     }, 500);
-
+  
     return () => clearTimeout(timeout);
   }, []);
+  
 
   const getUserLocation = async () => {
     try {
+      setIsLoading(true);
+  
       let { status } = await Location.requestForegroundPermissionsAsync();
-
+  
       if (status !== "granted") {
         setErrorMsg("Permission to access location was denied");
         Alert.alert("Permission Denied", "Using default location (Delhi).");
@@ -57,27 +72,26 @@ const PickLocationScreen = ({ navigation, route }) => {
         });
         return;
       }
-
+  
       let location = await Location.getCurrentPositionAsync({});
-
+  
       const { latitude, longitude } = location.coords;
-    
+  
       setRegion({
         latitude,
         longitude,
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
       });
-
+  
       setCurrentLocation({ latitude, longitude });
-
-      // ✅ Animate camera IMMEDIATELY without waiting for state update
+  
       if (mapRef.current) {
         console.log("Animating camera to..:", latitude, longitude);
         mapRef.current.animateCamera(
           {
             center: { latitude, longitude },
-            zoom: 15, // Adjust zoom level as needed
+            zoom: 15,
           },
           { duration: 0 }
         );
@@ -91,9 +105,11 @@ const PickLocationScreen = ({ navigation, route }) => {
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
-
+  
   // Fetch address from coordinates using Google Maps API
   const fetchAddressFromCoordinates = async (latitude, longitude) => {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${Key.apiKey}`;
@@ -221,8 +237,20 @@ const PickLocationScreen = ({ navigation, route }) => {
       >
         <Text style={Fonts.whiteColor18Medium}>Select Location</Text>
       </TouchableOpacity>
+      {loadingDialog()}
     </View>
   );
+ 
+  function loadingDialog() {
+    return (
+      <Overlay isVisible={isLoading} overlayStyle={styles.dialogStyle}>
+        <ActivityIndicator size={50} color={Colors.primaryColor} style={{ alignSelf: "center" }} />
+        <Text style={{ marginTop: Sizes.fixPadding, textAlign: "center", ...Fonts.blackColor16Regular }}>
+          Please wait...
+        </Text>
+      </Overlay>
+    );
+  }
 };
 
 const styles = StyleSheet.create({

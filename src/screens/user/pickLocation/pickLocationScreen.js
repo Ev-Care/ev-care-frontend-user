@@ -76,7 +76,9 @@ const PickLocationScreen = ({ navigation, route }) => {
       let location = await Location.getCurrentPositionAsync({});
   
       const { latitude, longitude } = location.coords;
-  
+      setSelectedLocation({ latitude, longitude });
+      fetchAddressFromCoordinates(latitude, longitude);
+      
       setRegion({
         latitude,
         longitude,

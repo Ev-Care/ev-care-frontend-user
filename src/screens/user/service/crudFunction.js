@@ -1,7 +1,7 @@
 //get Access Token from Async Storage
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { getAllStationsByLocationAPI, updateUserProfileAPI , getUserByKeyAPI} from "./api"; // Import the API function
+import { getAllStationsByLocationAPI, updateUserProfileAPI , getUserByKeyAPI, getEnrouteStationsAPI} from "./api"; // Import the API function
 // Async thunk to fetch stations
 export const fetchStationsByLocation = createAsyncThunk(
   "stations/fetchStations",
@@ -43,6 +43,20 @@ export const patchUpdateUserProfile = createAsyncThunk(
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
       // console.log("data:",  {...data, accessToken}); // Log the access token for debugging
       const response = await updateUserProfileAPI({...data, accessToken}); // Call the API to fetch stations by location
+      return response.data; // Assuming the API returns a list of stations
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const getEnrouteStations = createAsyncThunk(
+  "stations/getEnrouteStations",
+  async (data, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
+      const response = await getEnrouteStationsAPI({...data, accessToken}); // Call the API to fetch stations by location
+      console.log("response of enroute:", response.data); // Log the response for debugging
       return response.data; // Assuming the API returns a list of stations
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);

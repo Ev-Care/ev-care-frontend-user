@@ -29,11 +29,12 @@ import { postSingleFile } from "../../auth/services/crudFunction";
 import { patchUpdateUserProfile } from "../service/crudFunction";
 import imageURL from "../../../constants/baseURL";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { RefreshControl } from 'react-native';
 const EditProfileScreen = ({ navigation }) => {
   const user = useSelector(selectUser);
   const [name, setname] = useState(user?.name || "Anonymous User");
   const [email, setemail] = useState(user?.email);
+  const [refreshing, setRefreshing] = useState(false);
   const [showChangeProfilePicSheet, setshowChangeProfilePicSheet] =
     useState(false);
   const [profileImage, setProfileImage] = useState(
@@ -135,13 +136,27 @@ const EditProfileScreen = ({ navigation }) => {
       }
     }
   };
-
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      console.log("Refresh completed!");
+    }, 2000); 
+  }
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
       <View style={{ flex: 1 }}>
         {header()}
         <ScrollView
+         refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#9Bd35A', '#101942']}  // Android spinner colors
+            tintColor= "#101942"            // iOS spinner color
+          />
+        }
           showsVerticalScrollIndicator={false}
           automaticallyAdjustKeyboardInsets={true}
           contentContainerStyle={{

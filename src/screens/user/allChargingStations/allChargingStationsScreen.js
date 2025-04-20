@@ -14,12 +14,13 @@ import { useSelector } from "react-redux";
 import { selectStations } from "../service/selector";
 import { filterStations } from "../../../utils/filter";
 import imageURL from "../../../constants/baseURL";
+import { RefreshControl } from 'react-native';
 
 
 
 const AllChargingStationsScreen = ({ navigation }) => {
   const stations = useSelector(selectStations);
-
+  const [refreshing, setRefreshing] = useState(false);
   console.log("stations in all charging stations screen ", stations?.length);
 
   const openGoogleMaps = (latitude, longitude) => {
@@ -47,6 +48,13 @@ const AllChargingStationsScreen = ({ navigation }) => {
       return distance + ' km';
     }
   };
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      console.log("Refresh completed!");
+    }, 2000); 
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -159,6 +167,8 @@ const AllChargingStationsScreen = ({ navigation }) => {
   
     return (
       <FlatList
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
         data={filteredStations}
         keyExtractor={(item) => `${item?.id}`}
         renderItem={renderItem}

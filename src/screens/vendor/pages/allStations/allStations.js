@@ -21,7 +21,7 @@ import { selectUser } from "../../../auth/services/selector";
 import { selectStation, selectVendorStation } from "../../services/selector";
 import { updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
 import imageURL from "../../../../constants/baseURL";
-
+import { RefreshControl } from 'react-native';
 const COLORS = {
   primary: "#101942",
   secondary: "#FF8C00",
@@ -36,10 +36,11 @@ const COLORS = {
 const trimText = (text, limit) =>
   text.length > limit ? text.substring(0, limit) + "..." : text;
 
-const AllStations = () => {
+const AllStations = ({route}) => {
   const navigation = useNavigation();
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
+  const [refreshing, setRefreshing] = useState(false); 
   const stations = useSelector(selectVendorStation);
   // console.log("Stations in AllStations:", stations?.length);
   const updateStationStatus = async (stationData) => {
@@ -56,7 +57,15 @@ const AllStations = () => {
       Alert.alert("Error", "Failed to update station status.");
     }
   }
-
+  const handleRefresh = () => {
+    setRefreshing(true);
+    route.params.setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      route.params.setRefreshing(false);
+      console.log("Refresh completed!");
+    }, 2000); 
+  }
   return (
     <View style={styles.container}>
       <MyStatusBar />
@@ -69,7 +78,17 @@ const AllStations = () => {
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView style={styles.scrollContainer}>
+      <ScrollView style={styles.scrollContainer}
+       refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          colors={['#9Bd35A', '#101942']}  // Android spinner colors
+          tintColor= "#101942"            // iOS spinner color
+        />
+      }
+      >
+
         {/* Check if stations is defined and not empty */}
         {stations && stations?.length > 0 ? (
           stations.map((station) => (

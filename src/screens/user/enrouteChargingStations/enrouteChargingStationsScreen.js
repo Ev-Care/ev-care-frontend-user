@@ -24,6 +24,7 @@ import {
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MapViewDirections from "react-native-maps-directions";
 import Key from "../../../constants/key";
+import imageURL from "../../../constants/baseURL";
 
 const width = screenWidth;
 const cardWidth = width / 1.15;
@@ -93,7 +94,9 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   const [expanded, setExpanded] = useState(false);
   const [showBottomSheet, setshowBottomSheet] = useState(true);
   const [addedStops, setAddedStops] = useState([]);
-
+  const {enrouteStations} = route?.params;
+  console.log("enrouteStations",JSON.stringify(enrouteStations[0]));
+  console.log("enrouteStations",enrouteStations.length);
   const fromDefaultLocation = {
     latitude: route.params?.pickupCoordinate?.latitude || 0,
     longitude: route.params?.pickupCoordinate?.longitude || 0,
@@ -102,7 +105,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
     latitude: route.params?.destinationCoordinate?.latitude || 0,
     longitude: route.params?.destinationCoordinate?.longitude || 0,
   };
-  const [markerList] = useState(chargingSpotsList); // Declared already
+  const [markerList] = useState(enrouteStations); // Declared already
   const [region, setRegion] = useState({
     latitude: fromDefaultLocation.latitude,
     longitude: fromDefaultLocation.longitude,
@@ -171,6 +174,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   });
   const latitude = 28.6139;
   const longitude = 77.209;
+  
   const toggleStop = (station) => {
     const exists = addedStops.find((stop) => stop.id === station.id);
     if (exists) {
@@ -212,6 +216,15 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
     }
     return str.substring(0, threshold) + ".....";
   }
+  const formatDistance = (distance) => {
+    if (distance >= 1000) {
+      return (distance / 1000).toFixed(1).replace(/\.0$/, '') + 'k km';
+    } else if (distance % 1 !== 0) {
+      return distance.toFixed(1) + ' km';
+    } else {
+      return distance + ' km';
+    }
+  };
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -407,8 +420,15 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
             key={index}
             style={styles.enrouteChargingStationWrapStyle}
           >
-            <Image
-              source={item.stationImage}
+          <Image
+              source={
+                item?.station_images
+                  ? { uri: imageURL.baseURL + item?.station_images }
+                  : {
+                      uri:
+                        "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                    }
+              }
               style={styles.enrouteChargingStationImage}
             />
             <View style={styles.enrouteStationOpenCloseWrapper}>
@@ -422,7 +442,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                   numberOfLines={1}
                   style={{ ...Fonts.blackColor18SemiBold }}
                 >
-                  {item.stationName}
+                  {item.station_Name}
                 </Text>
                 <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
                   {item.stationAddress}
@@ -435,7 +455,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                 >
                   <View style={{ ...commonStyles.rowAlignCenter }}>
                     <Text style={{ ...Fonts.blackColor18Medium }}>
-                      {item.rating}
+                      4.7
                     </Text>
                     <MaterialIcons
                       name="star"
@@ -459,7 +479,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                         flex: 1,
                       }}
                     >
-                      {item.totalStations} Charging Points
+                     {item?.chargers?.length} Charging Points
                     </Text>
                   </View>
                 </View>
@@ -479,7 +499,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                     marginRight: Sizes.fixPadding - 5.0,
                   }}
                 >
-                  {item.distance}
+                   {formatDistance(item?.distanceKm)}
                 </Text>
                 <TouchableOpacity
                   activeOpacity={0.8}
@@ -522,7 +542,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
           return (
             <Marker
               key={index}
-              coordinate={marker.coordinate}
+              coordinate={marker.coordinates}
               onPress={onMarkerPress}
               pinColor="#28692e"
               anchor={{ x: 0.5, y: 0.5 }}

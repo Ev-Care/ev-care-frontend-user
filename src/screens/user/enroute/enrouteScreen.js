@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ImageBackground,
   ScrollView,
+  Alert,
 } from "react-native";
 import React, { useState, useEffect, useRef } from "react"; // ✅ Added useRef
 import {
@@ -18,6 +19,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MyStatusBar from "../../../components/myStatusBar";
 import { useFocusEffect } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
+import { getEnrouteStations } from "../service/crudFunction";
 
 const EnRouteScreen = ({ navigation, route }) => {
   const [pickupAddress, setPickupAddress] = useState("");
@@ -25,7 +28,7 @@ const EnRouteScreen = ({ navigation, route }) => {
   const [destinationAddress, setDestinationAddress] = useState("");
   const [destinationCoordinate, setDestinationCoordinate] = useState(null);
   const [pickAlert, setPickAlert] = useState(false); // ✅ Added missing state
-
+  const dispatch = useDispatch();
   // 🔥 Store previous data using useRef to avoid losing values
   const prevPickupAddress = useRef("");
   const prevDestinationAddress = useRef("");
@@ -83,9 +86,35 @@ const EnRouteScreen = ({ navigation, route }) => {
           ...commonStyles.button,
           ...styles.seeRouteButtonStyle,
         }}
-        onPress={() => {
+        onPress={async() => {
           if (pickupAddress && destinationAddress) {
-            navigation.push("EnrouteChargingStations" ,{pickupCoordinate :pickupCoordinate, destinationCoordinate: destinationCoordinate});
+
+            const enRoutedata = {
+              fromLat:pickupCoordinate.latitude,
+              fromLng:pickupCoordinate.longitude,
+              toLat:destinationCoordinate.latitude,
+              toLng:destinationCoordinate.longitude,
+              maxDistance: 10,
+              
+            }
+            console.log("enRoutedata:", enRoutedata);
+           const response =  await dispatch(getEnrouteStations(enRoutedata));
+           if (response?.payload?.code === 200) {
+            console.log("response of enroute:", response?.payload?.data);
+            const enrouteStations = response?.payload?.data;
+            navigation.push("EnrouteChargingStations" ,{enrouteStations,pickupCoordinate :pickupCoordinate, destinationCoordinate: destinationCoordinate});
+            
+           } else {
+
+            //Add alert here
+            Alert.alert(
+              "Error",
+              "Failed to fetch enroute stations. Please try again later.",
+              [{ text: "OK", onPress: () => console.log("OK Pressed") }]
+            );
+            
+           }
+            console.log("response after enroute:", response.payload.data);
           } else {
             setPickAlert(true); // ✅ Corrected function name
             setTimeout(() => {

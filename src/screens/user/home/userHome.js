@@ -30,6 +30,7 @@ import { selectUser } from "../../auth/services/selector";
 import * as Location from "expo-location";
 import { fetchStationsByLocation } from "../service/crudFunction";
 import { selectStations } from "../service/selector";
+import { RefreshControl } from 'react-native';
 import imageURL from "../../../constants/baseURL";
 
 const COLORS = {
@@ -48,7 +49,8 @@ const UserHome = ({ navigation }) => {
   const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
   const user = useSelector(selectUser);
   const [radius, setRadius] = useState(30000);
-
+  const [refreshing, setRefreshing] = useState(false);
+  
   const [currentLocation, setCurrentLocation] = useState(null);
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -95,11 +97,12 @@ const UserHome = ({ navigation }) => {
       // Cleanup subscription on unmount
       if (subscription) subscription.remove();
     };
-  }, []);
+  }, [refreshing]);
+
   const stations = useSelector(selectStations);
 
   if (stations && stations.length > 0) {
-    console.log("stations in userHome available: ", stations);
+    // console.log("stations in userHome available: ", stations);
   } else {
     console.log("No stations found in userHome available");
   }
@@ -113,7 +116,13 @@ const UserHome = ({ navigation }) => {
       return distance + " km";
     }
   };
-
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      console.log("Refresh completed!");
+    }, 2000); 
+  }
   const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
       ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
@@ -181,6 +190,14 @@ const UserHome = ({ navigation }) => {
       </AnimatedLinearGradient>
 
       <Animated.ScrollView
+       refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          colors={['#9Bd35A', '#101942']}  // Android spinner colors
+          tintColor= "#101942"            // iOS spinner color
+        />
+      }
         style={styles.content}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -219,7 +236,7 @@ const UserHome = ({ navigation }) => {
               style={styles.featureCard}
             >
               <TouchableOpacity
-                onPress={() => navigation.push("AllChargingStations")}
+                onPress={() => navigation.push("AllChargingStations",{setRefreshing})}
                 style={styles.featureCardTouchOpacity}
               >
                 <View>

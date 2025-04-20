@@ -30,6 +30,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectStation } from "../../services/selector";
 import { fetchStations } from "../../services/crudFunction";
 import { selectStations } from "../../../user/service/selector";
+import { RefreshControl } from 'react-native';
 // Colors
 const COLORS = {
   primary: "#101942",
@@ -46,7 +47,7 @@ const VendorHome =  () => {
   const [isLive, setIsLive] = useState(true);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
-  
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     // console.log("useEffect called");
@@ -100,10 +101,28 @@ const VendorHome =  () => {
     if (!fullName) return "";
     return fullName.trim().split(" ")[0];
   }
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      console.log("Refresh completed!");
+    }, 2000); 
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <MyStatusBar />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false}
+       refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          colors={['#9Bd35A', '#101942']}  // Android spinner colors
+          tintColor= "#101942"            // iOS spinner color
+        />
+      }
+      
+      >
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.greetingContainer}>

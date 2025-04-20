@@ -28,3 +28,11 @@ export const getUserByKeyAPI = (data) =>
     content_type: "application/json",
     accessToken: data.accessToken,
   });
+
+export const getEnrouteStationsAPI = (data) =>
+  apiGetRequest({
+    apiUrl: `${API_URL}/charging-stations/get-all-stations-in-route?fromLat=${data.fromLat}&fromLng=${data.fromLng}&maxDistance=${data.maxDistance}&toLng={data.toLng}&toLat={data.toLat}`,
+    content_type: "application/json",
+    accessToken: data.accessToken,
+  });
+

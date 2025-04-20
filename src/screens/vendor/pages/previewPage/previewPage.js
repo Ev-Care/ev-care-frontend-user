@@ -127,8 +127,8 @@ const PreviewPage = ({ navigation }) => {
         const response = await dispatch(addStation(stationData));
         if (response.payload.code == 200 || response.payload.code == 201) {
           Alert.alert('Success', 'Station added successfully!');
-          navigation.goBack(); // Go back to the previous screen
-          navigation.goBack(); // Go back to the previous screen
+          navigation.navigate("AllStations"); // Go back to the previous screen
+      
         } else {
           Alert.alert('Error', response.payload.message || 'Failed to add station. Please try again.');
         }

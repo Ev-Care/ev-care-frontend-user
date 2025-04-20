@@ -79,7 +79,7 @@ const AddStations = () => {
       }
     });
   };
-
+  
   const decrementConnector = (id, chargerIndex) => {
     setConnectorsList((prev) =>
       prev
@@ -91,7 +91,7 @@ const AddStations = () => {
         .filter((c) => c.count > 0)
     );
   };
-
+  
   const handleTimeChange = (event, selectedDate) => {
     setShowPicker(false);
     if (selectedDate) {
@@ -103,6 +103,7 @@ const AddStations = () => {
       }
     }
   };
+  
   const toggleAmenity = (id) => {
     if (selectedAmenities.includes(id)) {
       setSelectedAmenities(selectedAmenities.filter(item => item !== id));
@@ -110,39 +111,37 @@ const AddStations = () => {
       setSelectedAmenities([...selectedAmenities, id]);
     }
   };
-
+  
   const handleImagePick = async () => {
-    // Request permission
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       alert('Sorry, we need camera roll permissions to make this work!');
       return;
     }
-
-    // Launch image picker
+  
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
     });
-
+  
     if (!result.canceled) {
-
-      const imageUri = result.assets[0].uri;
+      const imageUri = result.assets?.[0]?.uri;
+      if (!imageUri) return;
+  
       setImageLoading(true);
       const file = await setupImagePicker(imageUri);
       console.log("File selected", file);
+  
       try {
         const response = await dispatch(
           postSingleFile({ file: file, accessToken: accessToken })
         );
-
-        if (response?.payload.code === 200 || response?.payload.code === 201) {
-
+  
+        if (response?.payload?.code === 200 || response?.payload?.code === 201) {
           setPhoto(response?.payload?.data?.filePathUrl);
           setViewImage(imageUri);
           console.log("Station image uploaded:", response?.payload?.data?.filePathUrl);
-
         } else {
           Alert.alert("Error", "File Should be less than 5 MB");
         }
@@ -153,27 +152,20 @@ const AddStations = () => {
       }
     }
   };
+  
   const selectOnMap = () => {
     navigation.push("PickLocation", {
       addressFor: "stationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
       setCoordinate: (newCoordinate) => setCoordinate(newCoordinate)
-
     });
   };
+  
   const handlePreview = () => {
-    // Validate required fields
-    // if (!stationName || !address || chargerForms.length === 0) {
-    //   alert('Please fill in all required fields.');
-    //   return;
-    // }
-
-    // Transform amenities into a comma-separated string
     const amenitiesString = selectedAmenities
       .map((id) => amenities.find((amenity) => amenity.id === id)?.label)
       .join(',');
-
-    // Transform chargers and connectors
+  
     const chargers = chargerForms.map((charger, index) => ({
       charger_type: charger.chargerType || null,
       power_rating: parseFloat(charger.powerRating) || null,
@@ -181,14 +173,13 @@ const AddStations = () => {
         .filter((connector) => connector.chargerIndex === index)
         .flatMap((connector) =>
           Array(connector.count).fill({
-            connector_type_id: connector.id, // Only include connector_type_id
+            connector_type_id: connector.id,
           })
         ),
     }));
-
-    // Prepare the final station data
+  
     const stationData = {
-      owner_id: user.id, // Replace with the actual owner ID if available
+      owner_id: user?.id || null,
       station_name: stationName,
       address,
       coordinates: {
@@ -199,30 +190,31 @@ const AddStations = () => {
       open_hours_opening_time: openHours === '24 Hours' ? '00:00:00' : openTime || '00:00:00',
       open_hours_closing_time: openHours === '24 Hours' ? '23:59:59' : closeTime || '23:59:59',
       chargers,
-      station_images: photo ? [photo] : [], // Include the photo if available
+      station_images: photo ? photo : "",
     };
-
+  
     console.log('Transformed Station Data:', JSON.stringify(stationData, null, 2));
-
-    // Navigate to PreviewPage with the transformed data
-    navigation.push('PreviewPage', { stationData, type:"add", stationImage: viewImage });
+  
+    navigation.push('PreviewPage', { stationData, type: "add", stationImage: viewImage });
   };
-
+  
   const handleVisibility = (form) => {
     const formKey = String(form);
     if (selectedForm !== formKey) {
       setSelectedForm(formKey);
     }
   };
+  
   const removeChargerForm = (index) => {
     setChargerForms(chargerForms.filter((_, i) => i !== index));
   };
+  
 
   return (
     <ScrollView style={styles.container}>
       <MyStatusBar />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation?.goBack()}>
           <Icon name="arrow-left" size={24} color={PRIMARY_COLOR} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>List a Station</Text>
@@ -245,87 +237,76 @@ const AddStations = () => {
     </ScrollView>
   );
   function locationDetail() {
-    const [networkType, setNetworkType] = useState('');
-    const networkTypes = ['Type-1', 'Type-2', 'Type-3', 'Self'];
-
     return (
       <TouchableOpacity
-        style={styles.card}
+        style={styles?.card}
         onPress={() => handleVisibility("locationdetail")}
       >
-        <Text style={styles.sectionTitle}>Location Details</Text>
+        <Text style={styles?.sectionTitle}>Location Details</Text>
         {selectedForm === "locationdetail" && (<>
-          {/* Select Coordinate and Address on Map */}
-          <TouchableOpacity style={styles.mapButton} onPress={selectOnMap}>
-            <Text style={styles.mapButtonText}>Select on Map (required)</Text>
+          <TouchableOpacity style={styles?.mapButton} onPress={selectOnMap}>
+            <Text style={styles?.mapButtonText}>Select on Map (required)</Text>
           </TouchableOpacity>
-
-          {/* Display Address */}
-          {address && (
+  
+          {address ? (
             <TextInput
-              style={[styles.input, styles.textArea ,{marginBottom: 20}]}
+              style={[styles?.input, styles?.textArea, { marginBottom: 20 }]}
               placeholder="Home/Street/Locality, City, State, Pincode"
               placeholderTextColor="gray"
               multiline
               value={address}
               onChangeText={setAddress}
             />
-          )}
-
+          ) : null}
         </>)}
       </TouchableOpacity>
     );
   }
+  
   function additionalDetail() {
     return (
       <TouchableOpacity
-        style={styles.card}
+        style={styles?.card}
         onPress={() => handleVisibility("additionaldetail")}
       >
-        <Text style={styles.sectionTitle}>Additional Details</Text>
+        <Text style={styles?.sectionTitle}>Additional Details</Text>
         {selectedForm === "additionaldetail" && (<>
-          {/* stationName */}
-          {stationNameSection()}
-          {/* Amenities Section  */}
-          {amenitiesSection()}
-          {/* Open Hours Section */}
-          {openHoursSection()}
-
-          {/* Upload Photo Section */}
-          {uploadPhotoSection()}
-
-
+          {stationNameSection?.()}
+          {amenitiesSection?.()}
+          {openHoursSection?.()}
+          {uploadPhotoSection?.()}
         </>)}
-      </TouchableOpacity>)
+      </TouchableOpacity>
+    );
   }
+  
   function chargerDetail(index) {
     return (
       <TouchableOpacity
-        style={styles.card}
+        style={styles?.card}
         onPress={() => handleVisibility(index)}
       >
-        <View style={styles.chagerTitle}>
-          <Text style={styles.sectionTitle}>Charger Details {index + 1}</Text>
+        <View style={styles?.chagerTitle}>
+          <Text style={styles?.sectionTitle}>Charger Details {index + 1}</Text>
           {index > 0 && (
             <TouchableOpacity
               onPress={() => removeChargerForm(index)}
-              style={styles.deleteButton}
+              style={styles?.deleteButton}
             >
               <Icon name="close-circle" size={24} color="red" />
             </TouchableOpacity>
           )}
         </View>
   
-        {selectedForm === String(index)  && (
+        {selectedForm === String(index) && (
           <>
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>Charger Type</Text>
-              <View style={styles.hoursContainer}>
+            <View style={styles?.section}>
+              <Text style={styles?.sectionLabel}>Charger Type</Text>
+              <View style={styles?.hoursContainer}>
                 <TouchableOpacity
                   style={[
-                    styles.hoursButton,
-                    chargerForms[index]?.chargerType === "AC" &&
-                      styles.selectedButton,
+                    styles?.hoursButton,
+                    chargerForms?.[index]?.chargerType === "AC" && styles?.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -339,9 +320,9 @@ const AddStations = () => {
                 >
                   <Text
                     style={[
-                      styles.buttonText,
-                      chargerForms[index]?.chargerType === "AC" &&
-                        styles.selectedButtonText,
+                      styles?.buttonText,
+                      chargerForms?.[index]?.chargerType === "AC" &&
+                        styles?.selectedButtonText,
                     ]}
                   >
                     AC
@@ -350,9 +331,8 @@ const AddStations = () => {
   
                 <TouchableOpacity
                   style={[
-                    styles.hoursButton,
-                    chargerForms[index]?.chargerType === "DC" &&
-                      styles.selectedButton,
+                    styles?.hoursButton,
+                    chargerForms?.[index]?.chargerType === "DC" && styles?.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -366,9 +346,9 @@ const AddStations = () => {
                 >
                   <Text
                     style={[
-                      styles.buttonText,
-                      chargerForms[index]?.chargerType === "DC" &&
-                        styles.selectedButtonText,
+                      styles?.buttonText,
+                      chargerForms?.[index]?.chargerType === "DC" &&
+                        styles?.selectedButtonText,
                     ]}
                   >
                     DC
@@ -377,14 +357,14 @@ const AddStations = () => {
               </View>
             </View>
   
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>
-                Power Rating <Text style={styles.optional}>(in kW)</Text>
+            <View style={styles?.section}>
+              <Text style={styles?.sectionLabel}>
+                Power Rating <Text style={styles?.optional}>(in kW)</Text>
               </Text>
               <TextInput
-                style={styles.input}
+                style={styles?.input}
                 placeholder="Power Rating In kW"
-                value={chargerForms[index]?.powerRating || ""}
+                value={chargerForms?.[index]?.powerRating || ""}
                 onChangeText={(text) =>
                   setChargerForms((prev) =>
                     prev.map((charger, i) =>
@@ -397,13 +377,13 @@ const AddStations = () => {
   
             {connectorsInfo(index)}
   
-            {index === chargerForms.length - 1 && (
-              <View style={styles.nextButtonContainer}>
+            {index === chargerForms?.length - 1 && (
+              <View style={styles?.nextButtonContainer}>
                 <TouchableOpacity
                   onPress={addChargerForm}
-                  style={styles.nextButton}
+                  style={styles?.nextButton}
                 >
-                  <Text style={styles.nextButtonText}>+ Add more</Text>
+                  <Text style={styles?.nextButtonText}>+ Add more</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -413,44 +393,40 @@ const AddStations = () => {
     );
   }
   
-
   function connectorsInfo(chargerIndex) {
     return (
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Connectors</Text>
-        <View style={styles.connectorsBox}>
-          {connectors.map((connector) => {
-            // Find the count for the current connector in connectorsList
-            const connectorData = connectorsList.find(
-              (c) => c.id === connector.id && c.chargerIndex === chargerIndex
+      <View style={styles?.section}>
+        <Text style={styles?.sectionLabel}>Connectors</Text>
+        <View style={styles?.connectorsBox}>
+          {connectors?.map((connector) => {
+            const connectorData = connectorsList?.find(
+              (c) => c?.id === connector?.id && c?.chargerIndex === chargerIndex
             );
-            const count = connectorData ? connectorData.count : 0;
-
+            const count = connectorData?.count || 0;
+  
             return (
               <View
-                key={`connector-${connector.id}`}
-                style={[styles.connectorsItem]}
+                key={`connector-${connector?.id}`}
+                style={styles?.connectorsItem}
               >
-                {/* Connector Icon */}
                 <View style={{ alignItems: "center", flexDirection: "row", gap: 4 }}>
-                  <Icon name={connector.icon} size={24} color="#101942" />
-                  <Text style={[styles.optional]}>{connector.type}</Text>
+                  <Icon name={connector?.icon} size={24} color="#101942" />
+                  <Text style={styles?.optional}>{connector?.type}</Text>
                 </View>
-
-                {/* Increment Decrement Counter */}
+  
                 <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
                   <TouchableOpacity
-                    onPress={() => decrementConnector(connector.id, chargerIndex)}
-                    style={[styles.incDecButton, { backgroundColor: "#FF5722" }]}
+                    onPress={() => decrementConnector(connector?.id, chargerIndex)}
+                    style={[styles?.incDecButton, { backgroundColor: "#FF5722" }]}
                   >
                     <Text style={{ color: "#fff", fontSize: 14 }}>−</Text>
                   </TouchableOpacity>
-
-                  <Text style={styles.countText}>{count}</Text>
-
+  
+                  <Text style={styles?.countText}>{count}</Text>
+  
                   <TouchableOpacity
-                    onPress={() => incrementConnector(connector.id, chargerIndex)}
-                    style={[styles.incDecButton, { backgroundColor: "#101942" }]}
+                    onPress={() => incrementConnector(connector?.id, chargerIndex)}
+                    style={[styles?.incDecButton, { backgroundColor: "#101942" }]}
                   >
                     <Text style={{ color: "#fff", fontSize: 14 }}>+</Text>
                   </TouchableOpacity>
@@ -462,9 +438,11 @@ const AddStations = () => {
       </View>
     );
   }
+  
   function amenitiesSection() {
     return (
       <View style={styles.section}>
+        <Text style={styles.questionText}>What amenities are available at your station?</Text>
         <Text style={styles.sectionLabel}>
           Amenities <Text style={styles.optional}>(Optional)</Text>
         </Text>
@@ -498,12 +476,10 @@ const AddStations = () => {
     )
   }
   function openHoursSection() {
-    {/* Open Hours Section */ }
     return (
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>
-          Open Hours
-        </Text>
+        <Text style={styles.questionText}>What are your station's operating hours?</Text>
+        <Text style={styles.sectionLabel}>Open Hours</Text>
         <View style={styles.hoursContainer}>
           <TouchableOpacity
             style={[styles.hoursButton, openHours === '24 Hours' && styles.selectedButton]}
@@ -526,8 +502,7 @@ const AddStations = () => {
             </Text>
           </TouchableOpacity>
         </View>
-
-        {/* Show Time Inputs when "Custom" is selected */}
+  
         {openHours === 'Custom' && (
           <View style={styles.customTimeContainer}>
             <TouchableOpacity
@@ -539,7 +514,7 @@ const AddStations = () => {
             >
               <Text>{openTime || 'Opening Time'}</Text>
             </TouchableOpacity>
-
+  
             <TouchableOpacity
               style={styles.timeInput}
               onPress={() => {
@@ -551,8 +526,7 @@ const AddStations = () => {
             </TouchableOpacity>
           </View>
         )}
-
-        {/* Time Picker (only shown when needed) */}
+  
         {showPicker && (
           <DateTimePicker
             mode="time"
@@ -561,42 +535,50 @@ const AddStations = () => {
             onChange={handleTimeChange}
           />
         )}
-      </View>)
-
+      </View>
+    )
+  }
+  
+  function stationNameSection() {
+    return (
+      <View style={styles.section}>
+        <Text style={styles.questionText}>What is the name of your charging station?</Text>
+        <Text style={styles.sectionLabel}>
+          Station Name
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Station Name"
+          value={stationName}
+          onChangeText={setStationName}
+        />
+      </View>
+    )
   }
   function uploadPhotoSection() {
-    return (<View style={styles.section}>
-      <Text style={styles.sectionLabel}>
-        Upload Photo <Text style={styles.optional}>(Required)</Text>
-      </Text>
-      <Text style={styles.photoDescription}>
-        Contribute to smoother journeys; include a location/charger photo.
-      </Text>
-      <TouchableOpacity style={styles.photoUpload} onPress={handleImagePick}>
-        {imageloading ? (
-          <ActivityIndicator size={40} color="#ccc" />
-        ) : viewImage ? (
-          <Image source={{ uri: viewImage }} style={styles.previewImage} />
-        ) : (
-          <Icon name="camera-plus-outline" size={40} color="#ccc" />
-        )}
-      </TouchableOpacity>
-    </View>);
+    return (
+      <View style={styles.section}>
+        <Text style={styles.questionText}>Can you upload a clear photo of the station or charger?</Text>
+        <Text style={styles.sectionLabel}>
+          Upload Photo <Text style={styles.optional}>(Required)</Text>
+        </Text>
+        <Text style={styles.photoDescription}>
+          Contribute to smoother journeys; include a location/charger photo.
+        </Text>
+        <TouchableOpacity style={styles.photoUpload} onPress={handleImagePick}>
+          {imageloading ? (
+            <ActivityIndicator size={40} color="#ccc" />
+          ) : viewImage ? (
+            <Image source={{ uri: viewImage }} style={styles.previewImage} />
+          ) : (
+            <Icon name="camera-plus-outline" size={40} color="#ccc" />
+          )}
+        </TouchableOpacity>
+      </View>
+    );
   }
-
-  function stationNameSection() {
-    return (<View style={styles.section}>
-      <Text style={styles.sectionLabel}>
-        Station Name
-      </Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter Station Name"
-        value={stationName}
-        onChangeText={setStationName}
-      />
-    </View>)
-  }
+  
+  
 };
 // export default  AddStations ;
 const styles = StyleSheet.create({

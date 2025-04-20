@@ -52,7 +52,7 @@ const EditProfileScreen = ({ navigation }) => {
       business_name: user?.business_name,
       user_key: user?.user_key,
     };
-    console.log("Updated Data:", updatedData);
+    console.log("Updated Data: before call", updatedData);
 
     const response = await dispatch(patchUpdateUserProfile(updatedData));
 

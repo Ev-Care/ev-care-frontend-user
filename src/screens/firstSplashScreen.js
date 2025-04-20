@@ -19,13 +19,14 @@ const FirstSplashScreen = ({ navigation }) => {
     setTimeout(() => {
       iconPosition.value = withTiming(-10, { duration: 700 }); // Move left
       iconScale.value = withTiming(1, { duration: 700 }); // Shrink icon
-      iconScale.value = withTiming(1, { duration: 500 }); 
+      iconScale.value = withTiming(1, { duration: 500 });
       textOpacity.value = withTiming(1, { duration: 1000 }); // Fade in text
       textScale.value = withTiming(1, { duration: 1000 }); // Scale up text
     }, 0);
 
-    setTimeout(() => {navigation.navigate("Onboarding")},4000)
-    
+    setTimeout(() => {
+      navigation.navigate("Onboarding");
+    }, 4000);
   }, []);
 
   const iconAnimatedStyle = useAnimatedStyle(() => ({
@@ -45,13 +46,12 @@ const FirstSplashScreen = ({ navigation }) => {
           style={[styles.icon, { aspectRatio: 1.5 }, iconAnimatedStyle]}
           resizeMode="contain"
         />
-      
-          {textVisibility && (
-            <Animated.Text style={[styles.text, textAnimatedStyle]}>
-              Care
-            </Animated.Text>
-          )}
-        
+
+        {textVisibility && (
+          <Animated.Text style={[styles.text, textAnimatedStyle]}>
+            Care
+          </Animated.Text>
+        )}
       </View>
     </View>
   );
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     marginBottom: 0, // if needed to nudge for visual alignment
   },
   gradientTextContainer: {
-    justifyContent: "center", 
+    justifyContent: "center",
     alignItems: "center",
   },
   text: {

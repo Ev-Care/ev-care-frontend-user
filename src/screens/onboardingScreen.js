@@ -25,22 +25,19 @@ const onboardingScreenList = [
     id: "1",
     onboardingImage: require("../../assets/images/onboarding/onboarding1.png"),
     onboardingTitle: "Find nearby charging station",
-    onboardingDescription:
-      "Lorem ipsum dolor sit amet consectetur. Lectus vulputate pretium phasellus elementum quam pellentesque urna velit.",
+    onboardingDescription: "",
   },
   {
     id: "2",
     onboardingImage: require("../../assets/images/onboarding/onboarding2.png"),
     onboardingTitle: "Get direction",
-    onboardingDescription:
-      "Lorem ipsum dolor sit amet consectetur. Lectus vulputate pretium phasellus elementum quam pellentesque urna velit.",
+    onboardingDescription: "",
   },
   {
     id: "3",
     onboardingImage: require("../../assets/images/onboarding/onboarding3.png"),
     onboardingTitle: "Plug and start charging",
-    onboardingDescription:
-      "Lorem ipsum dolor sit amet consectetur. Lectus vulputate pretium phasellus elementum quam pellentesque urna velit.",
+    onboardingDescription: "",
   },
 ];
 

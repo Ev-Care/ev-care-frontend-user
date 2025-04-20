@@ -1,5 +1,4 @@
-
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import { Overlay } from "@rneui/themed";
 import {
   View,
@@ -11,8 +10,8 @@ import {
   Dimensions,
   Alert,
   FlatList,
-  ActivityIndicator
-} from 'react-native';
+  ActivityIndicator,
+} from "react-native";
 import {
   Colors,
   screenWidth,
@@ -20,29 +19,29 @@ import {
   Sizes,
   commonStyles,
 } from "../../../../constants/styles";
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import MapView, { Marker } from 'react-native-maps';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { useSelector, useDispatch } from 'react-redux';
-import { selectToken } from '../../../auth/services/selector';
-import { addStation, postStation } from '../../services/crudFunction';
-import { selectVendorLoading } from '../../services/selector';
-import { RefreshControl } from 'react-native';
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import MapView, { Marker } from "react-native-maps";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { useSelector, useDispatch } from "react-redux";
+import { selectToken } from "../../../auth/services/selector";
+import { addStation, postStation } from "../../services/crudFunction";
+import { selectVendorLoading } from "../../services/selector";
+import { RefreshControl } from "react-native";
 // Define colors at the top for easy customization
 const COLORS = {
-  primary: '#101942',
-  accent: '#FF5722', // Orange
-  lightPurple: '#E6D8F2',
-  white: '#FFFFFF',
-  gray: '#8A94A6',
-  lightGray: '#F5F7FA',
-  red: '#FF3B30',
-  green: '#4CAF50',
-  yellow: '#FFC107',
-  black: '#333333',
+  primary: "#101942",
+  accent: "#FF5722", // Orange
+  lightPurple: "#E6D8F2",
+  white: "#FFFFFF",
+  gray: "#8A94A6",
+  lightGray: "#F5F7FA",
+  red: "#FF3B30",
+  green: "#4CAF50",
+  yellow: "#FFC107",
+  black: "#333333",
 };
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 const PreviewPage = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -53,7 +52,10 @@ const PreviewPage = ({ navigation }) => {
   const { stationData, type, stationImage } = route.params; // Retrieve the passed data
   const isLoading = useSelector(selectVendorLoading);
   const [refreshing, setRefreshing] = useState(false);
-  console.log('Transformed station data preview:', JSON.stringify(stationData, null, 2));
+  console.log(
+    "Transformed station data preview:",
+    JSON.stringify(stationData, null, 2)
+  );
 
   const connectorTypeMap = {
     1: { name: "CCS-2", icon: "ev-plug-ccs2" },
@@ -63,12 +65,12 @@ const PreviewPage = ({ navigation }) => {
     5: { name: "GBT", icon: "ev-plug-type2" },
   };
   const amenityMap = {
-    "Restroom": "toilet",
-    "Cafe": "coffee",
-    "Wifi": "wifi",
-    "Store": "cart",
+    Restroom: "toilet",
+    Cafe: "coffee",
+    Wifi: "wifi",
+    Store: "cart",
     "Car Care": "car",
-    "Lodging": "bed"
+    Lodging: "bed",
   };
   useEffect(() => {
     if (mapRef.current && stationData.coordinates) {
@@ -86,21 +88,36 @@ const PreviewPage = ({ navigation }) => {
   const handleSubmit = async () => {
     try {
       if (type === "add") {
-        console.log('Submitting station data:', JSON.stringify(stationData));
+        console.log("Submitting station data:", JSON.stringify(stationData));
 
         // Validate chargers
         if (!stationData?.chargers || stationData?.chargers?.length === 0) {
-          Alert.alert('Validation Error', 'At least one charger must be added.');
+          Alert.alert(
+            "Validation Error",
+            "At least one charger must be added."
+          );
           return;
         }
 
         for (let i = 0; i < stationData?.chargers?.length; i++) {
           const charger = stationData?.chargers[i];
-          console.log(!charger.charger_type, !charger.power_rating, !charger.connectors, charger?.connectors?.length === 0);
-          if (!charger.charger_type || !charger.power_rating || !charger.connectors || charger?.connectors?.length === 0) {
+          console.log(
+            !charger.charger_type,
+            !charger.power_rating,
+            !charger.connectors,
+            charger?.connectors?.length === 0
+          );
+          if (
+            !charger.charger_type ||
+            !charger.power_rating ||
+            !charger.connectors ||
+            charger?.connectors?.length === 0
+          ) {
             Alert.alert(
-              'Validation Error',
-              `Charger ${i + 1} details is incomplete. Please ensure all fields are filled.`
+              "Validation Error",
+              `Charger ${
+                i + 1
+              } details is incomplete. Please ensure all fields are filled.`
             );
             return;
           }
@@ -110,8 +127,10 @@ const PreviewPage = ({ navigation }) => {
             // console.log(connector.connectorType.connector_type_id);
             if (!connector?.connector_type_id) {
               Alert.alert(
-                'Validation Error',
-                `Connector ${j + 1} details of Charger ${i + 1} is incomplete. Please ensure all fields are filled.`
+                "Validation Error",
+                `Connector ${j + 1} details of Charger ${
+                  i + 1
+                } is incomplete. Please ensure all fields are filled.`
               );
               return;
             }
@@ -126,24 +145,31 @@ const PreviewPage = ({ navigation }) => {
 
         const response = await dispatch(addStation(stationData));
         if (response.payload.code == 200 || response.payload.code == 201) {
-          Alert.alert('Success', 'Station added successfully!');
-          navigation.goBack(); // Go back to the previous screen
-          navigation.goBack(); // Go back to the previous screen
+          Alert.alert("Success", "Station added successfully!");
+          // navigation.goBack(); // Go back to the previous screen
+          // navigation.goBack(); // Go back to the previous screen
+          navigation.push("VendorHome");
         } else {
-          Alert.alert('Error', response.payload.message || 'Failed to add station. Please try again.');
+          Alert.alert(
+            "Error",
+            response.payload.message ||
+              "Failed to add station. Please try again."
+          );
         }
       } else {
-        Alert.alert('Success', 'Currently, this is a preview. The station will be added to the database soon.');
+        Alert.alert(
+          "Success",
+          "Currently, this is a preview. The station will be added to the database soon."
+        );
       }
-
 
       // Alert.alert('Success', 'Currently, this is a preview. The station will be added to the database soon.');
       // navigation.navigate('VendorBottomTabBar'); // Navigate back after successful submission
       // navigation.goBack(); // Go back to the previous screen
       // navigation.goBack(); // Go back to the previous screen
     } catch (error) {
-      console.error('Error adding station:', error);
-      Alert.alert('Error', 'Failed to add station. Please try again.');
+      console.error("Error adding station:", error);
+      Alert.alert("Error", "Failed to add station. Please try again.");
     }
   };
 
@@ -170,15 +196,15 @@ const PreviewPage = ({ navigation }) => {
     setTimeout(() => {
       setRefreshing(false);
       console.log("Refresh completed!");
-    }, 2000); 
-  }
+    }, 2000);
+  };
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Image
           source={{
-            uri: stationImage || 'https://via.placeholder.com/400x200',
+            uri: stationImage || "https://via.placeholder.com/400x200",
           }}
           style={styles.mapBackground}
         />
@@ -186,12 +212,16 @@ const PreviewPage = ({ navigation }) => {
           <View style={styles.communityBadge}>
             <Text style={styles.communityText}>Public</Text>
           </View>
-          <Text style={styles.stationName}>{trimName(30, stationData.station_name)}</Text>
-          <Text style={styles.stationAddress}>{trimName(50, stationData.address)}</Text>
+          <Text style={styles.stationName}>
+            {trimName(30, stationData.station_name)}
+          </Text>
+          <Text style={styles.stationAddress}>
+            {trimName(50, stationData.address)}
+          </Text>
           <View style={styles.statusContainer}>
             <Text style={styles.openHour}>Open Hours</Text>
             <Text style={styles.statusTime}>
-              • {stationData.open_hours_opening_time} -{' '}
+              • {stationData.open_hours_opening_time} -{" "}
               {stationData.open_hours_closing_time}
             </Text>
             <View style={styles.newBadge}>
@@ -229,12 +259,9 @@ const PreviewPage = ({ navigation }) => {
 
       {/* Swipeable Content */}
       <ScrollView
-       refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-        />
-      }
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
         ref={scrollViewRef}
         horizontal
         pagingEnabled
@@ -289,19 +316,22 @@ const PreviewPage = ({ navigation }) => {
                 {charger?.connectors.map((connector, connectorIndex) => (
                   <View key={connectorIndex} style={styles.connector}>
                     <Text style={styles.connectorTitle}>
-                      Connector {connectorIndex + 1} { }
+                      Connector {connectorIndex + 1} {}
                     </Text>
                     <View style={styles.connectorType}>
                       <Icon
-                        name={connectorTypeMap[connector?.connector_type_id]?.icon || "alert-circle"}
+                        name={
+                          connectorTypeMap[connector?.connector_type_id]
+                            ?.icon || "alert-circle"
+                        }
                         size={20}
                         color={COLORS.primary}
                       />
                       <Text style={styles.connectorTypeText}>
-                        {connectorTypeMap[connector?.connector_type_id]?.name || "Unknown Type"}
+                        {connectorTypeMap[connector?.connector_type_id]?.name ||
+                          "Unknown Type"}
                       </Text>
                     </View>
-
                   </View>
                 ))}
               </View>
@@ -311,7 +341,6 @@ const PreviewPage = ({ navigation }) => {
       );
     } else {
       return (
-
         <ScrollView style={styles.tabContent}>
           {stationData?.chargers.map((charger, index) => (
             <View key={index} style={styles.chargerCard}>
@@ -332,33 +361,49 @@ const PreviewPage = ({ navigation }) => {
                 {charger?.connectors.map((connector, connectorIndex) => (
                   <View key={connectorIndex} style={styles.connector}>
                     <Text style={styles.connectorTitle}>
-                      Connector {connectorIndex + 1} { }
+                      Connector {connectorIndex + 1} {}
                     </Text>
                     <View style={styles.connectorType}>
                       <Icon
-                        name={connectorTypeMap[connector?.connectorType?.connector_type_id]?.icon || "alert-circle"}
+                        name={
+                          connectorTypeMap[
+                            connector?.connectorType?.connector_type_id
+                          ]?.icon || "alert-circle"
+                        }
                         size={20}
                         color={COLORS.primary}
                       />
                       <Text style={styles.connectorTypeText}>
-                        {connectorTypeMap[connector?.connectorType?.connector_type_id]?.name || "Unknown Type"}
+                        {connectorTypeMap[
+                          connector?.connectorType?.connector_type_id
+                        ]?.name || "Unknown Type"}
                       </Text>
                     </View>
-
                   </View>
                 ))}
               </View>
             </View>
           ))}
-        </ScrollView>)
+        </ScrollView>
+      );
     }
   }
 
   function loadingDialog() {
     return (
       <Overlay isVisible={isLoading} overlayStyle={styles.dialogStyle}>
-        <ActivityIndicator size={50} color={COLORS.primary} style={{ alignSelf: "center" }} />
-        <Text style={{ marginTop: Sizes.fixPadding, textAlign: "center", ...Fonts.blackColor16Regular }}>
+        <ActivityIndicator
+          size={50}
+          color={COLORS.primary}
+          style={{ alignSelf: "center" }}
+        />
+        <Text
+          style={{
+            marginTop: Sizes.fixPadding,
+            textAlign: "center",
+            ...Fonts.blackColor16Regular,
+          }}
+        >
           Please wait...
         </Text>
       </Overlay>
@@ -388,7 +433,6 @@ const PreviewPage = ({ navigation }) => {
       </Overlay>
     );
   }
-
 
   function detailTab() {
     return (
@@ -421,7 +465,7 @@ const PreviewPage = ({ navigation }) => {
         </View>
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
-          {stationData.amenities.split(',').map((amenityName, index) => {
+          {stationData.amenities.split(",").map((amenityName, index) => {
             const trimmedName = amenityName.trim();
             const iconName = amenityMap[trimmedName] || "help-circle";
 
@@ -445,22 +489,22 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 200,
-    position: 'relative',
+    position: "relative",
   },
   mapBackground: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
+    width: "100%",
+    height: "100%",
+    position: "absolute",
     opacity: 1,
   },
   overlay: {
     padding: 16,
-    height: '100%',
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(230, 216, 242, 0.6)', // Light purple with opacity
+    height: "100%",
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(230, 216, 242, 0.6)", // Light purple with opacity
   },
   communityBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: 16,
     right: 16,
     backgroundColor: COLORS.white,
@@ -470,12 +514,12 @@ const styles = StyleSheet.create({
   },
   communityText: {
     color: COLORS.primary,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 12,
   },
   stationName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 4,
   },
@@ -485,12 +529,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   openHour: {
     color: COLORS.primary,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 12,
   },
   statusTime: {
@@ -508,18 +552,18 @@ const styles = StyleSheet.create({
   newText: {
     color: COLORS.white,
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   tabContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: "#E0E0E0",
   },
   tabButton: {
     flex: 1,
     paddingVertical: 16,
-    alignItems: 'center',
-    position: 'relative',
+    alignItems: "center",
+    position: "relative",
   },
   activeTabButton: {
     borderBottomWidth: 1,
@@ -531,10 +575,10 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     color: COLORS.accent,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   activeTabIndicator: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
@@ -549,7 +593,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: 8,
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -558,13 +602,13 @@ const styles = StyleSheet.create({
   },
   chargerTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 8,
   },
   chargerSpecs: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   chargerSpecText: {
@@ -576,24 +620,24 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   connector: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 16,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#E0E0E0",
     borderRadius: 8,
     paddingHorizontal: 16,
     marginBottom: 12,
   },
   connectorTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
   },
   connectorType: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   connectorTypeText: {
     fontSize: 10,
@@ -602,19 +646,19 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: "#E0E0E0",
     marginVertical: 16,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 16,
   },
   mapContainer: {
     height: 200,
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: 16,
   },
   map: {
@@ -629,8 +673,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   amenitiesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: 24,
   },
   amenityItem: {
@@ -638,45 +682,45 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 8,
     backgroundColor: COLORS.lightGray,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 16,
     marginBottom: 10,
   },
 
   seeAllText: {
     color: COLORS.accent,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 
   bottomButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: "#E0E0E0",
   },
   editButton: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   editButtonText: {
     color: COLORS.accent,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   submitButton: {
     flex: 1,
     backgroundColor: COLORS.accent,
     paddingVertical: 12,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   submitButtonText: {
     color: COLORS.white,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 

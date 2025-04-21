@@ -365,7 +365,6 @@ const StationManagement = ({ navigation, route }) => {
   );
   function chargerTab(station) {
     // Log chargers
-
     return (
       <ScrollView style={styles.tabContent}>
         {station.chargers.map((charger, index) => (

@@ -35,11 +35,11 @@ function AppNavigator() {
 
   useEffect(() => {
 
-    if (user && user.role) { 
-      // if (true) { 
+    // if (user && user.role) { 
+      if (true) { 
      
-        setUserType(user.role.toLowerCase());
-        // setUserType("vendor");
+        // setUserType(user.role.toLowerCase());
+        setUserType("admin");
     } else {
         setUserType(null);
     }

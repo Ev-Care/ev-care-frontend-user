@@ -19,67 +19,103 @@ import {
 import React, { useState } from "react";
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import imageURL from "../../../constants/baseURL";
 
 const allStationsList = [
   {
-    id: "1",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
-    stationName: "Apex Charging Point",
-    stationAddress: "Near shell petrol station",
-    rating: 4.7,
-    totalStations: 8,
-    distance: "5.7 km",
-    isOpen: true,
-  },
-  {
-    id: "2",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station3.png"),
-    stationName: "Horizon EV Station",
-    stationAddress: "Near apex hospital",
-    rating: 4.2,
-    totalStations: 18,
-    distance: "5.7 km",
-    isOpen: true,
-  },
-  {
-    id: "3",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station1.png"),
-    stationName: "Rapid EV Charge",
-    stationAddress: "Near shelby play ground",
-    rating: 4.2,
-    totalStations: 12,
-    distance: "5.7 km",
-    isOpen: false,
-  },
-  {
-    id: "4",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
-    stationName: "Tesla Recharge",
-    stationAddress: "Near nissan show room",
-    rating: 4.9,
-    totalStations: 22,
-    distance: "5.7 km",
-    isOpen: true,
-  },
-  {
-    id: "5",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
-    stationName: "BYD Charging Point",
-    stationAddress: "Near shell petrol station",
-    rating: 4.7,
-    totalStations: 8,
-    distance: "4.5 km",
-    isOpen: true,
-  },
-  {
-    id: "6",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
-    stationName: "TATA EStation",
-    stationAddress: "Near orange business hub",
-    rating: 3.9,
-    totalStations: 15,
-    distance: "5.7 km",
-    isOpen: false,
+    owner_id: 7,
+    station_name: "Tesla EV India",
+    address: "Rajstan india",
+    coordinates: {
+      latitude: 18.4745984,
+      longitude: 73.8197504,
+    },
+    amenities: "restroom,wifi,store, car care,lodging",
+    rate: null,
+    rate_type: null,
+    station_images: null,
+    additional_comment: null,
+    distance_km:5000, //check it
+    open_hours_opening_time: "00:00:00",
+    open_hours_closing_time: "23:59:59",
+    id: 2,
+    status: "Planned",
+    created_at: "2025-04-21T02:23:19.671Z",
+    update_at: "2025-04-21T02:23:19.671Z",
+    updated_by: 0,
+    chargers: [
+      {
+        charger_type: "AC",
+        max_power_kw: 60,
+        station: {
+          id: 2,
+          owner_id: 7,
+          station_name: "Tesla EV India",
+          address: "Rajstan india",
+          coordinates: {
+            latitude: 18.4745984,
+            longitude: 73.8197504,
+          },
+          amenities: "restroom,wifi,store, car care,lodging",
+          rate: null,
+          rate_type: null,
+          station_images: null,
+          additional_comment: null,
+          open_hours_opening_time: "00:00:00",
+          open_hours_closing_time: "23:59:59",
+          status: "Planned",
+          created_at: "2025-04-21T02:23:19.671Z",
+          update_at: "2025-04-21T02:23:19.671Z",
+          updated_by: 0,
+        },
+        charger_id: 3,
+        status: "Available",
+        created_at: "2025-04-21T02:23:19.760Z",
+        update_at: "2025-04-21T02:23:19.760Z",
+        updated_by: 0,
+        connectors: [
+          {
+            connector_status: "operational",
+            charger: {
+              charger_id: 3,
+              charger_type: "AC",
+              max_power_kw: 60,
+              status: "Available",
+              created_at: "2025-04-21T02:23:19.760Z",
+              update_at: "2025-04-21T02:23:19.760Z",
+              updated_by: 0,
+              station: {
+                id: 2,
+                owner_id: 7,
+                station_name: "Tesla EV India",
+                address: "Rajstan india",
+                coordinates: {
+                  latitude: 18.4745984,
+                  longitude: 73.8197504,
+                },
+                amenities: "restroom,wifi,store, car care,lodging",
+                rate: null,
+                rate_type: null,
+                station_images: null,
+                additional_comment: null,
+                open_hours_opening_time: "00:00:00",
+                open_hours_closing_time: "23:59:59",
+                status: "Planned",
+                created_at: "2025-04-21T02:23:19.671Z",
+                update_at: "2025-04-21T02:23:19.671Z",
+                updated_by: 0,
+              },
+            },
+            connectorType: {
+              connector_type_id: 1,
+              max_power_kw: "60.00",
+              description: "CCS-2",
+            },
+            charger_connector_id: 2,
+          },  
+        ],
+      },
+    ],
   },
 ];
 
@@ -87,20 +123,40 @@ const ViewAllStationsPage = ({ navigation }) => {
   const [searchText, setSearchText] = useState("");
 
   const filteredStations = allStationsList.filter((station) =>
-    station.stationName.toLowerCase().includes(searchText.toLowerCase())
+    station?. station_name?.toLowerCase().includes(searchText.toLowerCase())
   );
   // Dummy coordinates for the location
-  const latitude = 28.6139;  
-  const longitude = 77.2090;
- 
-
- const openGoogleMaps = () => {
-  const url = Platform.select({
-    ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-    android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`
-  });
-  Linking.openURL(url);
-};
+  
+  const formatDistance = (distance) => {
+    if (distance >= 1000) {
+      return (distance / 1000).toFixed(1).replace(/\.0$/, "") + "k km";
+    } else if (distance % 1 !== 0) {
+      return distance?.toFixed(1) + " km";
+    } else {
+      return distance + " km";
+    }
+  };
+  const openHourFormatter = (openingTime, closingTime) => {
+    const formatTime = (time) => {
+      const [hour, minute] = time.split(':').map(Number);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const adjustedHour = hour % 12 || 12;
+      return `${adjustedHour}:${minute.toString().padStart(2, '0')}${ampm}`;
+    };
+  
+    return {
+      opening: formatTime(openingTime),
+      closing: formatTime(closingTime)
+    };
+  };
+  
+  const openGoogleMaps = (latitude,longitude) => {
+    const url = Platform.select({
+      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
+      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
+    });
+    Linking.openURL(url);
+  };
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -114,25 +170,27 @@ const ViewAllStationsPage = ({ navigation }) => {
   function allStationsInfo() {
     const renderItem = ({ item }) => (
       <TouchableOpacity
-        onPress={() => navigation.navigate("ChargingStationDetail")}
+        onPress={() => navigation.navigate("StationDetailPage", { item })}
         style={styles.enrouteChargingStationWrapStyle}
       >
         <Image
-          source={item.stationImage}
+          source={
+            item?.station_images
+              ? { uri: imageURL.baseURL + item?.station_images }
+              : require("../../../../assets/images/chargingStations/charging_station3.png")
+          }
           style={styles.enrouteChargingStationImage}
         />
         <View style={styles.enrouteStationOpenCloseWrapper}>
-          <Text style={{ ...Fonts.whiteColor18Regular }}>
-            {item.isOpen ? "Open" : "Closed"}
-          </Text>
+          <Text style={{ ...Fonts.whiteColor18Regular }}>Pending</Text>
         </View>
         <View style={{ flex: 1 }}>
           <View style={{ margin: Sizes.fixPadding }}>
             <Text numberOfLines={1} style={{ ...Fonts.blackColor18SemiBold }}>
-              {item.stationName}
+              {item.station_name}
             </Text>
             <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
-              {item.stationAddress}
+              {item?.address}
             </Text>
             <View
               style={{
@@ -141,9 +199,8 @@ const ViewAllStationsPage = ({ navigation }) => {
               }}
             >
               <View style={{ ...commonStyles.rowAlignCenter }}>
-               
-                 <Text style={{ ...Fonts.blackColor16Medium }}>
-                  12:00 PM - 1:00 PM
+                <Text style={{ ...Fonts.blackColor16Medium }}>
+                {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).opening} - {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).closing}
                 </Text>
               </View>
               <View
@@ -162,7 +219,7 @@ const ViewAllStationsPage = ({ navigation }) => {
                     flex: 1,
                   }}
                 >
-                  {item.totalStations} Chargers
+                   {item?.chargers?.length ?? 0} Chargers
                 </Text>
               </View>
             </View>
@@ -181,10 +238,14 @@ const ViewAllStationsPage = ({ navigation }) => {
                 flex: 1,
                 marginRight: Sizes.fixPadding - 5.0,
               }}
-            >
-              {item.distance}
+            > 
+            {formatDistance(item?.distance_km)}
+        
             </Text>
-            <TouchableOpacity onPress={openGoogleMaps} style={styles.getDirectionButton}>
+            <TouchableOpacity
+              onPress={()=>openGoogleMaps( item.coordinates.latitude, item.coordinates.longitude)}
+              style={styles.getDirectionButton}
+            >
               <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
             </TouchableOpacity>
           </View>
@@ -205,7 +266,7 @@ const ViewAllStationsPage = ({ navigation }) => {
   function searchBar() {
     return (
       <View style={{ margin: 20.0 }}>
-        <MyStatusBar/>
+        <MyStatusBar />
         <View style={styles.searchBar}>
           <MaterialIcons
             name="search"

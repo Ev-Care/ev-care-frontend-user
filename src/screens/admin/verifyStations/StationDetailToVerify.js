@@ -40,7 +40,7 @@ const COLORS = {
 const { width } = Dimensions.get("window");
 
 
-const StationDetailPage = ({ route, navigation }) => {
+const StationDetailToVerify = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [showSnackBar, setshowSnackBar] = useState(false);
   const scrollViewRef = useRef(null);
@@ -245,14 +245,14 @@ function buttons(){
     <View style={styles.bottomButtons}>
          <TouchableOpacity
      
-     style={styles.deleteButton}
+     style={styles.rejectButton}
    >
-     <Text style={styles.updateButtonText}>Delete</Text>
+     <Text style={styles.approveButtonText}>Reject</Text>
    </TouchableOpacity>
     <TouchableOpacity
-      style={styles.updateButton}
+      style={styles.approveButton}
     >
-      <Text style={styles.updateButtonText}>Update</Text>
+      <Text style={styles.approveButtonText}>Approve</Text>
     </TouchableOpacity>
   </View>
   )
@@ -594,7 +594,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 
-  updateButton: {
+  approveButton: {
     flex: 1,
     backgroundColor: COLORS.primary,
     paddingVertical: 12,
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  deleteButton: {
+  rejectButton: {
     flex: 1,
     backgroundColor: COLORS.accent,
     paddingVertical: 12,
@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  updateButtonText: {
+  approveButtonText: {
     color: COLORS.white,
     fontSize: 14,
     fontWeight: "bold",
@@ -621,4 +621,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default StationDetailPage;
+export default StationDetailToVerify;

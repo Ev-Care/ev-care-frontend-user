@@ -120,8 +120,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       }),
     };
   });
-  const latitude = 28.6139;
-  const longitude = 77.209;
+
 
   const toggleStop = (station) => {
     console.log("Toggle Stop called with station:", station);
@@ -155,19 +154,20 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   
 
   const openGoogleMapsWithStops = () => {
-    const source = "28.535517,77.391029"; // Replace with your source
-    const destination = "28.459497,77.026634"; // Replace with your destination
-
+    const source = `${fromDefaultLocation.latitude},${fromDefaultLocation.longitude}`;
+    const destination = `${toDefaultLocation.latitude},${toDefaultLocation.longitude}`;
+  
     const waypoints = addedStops
       .map(
         (stop) => `${stop.coordinates.latitude},${stop.coordinates.longitude}`
       )
       .join("|");
-
+  
     const url = `https://www.google.com/maps/dir/?api=1&origin=${source}&destination=${destination}&waypoints=${waypoints}&travelmode=driving`;
-
+  
     Linking.openURL(url);
   };
+  
 
   const onMarkerPress = (mapEventData) => {
     const markerID = mapEventData._targetInst.return.key;

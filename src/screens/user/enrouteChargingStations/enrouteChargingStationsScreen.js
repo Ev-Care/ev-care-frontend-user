@@ -30,73 +30,21 @@ const width = screenWidth;
 const cardWidth = width / 1.15;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
 
-const chargingSpotsList = [
-  {
-    coordinate: {
-      latitude: 28.535517, // Noida, Uttar Pradesh
-      longitude: 77.391029,
-    },
-    id: "1",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
-    stationName: "BYD Charging Point Charging Point Charging Point",
-    stationAddress: "Near Sector 18 Metro Station Near Sector 18 Metro Station Near Sector 18 Metro Station",
-    rating: 4.7,
-    totalStations: 8,
-    distance: "4.5 km",
-    isOpen: true,
-  },
-  {
-    coordinate: {
-      latitude: 19.21833, // Navi Mumbai, Maharashtra
-      longitude: 72.978088,
-    },
-    id: "2",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
-    stationName: "TATA EStation",
-    stationAddress: "Near Vashi Railway Station",
-    rating: 3.9,
-    totalStations: 15,
-    distance: "5.7 km",
-    isOpen: false,
-  },
-  {
-    coordinate: {
-      latitude: 12.914142, // Mysuru, Karnataka
-      longitude: 74.856033,
-    },
-    id: "3",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
-    stationName: "HP Charging Station",
-    stationAddress: "Near Mysore Palace",
-    rating: 4.9,
-    totalStations: 6,
-    distance: "2.1 km",
-    isOpen: true,
-  },
-  {
-    coordinate: {
-      latitude: 25.435801, // Agra, Uttar Pradesh
-      longitude: 78.634674,
-    },
-    id: "4",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
-    stationName: "VIDA Station V1",
-    stationAddress: "Near Taj Mahal West Gate",
-    rating: 4.2,
-    totalStations: 15,
-    distance: "3.5 km",
-    isOpen: false,
-  },
-];
-
 const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const [expanded, setExpanded] = useState(false);
   const [showBottomSheet, setshowBottomSheet] = useState(true);
   const [addedStops, setAddedStops] = useState([]);
-  const {enrouteStations} = route?.params;
-  console.log("enrouteStations",JSON.stringify(enrouteStations[0]));
-  console.log("enrouteStations",enrouteStations.length);
+  const { enrouteStations } = route?.params;
+  console.log("enrouteStations", JSON.stringify(enrouteStations[0]));
+  const [destinationAddress, setDestinationAddress] = useState(
+    route?.params?.destinationAddress || "Destination Address"
+  );
+  const [pickupAddress, setPickupAddress] = useState(
+    route?.params?.pickupAddress || "Pickup Address"
+  );
+
+  // console.log("enrouteStations",enrouteStations?.length);
   const fromDefaultLocation = {
     latitude: route.params?.pickupCoordinate?.latitude || 0,
     longitude: route.params?.pickupCoordinate?.longitude || 0,
@@ -105,7 +53,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
     latitude: route.params?.destinationCoordinate?.latitude || 0,
     longitude: route.params?.destinationCoordinate?.longitude || 0,
   };
-  const [markerList] = useState(enrouteStations); // Declared already
+  const [markerList] = useState(enrouteStations || []); 
   const [region, setRegion] = useState({
     latitude: fromDefaultLocation.latitude,
     longitude: fromDefaultLocation.longitude,
@@ -135,7 +83,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   useEffect(() => {
     const listener = mapAnimation.addListener(({ value }) => {
       let index = Math.floor(value / cardWidth + 0.3);
-      index = Math.max(0, Math.min(index, markerList.length - 1));
+      index = Math.max(0, Math.min(index, markerList?.length - 1));
 
       if (mapIndex.current !== index) {
         mapIndex.current = index;
@@ -174,25 +122,46 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   });
   const latitude = 28.6139;
   const longitude = 77.209;
-  
+
   const toggleStop = (station) => {
+    console.log("Toggle Stop called with station:", station);
     const exists = addedStops.find((stop) => stop.id === station.id);
+    
+    // Log all stop IDs and the station's ID
+    console.log("Existing stop IDs:", addedStops.map(s => s.id));
+    console.log("Station ID being checked:", station.id);
+  
     if (exists) {
+      console.log("Station exists, removing...");
       setAddedStops((prev) => prev.filter((stop) => stop.id !== station.id));
     } else {
+      console.log("Station does not exist, adding...");
       setAddedStops((prev) => [...prev, station]);
     }
   };
+  
+  
+  
   const removeStop = (id) => {
-    setAddedStops((prevStops) => prevStops.filter((stop) => stop.id !== id));
+    console.log("Remove Stop called with id:", id);
+    debugger;
+  
+    const updatedStops = addedStops.filter((stop) => stop?.id !== id);
+    console.log("Updated stops after removal:", updatedStops);
+    setAddedStops(updatedStops);
   };
   
+
+  
+
   const openGoogleMapsWithStops = () => {
     const source = "28.535517,77.391029"; // Replace with your source
     const destination = "28.459497,77.026634"; // Replace with your destination
 
     const waypoints = addedStops
-      .map((stop) => `${stop.coordinate.latitude},${stop.coordinate.longitude}`)
+      .map(
+        (stop) => `${stop.coordinates.latitude},${stop.coordinates.longitude}`
+      )
       .join("|");
 
     const url = `https://www.google.com/maps/dir/?api=1&origin=${source}&destination=${destination}&waypoints=${waypoints}&travelmode=driving`;
@@ -218,11 +187,11 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   }
   const formatDistance = (distance) => {
     if (distance >= 1000) {
-      return (distance / 1000).toFixed(1).replace(/\.0$/, '') + 'k km';
+      return (distance / 1000).toFixed(1).replace(/\.0$/, "") + "k km";
     } else if (distance % 1 !== 0) {
-      return distance.toFixed(1) + ' km';
+      return distance.toFixed(1) + " km";
     } else {
-      return distance + ' km';
+      return distance + " km";
     }
   };
   return (
@@ -238,7 +207,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   );
   function bottomSheet() {
     return (
-      addedStops.length > 0 && (
+      addedStops?.length > 0 && (
         <Animated.View
           style={[
             styles.bottomSheetContainer,
@@ -251,9 +220,9 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
           </TouchableOpacity>
           {/* Scrollable content */}
           <ScrollView style={styles.bottomSheetScroll}>
-            { departureinfo()}
+            {pickupInfo()}
             {addedStopsInfo()}
-            {arriveInfo()}
+            {destinationInfo()}
           </ScrollView>
 
           {/* Bottom Button */}
@@ -267,7 +236,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       )
     );
   }
-  function arriveInfo(){
+  function destinationInfo() {
     return (
       <View style={styles.stopsContainer}>
         <View
@@ -283,99 +252,109 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
           <MaterialIcons name="location-on" size={20} color="red" />
         </View>
         <View style={[styles.stops, { marginTop: 2 }]}>
-          <Text style={styles.stopText}>{trimName(30,"Arrival Place Adresss name abcd") }</Text>
+          <Text style={styles.stopText}>
+            {trimName(30, destinationAddress)}
+          </Text>
 
           <Text style={[styles.stopDescription, {}]}>
-          {trimName(50," Arrival Address : city name ,state name , country ,pincode, 411041") }
-          
+            {trimName(50, destinationAddress)}
           </Text>
         </View>
-      </View>)
+      </View>
+    );
   }
-  function departureinfo(){
-    return ( <View style={styles.stopsContainer}>
-      <View
-        style={[
-          {
-            height: 90,
-            width: 30,
-            alignItems: "center",
-          },
-        ]}
-      >
-        <MaterialIcons name="circle" size={20} color="#3366ff" />
-
+  function pickupInfo() {
+    return (
+      <View style={styles.stopsContainer}>
         <View
-          style={{
-            width: 2,
-            flex: 1,
-
-            borderStyle: "dotted",
-            borderWidth: 1,
-            borderColor: "gray",
-          }}
-        />
-      </View>
-
-      <View style={[styles.stops, {}]}>
-        <Text style={styles.stopText}>{trimName(30,"Departure Place Name") }</Text>
-        <Text style={styles.stopDescription}>
-        {trimName(50," Departure Address : city name ,state name , country ,pincode, 411041") }
-        </Text>
-        <Text style={[styles.stopDescription, { color: "red" }]}>
-          Charge Your EV to avoid any issues on Trip
-        </Text>
-        <View style={[styles.stopBottomline]}></View>
-      </View>
-    </View>);
-  } 
- function addedStopsInfo(){
-  return ( <>
-     {addedStops.map((stop, index) => (
-    <View key={stop.id} style={styles.stopsContainer}>
-      <View
-        style={{
-          height: 90,
-          width: 30,
-          alignItems: "center",
-        }}
-      >
-        <MaterialIcons name="location-on" size={20} color={"green"} />
-        <View
-          style={{
-            width: 2,
-            flex: 1,
-            borderStyle: "dotted",
-            borderWidth: 1,
-            borderColor: "gray",
-          }}
-        />
-      </View>
-
-      <View style={styles.stops}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
+          style={[
+            {
+              height: 90,
+              width: 30,
+              alignItems: "center",
+            },
+          ]}
         >
-          <Text style={styles.stopText}>{trimName(30,stop.stationName)}</Text>
-          <TouchableOpacity onPress={() => removeStop(stop.id)}>
-            <MaterialIcons name="delete" size={20} color={"red"} />
-          </TouchableOpacity>
+          <MaterialIcons name="circle" size={20} color="#3366ff" />
+
+          <View
+            style={{
+              width: 2,
+              flex: 1,
+
+              borderStyle: "dotted",
+              borderWidth: 1,
+              borderColor: "gray",
+            }}
+          />
         </View>
-        <Text style={styles.stopDescription}>
-          No. of Chargers - {stop.totalStations}
-        </Text>
-        <Text style={styles.stopDescription}>
-          Address: {trimName(45,stop.stationAddress)}
-        </Text>
-        <View style={styles.stopBottomline} />
+
+        <View style={[styles.stops, {}]}>
+          <Text style={styles.stopText}>{trimName(30, pickupAddress)}</Text>
+          <Text style={styles.stopDescription}>
+            {trimName(50, pickupAddress)}
+          </Text>
+          <Text style={[styles.stopDescription, { color: "red" }]}>
+            Charge Your EV to avoid any issues on Trip
+          </Text>
+          <View style={[styles.stopBottomline]}></View>
+        </View>
       </View>
-    </View>
-  ))}</>);
- };
+    );
+  }
+  function addedStopsInfo() {
+    return (
+      <>
+        {addedStops?.length > 0 &&  addedStops.map((stop, index) => (
+          <View key={stop.id} style={styles.stopsContainer}>
+            <View
+              style={{
+                height: 90,
+                width: 30,
+                alignItems: "center",
+              }}
+            >
+              <MaterialIcons name="location-on" size={20} color={"green"} />
+              <View
+                style={{
+                  width: 2,
+                  flex: 1,
+                  borderStyle: "dotted",
+                  borderWidth: 1,
+                  borderColor: "gray",
+                }}
+              />
+            </View>
+
+            <View style={styles.stops}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={styles.stopText}>
+                  {trimName(30, stop?.station_name)}
+                </Text>
+                <TouchableOpacity onPress={() => removeStop(stop.id)}>
+                  <MaterialIcons name="delete" size={20} color={"red"} />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.stopDescription}>
+                No. of Chargers - {stop.totalStations}
+              </Text>
+              <Text style={styles.stopDescription}>
+                Address: {trimName(45, stop.stationAddress)}
+              </Text>
+              <View style={styles.stopBottomline} />
+            </View>
+          </View>
+        ))}
+      </>
+    );
+  }
+
   function backArrow() {
     return (
       <TouchableOpacity
@@ -416,24 +395,28 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
         {markerList.map((item, index) => (
           <TouchableOpacity
             activeOpacity={0.8}
-            // onPress={() => navigation.push("ChargingStationDetail")}
+            onPress={() => navigation.push("ChargingStationDetail", { item })}
             key={index}
             style={styles.enrouteChargingStationWrapStyle}
           >
-          <Image
+            <Image
               source={
                 item?.station_images
                   ? { uri: imageURL.baseURL + item?.station_images }
                   : {
-                      uri:
-                        "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                      uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                     }
               }
               style={styles.enrouteChargingStationImage}
             />
             <View style={styles.enrouteStationOpenCloseWrapper}>
-              <Text style={{ ...Fonts.whiteColor18Regular }}>
-                {item.isOpen ? "Open" : "Closed"}
+              <Text
+                style={[
+                  styles.statusClosed,
+                  { color: item?.status === "Inactive" ? "#FF5722" : "white" },
+                ]}
+              >
+                {item?.status === "Inactive" ? "Closed" : "Open"}
               </Text>
             </View>
             <View style={{ flex: 1 }}>
@@ -442,10 +425,10 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                   numberOfLines={1}
                   style={{ ...Fonts.blackColor18SemiBold }}
                 >
-                  {item.station_Name}
+                  {item?.station_name}
                 </Text>
                 <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
-                  {item.stationAddress}
+                  {item.address}
                 </Text>
                 <View
                   style={{
@@ -454,9 +437,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                   }}
                 >
                   <View style={{ ...commonStyles.rowAlignCenter }}>
-                    <Text style={{ ...Fonts.blackColor18Medium }}>
-                      4.7
-                    </Text>
+                    <Text style={{ ...Fonts.blackColor18Medium }}>4.7</Text>
                     <MaterialIcons
                       name="star"
                       color={Colors.yellowColor}
@@ -479,7 +460,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                         flex: 1,
                       }}
                     >
-                     {item?.chargers?.length} Charging Points
+                      {item?.chargers?.length} Charging Points
                     </Text>
                   </View>
                 </View>
@@ -499,7 +480,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                     marginRight: Sizes.fixPadding - 5.0,
                   }}
                 >
-                   {formatDistance(item?.distanceKm)}
+                  {formatDistance(item?.distanceKm)}
                 </Text>
                 <TouchableOpacity
                   activeOpacity={0.8}
@@ -507,14 +488,14 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                   style={[
                     styles.getDirectionButton,
                     {
-                      backgroundColor: addedStops.some((s) => s.id === item.id)
+                      backgroundColor: addedStops.some((s) => s?.id === item?.id)
                         ? Colors.orangeColor
                         : Colors.primaryColor,
                     },
                   ]}
                 >
                   <Text style={{ ...Fonts.whiteColor16Medium }}>
-                    {addedStops.some((s) => s.id === item.id)
+                    {addedStops.some((s) => s?.id === item?.id)
                       ? "- Remove Stop"
                       : "+ Add Stop"}
                   </Text>
@@ -564,7 +545,13 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
           strokeWidth={3}
         />
 
-        <Marker coordinate={fromDefaultLocation} pinColor="blue" />
+        <Marker coordinate={fromDefaultLocation}>
+          <Image
+            source={require("../../../../assets/images/userMarker.png")}
+            style={{ width: 50, height: 50 }}
+            resizeMode="contain"
+          />
+        </Marker>
         <Marker coordinate={toDefaultLocation} pinColor="red" />
       </MapView>
     );
@@ -575,7 +562,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       <View
         style={[
           styles.chargingInfoWrapStyle,
-          { bottom: addedStops.length > 0 ? 200 : 0 },
+          { bottom: addedStops?.length > 0 ? 200 : 0 },
         ]}
       >
         {chargingSpots()}

@@ -155,11 +155,11 @@ const ProfileScreen = ({ navigation }) => {
             iconName: "list-alt",
             onPress: () => navigation.push("TermsAndConditions"),
           })}
-          {profileOption({
+          {/* {profileOption({
             option: "FAQ",
             iconName: "help-outline",
             onPress: () => navigation.push("Faq"),
-          })}
+          })} */}
           {profileOption({
             option: "Privacy Policy",
             iconName: "privacy-tip",

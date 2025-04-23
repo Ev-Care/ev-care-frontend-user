@@ -150,11 +150,11 @@ console.log("user profile URL", imageURL + user.avatar);
         iconName: "list-alt",
         onPress: () => navigation.push("TermsAndConditionsScreen"),
       })}
-      {profileOption({
+      {/* {profileOption({
         option: "FAQ",
         iconName: "help-outline",
         onPress: () => navigation.push("FaqScreen"),
-      })}
+      })} */}
       {profileOption({
         option: "Privacy Policy",
         iconName: "privacy-tip",

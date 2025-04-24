@@ -7,10 +7,12 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+
   Image,
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import Checkbox from 'expo-checkbox';
 import { useNavigation } from "@react-navigation/native";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 import { Colors } from "../../../constants/styles";
@@ -59,6 +61,7 @@ const VendorDetailForm = () => {
   const [avatarUri, setAvatarUri] = useState(null); // State to hold the image URI
   const dispatch = useDispatch(); // Get the dispatch function
   const user = useSelector(selectUser);
+  const [isCheckBoxClicked, setCheckBoxClicked] = useState(false);
   const userKey = user?.user_key; // Get the user key from the Redux store
 
   console.log("User =:", user); // Log the user key for debugging
@@ -197,7 +200,7 @@ const VendorDetailForm = () => {
           )}
         </TouchableOpacity>
       </View>
-
+      <Text style={styles.label}>Bussiness Name</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter Business name"
@@ -216,7 +219,7 @@ const VendorDetailForm = () => {
         onChangeText={setPublicContact}
       /> */}
 
-      {/* <Text style={styles.label}>Aadhaar Number</Text> */}
+      <Text style={styles.label}>Aadhaar Number</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter Aadhaar number"
@@ -226,7 +229,7 @@ const VendorDetailForm = () => {
         onChangeText={setAadharNumber}
       />
 
-      {/* <Text style={styles.label}>PAN Number</Text> */}
+      <Text style={styles.label}>PAN Number</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter PAN number"
@@ -234,18 +237,28 @@ const VendorDetailForm = () => {
         value={panNumber}
         onChangeText={(text) => setPanNumber(text.toUpperCase())}
       />
+      
+      <View style={styles.checkboxContainer}>
+        <Checkbox
+          value={isCheckBoxClicked}
+          onValueChange={setCheckBoxClicked}
+          color={isCheckBoxClicked ? Colors.primaryColor : undefined}
+        />
+        <Text style={[styles.checkboxLabel,{color:Colors.primaryColor}]}>Do You Have GST Number ?</Text>
+      </View>
 
-      {/* <Text style={styles.label}>TAN Number</Text> */}
+      {isCheckBoxClicked && ( <>
+      <Text style={styles.label}>GST Number</Text>
       <TextInput
         style={styles.input}
-        placeholder="Enter TAN number"
+        placeholder="Enter GST number"
         placeholderTextColor="gray"
         value={tanNumber}
         onChangeText={(text) => setTanNumber(text.toUpperCase())}
-      />
+      /> </>)}
 
 
-      {/* <Text style={styles.label}>Address</Text> */}
+      <Text style={styles.label}>Address</Text>
       <TextInput
         style={[styles.input, styles.textArea]}
         placeholder="Home/Street/Locality, City, State, Pincode"
@@ -254,7 +267,6 @@ const VendorDetailForm = () => {
         value={address}
         onChangeText={setAddress}
       />
-
       <Text style={styles.label}>OR</Text>
       <TouchableOpacity style={styles.mapButton} onPress={selectOnMap}>
         <Text style={styles.mapButtonText}>Select on Map</Text>
@@ -371,4 +383,16 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 8,
   },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 10,
+  },
+  checkboxLabel: {
+    marginLeft: 8,
+    fontSize: 14,
+   
+  },
+
 });

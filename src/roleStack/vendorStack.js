@@ -54,7 +54,7 @@ export function VendorStack() {
           <Stack.Screen name="UploadTAN" component={UploadTAN} />
           <Stack.Screen name="VendorDetailForm" component={VendorDetailForm} />
           <Stack.Screen name="PickLocation" component={PickLocationScreen} />
-          <Stack.Screen name="VendorAccountDetailsForm" component={VendorAccountDetailsForm} />
+          {/* <Stack.Screen name="VendorAccountDetailsForm" component={VendorAccountDetailsForm} /> */}
         </>
       )}
 
@@ -77,6 +77,14 @@ export function VendorStack() {
           <Stack.Screen name="PreviewPage" component={PreviewPage} />
           <Stack.Screen name="StationManagement" component={StationManagement} />
           <Stack.Screen name="UpdateStation" component={UpdateStation} />
+          {/* //comment this line to use the add station screen */}
+          {/* <Stack.Screen name="Instruction" component={Instruction} />
+          <Stack.Screen name="UploadAadhar" component={UploadAadhar} />
+          <Stack.Screen name="UploadPAN" component={UploadPAN} />
+          <Stack.Screen name="UploadTAN" component={UploadTAN} />
+          <Stack.Screen name="VendorDetailForm" component={VendorDetailForm} />
+          
+          <Stack.Screen name="VendorAccountDetailsForm" component={VendorAccountDetailsForm} /> */}
         </>
       )}
     </Stack.Navigator>

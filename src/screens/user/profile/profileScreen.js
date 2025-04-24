@@ -69,6 +69,7 @@ const ProfileScreen = ({ navigation }) => {
       </Modal>
     </View>
   );
+  
 
   function logoutSheet() {
     return (

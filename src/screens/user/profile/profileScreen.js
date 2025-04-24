@@ -154,7 +154,7 @@ const ProfileScreen = ({ navigation }) => {
                    />
                  ) : (
                    <View  style={styles.userIconStyle}  >
-                     <Icon  name="person-off" size={60} color="#ccc" />
+                     <Icon  name="person-off" size={60} color="#e0e0eb" />
                    </View>
                    
                  )}
@@ -178,11 +178,11 @@ const ProfileScreen = ({ navigation }) => {
             iconName: "person",
             onPress: () => navigation.push("EditProfile"),
           })}
-          {profileOption({
+          {/* {profileOption({
             option: "Notifications",
             iconName: "notifications",
             onPress: () => navigation.push("Notification"),
-          })}
+          })} */}
           {profileOption({
             option: "Terms & Conditions",
             iconName: "list-alt",
@@ -198,11 +198,11 @@ const ProfileScreen = ({ navigation }) => {
             iconName: "privacy-tip",
             onPress: () => navigation.push("PrivacyPolicy"),
           })}
-          {profileOption({
+          {/* {profileOption({
             option: "Help",
             iconName: "support-agent",
             onPress: () => navigation.push("Help"),
-          })}
+          })} */}
           {logoutInfo()}
         </View>
       </View>
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     height: screenWidth / 4.0,
     borderRadius: screenWidth / 4.0 / 2.0,
     marginTop: -Sizes.fixPadding * 5.0,
-    borderColor:"gray" ,
+    borderColor:"#e0e0eb" ,
     borderWidth: 2.0,
     backgroundColor:Colors.whiteColor,
     justifyContent:"center",

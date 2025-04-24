@@ -155,7 +155,7 @@ const VendorProfile = () => {
             />
           ) : (
             <View  style={styles.userIconStyle}  >
-              <Icon  name="person-off" size={60} color="#ccc" />
+              <Icon  name="person-off" size={60} color="#e0e0eb" />
             </View>
             
           )}
@@ -195,11 +195,11 @@ const VendorProfile = () => {
             iconName: "privacy-tip",
             onPress: () => navigation.push("PrivacyPolicyScreen"),
           })}
-          {profileOption({
+          {/* {profileOption({
             option: "Help",
             iconName: "support-agent",
             onPress: () => navigation.push("HelpScreen"),
-          })}
+          })} */}
           {logoutInfo()}
         </View>
       </View>
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     height: screenWidth / 4.0,
     borderRadius: screenWidth / 4.0 / 2.0,
     marginTop: -Sizes.fixPadding * 5.0,
-    borderColor:"gray" ,
+    borderColor:"#e0e0eb" ,
     borderWidth: 2.0,
     backgroundColor:Colors.whiteColor,
     justifyContent:"center",

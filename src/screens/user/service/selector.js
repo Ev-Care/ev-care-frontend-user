@@ -2,3 +2,5 @@
 export const selectStations = (state) => state.station.stations;
 export const selectFavoriteStations = (state) => state.station.favorite;
 export const selectRecentStations = (state) => state.station.recent;
+export const selectUser = (state) => state.auth.user;
+export const selectUserCoordinate = (state) => state.auth.userCoordinate;

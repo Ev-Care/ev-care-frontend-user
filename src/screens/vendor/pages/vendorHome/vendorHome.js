@@ -9,6 +9,7 @@ import {
   Image,
   Switch,
   TextInput,
+  Alert,
 } from "react-native";
 import {
   Feather,
@@ -31,6 +32,7 @@ import { selectStation } from "../../services/selector";
 import { fetchStations } from "../../services/crudFunction";
 import { selectStations } from "../../../user/service/selector";
 import { RefreshControl } from 'react-native';
+import { handleRefreshStations } from "../../services/handleRefresh";
 // Colors
 const COLORS = {
   primary: "#101942",
@@ -101,13 +103,11 @@ const VendorHome =  () => {
     if (!fullName) return "";
     return fullName.trim().split(" ")[0];
   }
-  const handleRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-      console.log("Refresh completed!");
-    }, 2000); 
-  }
+  const handleRefresh = async() => {
+    await handleRefreshStations(dispatch, user?.id, setRefreshing);
+    }
+    
+  
 
   return (
     <SafeAreaView style={styles.container}>

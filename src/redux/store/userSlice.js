@@ -8,7 +8,7 @@ const initialState = {
   loading: false,
   error: null,
   accessToken: null,
-  profileStatus: null,
+  userCoordinate: null,
 
 };
 
@@ -34,7 +34,12 @@ const authSlice = createSlice({
       state.user = extractUser(action.payload);
       state.loading = false;
       // console.log("User signed up successfully in redux:", action.payload);
-    }
+    },
+    // New reducer to update userCoordinate
+    updateUserCoordinate: (state, action) => {
+      state.userCoordinate = action.payload; // Update userCoordinate with the payload
+    },
+    
   },
   extraReducers: (builder) => {
     builder
@@ -177,5 +182,5 @@ const extractUser = (data) => ({
   password: data.password,
 });
 
-export const { logoutUser, restoreUser, signUpUser } = authSlice.actions;
+export const { logoutUser, restoreUser, signUpUser, updateUserCoordinate } = authSlice.actions;
 export default authSlice.reducer;

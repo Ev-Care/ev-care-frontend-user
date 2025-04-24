@@ -18,10 +18,11 @@ import {
   commonStyles
 } from "../../../../constants/styles";
 import { selectUser } from "../../../auth/services/selector";
-import { selectStation, selectVendorStation } from "../../services/selector";
+import { selectVendorStation } from "../../services/selector";
 import { updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
 import imageURL from "../../../../constants/baseURL";
 import { RefreshControl } from 'react-native';
+import { handleRefreshStations } from "../../services/handleRefresh";
 const COLORS = {
   primary: "#101942",
   secondary: "#FF8C00",
@@ -42,6 +43,7 @@ const AllStations = ({route}) => {
   const dispatch = useDispatch();
   const [refreshing, setRefreshing] = useState(false); 
   const stations = useSelector(selectVendorStation);
+  
   // console.log("Stations in AllStations:", stations?.length);
   const updateStationStatus = async (stationData) => {
     try {
@@ -57,15 +59,12 @@ const AllStations = ({route}) => {
       Alert.alert("Error", "Failed to update station status.");
     }
   }
-  const handleRefresh = () => {
-    setRefreshing(true);
-    route.params.setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-      route.params.setRefreshing(false);
-      console.log("Refresh completed!");
-    }, 2000); 
-  }
+
+  const handleRefresh = async() => {
+    console.log("Refreshing stations...in all stations");
+    await handleRefreshStations(dispatch, user?.id, setRefreshing);
+    }
+
   return (
     <View style={styles.container}>
       <MyStatusBar />

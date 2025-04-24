@@ -10,7 +10,7 @@ export const fetchStationsByLocation = createAsyncThunk(
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
       // console.log("data:",  {...data}); // Log the access token for debugging
       const response = await getAllStationsByLocationAPI({...data, accessToken}); // Call the API to fetch stations by location
-     console.log("response:", response.data); // Log the response for debugging
+      // console.log("response:", response.data); // Log the response for debugging
       return response.data; // Assuming the API returns a list of stations
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);

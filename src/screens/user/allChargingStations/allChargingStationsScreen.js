@@ -11,18 +11,19 @@ import {
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useSelector } from "react-redux";
-import { selectStations } from "../service/selector";
+import { selectStations, selectUserCoordinate } from "../service/selector";
 import { filterStations } from "../../../utils/filter";
 import imageURL from "../../../constants/baseURL";
 import { RefreshControl } from 'react-native';
+import { handleRefreshStationsByLocation } from "../service/handleRefresh";
 
 
 
 const AllChargingStationsScreen = ({ navigation }) => {
   const stations = useSelector(selectStations);
   const [refreshing, setRefreshing] = useState(false);
-  console.log("stations in all charging stations screen ", stations?.length);
-
+  const userCoords = useSelector(selectUserCoordinate);
+ 
   const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
       ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
@@ -48,13 +49,13 @@ const AllChargingStationsScreen = ({ navigation }) => {
       return distance + ' km';
     }
   };
-  const handleRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-      console.log("Refresh completed!");
-    }, 2000); 
-  }
+   const handleRefresh = async () => {
+      const data = {
+        radius: 30000,
+        coords: userCoords,
+      }
+      await handleRefreshStationsByLocation(dispatch, data, setRefreshing);
+    }
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>

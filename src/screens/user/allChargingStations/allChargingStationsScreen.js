@@ -10,7 +10,7 @@ import {
 } from "../../../constants/styles";
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectStations, selectUserCoordinate } from "../service/selector";
 import { filterStations } from "../../../utils/filter";
 import imageURL from "../../../constants/baseURL";
@@ -23,7 +23,8 @@ const AllChargingStationsScreen = ({ navigation }) => {
   const stations = useSelector(selectStations);
   const [refreshing, setRefreshing] = useState(false);
   const userCoords = useSelector(selectUserCoordinate);
- 
+  const dispatch = useDispatch();
+  
   const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
       ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
@@ -50,6 +51,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
     }
   };
    const handleRefresh = async () => {
+    console.log("handle refresh called");
       const data = {
         radius: 30000,
         coords: userCoords,

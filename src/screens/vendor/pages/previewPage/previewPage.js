@@ -44,24 +44,25 @@ const COLORS = {
 
 const { width } = Dimensions.get('window');
 
-const PreviewPage = ({ navigation }) => {
+const PreviewPage = ({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState(0);
   const scrollViewRef = useRef(null);
   const mapRef = useRef(null);
   const dispatch = useDispatch(); // Get the dispatch function
-  const route = useRoute();
-  const { stationData, type, stationImage } = route.params; // Retrieve the passed data
+  // const route = useRoute();
+  const { stationData, type, stationImage } = route?.params; // Retrieve the passed data
   const isLoading = useSelector(selectVendorLoading);
 
   console.log('Transformed station data preview:', JSON.stringify(stationData, null, 2));
 
-  const connectorTypeMap = {
-    1: { name: "CCS-2", icon: "ev-plug-ccs2" },
-    2: { name: "CHAdeMO", icon: "ev-plug-chademo" },
-    3: { name: "Type-2", icon: "ev-plug-type2" },
-    4: { name: "Wall", icon: "ev-plug-type1" },
-    5: { name: "GBT", icon: "ev-plug-type2" },
+  const connectorIcons = {
+    "CCS-2": "ev-plug-ccs2",
+    "CHAdeMO": "ev-plug-chademo",
+    "Type-2": "ev-plug-type2",
+    "Wall": "ev-plug-type1",
+    "GBT": "ev-plug-type2",
   };
+
   const amenityMap = {
     "Restroom": "toilet",
     "Cafe": "coffee",
@@ -254,91 +255,44 @@ const PreviewPage = ({ navigation }) => {
   );
 
   function chargerTab() {
-    if (type === "add") {
-      return (
-        <ScrollView style={styles.tabContent}>
-          {stationData?.chargers.map((charger, index) => (
-            <View key={index} style={styles.chargerCard}>
-              <Text style={styles.chargerTitle}>
-                Charger {index + 1} - {charger.charger_type}
+    return (
+      <ScrollView style={styles.tabContent}>
+        {stationData?.chargers?.map((charger, index) => (
+          <View key={charger.charger_id} style={styles.chargerCard}>
+            <Text style={styles.chargerTitle}>
+              {charger?.name || `Charger ${index + 1}`}
+            </Text>
+            <View style={styles.chargerSpecs}>
+              <Text style={styles.chargerSpecText}>
+                Type: {charger?.charger_type || "Unknown Type"}
               </Text>
-              <View style={styles.chargerSpecs}>
-                <Text style={styles.chargerSpecText}>
-                  {charger.charger_type}
-                </Text>
-                <Text style={styles.chargerSpecText}>|</Text>
-                <Text style={styles.chargerSpecText}>
-                  {charger.power_rating || charger.max_power_kw} kW
-                </Text>
-              </View>
-
-              <View style={styles.connectorContainer}>
-                {charger?.connectors.map((connector, connectorIndex) => (
-                  <View key={connectorIndex} style={styles.connector}>
-                    <Text style={styles.connectorTitle}>
-                      Connector {connectorIndex + 1} { }
-                    </Text>
-                    <View style={styles.connectorType}>
-                      <Icon
-                        name={connectorTypeMap[connector?.connector_type_id]?.icon || "alert-circle"}
-                        size={20}
-                        color={COLORS.primary}
-                      />
-                      <Text style={styles.connectorTypeText}>
-                        {connectorTypeMap[connector?.connector_type_id]?.name || "Unknown Type"}
-                      </Text>
-                    </View>
-
-                  </View>
-                ))}
+              <Text style={styles.chargerSpecText}>|</Text>
+              <Text style={styles.chargerSpecText}>
+                Power: {charger?.max_power_kw || "Unknown Power"} KW
+              </Text>
+            </View>
+  
+            {/* Connector Type */}
+            <View style={styles.connector}>
+              <Text style={styles.connectorTitle}>
+                {charger?.connector_type || "Unknown Connector"}
+              </Text>
+              <View style={styles.connectorType}>
+                <Icon
+                  name={
+                    charger?.connector_type
+                      ? connectorIcons[charger?.connector_type]
+                      : "ev-plug-type1"
+                  }
+                  size={20}
+                  color={COLORS.primary}
+                />
               </View>
             </View>
-          ))}
-        </ScrollView>
-      );
-    } else {
-      return (
-
-        <ScrollView style={styles.tabContent}>
-          {stationData?.chargers.map((charger, index) => (
-            <View key={index} style={styles.chargerCard}>
-              <Text style={styles.chargerTitle}>
-                Charger {index + 1} - {charger.charger_type}
-              </Text>
-              <View style={styles.chargerSpecs}>
-                <Text style={styles.chargerSpecText}>
-                  {charger.charger_type}
-                </Text>
-                <Text style={styles.chargerSpecText}>|</Text>
-                <Text style={styles.chargerSpecText}>
-                  {charger.power_rating || charger.max_power_kw} kW
-                </Text>
-              </View>
-
-              <View style={styles.connectorContainer}>
-                {charger?.connectors.map((connector, connectorIndex) => (
-                  <View key={connectorIndex} style={styles.connector}>
-                    <Text style={styles.connectorTitle}>
-                      Connector {connectorIndex + 1} { }
-                    </Text>
-                    <View style={styles.connectorType}>
-                      <Icon
-                        name={connectorTypeMap[connector?.connectorType?.connector_type_id]?.icon || "alert-circle"}
-                        size={20}
-                        color={COLORS.primary}
-                      />
-                      <Text style={styles.connectorTypeText}>
-                        {connectorTypeMap[connector?.connectorType?.connector_type_id]?.name || "Unknown Type"}
-                      </Text>
-                    </View>
-
-                  </View>
-                ))}
-              </View>
-            </View>
-          ))}
-        </ScrollView>)
-    }
+          </View>
+        ))}
+      </ScrollView>
+    );
   }
 
   function loadingDialog() {

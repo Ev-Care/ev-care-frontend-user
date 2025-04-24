@@ -57,7 +57,7 @@ const UpdateStation = ({ navigation, route }) => {
   const [selectedAmenities, setSelectedAmenities] = useState(
     mapAmenitiesToIds(station?.amenities || "")
   );
-  console.log("Stations in update = ", JSON.stringify(station, null, 2));
+  console.log("Stations in update = ", JSON.stringify(station,null,2));
   const [openHours, setOpenHours] = useState(
     station.open_hours_opening_time === "00:00:00" &&
       station.open_hours_closing_time === "23:59:59"
@@ -76,16 +76,7 @@ const UpdateStation = ({ navigation, route }) => {
   const [chargerForms, setChargerForms] = useState(station?.chargers || [{}]);
   const [selectedForm, setSelectedForm] = useState(null);
   const [coordinate, setCoordinate] = useState(station?.coordinates || null);
-  // Initialize selectedConnectors with chargerIndex as key and connector_type as value
-  const [selectedConnectors, setSelectedConnectors] = useState(() => {
-    const initialConnectors = {};
-    station?.chargers?.forEach((charger, index) => {
-      initialConnectors[index] = charger.connector_type; // Use chargerIndex as key and connector_type as value
-    });
-    return initialConnectors;
-  });
-
-  console.log("selectedConnectors", selectedConnectors);
+  const [selectedConnectors, setSelectedConnectors] = useState({});
   const addChargerForm = () =>
     setChargerForms((prevForms) => [
       ...prevForms,
@@ -224,7 +215,6 @@ const UpdateStation = ({ navigation, route }) => {
     // Prepare the final station data
     const stationData = {
       owner_id: user.id, // Replace with the actual owner ID if available
-      station_id: station?.id || null,
       station_name: stationName,
       address,
       coordinates: {
@@ -442,7 +432,7 @@ const UpdateStation = ({ navigation, route }) => {
               />
             </View>
 
-            {connectorsInfo(charger, index)}
+            {connectorsInfo(charger.connectors, index)}
 
             {index === chargerForms.length - 1 && (
               <View style={styles.nextButtonContainer}>
@@ -460,10 +450,7 @@ const UpdateStation = ({ navigation, route }) => {
     );
   }
 
-  function connectorsInfo(charger, chargerIndex) {
-    console.log("charger = ", charger);
-    console.log("connectors = ", connectors);
-    console.log("connectorsList = ", connectorsList);
+  function connectorsInfo(chargerIndex) {
     return (
       <View style={styles?.section}>
         <Text style={styles?.sectionLabel}>Connectors</Text>
@@ -472,13 +459,10 @@ const UpdateStation = ({ navigation, route }) => {
             const connectorData = connectorsList?.find(
               (c) => c?.id === connector?.id && c?.chargerIndex === chargerIndex
             );
-            console.log("connectorData", connectorData);
             const count = connectorData?.count || 0;
 
             const isSelected =
-              selectedConnectors[chargerIndex] === connector?.type;
-
-            console.log("isSelected", isSelected);
+              selectedConnectors[chargerIndex] === connector?.id;
 
             return (
               <View
@@ -514,7 +498,7 @@ const UpdateStation = ({ navigation, route }) => {
                     );
                     setSelectedConnectors((prev) => ({
                       ...prev,
-                      [chargerIndex]: connector?.type,
+                      [chargerIndex]: connector?.id,
                     }))
                   }
                   }
@@ -739,7 +723,7 @@ const UpdateStation = ({ navigation, route }) => {
     );
   }
   function uploadPhotoSection() {
-    console.log("photo url = ", imageURL.baseURL + photo);
+    console.log("photo url = ", imageURL.baseURL+photo);
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>
@@ -750,7 +734,7 @@ const UpdateStation = ({ navigation, route }) => {
         </Text>
         <TouchableOpacity style={styles.photoUpload} onPress={handleImagePick}>
           {photo ? (
-            <Image source={{ uri: imageURL.baseURL + "/" + photo }} style={styles.previewImage} />
+            <Image source={{ uri: imageURL.baseURL+"/"+photo }} style={styles.previewImage} />
           ) : (
             <Icon name="camera-plus-outline" size={40} color="#ccc" />
           )}

@@ -444,8 +444,6 @@ const UpdateStation = ({ navigation, route }) => {
       return acc;
     }, {});
 
-   
-  
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>Connectors</Text>

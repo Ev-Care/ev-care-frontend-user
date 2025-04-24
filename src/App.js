@@ -34,16 +34,14 @@ function AppNavigator() {
 
 
   useEffect(() => {
-
     if (user && user.role) { 
       // if (true) { 
         setUserType(user.role.toLowerCase());
-        // setUserType("admin");
+      //  setUserType("admin");
     } else {
         setUserType(null);
     }
 }, [user]);
-
 
   // Function to handle role-based navigation
   const renderRoleStack = () => {

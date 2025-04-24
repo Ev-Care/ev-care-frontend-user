@@ -19,6 +19,7 @@ import {
   commonStyles,
   screenWidth,
 } from "../../../constants/styles";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MapView, { Marker } from "react-native-maps";
@@ -39,13 +40,13 @@ const COLORS = {
 
 const { width } = Dimensions.get("window");
 
-
 const StationDetailPage = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [showSnackBar, setshowSnackBar] = useState(false);
+  const [showDeleteDialogue, setshowDeleteDialogue] = useState(false);
   const scrollViewRef = useRef(null);
   const station = route?.params?.item;
-  
+
   if (!station) {
     return <Text>Loading...</Text>; // Handle when station is not available
   }
@@ -57,15 +58,15 @@ const StationDetailPage = ({ route, navigation }) => {
     Wall: "ev-plug-type1",
     GBT: "ev-plug-type2",
   };
-  
-//   const amenityMap = {
-//     Restroom: "toilet",
-//     Cafe: "coffee",
-//     Wifi: "wifi",
-//     Store: "cart",
-//     "Car Care": "car",
-//     Lodging: "bed",
-//   };
+
+  //   const amenityMap = {
+  //     Restroom: "toilet",
+  //     Cafe: "coffee",
+  //     Wifi: "wifi",
+  //     Store: "cart",
+  //     "Car Care": "car",
+  //     Lodging: "bed",
+  //   };
 
   const handleTabPress = (index) => {
     setActiveTab(index);
@@ -90,18 +91,17 @@ const StationDetailPage = ({ route, navigation }) => {
 
   const openHourFormatter = (openingTime, closingTime) => {
     const formatTime = (time) => {
-      const [hour, minute] = time.split(':').map(Number);
-      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const [hour, minute] = time.split(":").map(Number);
+      const ampm = hour >= 12 ? "PM" : "AM";
       const adjustedHour = hour % 12 || 12;
-      return `${adjustedHour}:${minute.toString().padStart(2, '0')}${ampm}`;
+      return `${adjustedHour}:${minute.toString().padStart(2, "0")}${ampm}`;
     };
-  
+
     return {
       opening: formatTime(openingTime),
-      closing: formatTime(closingTime)
+      closing: formatTime(closingTime),
     };
   };
-  
 
   const trimName = (threshold, str) => {
     if (str?.length <= threshold) {
@@ -109,40 +109,41 @@ const StationDetailPage = ({ route, navigation }) => {
     }
     return str?.substring(0, threshold) + ".....";
   };
+  const handleDelete = () => {
+    console.log("handleDelete Called");
+  };
 
-  
   return (
     <View style={styles.container}>
       {/* Header*/}
-     {header()}
+      {header()}
       {/* Tab Navigation */}
-    {navigationTab()}
+      {navigationTab()}
       {/* Swipeable Content */}
-     {SwipeableContent()}
+      {SwipeableContent()}
 
       {/* Bottom Buttons */}
-     {buttons()}
-      {/* Rating dialog */}
-     
+      {buttons()}
+      {/* delete dialog */}
+      {deleteDialogue()}
     </View>
   );
-
 
   function header() {
     if (!station) {
       return <Text>Loading...</Text>; // Or show a fallback UI
     }
-  
+
     const imageUrl = station?.station_images
       ? { uri: imageURL.baseURL + station.station_images }
       : {
           uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         };
-  
+
     return (
       <View style={styles.header}>
         <Image source={imageUrl} style={styles.mapBackground} />
-  
+
         <View style={styles.overlay}>
           <View style={styles.communityBadgeAndBack}>
             <MaterialIcons
@@ -163,7 +164,9 @@ const StationDetailPage = ({ route, navigation }) => {
           <Text style={styles.stationAddress}>
             {trimName(50, station?.address)}
           </Text>
-          <View style={[{ flexDirection: "row", justifyContent: "space-between" }]}>
+          <View
+            style={[{ flexDirection: "row", justifyContent: "space-between" }]}
+          >
             <View style={styles.statusContainer}>
               <Text
                 style={[
@@ -176,194 +179,279 @@ const StationDetailPage = ({ route, navigation }) => {
                 {station?.status === "Inactive" ? "Closed" : "Open"}
               </Text>
               <Text style={styles.statusTime}>
-                •{openHourFormatter(station?.open_hours_opening_time, station?.open_hours_closing_time).opening} - {openHourFormatter(station?.open_hours_opening_time, station?.open_hours_closing_time).closing}
-              
+                •
+                {
+                  openHourFormatter(
+                    station?.open_hours_opening_time,
+                    station?.open_hours_closing_time
+                  ).opening
+                }{" "}
+                -{" "}
+                {
+                  openHourFormatter(
+                    station?.open_hours_opening_time,
+                    station?.open_hours_closing_time
+                  ).closing
+                }
               </Text>
               <View style={styles.newBadge}>
-                <Text style={styles.newText}>
-                 New
-                </Text>
+                <Text style={styles.newText}>New</Text>
               </View>
             </View>
-            
           </View>
         </View>
       </View>
     );
   }
-  
-function navigationTab(){
-  return(
-    <View style={styles.tabContainer}>
-    <TouchableOpacity
-      style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
-      onPress={() => handleTabPress(0)}
-    >
-      <Text
-        style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
-      >
-        Charger
-      </Text>
-      {activeTab === 0 && <View style={styles.activeTabIndicator} />}
-    </TouchableOpacity>
-    <TouchableOpacity
-      style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
-      onPress={() => handleTabPress(1)}
-    >
-      <Text
-        style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
-      >
-        Details
-      </Text>
-      {activeTab === 1 && <View style={styles.activeTabIndicator} />}
-    </TouchableOpacity>
-  
-  </View>
 
-  )
-}
-function SwipeableContent() {
+  function navigationTab() {
+    return (
+      <View style={styles.tabContainer}>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
+          onPress={() => handleTabPress(0)}
+        >
+          <Text
+            style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
+          >
+            Charger
+          </Text>
+          {activeTab === 0 && <View style={styles.activeTabIndicator} />}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
+          onPress={() => handleTabPress(1)}
+        >
+          <Text
+            style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
+          >
+            Details
+          </Text>
+          {activeTab === 1 && <View style={styles.activeTabIndicator} />}
+        </TouchableOpacity>
+      </View>
+    );
+  }
+  function SwipeableContent() {
     return (
       <ScrollView
-      ref={scrollViewRef}
-      horizontal
-      pagingEnabled
-      showsHorizontalScrollIndicator={false}
-      onScroll={handleScroll}
-      scrollEventThrottle={16}
-    >
-      {/* Charger Tab */}
-      {chargerTab()}
-      {/* Details Tab */}
-      {detailTab()}
-        
-    </ScrollView>
-    )
- }
-function buttons(){
-  return(
-    <View style={styles.bottomButtons}>
-         <TouchableOpacity
-     
-     style={styles.deleteButton}
-   >
-     <Text style={styles.updateButtonText}>Delete</Text>
-   </TouchableOpacity>
-    <TouchableOpacity
-      style={styles.updateButton}
-    >
-      <Text style={styles.updateButtonText}>Update</Text>
-    </TouchableOpacity>
-  </View>
-  )
-}
-function chargerTab() {
-  return (
-    <ScrollView style={styles.tabContent}>
-      {station?.chargers?.map((charger, index) => (
-        <View key={charger.charger_id} style={styles.chargerCard}>
-          <Text style={styles.chargerTitle}>
-            {charger?.name || `Charger ${index + 1}`}
-          </Text>
-          <View style={styles.chargerSpecs}>
-            <Text style={styles.chargerSpecText}>
-              Type: {charger?.charger_type || "Unknown Type"}
-            </Text>
-            <Text style={styles.chargerSpecText}>|</Text>
-            <Text style={styles.chargerSpecText}>
-              Power: {charger?.max_power_kw || "Unknown Power"} KW
-            </Text>
-          </View>
-
-          {/* Map over connectors */}
-          <View style={styles.connectorContainer}>
-            {charger?.connectors?.map((connector, connectorIndex) => (
-              <View key={connectorIndex} style={styles.connector}>
-                <Text style={styles.connectorTitle}>
-                  { connector?.connectorType?.description || `Cherger ${connectorIndex + 1}`}
-                </Text>
-                <View style={styles.connectorType}>
-                  <Icon
-                    name={
-                      connector?.connectorType?.description
-                        ? connectorIcons[connector?.connectorType?.description]
-                        : "ev-plug-type1"
-                    }
-                    size={20}
-                    color={COLORS.primary}
-                  />
-                 
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
-      ))}
-    </ScrollView>
-  );
-}
-
-function detailTab() {
-  return (
-    <ScrollView style={styles.tabContent}>
-      <Text style={styles.sectionTitle}>Location Details</Text>
-      <View style={styles.mapContainer}>
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: station?.coordinates?.latitude,
-            longitude: station?.coordinates?.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
+        ref={scrollViewRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
+        {/* Charger Tab */}
+        {chargerTab()}
+        {/* Details Tab */}
+        {detailTab()}
+      </ScrollView>
+    );
+  }
+  function buttons() {
+    return (
+      <View style={styles.bottomButtons}>
+        <TouchableOpacity
+          onPress={() => {
+            setshowDeleteDialogue(true);
           }}
+          style={styles.deleteButton}
         >
-          <Marker
-            coordinate={{
+          <Text style={styles.updateButtonText}>Delete</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.updateButton}>
+          <Text style={styles.updateButtonText}>Update</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+  function chargerTab() {
+    return (
+      <ScrollView style={styles.tabContent}>
+        {station?.chargers?.map((charger, index) => (
+          <View key={charger.charger_id} style={styles.chargerCard}>
+            <Text style={styles.chargerTitle}>
+              {charger?.name || `Charger ${index + 1}`}
+            </Text>
+            <View style={styles.chargerSpecs}>
+              <Text style={styles.chargerSpecText}>
+                Type: {charger?.charger_type || "Unknown Type"}
+              </Text>
+              <Text style={styles.chargerSpecText}>|</Text>
+              <Text style={styles.chargerSpecText}>
+                Power: {charger?.max_power_kw || "Unknown Power"} KW
+              </Text>
+            </View>
+
+            {/* Map over connectors */}
+            <View style={styles.connectorContainer}>
+              {charger?.connectors?.map((connector, connectorIndex) => (
+                <View key={connectorIndex} style={styles.connector}>
+                  <Text style={styles.connectorTitle}>
+                    {connector?.connectorType?.description ||
+                      `Cherger ${connectorIndex + 1}`}
+                  </Text>
+                  <View style={styles.connectorType}>
+                    <Icon
+                      name={
+                        connector?.connectorType?.description
+                          ? connectorIcons[
+                              connector?.connectorType?.description
+                            ]
+                          : "ev-plug-type1"
+                      }
+                      size={20}
+                      color={COLORS.primary}
+                    />
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    );
+  }
+
+  function detailTab() {
+    return (
+      <ScrollView style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Location Details</Text>
+        <View style={styles.mapContainer}>
+          <MapView
+            style={styles.map}
+            initialRegion={{
               latitude: station?.coordinates?.latitude,
               longitude: station?.coordinates?.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
             }}
-            title={station?.station_name}
-            description={station?.address}
-          />
-        </MapView>
-      </View>
-      <Text style={styles.sectionTitle}>Address</Text>
-      <View style={styles.landmarkContainer}>
-        <Text style={styles.landmarkTitle}>{station?.address}</Text>
-      </View>
+          >
+            <Marker
+              coordinate={{
+                latitude: station?.coordinates?.latitude,
+                longitude: station?.coordinates?.longitude,
+              }}
+              title={station?.station_name}
+              description={station?.address}
+            />
+          </MapView>
+        </View>
+        <Text style={styles.sectionTitle}>Address</Text>
+        <View style={styles.landmarkContainer}>
+          <Text style={styles.landmarkTitle}>{station?.address}</Text>
+        </View>
 
-      <Text style={styles.sectionTitle}>Amenities</Text>
-      <View style={styles.amenitiesContainer}>
-        {station?.amenities?.split(",").map((amenityName, index) => {
-          const trimmedName = amenityName.trim();
-          let iconName = "help-circle"; // default fallback
+        <Text style={styles.sectionTitle}>Amenities</Text>
+        <View style={styles.amenitiesContainer}>
+          {station?.amenities?.split(",").map((amenityName, index) => {
+            const trimmedName = amenityName.trim();
+            let iconName = "help-circle"; // default fallback
 
-          if (trimmedName === "Restroom") {
-            iconName = "toilet";
-          } else if (trimmedName === "Cafe") {
-            iconName = "coffee";
-          } else if (trimmedName === "Wifi") {
-            iconName = "wifi";
-          } else if (trimmedName === "Store") {
-            iconName = "cart";
-          } else if (trimmedName === "Car Care") {
-            iconName = "car";
-          } else if (trimmedName === "Lodging") {
-            iconName = "bed";
-          }
+            if (trimmedName === "Restroom") {
+              iconName = "toilet";
+            } else if (trimmedName === "Cafe") {
+              iconName = "coffee";
+            } else if (trimmedName === "Wifi") {
+              iconName = "wifi";
+            } else if (trimmedName === "Store") {
+              iconName = "cart";
+            } else if (trimmedName === "Car Care") {
+              iconName = "car";
+            } else if (trimmedName === "Lodging") {
+              iconName = "bed";
+            }
 
-          return (
-            <View key={trimmedName} style={styles.amenityItem}>
-              <Icon name={iconName} size={24} color={COLORS.primary} />
-              <Text style={styles.connectorTypeText}>{trimmedName}</Text>
-            </View>
-          );
-        })}
-      </View>
-    </ScrollView>
-  );
-}
+            return (
+              <View key={trimmedName} style={styles.amenityItem}>
+                <Icon name={iconName} size={24} color={COLORS.primary} />
+                <Text style={styles.connectorTypeText}>{trimmedName}</Text>
+              </View>
+            );
+          })}
+        </View>
+      </ScrollView>
+    );
+  }
+  function deleteDialogue() {
+    return (
+      <Overlay
+        isVisible={showDeleteDialogue}
+        onBackdropPress={() => setshowDeleteDialogue(false)}
+        overlayStyle={styles.dialogStyle}
+      >
+        <View>
+          <Text
+            style={{
+              ...Fonts.blackColor18Medium,
+              textAlign: "center",
+              marginHorizontal: Sizes.fixPadding * 2.0,
+              marginVertical: Sizes.fixPadding * 2.0,
+            }}
+          >
+            Do You Want To Delete?
+          </Text>
+          <View
+            style={{
+              alignSelf: "center",
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              borderWidth: 2,
+              borderColor: Colors.darOrangeColor,
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: Sizes.fixPadding * 1.5,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="trash-can-outline"
+              size={40}
+              color={Colors.darOrangeColor}
+            />
+          </View>
 
+          <View
+            style={{
+              ...commonStyles.rowAlignCenter,
+              marginTop: Sizes.fixPadding,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setshowDeleteDialogue(false);
+              }}
+              style={{
+                ...styles.noButtonStyle,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+            >
+              <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                handleDelete();
+                setshowDeleteDialogue(false);
+                // handle delete logic here
+              }}
+              style={{
+                backgroundColor: Colors.darOrangeColor,
+                borderBottomRightRadius: 4,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+              
+            >
+              <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Overlay>
+    );
+  }
 };
 
 const styles = StyleSheet.create({
@@ -584,8 +672,7 @@ const styles = StyleSheet.create({
     marginRight: 16,
     marginBottom: 10,
   },
- 
- 
+
   bottomButtons: {
     flexDirection: "row",
     padding: 16,
@@ -615,10 +702,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
   },
+  /* delete Dialog Styles */
+  dialogStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderRadius: Sizes.fixPadding - 5.0,
+    width: "85%",
+    padding: 0.0,
+    elevation: 0,
+  },
 
- 
+  dialogYesNoButtonStyle: {
+    flex: 1,
+    ...commonStyles.shadow,
 
-
+    padding: Sizes.fixPadding,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noButtonStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderTopColor: Colors.extraLightGrayColor,
+    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+  },
+  /*End of delete Dialog Styles */
 });
 
 export default StationDetailPage;

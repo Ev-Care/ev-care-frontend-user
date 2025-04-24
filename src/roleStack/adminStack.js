@@ -9,6 +9,8 @@ import AllPendingVendors from "../screens/admin/verifyVendors/AllPendingVendors"
 import AllPendingStations from "../screens/admin/verifyStations/AllPendingStations";
 import StationDetailToVerify from "../screens/admin/verifyStations/StationDetailToVerify";
 import StationDetailPage from "../screens/admin/viewAllStations/StationDetailPage";
+import UpdateUser from "../screens/admin/viewAllUsers/UpdateUser";
+import VerifyVendorProfile from "../screens/admin/verifyVendors/VerifyVendorProfile";
 
 
 const Stack = createStackNavigator();
@@ -25,6 +27,9 @@ export function AdminStack() {
       <Stack.Screen name="AllPendingStations" component={AllPendingStations} />
       <Stack.Screen name="StationDetailToVerify" component={StationDetailToVerify} />
       <Stack.Screen name="StationDetailPage" component={StationDetailPage} />
+      <Stack.Screen name="UpdateUser" component={UpdateUser} />
+      <Stack.Screen name="VerifyVendorProfile" component={VerifyVendorProfile} />
+     
     </Stack.Navigator>
   );
 }

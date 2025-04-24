@@ -64,6 +64,7 @@ const AddStations = () => {
   const [imageloading, setImageLoading] = useState(false);
   const [viewImage, setViewImage] = useState(null);
   const user = useSelector(selectUser); // Get user data
+  const [selectedConnectors, setSelectedConnectors] = useState({});
 
   const incrementConnector = (id, chargerIndex) => {
     setConnectorsList((prev) => {
@@ -404,33 +405,54 @@ const AddStations = () => {
             );
             const count = connectorData?.count || 0;
   
+            const isSelected =
+              selectedConnectors[chargerIndex] === connector?.id;
+  
             return (
               <View
                 key={`connector-${connector?.id}`}
                 style={styles?.connectorsItem}
               >
-                <View style={{ alignItems: "center", flexDirection: "row", gap: 4 }}>
+                <View
+                  style={{ alignItems: "center", flexDirection: "row", gap: 4 }}
+                >
                   <Icon name={connector?.icon} size={24} color="#101942" />
                   <Text style={styles?.optional}>{connector?.type}</Text>
                 </View>
   
-                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
-                  <TouchableOpacity
-                    onPress={() => decrementConnector(connector?.id, chargerIndex)}
-                    style={[styles?.incDecButton, { backgroundColor: "#FF5722" }]}
-                  >
-                    <Text style={{ color: "#fff", fontSize: 14 }}>−</Text>
-                  </TouchableOpacity>
+                {/* Radio Button */}
+                <TouchableOpacity
+                  style={{
+                    height: 20,
+                    width: 20,
+                    borderRadius: 10,
+                    borderWidth: 2,
+                    borderColor: "#101942",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginTop: 6,
+                  }}
+                  onPress={() =>
+                    setSelectedConnectors((prev) => ({
+                      ...prev,
+                      [chargerIndex]: connector?.id,
+                    }))
+                  }
+                >
+                  {isSelected && (
+                    <View
+                      style={{
+                        height: 10,
+                        width: 10,
+                        borderRadius: 5,
+                        backgroundColor: "#101942",
+                      }}
+                    />
+                  )}
+                </TouchableOpacity>
   
-                  <Text style={styles?.countText}>{count}</Text>
-  
-                  <TouchableOpacity
-                    onPress={() => incrementConnector(connector?.id, chargerIndex)}
-                    style={[styles?.incDecButton, { backgroundColor: "#101942" }]}
-                  >
-                    <Text style={{ color: "#fff", fontSize: 14 }}>+</Text>
-                  </TouchableOpacity>
-                </View>
+                {/* Count Buttons (if needed) */}
+                {/* Add your inc/dec logic here */}
               </View>
             );
           })}
@@ -438,6 +460,7 @@ const AddStations = () => {
       </View>
     );
   }
+  
   
   function amenitiesSection() {
     return (

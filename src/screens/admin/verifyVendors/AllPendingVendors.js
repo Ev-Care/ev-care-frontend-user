@@ -36,77 +36,77 @@ const COLORS = {
 };
 
 // Sample user data
-const VENDORS = [
+const USERS = [
   {
-    id: "1",
-    name: "Vendor name",
-    mobile: "+912678387266",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    status: "Pending",
+    id: 18,
+    user_key: "b2ZB4gFprc",
+    owner_legal_name: "Dummy User",
+    business_name: null,
+    mobile_number: "+916666666666",
+    email: null,
+    otp: "573937",
+    pan_no: null,
+    tan_no: null,
+    adhar_no: null,
+    address: null,
+    avatar: null,
+    adhar_front_pic: null,
+    adhar_back_pic: null,
+    pan_pic: null,
+    tan_pic: null,
+    google_id: null,
+    otp_expiry_date: "2025-04-23T18:41:38.000Z",
+    status: "New",
+    role: "Vendor",
+    login_method: "mobile_otp",
+    created_at: "2025-04-23T18:31:38.000Z",
+    update_at: "2025-04-23T18:31:38.509Z",
+    updated_by: 0,
+    isLoggedIn: true,
+    password: null
   },
   {
-    id: "2",
-    name: "Vendor name",
-    mobile: "+912678387266",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    status: "Pending",
-  },
-  {
-    id: "3",
-    name: "Vendor name",
-    mobile: "+912678387266",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    status: "Pending",
-  },
-  {
-    id: "4",
-    name: "Vendor name",
-    mobile: "+912678387266",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    status: "Pending",
-  },
-  {
-    id: "5",
-    name: "Vendor name",
-    mobile: "+912678387266",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    status: "Pending",
-  },
-  {
-    id: "6",
-    name: "Vendor name",
-    mobile: "+912678387266",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    status: "Pending",
-  },
-  {
-    id: "7",
-    name: "Vendor name",
-    mobile: "+912678387266",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    status: "Pending",
-  },
-  {
-    id: "8",
-    name: "Vendor name",
-    mobile: "+912678387266",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    status: "Pending",
-  },
-
+    id: 19,
+    user_key: "b2ZB4gFprc",
+    owner_legal_name: "Dummy User 2",
+    business_name: null,
+    mobile_number: "+9166666666669",
+    email: null,
+    otp: "573937",
+    pan_no: null,
+    tan_no: null,
+    adhar_no: null,
+    address: null,
+    avatar: null,
+    adhar_front_pic: null,
+    adhar_back_pic: null,
+    pan_pic: null,
+    tan_pic: null,
+    google_id: null,
+    otp_expiry_date: "2025-04-23T18:41:38.000Z",
+    status: "New",
+    role: "vendor",
+    login_method: "mobile_otp",
+    created_at: "2025-04-23T18:31:38.000Z",
+    update_at: "2025-04-23T18:31:38.509Z",
+    updated_by: 0,
+    isLoggedIn: true,
+    password: null
+  }
 ];
+
 
 // User item component - extracted for better code organization
 
-const AllPendingVendors = () => {
+const AllPendingVendors = ({navigation}) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState(VENDORS);
+  const [users, setUsers] = useState(USERS);
 
   // Filter users based on search query
   const filteredUsers = users.filter(
     (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.mobile.includes(searchQuery)
+      user?.owner_legal_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user?.mobile_number?.includes(searchQuery)
   );
 
   return (
@@ -118,7 +118,7 @@ const AllPendingVendors = () => {
       <FlatList
         data={filteredUsers}
         renderItem={({ item }) => <UserInfo user={item} />}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item?.id?.toString()}
         contentContainerStyle={styles.listContainer}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         showsVerticalScrollIndicator={false}
@@ -131,27 +131,37 @@ const AllPendingVendors = () => {
       />
     </SafeAreaView>
   );
+
   function UserInfo({ user }) {
     return (
-      <View style={styles.userItem}>
-        <Image source={{ uri: user.avatar }} style={styles.avatar} />
+      <TouchableOpacity onPress={() => navigation.navigate("VerifyVendorProfile",{user})} style={styles.userItem}>
+     {user?.avatar ? (
+          <Image source={{ uri: user?.avatar }} style={styles.avatar} />
+        ) : (
+          <Icon name="account-circle" size={50} color="#ccc" style={styles.avatar} />
+        )}
+  
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>{user.name}</Text>
-          <Text style={styles.userMobile}>{user.mobile}</Text>
+          <Text style={styles.userName}>{user?.owner_legal_name || "N/A"}</Text>
+          <Text style={styles.userMobile}>{user?.mobile_number || "N/A"}</Text>
         </View>
-        <View style={[styles.statusBadge]}>
+  
+        <View style={[styles.roleBadge]}>
           <Text
             style={[
-              styles.statusText,
-              { color: user.status === "Active" ? "green" : "red" },
+              styles.roleText,{
+              color:  "red" ,
+            }
             ]}
           >
-            {user.status}
+            {user?.status==="New" ? "Pending" : user?.status}
           </Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   }
+  
+
   function SearchBar({ value, onChangeText }) {
     return (
       <View style={{ margin: 20.0 }}>
@@ -178,6 +188,7 @@ const AllPendingVendors = () => {
     );
   }
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -272,14 +283,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.gray,
   },
-  statusBadge: {
+  roleBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 4,
     justifyContent: "center",
     alignItems: "center",
   },
-  statusText: {
+  roleText: {
     fontSize: 12,
     fontWeight: "bold",
   },

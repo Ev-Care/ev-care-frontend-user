@@ -519,81 +519,82 @@ const StationManagement = ({ navigation, route }) => {
     );
   }
   function deleteDialogue() {
-    return (
-      <Overlay
-        isVisible={showDeleteDialogue}
-        onBackdropPress={() => setshowDeleteDialogue(false)}
-        overlayStyle={styles.dialogStyle}
-      >
-        <View>
-          <Text
-            style={{
-              ...Fonts.blackColor18Medium,
-              textAlign: "center",
-              marginHorizontal: Sizes.fixPadding * 2.0,
-              marginVertical: Sizes.fixPadding * 2.0,
-            }}
-          >
-            Do You Want To Delete?
-          </Text>
-          <View
-            style={{
-              alignSelf: "center",
-              width: 80,
-              height: 80,
-              borderRadius: 40,
-              borderWidth: 2,
-              borderColor: "#ff4d4d",
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: Sizes.fixPadding * 1.5,
-            }}
-          >
-            <MaterialCommunityIcons
-              name="trash-can-outline"
-              size={40}
-              color="#ff7f50"
-            />
-          </View>
-
-          <View
-            style={{
-              ...commonStyles.rowAlignCenter,
-              marginTop: Sizes.fixPadding,
-            }}
-          >
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => {
-                setshowDeleteDialogue(false);
-              }}
-              style={{
-                ...styles.noButtonStyle,
-                ...styles.dialogYesNoButtonStyle,
-              }}
-            >
-              <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => {
-                handleDelete();
-                setshowDeleteDialogue(false);
-                // handle delete logic here
-              }}
-              style={{
-                backgroundColor: "#ff7f50", // Coral Orange
-                ...styles.dialogYesNoButtonStyle,
-              }}
-            >
-              <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Overlay>
-    );
-  }
+     return (
+       <Overlay
+         isVisible={showDeleteDialogue}
+         onBackdropPress={() => setshowDeleteDialogue(false)}
+         overlayStyle={styles.dialogStyle}
+       >
+         <View>
+           <Text
+             style={{
+               ...Fonts.blackColor18Medium,
+               textAlign: "center",
+               marginHorizontal: Sizes.fixPadding * 2.0,
+               marginVertical: Sizes.fixPadding * 2.0,
+             }}
+           >
+             Do You Want To Delete?
+           </Text>
+           <View
+             style={{
+               alignSelf: "center",
+               width: 80,
+               height: 80,
+               borderRadius: 40,
+               borderWidth: 2,
+               borderColor: Colors.darOrangeColor,
+               justifyContent: "center",
+               alignItems: "center",
+               marginBottom: Sizes.fixPadding * 1.5,
+             }}
+           >
+             <MaterialCommunityIcons
+               name="trash-can-outline"
+               size={40}
+               color={Colors.darOrangeColor}
+             />
+           </View>
+ 
+           <View
+             style={{
+               ...commonStyles.rowAlignCenter,
+               marginTop: Sizes.fixPadding,
+             }}
+           >
+             <TouchableOpacity
+               activeOpacity={0.8}
+               onPress={() => {
+                 setshowDeleteDialogue(false);
+               }}
+               style={{
+                 ...styles.noButtonStyle,
+                 ...styles.dialogYesNoButtonStyle,
+               }}
+             >
+               <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
+             </TouchableOpacity>
+ 
+             <TouchableOpacity
+               activeOpacity={0.8}
+               onPress={() => {
+                 handleDelete();
+                 setshowDeleteDialogue(false);
+                 // handle delete logic here
+               }}
+               style={{
+                 backgroundColor: Colors.darOrangeColor,
+                 borderBottomRightRadius: 4,
+                 ...styles.dialogYesNoButtonStyle,
+               }}
+             >
+               <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
+             </TouchableOpacity>
+           </View>
+         </View>
+       </Overlay>
+     );
+   }
 };
 
 const styles = StyleSheet.create({

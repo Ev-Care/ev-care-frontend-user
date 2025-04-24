@@ -63,22 +63,22 @@ const AdminHome = ({navigation}) => {
   };
 
   const  legend= ['Users', 'Vendors', 'Stations'];
-  // Monthly data for the line chart
+  
   const monthlyData = {
     labels: ['Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025', 'May 2025', 'Jun 2025', 'Jul 2025', 'Aug 2025', 'Sep 2025'],
     datasets: [
       {
-        data: [20, 45, 28, 80, 99, 43, 50, 75, 120],
+        data: [20, 45, 28, 80, 99, 43, 50, 75, 120],//user
         color: () => COLORS.accent,
         strokeWidth: 2,
       },
       {
-        data: [10, 25, 15, 30, 45, 20, 35, 40, 55],
+        data: [10, 25, 15, 30, 45, 20, 35, 40, 55],//vendor
         color: () => COLORS.secondary,
         strokeWidth: 2,
       },
       {
-        data: [5, 15, 25, 35, 40, 60, 70, 65, 90],
+        data: [5, 15, 25, 35, 40, 60, 70, 65, 90],//station
         color: () => COLORS.tertiary,
         strokeWidth: 2,
       },

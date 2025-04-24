@@ -25,7 +25,7 @@ import { Overlay } from "@rneui/themed";
 import imageURL from "../../../constants/baseURL";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
-const UpdateUser = ({ route, navigation }) => {
+const VerifyVendorProfile = ({ route, navigation }) => {
   const { user } = route?.params; // Get the user data from route params
   const [name, setName] = useState(user?.owner_legal_name || 'Not found');
   const [email, setEmail] = useState(user?.email || 'Not found');
@@ -53,7 +53,8 @@ const UpdateUser = ({ route, navigation }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [currentImageSetter, setCurrentImageSetter] = useState(null);
-  const [showDeleteDialogue, setshowDeleteDialogue] = useState(false);
+  const [showRejectDialogue, setshowRejectDialogue] = useState(false);
+  const [showApproveDialogue, setshowApproveDialogue] = useState(false);
  const [imageloading, setImageLoading] = useState("");
   const showFullImage = (uri) => {
     if (!uri) return;
@@ -87,8 +88,11 @@ const UpdateUser = ({ route, navigation }) => {
     setBottomSheetVisible(false);
   };
 
-  const handleDelete = () => {
-    console.log("handleDelete Called");
+  const handleReject = () => {
+    console.log("handle Reject Called");
+  };
+  const handleApprove = () => {
+    console.log("handle Approve Called");
   };
 
   const renderInput = (label, value, setter, placeholder) => (
@@ -134,17 +138,7 @@ const UpdateUser = ({ route, navigation }) => {
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Update User Details</Text>
-      {user.role === "user" ? (
-  <>
-    <View style={styles.imageContainerAvatar}>
-      {renderImageBox('avatar', avatar, setAvatar )}     
-    </View>
-    {renderInput('Full Name', name, setName, 'Enter your full name')}
-    {renderInput('Mobile Number', mobNumber, setMobNumber, 'Enter your full name')}
-    {renderInput('Email', email, setEmail, 'Enter your email')}
-  </>
-) : (
-  <>
+ 
    <View style={styles.imageContainerAvatar}>
       {renderImageBox('avatar', avatar, setAvatar)}     
     </View>
@@ -161,18 +155,19 @@ const UpdateUser = ({ route, navigation }) => {
       {renderImageBox('PAN', panImage, setPanImage)}
       {renderImageBox('GST', gstImage, setGstImage)}   
     </View>
-  </>
-)}
+
 
       <View style={styles.buttonRow}>
 
         <TouchableOpacity   onPress={() => {
-            setshowDeleteDialogue(true);
+            setshowRejectDialogue(true);
           }} style={[styles.actionButton, { backgroundColor: Colors.darOrangeColor  }]}>
-          <Text style={styles.buttonText}>Delete</Text>
+          <Text style={styles.buttonText}>Reject</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: Colors.primaryColor }]}>
-          <Text style={styles.buttonText}>Update</Text>
+        <TouchableOpacity  onPress={() => {
+            setshowApproveDialogue(true);
+          }}  style={[styles.actionButton, { backgroundColor: Colors.primaryColor }]}>
+          <Text style={styles.buttonText}>Approve</Text>
         </TouchableOpacity>
       </View>
 
@@ -219,16 +214,17 @@ const UpdateUser = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
       </RNModal>
-      { deleteDialogue()}
+      { rejectDialogue()}
+      {approveDialogue()}
     </ScrollView>
     </View>
   );
 
-    function deleteDialogue() {
+    function rejectDialogue() {
       return (
         <Overlay
-          isVisible={showDeleteDialogue}
-          onBackdropPress={() => setshowDeleteDialogue(false)}
+          isVisible={showRejectDialogue}
+          onBackdropPress={() => setshowRejectDialogue(false)}
           overlayStyle={styles.dialogStyle}
         >
           <View>
@@ -240,7 +236,7 @@ const UpdateUser = ({ route, navigation }) => {
                 marginVertical: Sizes.fixPadding * 2.0,
               }}
             >
-              Do You Want To Delete?
+              Do You Want To Reject?
             </Text>
             <View
               style={{
@@ -256,7 +252,7 @@ const UpdateUser = ({ route, navigation }) => {
               }}
             >
               <MaterialCommunityIcons
-                name="trash-can-outline"
+                name="question-mark-circle-outline"
                 size={40}
                 color={Colors.darOrangeColor}
               />
@@ -271,7 +267,7 @@ const UpdateUser = ({ route, navigation }) => {
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => {
-                  setshowDeleteDialogue(false);
+                  setshowRejectDialogue(false);
                 }}
                 style={{
                   ...styles.noButtonStyle,
@@ -284,13 +280,90 @@ const UpdateUser = ({ route, navigation }) => {
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => {
-                  handleDelete();
-                  setshowDeleteDialogue(false);
+                  handleReject();
+                  setshowRejectDialogue(false);
                   // handle delete logic here
                 }}
                 style={{
                   backgroundColor: Colors.darOrangeColor,
                   borderBottomRightRadius: 4,
+                  ...styles.dialogYesNoButtonStyle,
+                }}
+                
+              >
+                <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Overlay>
+      );
+    }
+    function approveDialogue() {
+      return (
+        <Overlay
+          isVisible={showApproveDialogue}
+          onBackdropPress={() => setshowApproveDialogue(false)}
+          overlayStyle={styles.dialogStyle}
+        >
+          <View>
+            <Text
+              style={{
+                ...Fonts.blackColor18Medium,
+                textAlign: "center",
+                marginHorizontal: Sizes.fixPadding * 2.0,
+                marginVertical: Sizes.fixPadding * 2.0,
+              }}
+            >
+              Do You Want To Approve?
+            </Text>
+            <View
+              style={{
+                alignSelf: "center",
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                borderWidth: 2,
+                borderColor: Colors.primaryColor,
+                justifyContent: "center",
+                alignItems: "center",
+                marginBottom: Sizes.fixPadding * 1.5,
+              }}
+            >
+              <MaterialCommunityIcons
+                name="question-mark-circle-outline"
+                size={40}
+                color={Colors.primaryColor}
+              />
+            </View>
+    
+            <View
+              style={{
+                ...commonStyles.rowAlignCenter,
+                marginTop: Sizes.fixPadding,
+              }}
+            >
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  setshowApproveDialogue(false);
+                }}
+                style={{
+                  ...styles.noButtonStyle,
+                  ...styles.dialogYesNoButtonStyle,
+                }}
+              >
+                <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
+              </TouchableOpacity>
+    
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => {
+                  handleApprove();
+                  setshowApproveDialogue(false);
+                  // handle delete logic here
+                }}
+                style={{
+                  ...styles.yesButtonStyle,
                   ...styles.dialogYesNoButtonStyle,
                 }}
                 
@@ -426,7 +499,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-   /* delete Dialog Styles */
+   /*  Dialog Styles */
     dialogStyle: {
       backgroundColor: Colors.whiteColor,
       borderRadius: Sizes.fixPadding - 5.0,
@@ -448,7 +521,12 @@ const styles = StyleSheet.create({
       borderTopColor: Colors.extraLightGrayColor,
       borderBottomLeftRadius: Sizes.fixPadding - 5.0,
     },
-    /*End of delete Dialog Styles */
+    yesButtonStyle: {
+        borderTopColor: Colors.primaryColor,
+        backgroundColor: Colors.primaryColor,
+        borderBottomRightRadius: Sizes.fixPadding - 5.0,
+      },
+    /*End of  Dialog Styles */
 });
 
-export default UpdateUser;
+export default VerifyVendorProfile;

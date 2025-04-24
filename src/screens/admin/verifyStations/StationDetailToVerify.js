@@ -19,10 +19,12 @@ import {
   commonStyles,
   screenWidth,
 } from "../../../constants/styles";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MapView, { Marker } from "react-native-maps";
 import { Overlay } from "@rneui/themed";
+
 // import imageURL from "../../../constants/baseURL";
 const COLORS = {
   primary: "#101942",
@@ -43,6 +45,8 @@ const { width } = Dimensions.get("window");
 const StationDetailToVerify = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [showSnackBar, setshowSnackBar] = useState(false);
+  const [showRejectDialogue, setshowRejectDialogue] = useState(false);
+   const [showApproveDialogue, setshowApproveDialogue] = useState(false);
   const scrollViewRef = useRef(null);
   const station = route?.params?.item;
   
@@ -110,7 +114,13 @@ const StationDetailToVerify = ({ route, navigation }) => {
     return str?.substring(0, threshold) + ".....";
   };
 
-  
+  const handleReject = () => {
+    console.log("handle Reject Called");
+  };
+  const handleApprove = () => {
+    console.log("handle Approve Called");
+  };
+
   return (
     <View style={styles.container}>
       {/* Header*/}
@@ -122,7 +132,10 @@ const StationDetailToVerify = ({ route, navigation }) => {
 
       {/* Bottom Buttons */}
      {buttons()}
-      {/* Rating dialog */}
+      {/* reject dialog */}
+      {rejectDialogue()}
+      {approveDialogue()}
+      {/* Snackbar for feedback */}
      
     </View>
   );
@@ -244,12 +257,18 @@ function buttons(){
   return(
     <View style={styles.bottomButtons}>
          <TouchableOpacity
-     
+       onPress={() => {
+        setshowRejectDialogue(true);
+      }}
+    
      style={styles.rejectButton}
    >
      <Text style={styles.approveButtonText}>Reject</Text>
    </TouchableOpacity>
     <TouchableOpacity
+     onPress={() => {
+      setshowApproveDialogue(true);
+    }}
       style={styles.approveButton}
     >
       <Text style={styles.approveButtonText}>Approve</Text>
@@ -302,7 +321,161 @@ function chargerTab() {
     </ScrollView>
   );
 }
+function rejectDialogue() {
+  return (
+    <Overlay
+      isVisible={showRejectDialogue}
+      onBackdropPress={() => setshowRejectDialogue(false)}
+      overlayStyle={styles.dialogStyle}
+    >
+      <View>
+        <Text
+          style={{
+            ...Fonts.blackColor18Medium,
+            textAlign: "center",
+            marginHorizontal: Sizes.fixPadding * 2.0,
+            marginVertical: Sizes.fixPadding * 2.0,
+          }}
+        >
+          Do You Want To Reject?
+        </Text>
+        <View
+          style={{
+            alignSelf: "center",
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            borderWidth: 2,
+            borderColor: Colors.darOrangeColor,
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: Sizes.fixPadding * 1.5,
+          }}
+        >
+          <MaterialCommunityIcons
+            name="trash-can-outline"
+            size={40}
+            color={Colors.darOrangeColor}
+          />
+        </View>
 
+        <View
+          style={{
+            ...commonStyles.rowAlignCenter,
+            marginTop: Sizes.fixPadding,
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              setshowRejectDialogue(false);
+            }}
+            style={{
+              ...styles.noButtonStyle,
+              ...styles.dialogYesNoButtonStyle,
+            }}
+          >
+            <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              handleReject();
+              setshowRejectDialogue(false);
+              // handle delete logic here
+            }}
+            style={{
+              backgroundColor: Colors.darOrangeColor,
+              borderBottomRightRadius: 4,
+              ...styles.dialogYesNoButtonStyle,
+            }}
+            
+          >
+            <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Overlay>
+  );
+}
+function approveDialogue() {
+  return (
+    <Overlay
+      isVisible={showApproveDialogue}
+      onBackdropPress={() => setshowApproveDialogue(false)}
+      overlayStyle={styles.dialogStyle}
+    >
+      <View>
+        <Text
+          style={{
+            ...Fonts.blackColor18Medium,
+            textAlign: "center",
+            marginHorizontal: Sizes.fixPadding * 2.0,
+            marginVertical: Sizes.fixPadding * 2.0,
+          }}
+        >
+          Do You Want To Approve?
+        </Text>
+        <View
+          style={{
+            alignSelf: "center",
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            borderWidth: 2,
+            borderColor: Colors.primaryColor,
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: Sizes.fixPadding * 1.5,
+          }}
+        >
+          <MaterialCommunityIcons
+            name="question-mark-circle-outline"
+            size={40}
+            color={Colors.primaryColor}
+          />
+        </View>
+
+        <View
+          style={{
+            ...commonStyles.rowAlignCenter,
+            marginTop: Sizes.fixPadding,
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              setshowApproveDialogue(false);
+            }}
+            style={{
+              ...styles.noButtonStyle,
+              ...styles.dialogYesNoButtonStyle,
+            }}
+          >
+            <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              handleApprove();
+              setshowApproveDialogue(false);
+              // handle delete logic here
+            }}
+            style={{
+              ...styles.yesButtonStyle,
+              ...styles.dialogYesNoButtonStyle,
+            }}
+            
+          >
+            <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Overlay>
+  );
+}
 function detailTab() {
   return (
     <ScrollView style={styles.tabContent}>
@@ -616,7 +789,34 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
- 
+ /*  Dialog Styles */
+ dialogStyle: {
+  backgroundColor: Colors.whiteColor,
+  borderRadius: Sizes.fixPadding - 5.0,
+  width: "85%",
+  padding: 0.0,
+  elevation: 0,
+},
+
+dialogYesNoButtonStyle: {
+  flex: 1,
+  ...commonStyles.shadow,
+
+  padding: Sizes.fixPadding,
+  alignItems: "center",
+  justifyContent: "center",
+},
+noButtonStyle: {
+  backgroundColor: Colors.whiteColor,
+  borderTopColor: Colors.extraLightGrayColor,
+  borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+},
+yesButtonStyle: {
+  borderTopColor: Colors.primaryColor,
+  backgroundColor: Colors.primaryColor,
+  borderBottomRightRadius: Sizes.fixPadding - 5.0,
+},
+/*End of  Dialog Styles */
 
 
 });

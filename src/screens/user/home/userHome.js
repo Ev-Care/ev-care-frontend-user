@@ -32,6 +32,8 @@ import { fetchStationsByLocation } from "../service/crudFunction";
 import { selectStations } from "../service/selector";
 import { RefreshControl } from 'react-native';
 import imageURL from "../../../constants/baseURL";
+import { handleRefreshStations, handleRefreshStationsByLocation } from "../service/handleRefresh";
+import { updateUserCoordinate } from "../../../redux/store/userSlice";
 
 const COLORS = {
   primary: "#101942",
@@ -50,7 +52,9 @@ const UserHome = ({ navigation }) => {
   const user = useSelector(selectUser);
   const [radius, setRadius] = useState(30000);
   const [refreshing, setRefreshing] = useState(false);
-  
+
+  const stations = useSelector(selectStations);
+
   const [currentLocation, setCurrentLocation] = useState(null);
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -82,7 +86,8 @@ const UserHome = ({ navigation }) => {
           (loc) => {
             const coords = loc.coords;
             setCurrentLocation(coords);
-            console.log({ user });
+            console.log({ currentLocation });
+            dispatch(updateUserCoordinate(coords)); // update user coordinates in redux store
             dispatch(fetchStationsByLocation({ radius, coords })); // dispatch when location updates
           }
         );
@@ -99,13 +104,6 @@ const UserHome = ({ navigation }) => {
     };
   }, [refreshing]);
 
-  const stations = useSelector(selectStations);
-
-  if (stations && stations.length > 0) {
-    // console.log("stations in userHome available: ", stations);
-  } else {
-    console.log("No stations found in userHome available");
-  }
 
   const formatDistance = (distance) => {
     if (distance >= 1000) {
@@ -116,12 +114,12 @@ const UserHome = ({ navigation }) => {
       return distance + " km";
     }
   };
-  const handleRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-      console.log("Refresh completed!");
-    }, 2000); 
+  const handleRefresh = async () => {
+    const data = {
+      radius: radius,
+      coords: currentLocation,
+    }
+    await handleRefreshStationsByLocation(dispatch, data, setRefreshing);
   }
   const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
@@ -190,14 +188,14 @@ const UserHome = ({ navigation }) => {
       </AnimatedLinearGradient>
 
       <Animated.ScrollView
-       refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          colors={['#9Bd35A', '#101942']}  // Android spinner colors
-          tintColor= "#101942"            // iOS spinner color
-        />
-      }
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#9Bd35A', '#101942']}  // Android spinner colors
+            tintColor="#101942"            // iOS spinner color
+          />
+        }
         style={styles.content}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -236,7 +234,7 @@ const UserHome = ({ navigation }) => {
               style={styles.featureCard}
             >
               <TouchableOpacity
-                onPress={() => navigation.push("AllChargingStations",{setRefreshing})}
+                onPress={() => navigation.push("AllChargingStations", { setRefreshing })}
                 style={styles.featureCardTouchOpacity}
               >
                 <View>
@@ -253,7 +251,9 @@ const UserHome = ({ navigation }) => {
                     size={14}
                     color={COLORS.white}
                   />
-                  <Text style={styles.featureText}> 4 km</Text>
+                  <Text style={styles.featureText}>
+                    {stations?.length > 0 ? `${stations[0].distance_km} km` : "N/A"}
+                  </Text>
                   <Text style={styles.featureText}>(From here)</Text>
                 </View>
               </TouchableOpacity>
@@ -322,7 +322,7 @@ const UserHome = ({ navigation }) => {
         </Text>
       );
     }
-  
+
     const renderItem = ({ item }) => (
       <TouchableOpacity
         onPress={() => {
@@ -338,7 +338,7 @@ const UserHome = ({ navigation }) => {
           }
           style={styles.enrouteChargingStationImage}
         />
-  
+
         <View style={styles.enrouteStationOpenCloseWrapper}>
           <Text
             style={[
@@ -349,7 +349,7 @@ const UserHome = ({ navigation }) => {
             {item?.status === "Inactive" ? "Closed" : "Open"}
           </Text>
         </View>
-  
+
         <View style={{ flex: 1 }}>
           <View style={{ margin: Sizes.fixPadding }}>
             <Text numberOfLines={1} style={{ ...Fonts.blackColor18SemiBold }}>
@@ -358,13 +358,13 @@ const UserHome = ({ navigation }) => {
             <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
               {item?.address ?? "Address not available"}
             </Text>
-  
+
             <View style={{ marginTop: Sizes.fixPadding, ...commonStyles.rowAlignCenter }}>
               <View style={{ ...commonStyles.rowAlignCenter }}>
                 <Text style={{ ...Fonts.blackColor18Medium }}>3.5</Text>
                 <MaterialIcons name="star" color={Colors.yellowColor} size={20} />
               </View>
-  
+
               <View
                 style={{
                   marginLeft: Sizes.fixPadding * 2.0,
@@ -386,7 +386,7 @@ const UserHome = ({ navigation }) => {
               </View>
             </View>
           </View>
-  
+
           <View
             style={{
               ...commonStyles.rowAlignCenter,
@@ -404,7 +404,7 @@ const UserHome = ({ navigation }) => {
             >
               {formatDistance(item?.distance_km)}
             </Text>
-  
+
             <TouchableOpacity
               onPress={() =>
                 openGoogleMaps(
@@ -420,7 +420,7 @@ const UserHome = ({ navigation }) => {
         </View>
       </TouchableOpacity>
     );
-  
+
     return (
       <FlatList
         data={stations}
@@ -430,7 +430,7 @@ const UserHome = ({ navigation }) => {
       />
     );
   }
-  
+
 };
 
 const styles = StyleSheet.create({

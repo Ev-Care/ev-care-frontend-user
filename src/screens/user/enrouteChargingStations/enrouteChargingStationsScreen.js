@@ -29,14 +29,110 @@ import imageURL from "../../../constants/baseURL";
 const width = screenWidth;
 const cardWidth = width / 1.15;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
-
+const allStationsList = [
+  {
+    owner_id: 7,
+    station_name: "Tesla EV India",
+    address: "Rajstan india",
+    coordinates: {
+      latitude: 18.4745984,
+      longitude: 73.8197504,
+    },
+    amenities: "restroom,wifi,store, car care,lodging",
+    rate: null,
+    rate_type: null,
+    station_images: null,
+    additional_comment: null,
+    distance_km:5000, //check it
+    open_hours_opening_time: "00:00:00",
+    open_hours_closing_time: "23:59:59",
+    id: 2,
+    status: "Planned",
+    created_at: "2025-04-21T02:23:19.671Z",
+    update_at: "2025-04-21T02:23:19.671Z",
+    updated_by: 0,
+    chargers: [
+      {
+        charger_type: "AC",
+        max_power_kw: 60,
+        station: {
+          id: 2,
+          owner_id: 7,
+          station_name: "Tesla EV India",
+          address: "Rajstan india",
+          coordinates: {
+            latitude: 18.4745984,
+            longitude: 73.8197504,
+          },
+          amenities: "restroom,wifi,store, car care,lodging",
+          rate: null,
+          rate_type: null,
+          station_images: null,
+          additional_comment: null,
+          open_hours_opening_time: "00:00:00",
+          open_hours_closing_time: "23:59:59",
+          status: "Planned",
+          created_at: "2025-04-21T02:23:19.671Z",
+          update_at: "2025-04-21T02:23:19.671Z",
+          updated_by: 0,
+        },
+        charger_id: 3,
+        status: "Available",
+        created_at: "2025-04-21T02:23:19.760Z",
+        update_at: "2025-04-21T02:23:19.760Z",
+        updated_by: 0,
+        connectors: [
+          {
+            connector_status: "operational",
+            charger: {
+              charger_id: 3,
+              charger_type: "AC",
+              max_power_kw: 60,
+              status: "Available",
+              created_at: "2025-04-21T02:23:19.760Z",
+              update_at: "2025-04-21T02:23:19.760Z",
+              updated_by: 0,
+              station: {
+                id: 2,
+                owner_id: 7,
+                station_name: "Tesla EV India",
+                address: "Rajstan india",
+                coordinates: {
+                  latitude: 18.4745984,
+                  longitude: 73.8197504,
+                },
+                amenities: "restroom,wifi,store, car care,lodging",
+                rate: null,
+                rate_type: null,
+                station_images: null,
+                additional_comment: null,
+                open_hours_opening_time: "00:00:00",
+                open_hours_closing_time: "23:59:59",
+                status: "Planned",
+                created_at: "2025-04-21T02:23:19.671Z",
+                update_at: "2025-04-21T02:23:19.671Z",
+                updated_by: 0,
+              },
+            },
+            connectorType: {
+              connector_type_id: 1,
+              max_power_kw: "60.00",
+              description: "CCS-2",
+            },
+            charger_connector_id: 2,
+          },  
+        ],
+      },
+    ],
+  },
+];
 const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const [expanded, setExpanded] = useState(false);
   const [showBottomSheet, setshowBottomSheet] = useState(true);
   const [addedStops, setAddedStops] = useState([]);
-  const { enrouteStations } = route?.params;
-  console.log("enrouteStations", JSON.stringify(enrouteStations[0]));
+  const { enrouteStations } = route?.params || [];
+  // console.log("enrouteStations", JSON.stringify(enrouteStations[0]));
   const [destinationAddress, setDestinationAddress] = useState(
     route?.params?.destinationAddress || "Destination Address"
   );
@@ -123,11 +219,11 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
 
 
   const toggleStop = (station) => {
-    console.log("Toggle Stop called with station:", station);
+    console.log("Toggle Stop called with station:", station.id);
+  
     const exists = addedStops.find((stop) => stop.id === station.id);
-    
-    // Log all stop IDs and the station's ID
-    console.log("Existing stop IDs:", addedStops.map(s => s.id));
+    console.log("Exists:", exists);
+    console.log("Existing stop IDs:", addedStops.map((s) => s.id));
     console.log("Station ID being checked:", station.id);
   
     if (exists) {
@@ -138,6 +234,11 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       setAddedStops((prev) => [...prev, station]);
     }
   };
+  
+  // Use useEffect to monitor changes to addedStops
+  useEffect(() => {
+    console.log("Updated added stops:", addedStops);
+  }, [addedStops]);
   
   
   
@@ -206,36 +307,38 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
     </View>
   );
   function bottomSheet() {
+    if (!addedStops || !Array.isArray(addedStops) || addedStops.length === 0) return null;
+  
     return (
-      addedStops?.length > 0 && (
-        <Animated.View
-          style={[
-            styles.bottomSheetContainer,
-            { height: expanded ? SCREEN_HEIGHT * 0.75 : 200 },
-          ]}
+      <Animated.View
+        style={[
+          styles.bottomSheetContainer,
+          { height: expanded ? SCREEN_HEIGHT * 0.75 : 200 },
+        ]}
+      >
+        {/* Handle */}
+        <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+          <View style={styles.bottomSheetHandle} />
+        </TouchableOpacity>
+  
+        {/* Scrollable content */}
+        <ScrollView style={styles.bottomSheetScroll}>
+          {pickupInfo()}
+          {addedStopsInfo()}
+          {destinationInfo()}
+        </ScrollView>
+  
+        {/* Bottom Button */}
+        <TouchableOpacity
+          onPress={openGoogleMapsWithStops}
+          style={styles.bottomSheetButton}
         >
-          {/* Handle */}
-          <TouchableOpacity onPress={() => setExpanded(!expanded)}>
-            <View style={styles.bottomSheetHandle} />
-          </TouchableOpacity>
-          {/* Scrollable content */}
-          <ScrollView style={styles.bottomSheetScroll}>
-            {pickupInfo()}
-            {addedStopsInfo()}
-            {destinationInfo()}
-          </ScrollView>
-
-          {/* Bottom Button */}
-          <TouchableOpacity
-            onPress={openGoogleMapsWithStops}
-            style={styles.bottomSheetButton}
-          >
-            <Text style={styles.bottomSheetButtonText}>Start Journey</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      )
+          <Text style={styles.bottomSheetButtonText}>Start Journey</Text>
+        </TouchableOpacity>
+      </Animated.View>
     );
   }
+  
   function destinationInfo() {
     return (
       <View style={styles.stopsContainer}>
@@ -303,10 +406,13 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
     );
   }
   function addedStopsInfo() {
+    if (!Array.isArray(addedStops) || addedStops.length === 0) return null;
+  
     return (
       <>
-        {addedStops?.length > 0 &&  addedStops.map((stop, index) => (
+        {addedStops.map((stop, index) => (
           <View key={stop.id} style={styles.stopsContainer}>
+            {console.log("stop", stop)}
             <View
               style={{
                 height: 90,
@@ -325,7 +431,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                 }}
               />
             </View>
-
+  
             <View style={styles.stops}>
               <View
                 style={{
@@ -342,10 +448,10 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                 </TouchableOpacity>
               </View>
               <Text style={styles.stopDescription}>
-                No. of Chargers - {stop.totalStations}
+                No. of Chargers - {stop.chargers.length}
               </Text>
               <Text style={styles.stopDescription}>
-                Address: {trimName(45, stop.stationAddress)}
+                Address: {trimName(45, stop.address)}
               </Text>
               <View style={styles.stopBottomline} />
             </View>
@@ -354,6 +460,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       </>
     );
   }
+  
 
   function backArrow() {
     return (

@@ -166,7 +166,7 @@ const UserHome = ({ navigation }) => {
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}></Text>
           <TouchableOpacity>
-            <Icon name="bell" size={24} color={COLORS.white} />
+            {/* <Icon name="bell" size={24} color={COLORS.white} /> */}
           </TouchableOpacity>
         </View>
 

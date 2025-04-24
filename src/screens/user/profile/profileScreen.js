@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  Modal,
 } from "react-native";
 import React, { useState } from "react";
 import {
@@ -16,6 +17,7 @@ import {
   screenWidth,
 } from "../../../constants/styles";
 import MyStatusBar from "../../../components/myStatusBar";
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { BottomSheet } from "@rneui/themed";
 import { useSelector, useDispatch } from "react-redux";
@@ -26,7 +28,15 @@ import imageURL from "../../../constants/baseURL";
 const ProfileScreen = ({ navigation }) => {
   const user = useSelector(selectUser);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const dispatch = useDispatch();
+
+  const showFullImage = (uri) => {
+    if (!uri) return;
+    setSelectedImage(uri);
+    setModalVisible(true);
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -45,6 +55,18 @@ const ProfileScreen = ({ navigation }) => {
         </ScrollView>
       </ScrollView>
       {logoutSheet()}
+      {/* Full Image Modal */}
+       <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modalContainer}>
+          <Image source={{ uri: selectedImage }} style={styles.fullImage} />
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={styles.closeText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 
@@ -117,16 +139,26 @@ const ProfileScreen = ({ navigation }) => {
   function profileInfoWithOptions() {
     return (
       <View style={styles.profileInfoWithOptionsWrapStyle}>
-        <View style={{ alignItems: "center" }}>
-          <Image
-            source={
-              user?.avatar
-                ? { uri: imageURL?.baseURL  + user?.avatar }
-                : require("../../../../assets/images/users/user4.png")
-            }
-            style={styles.userImageStyle}
-          />
-        </View>
+              <TouchableOpacity
+                 onPress={() => {
+                   if (user?.avatar) showFullImage(imageURL?.baseURL + user?.avatar);
+                 }}
+                 style={{ alignItems: "center",  
+                   }}
+               >
+                 {user?.avatar ? (
+                   <Image
+                     source={{ uri: imageURL?.baseURL + user?.avatar }}
+                     style={styles.userImageStyle}
+                   />
+                 ) : (
+                   <View  style={styles.userIconStyle}  >
+                     <Icon  name="person-off" size={60} color="#ccc" />
+                   </View>
+                   
+                 )}
+         </TouchableOpacity>
+
         <View
           style={{
             alignItems: "center",
@@ -275,6 +307,17 @@ const styles = StyleSheet.create({
     borderColor: Colors.whiteColor,
     borderWidth: 2.0,
   },
+  userIconStyle: {
+    width: screenWidth / 4.0,
+    height: screenWidth / 4.0,
+    borderRadius: screenWidth / 4.0 / 2.0,
+    marginTop: -Sizes.fixPadding * 5.0,
+    borderColor:"gray" ,
+    borderWidth: 2.0,
+    backgroundColor:Colors.whiteColor,
+    justifyContent:"center",
+    alignItems:"center",
+  },
   profileInfoWithOptionsWrapStyle: {
     backgroundColor: Colors.whiteColor,
     ...commonStyles.shadow,
@@ -316,5 +359,27 @@ const styles = StyleSheet.create({
     ...Fonts.blackColor20SemiBold,
     textAlign: "center",
     marginHorizontal: Sizes.fixPadding * 2.0,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullImage: {
+    width: '90%',
+    height: '70%',
+    resizeMode: 'contain',
+    borderRadius: 10,
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+  },
+  closeText: {
+    color: '#000',
+    fontWeight: 'bold',
   },
 });

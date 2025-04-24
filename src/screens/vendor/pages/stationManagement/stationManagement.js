@@ -44,32 +44,6 @@ const COLORS = {
 
 const { width } = Dimensions.get("window");
 
-const reviews = [
-  {
-    id: "1",
-    name: "Andrew Anderson",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    rating: 5,
-    comment:
-      "Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.",
-  },
-  {
-    id: "2",
-    name: "Peter Jones",
-    avatar: "https://randomuser.me/api/portraits/men/44.jpg",
-    rating: 3,
-    comment:
-      "Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.",
-  },
-  {
-    id: "3",
-    name: "Emily Wood",
-    avatar: "https://randomuser.me/api/portraits/women/65.jpg",
-    rating: 4,
-    comment:
-      "Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.",
-  },
-];
 //Wifi,Cafe,Restroom,Lodging,Store,Car Care
 const connectorIcons = {
   "CCS-2": "ev-plug-ccs2",
@@ -282,7 +256,13 @@ const StationManagement = ({ navigation, route }) => {
               {station.open_hours_closing_time}
             </Text>
             <View style={styles.newBadge}>
-              <Text style={styles.newText}>4.5 ⭐</Text>
+              <Text style={styles.newText}>
+                {station.status === "Active"
+                  ? "VERIFIED"
+                  : station.status === "Planned"
+                  ? "PENDING"
+                  : ""}
+              </Text>
             </View>
           </View>
         </View>
@@ -312,17 +292,6 @@ const StationManagement = ({ navigation, route }) => {
           </Text>
           {activeTab === 1 && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 2 && styles.activeTabButton]}
-          onPress={() => handleTabPress(2)}
-        >
-          <Text
-            style={[styles.tabText, activeTab === 2 && styles.activeTabText]}
-          >
-            Reviews
-          </Text>
-          {activeTab === 2 && <View style={styles.activeTabIndicator} />}
-        </TouchableOpacity>
       </View>
 
       {/* Swipeable Content */}
@@ -338,8 +307,6 @@ const StationManagement = ({ navigation, route }) => {
         {chargerTab(station)}
         {/* Details Tab */}
         {detailTab()}
-        {/* Reviews Tab */}
-        {reviewsTab()}
       </ScrollView>
 
       {/* Bottom Buttons */}
@@ -367,7 +334,7 @@ const StationManagement = ({ navigation, route }) => {
     // Log chargers
     return (
       <ScrollView style={styles.tabContent}>
-        {station.chargers.map((charger, index) => (
+        {station?.chargers?.map((charger, index) => (
           <View key={charger.charger_id} style={styles.chargerCard}>
             <View style={styles.titleContainer}>
               <Text style={styles.chargerTitle}>
@@ -401,47 +368,34 @@ const StationManagement = ({ navigation, route }) => {
               </Text>
             </View>
 
-            <View style={styles.connectorContainer}>
-              {charger.connectors.map((conn, index) => (
-                <View key={index} style={styles.connector}>
-                  <View style={styles.connectorType}>
-                    <Icon
-                      name={
-                        connectorIcons[conn.connectorType.description] ||
-                        "ev-plug-type1"
-                      }
-                      size={20}
-                      color={COLORS.primary}
-                    />
-                    <Text style={styles.connectorTypeText}>
-                      {conn.connectorType.description}
-                    </Text>
-                  </View>
-                  <Switch
-                    value={conn.connector_status === "operational"} // Use backend enum value
-                    onValueChange={() =>
-                      dispatch(
-                        updateStationsChargersConnectorsStatus({
-                          station_id: station.id,
-                          statusType: "connector",
-                          charger_id: charger.charger_id,
-                          connector_id: conn.charger_connector_id,
-                          status:
-                            conn.connector_status === "operational"
-                              ? "inactive"
-                              : "active",
-                        })
-                      )
-                    }
-                    trackColor={{ false: "#FF8C00", true: COLORS.primary }} // Orange when off, green when on
-                    thumbColor={
-                      conn.connector_status === "operational"
-                        ? "#ffffff"
-                        : "#ffffff"
-                    } // Thumb color stays white
-                  />
-                </View>
-              ))}
+            <View style={styles.connector}>
+              <View style={[{ flexDirection: "row", alignItems: "center" }]}>
+                <Icon
+                  name={
+                    charger?.connector_type
+                      ? connectorIcons[charger?.connector_type]
+                      : "ev-plug-type1"
+                  }
+                  size={20}
+                  color={COLORS.primary}
+                />
+                <Text style={styles.connectorTypeText}>
+                  {charger?.connector_type}
+                </Text>
+              </View>
+              <Text
+                style={[
+                  styles.connectorTypeText,
+                  {
+                    color:
+                      charger?.status === "Available"
+                        ? "green"
+                        : Colors.darOrangeColor,
+                  },
+                ]}
+              >
+                {charger?.status}
+              </Text>
             </View>
           </View>
         ))}
@@ -495,106 +449,84 @@ const StationManagement = ({ navigation, route }) => {
       </ScrollView>
     );
   }
-  function reviewsTab() {
-    return (
-      <ScrollView style={styles.tabContent}>
-        <View style={styles.reviewsHeader}>
-          <Text style={styles.sectionTitle}>Reviews</Text>
-        </View>
-        {reviews.map((item) => renderReviewItem({ item }))}
-      </ScrollView>
-    );
-  }
 
-  function renderReviewItem({ item }) {
+  function deleteDialogue() {
     return (
-      <View style={styles.reviewItem}>
-        <Image source={{ uri: item.avatar }} style={styles.reviewAvatar} />
-        <View style={styles.reviewContent}>
-          <Text style={styles.reviewName}>{item.name}</Text>
-          {renderStars(item.rating)}
-          <Text style={styles.reviewText}>{item.comment}</Text>
+      <Overlay
+        isVisible={showDeleteDialogue}
+        onBackdropPress={() => setshowDeleteDialogue(false)}
+        overlayStyle={styles.dialogStyle}
+      >
+        <View>
+          <Text
+            style={{
+              ...Fonts.blackColor18Medium,
+              textAlign: "center",
+              marginHorizontal: Sizes.fixPadding * 2.0,
+              marginVertical: Sizes.fixPadding * 2.0,
+            }}
+          >
+            Do You Want To Delete?
+          </Text>
+          <View
+            style={{
+              alignSelf: "center",
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              borderWidth: 2,
+              borderColor: Colors.darOrangeColor,
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: Sizes.fixPadding * 1.5,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="trash-can-outline"
+              size={40}
+              color={Colors.darOrangeColor}
+            />
+          </View>
+
+          <View
+            style={{
+              ...commonStyles.rowAlignCenter,
+              marginTop: Sizes.fixPadding,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setshowDeleteDialogue(false);
+              }}
+              style={{
+                ...styles.noButtonStyle,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+            >
+              <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                handleDelete();
+                setshowDeleteDialogue(false);
+                // handle delete logic here
+              }}
+              style={{
+                backgroundColor: Colors.darOrangeColor,
+                borderBottomRightRadius: 4,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+            >
+              <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </Overlay>
     );
   }
-  function deleteDialogue() {
-     return (
-       <Overlay
-         isVisible={showDeleteDialogue}
-         onBackdropPress={() => setshowDeleteDialogue(false)}
-         overlayStyle={styles.dialogStyle}
-       >
-         <View>
-           <Text
-             style={{
-               ...Fonts.blackColor18Medium,
-               textAlign: "center",
-               marginHorizontal: Sizes.fixPadding * 2.0,
-               marginVertical: Sizes.fixPadding * 2.0,
-             }}
-           >
-             Do You Want To Delete?
-           </Text>
-           <View
-             style={{
-               alignSelf: "center",
-               width: 80,
-               height: 80,
-               borderRadius: 40,
-               borderWidth: 2,
-               borderColor: Colors.darOrangeColor,
-               justifyContent: "center",
-               alignItems: "center",
-               marginBottom: Sizes.fixPadding * 1.5,
-             }}
-           >
-             <MaterialCommunityIcons
-               name="trash-can-outline"
-               size={40}
-               color={Colors.darOrangeColor}
-             />
-           </View>
- 
-           <View
-             style={{
-               ...commonStyles.rowAlignCenter,
-               marginTop: Sizes.fixPadding,
-             }}
-           >
-             <TouchableOpacity
-               activeOpacity={0.8}
-               onPress={() => {
-                 setshowDeleteDialogue(false);
-               }}
-               style={{
-                 ...styles.noButtonStyle,
-                 ...styles.dialogYesNoButtonStyle,
-               }}
-             >
-               <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
-             </TouchableOpacity>
- 
-             <TouchableOpacity
-               activeOpacity={0.8}
-               onPress={() => {
-                 handleDelete();
-                 setshowDeleteDialogue(false);
-                 // handle delete logic here
-               }}
-               style={{
-                 backgroundColor: Colors.darOrangeColor,
-                 borderBottomRightRadius: 4,
-                 ...styles.dialogYesNoButtonStyle,
-               }}
-             >
-               <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
-             </TouchableOpacity>
-           </View>
-         </View>
-       </Overlay>
-     );
-   }
 };
 
 const styles = StyleSheet.create({
@@ -816,44 +748,7 @@ const styles = StyleSheet.create({
     marginRight: 16,
     marginBottom: 10,
   },
-  reviewsHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  seeAllText: {
-    color: COLORS.accent,
-    fontWeight: "bold",
-  },
-  reviewItem: {
-    flexDirection: "row",
-    marginBottom: 20,
-    backgroundColor: COLORS.white,
-    padding: 12,
-    borderRadius: 8,
-  },
-  reviewAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 12,
-  },
-  reviewContent: {
-    flex: 1,
-  },
-  reviewName: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: COLORS.primary,
-    marginBottom: 4,
-  },
-  reviewText: {
-    fontSize: 12,
-    color: COLORS.gray,
-    marginTop: 8,
-    lineHeight: 20,
-  },
+
   bottomButtons: {
     flexDirection: "row",
     padding: 16,

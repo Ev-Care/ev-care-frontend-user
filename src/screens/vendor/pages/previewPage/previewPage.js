@@ -97,8 +97,8 @@ const PreviewPage = ({ navigation, route }) => {
 
         for (let i = 0; i < stationData.chargers.length; i++) {
           const charger = stationData.chargers[i];
-          console.log(!charger.charger_type, !charger.power_rating, !charger.connectors, charger.connectors.length === 0);
-          if (!charger.charger_type || !charger.power_rating || !charger.connectors || charger.connectors.length === 0) {
+          console.log(!charger.charger_type, !charger.power_rating, !charger.connectors, charger.connector_type);
+          if (!charger.charger_type || !charger.power_rating || !charger.connector_type ) {
             Alert.alert(
               'Validation Error',
               `Charger ${i + 1} details is incomplete. Please ensure all fields are filled.`
@@ -106,17 +106,17 @@ const PreviewPage = ({ navigation, route }) => {
             return;
           }
 
-          for (let j = 0; j < charger.connectors.length; j++) {
-            const connector = charger.connectors[j];
-            // console.log(connector.connectorType.connector_type_id);
-            if (!connector?.connector_type_id) {
-              Alert.alert(
-                'Validation Error',
-                `Connector ${j + 1} details of Charger ${i + 1} is incomplete. Please ensure all fields are filled.`
-              );
-              return;
-            }
-          }
+          // for (let j = 0; j < charger.connectors.length; j++) {
+          //   const connector = charger.connectors[j];
+          //   // console.log(connector.connectorType.connector_type_id);
+          //   if (!connector?.connector_type_id) {
+          //     Alert.alert(
+          //       'Validation Error',
+          //       `Connector ${j + 1} details of Charger ${i + 1} is incomplete. Please ensure all fields are filled.`
+          //     );
+          //     return;
+          //   }
+          // }
         }
 
         // Call the API (replace with your actual API call)

@@ -23,8 +23,6 @@ import { setupImagePicker } from "../../CompleteProfileDetail/vendorDetailForm";
 import { postSingleFile } from "../../../auth/services/crudFunction";
 import { selectToken, selectUser } from "../../../auth/services/selector";
 
-
-
 const PRIMARY_COLOR = '#101942';
 const amenities = [
   { id: 1, icon: 'toilet', label: 'Restroom' },
@@ -66,32 +64,32 @@ const AddStations = () => {
   const user = useSelector(selectUser); // Get user data
   const [selectedConnectors, setSelectedConnectors] = useState({});
 
-  const incrementConnector = (id, chargerIndex) => {
-    setConnectorsList((prev) => {
-      const exists = prev.find((c) => c.id === id && c.chargerIndex === chargerIndex);
-      if (exists) {
-        return prev.map((c) =>
-          c.id === id && c.chargerIndex === chargerIndex
-            ? { ...c, count: c.count + 1 }
-            : c
-        );
-      } else {
-        return [...prev, { id, count: 1, chargerIndex }];
-      }
-    });
-  };
+  // const incrementConnector = (id, chargerIndex) => {
+  //   setConnectorsList((prev) => {
+  //     const exists = prev.find((c) => c.id === id && c.chargerIndex === chargerIndex);
+  //     if (exists) {
+  //       return prev.map((c) =>
+  //         c.id === id && c.chargerIndex === chargerIndex
+  //           ? { ...c, count: c.count + 1 }
+  //           : c
+  //       );
+  //     } else {
+  //       return [...prev, { id, count: 1, chargerIndex }];
+  //     }
+  //   });
+  // };
 
-  const decrementConnector = (id, chargerIndex) => {
-    setConnectorsList((prev) =>
-      prev
-        .map((c) =>
-          c.id === id && c.chargerIndex === chargerIndex && c.count > 0
-            ? { ...c, count: c.count - 1 }
-            : c
-        )
-        .filter((c) => c.count > 0)
-    );
-  };
+  // const decrementConnector = (id, chargerIndex) => {
+  //   setConnectorsList((prev) =>
+  //     prev
+  //       .map((c) =>
+  //         c.id === id && c.chargerIndex === chargerIndex && c.count > 0
+  //           ? { ...c, count: c.count - 1 }
+  //           : c
+  //       )
+  //       .filter((c) => c.count > 0)
+  //   );
+  // };
 
   const handleTimeChange = (event, selectedDate) => {
     setShowPicker(false);
@@ -679,28 +677,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  connectorsContainer: {
-    flexDirection: 'column',
-    flexWrap: 'wrap',
-    gap: 10,
 
-  },
-  incDecButton: {
-    borderRadius: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  countText: {
-    marginHorizontal: 10,
-    fontSize: 14,
-    borderColor: "#e0e0e0",
-    color: "gray",
-    borderRadius: 4,
-    borderWidth: 0.8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    textAlign: "center",
-  },
+
+
   amenityItem: {
     width: '18%',
     alignItems: 'center',

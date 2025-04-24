@@ -394,12 +394,13 @@ const styles = StyleSheet.create({
 
   buttonRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     marginTop: 30,
+    gap:10
   },
   actionButton: {
     flex: 1,
-    marginHorizontal: 10,
+    // marginHorizontal: 10,
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',

@@ -128,7 +128,7 @@ const AdminHome = ({navigation}) => {
     // Handle the card click here
     console.log('Card clicked!',id);
     if(id === 1){
-      console.log('navigating to Create User');
+      navigation?.navigate('CreateUser');
       }
       else if(id === 2){
 
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
   section: {
     padding: 20,
     backgroundColor: COLORS.white,
-    marginBottom: 15,
+    marginBottom: 2,
     borderRadius: 12,
     marginHorizontal: 15,
     marginTop: 15,

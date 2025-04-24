@@ -41,18 +41,11 @@ const VerifyVendorProfile = ({ route, navigation }) => {
   const [panImage, setPanImage] = useState(user?.pan_pic);
   const [gstImage, setGstImage] = useState(user?.gst_pic);
   const [avatar, setAvatar] = useState(user?.owner_legal_name);
-//   image uri
-  const [aadhaarFrontImageURI, setAadhaarFrontImageURI] = useState(null);
-  const [aadhaarBackImageURI, setAadhaarBackImageURI] = useState(null);
-  const [panImageURI, setPanImageURI] = useState(null);
-  const [gstImageURI, setGstImageURI] = useState(null);
-  const [avatarURI, setAvatarURI] = useState(null);
-//   image end
+
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
-  const [currentImageSetter, setCurrentImageSetter] = useState(null);
+
   const [showRejectDialogue, setshowRejectDialogue] = useState(false);
   const [showApproveDialogue, setshowApproveDialogue] = useState(false);
  const [imageloading, setImageLoading] = useState("");
@@ -62,31 +55,6 @@ const VerifyVendorProfile = ({ route, navigation }) => {
     setModalVisible(true);
   };
 
-  const openGallery = async (setter) => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-    });
-    if (!result.canceled) {
-      setter(result.assets[0].uri);
-    }
-    setBottomSheetVisible(false);
-  };
-
-  const openCamera = async (setter) => {
-    const result = await ImagePicker.launchCameraAsync({
-      quality: 1,
-    });
-    if (!result.canceled) {
-      setter(result.assets[0].uri);
-    }
-    setBottomSheetVisible(false);
-  };
-
-  const removeImage = (setter) => {
-    setter(null);
-    setBottomSheetVisible(false);
-  };
 
   const handleReject = () => {
     console.log("handle Reject Called");
@@ -95,19 +63,15 @@ const VerifyVendorProfile = ({ route, navigation }) => {
     console.log("handle Approve Called");
   };
 
-  const renderInput = (label, value, setter, placeholder) => (
-    <View style={{ marginBottom: 12 }}>
-      <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>{label}</Text>
-      <TextInput
-        style={styles.input}
-        value={value}
-        onChangeText={setter}
-        placeholder={placeholder}
-      />
+  const renderTextData = (key, value) => (
+    <View style={{ marginBottom: 12, flexDirection: "row", justifyContent: "space-between" }}>
+      <Text style={{ fontWeight: "bold", fontSize: 14, textAlign: "left" }}>{key}:</Text>
+      <Text style={{ fontSize: 14, textAlign: "right" }}>{value}</Text>
     </View>
   );
+  
 
-  const renderImageBox = (label, localURI, setter, apiRespUri) => (
+  const renderImageBox = (label, localURI) => (
     <TouchableOpacity onPress={() => showFullImage(localURI)} style={{ alignItems: 'center', marginBottom: 20 }}>
       <View style={[styles.imageBox, { borderRadius: label === "avatar" ? 50 : 12 }]}>
         {imageloading===label ? (
@@ -118,15 +82,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
           <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
         )}
   
-        <TouchableOpacity
-          style={styles.editIcon}
-          onPress={() => {
-            setCurrentImageSetter(() => setter);
-            setBottomSheetVisible(true);
-          }}
-        >
-          <MaterialIcons name="edit" size={20} color="white" />
-        </TouchableOpacity>
+      
       </View>
       <Text style={styles.imageLabel}>{label}</Text>
     </TouchableOpacity>
@@ -142,18 +98,18 @@ const VerifyVendorProfile = ({ route, navigation }) => {
    <View style={styles.imageContainerAvatar}>
       {renderImageBox('avatar', avatar, setAvatar)}     
     </View>
-    {renderInput('Full Name', name, setName, 'Enter your full name')}
-    {renderInput('Mobile Number', mobNumber, setMobNumber, 'Enter your full name')}
-    {renderInput('Email', email, setEmail, 'Enter your email')}
-    {renderInput('Business Name', businessName, setBusinessName, 'Enter business name')}
-    {renderInput('Aadhar Number', aadharNumber, setAadharNumber, 'Enter Aadhar number')}
-    {renderInput('PAN Number', panNumber, setPanNumber, 'Enter PAN number')}
-    {renderInput('GST Number', gstNumber, setGstNumber, 'Enter GST number')}    
+    {renderTextData('Full Name', name)}
+    {renderTextData('Mobile Number', mobNumber)}
+    {renderTextData('Email', email, setEmail, 'Enter your email')}
+    {renderTextData('Business Name', businessName)}
+    {renderTextData('Aadhar Number', aadharNumber)}
+    {renderTextData('PAN Number', panNumber)}
+    {renderTextData('GST Number', gstNumber)}    
     <View style={styles.imageContainer}>
-      {renderImageBox('Aadhaar front', aadhaarFrontImage, setAadhaarFrontImage)}
-      {renderImageBox('Aadhaar Back', aadhaarBackImage, setAadhaarBackImage)}
-      {renderImageBox('PAN', panImage, setPanImage)}
-      {renderImageBox('GST', gstImage, setGstImage)}   
+      {renderImageBox('Aadhaar front', aadhaarFrontImage)}
+      {renderImageBox('Aadhaar Back', aadhaarBackImage)}
+      {renderImageBox('PAN', panImage)}
+      {renderImageBox('GST', gstImage)}   
     </View>
 
 
@@ -183,37 +139,6 @@ const VerifyVendorProfile = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
       </Modal>
-
-      {/* Bottom Sheet */}
-      <RNModal
-        isVisible={isBottomSheetVisible}
-        onBackdropPress={() => setBottomSheetVisible(false)}
-        style={{ justifyContent: 'flex-end', margin: 0 }}
-      >
-        <View style={styles.bottomSheet}>
-          <TouchableOpacity
-            style={styles.sheetOption}
-            onPress={() => openCamera(currentImageSetter)}
-          >
-            <Ionicons name="camera" size={22} color="#555" />
-            <Text style={styles.sheetOptionText}>Use Camera</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.sheetOption}
-            onPress={() => openGallery(currentImageSetter)}
-          >
-            <Entypo name="image" size={22} color="#555" />
-            <Text style={styles.sheetOptionText}>Choose from Gallery</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.sheetOption}
-            onPress={() => removeImage(currentImageSetter)}
-          >
-            <MaterialIcons name="delete" size={22} color="red" />
-            <Text style={[styles.sheetOptionText, { color: 'red' }]}>Remove Image</Text>
-          </TouchableOpacity>
-        </View>
-      </RNModal>
       { rejectDialogue()}
       {approveDialogue()}
     </ScrollView>
@@ -466,22 +391,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: 'bold',
   },
-  bottomSheet: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderTopRightRadius: 20,
-    borderTopLeftRadius: 20,
-  },
-  sheetOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  sheetOptionText: {
-    fontSize: 16,
-    marginLeft: 12,
-    color: '#333',
-  },
+
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',

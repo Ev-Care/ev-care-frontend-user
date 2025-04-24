@@ -54,6 +54,7 @@ const UpdateUser = ({ route, navigation }) => {
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [currentImageSetter, setCurrentImageSetter] = useState(null);
   const [showDeleteDialogue, setshowDeleteDialogue] = useState(false);
+    const[selectedRole,setSelectedRole]=useState(user?.role||"user");
  const [imageloading, setImageLoading] = useState("");
   const showFullImage = (uri) => {
     if (!uri) return;
@@ -134,35 +135,25 @@ const UpdateUser = ({ route, navigation }) => {
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Update User Details</Text>
-      {user.role === "user" ? (
-  <>
-    <View style={styles.imageContainerAvatar}>
-      {renderImageBox('avatar', avatar, setAvatar )}     
-    </View>
-    {renderInput('Full Name', name, setName, 'Enter your full name')}
-    {renderInput('Mobile Number', mobNumber, setMobNumber, 'Enter your full name')}
-    {renderInput('Email', email, setEmail, 'Enter your email')}
-  </>
-) : (
-  <>
-   <View style={styles.imageContainerAvatar}>
-      {renderImageBox('avatar', avatar, setAvatar)}     
-    </View>
-    {renderInput('Full Name', name, setName, 'Enter your full name')}
-    {renderInput('Mobile Number', mobNumber, setMobNumber, 'Enter your full name')}
-    {renderInput('Email', email, setEmail, 'Enter your email')}
-    {renderInput('Business Name', businessName, setBusinessName, 'Enter business name')}
-    {renderInput('Aadhar Number', aadharNumber, setAadharNumber, 'Enter Aadhar number')}
-    {renderInput('PAN Number', panNumber, setPanNumber, 'Enter PAN number')}
-    {renderInput('GST Number', gstNumber, setGstNumber, 'Enter GST number')}    
-    <View style={styles.imageContainer}>
-      {renderImageBox('Aadhaar front', aadhaarFrontImage, setAadhaarFrontImage)}
-      {renderImageBox('Aadhaar Back', aadhaarBackImage, setAadhaarBackImage)}
-      {renderImageBox('PAN', panImage, setPanImage)}
-      {renderImageBox('GST', gstImage, setGstImage)}   
-    </View>
-  </>
-)}
+        <View style={styles.imageContainerAvatar}>
+           {renderImageBox('avatar', avatar, setAvatar )}     
+         </View>
+         {renderInput('Full Name', name, setName, 'Enter your full name')}
+         {renderInput('Mobile Number', mobNumber, setMobNumber, 'Enter your full name')}
+         {renderInput('Email', email, setEmail, 'Enter your email')}
+         {roleSelector()}
+         {selectedRole === "vendor" && (<>
+         {renderInput('Business Name', businessName, setBusinessName, 'Enter business name')}
+         {renderInput('Aadhar Number', aadharNumber, setAadharNumber, 'Enter Aadhar number')}
+         {renderInput('PAN Number', panNumber, setPanNumber, 'Enter PAN number')}
+         {renderInput('GST Number', gstNumber, setGstNumber, 'Enter GST number')}    
+         <View style={styles.imageContainer}>
+           {renderImageBox('Aadhaar front', aadhaarFrontImage, setAadhaarFrontImage)}
+           {renderImageBox('Aadhaar Back', aadhaarBackImage, setAadhaarBackImage)}
+           {renderImageBox('PAN', panImage, setPanImage)}
+           {renderImageBox('GST', gstImage, setGstImage)}   
+         </View>
+       </>)}
 
       <View style={styles.buttonRow}>
 
@@ -302,6 +293,34 @@ const UpdateUser = ({ route, navigation }) => {
         </Overlay>
       );
     }
+    function roleSelector(){
+        return(
+        <View style={{ marginBottom: 12 }}>
+        <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>Select Role</Text>
+        <View style={styles.selectorContainer}>
+          <TouchableOpacity
+            onPress={() => setSelectedRole("user")}
+            style={[
+              styles.selectorOption,
+              selectedRole === "user" && styles.selectedOption,
+            ]}
+          >
+          <Text style={[styles.dropdownText, selectedRole === "user" ? { color: "white" } : {color: "black"}]}>User</Text>
+      
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setSelectedRole("vendor")}
+            style={[
+              styles.selectorOption,
+              selectedRole === "vendor" && styles.selectedOption,
+            ]}
+          >
+             <Text style={[styles.dropdownText, selectedRole === "vendor" ? { color: "white" } : {color: "black"}]}>Vendor</Text>
+      
+          </TouchableOpacity>
+        </View>
+      </View>
+    )}
 };
 
 const styles = StyleSheet.create({
@@ -449,6 +468,29 @@ const styles = StyleSheet.create({
       borderBottomLeftRadius: Sizes.fixPadding - 5.0,
     },
     /*End of delete Dialog Styles */
+     selectorContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 10,
+        padding: 3,
+      },
+      selectorOption: {
+        flex: 1,
+        padding: 8,
+        alignItems: 'center',
+        borderRadius: 8,
+      },
+      selectedOption: {
+      
+        backgroundColor: Colors.primaryColor,
+      },
+      dropdownText: {
+        fontSize: 14,
+        color: '#333',
+      },
+      
 });
 
 export default UpdateUser;

@@ -189,7 +189,7 @@ const VendorHome =  () => {
             {stations?.length} Stations
           </Text>
           <TouchableOpacity>
-            <Feather name="more-vertical" size={18} color={COLORS.white} />
+            {/* <Feather name="more-vertical" size={18} color={COLORS.white} /> */}
           </TouchableOpacity>
         </View>
 
@@ -289,7 +289,7 @@ const VendorHome =  () => {
             24x7 Support
           </Text>
           <TouchableOpacity>
-            <Feather name="more-vertical" size={18} color={COLORS.black} />
+            {/* <Feather name="more-vertical" size={18} color={COLORS.black} /> */}
           </TouchableOpacity>
         </View>
 

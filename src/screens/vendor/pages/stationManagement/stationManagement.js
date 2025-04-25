@@ -255,7 +255,7 @@ const StationManagement = ({ navigation, route }) => {
               • {station.open_hours_opening_time} -{" "}
               {station.open_hours_closing_time}
             </Text>
-            <View style={styles.newBadge}>
+             { station.status !== "Inactive" && (<View style={styles.newBadge}>
               <Text style={styles.newText}>
                 {station.status === "Active"
                   ? "VERIFIED"
@@ -263,7 +263,7 @@ const StationManagement = ({ navigation, route }) => {
                   ? "PENDING"
                   : ""}
               </Text>
-            </View>
+            </View>)}
           </View>
         </View>
       </View>

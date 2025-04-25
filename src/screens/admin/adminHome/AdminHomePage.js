@@ -135,7 +135,7 @@ const AdminHome = ({navigation}) => {
         navigation?.navigate('AllPendingVendors');
       }
       else if(id === 3){
-        console.log('navigating to Support Issues');
+      navigation?.navigate("ViewAllIssuesPage");
       }
       else if(id === 4){
         navigation?.navigate('AllPendingStations');

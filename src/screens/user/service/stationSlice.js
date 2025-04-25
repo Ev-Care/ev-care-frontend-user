@@ -1,6 +1,6 @@
 import { createSlice,  } from "@reduxjs/toolkit";
 import { enableMapSet } from "immer";
-import { fetchStationsByLocation } from "./crudFunction";
+import { fetchStationsByLocation, getAllFavoriteStations } from "./crudFunction";
 
 
 // Enable support for Set and Map in Immer
@@ -8,7 +8,7 @@ enableMapSet();
 // Initial state
 const initialState = {
   stations: [],
-  favorite: new Set(),
+  favorite: [],
   recent: new Set(),
   loading: false,
   error: null,
@@ -27,21 +27,8 @@ const stationSlice = createSlice({
       state.loading = false;
       state.error = null;
     },
-    addToFavorite: (state, action) => {
-      var station = action.payload;
-
-      if(state.favorite.has(station)) {
-        console.log("station already in favorite");
-        state.favorite.delete(station);
-        return;
-      }
-      state.favorite.add(station);
-      console.log("station added to favorite in slice", [...state.favorite]);
-    },
-    removeFromFavorite: (state, action) => {
-      var station = action.payload;
-      state.favorite.delete(station);
-    },
+    
+    
     addToRecent: (state, action) => {
       var item = {
         id: action.payload.id,
@@ -71,7 +58,23 @@ const stationSlice = createSlice({
         // console.log("Error fetching stations:", action.payload);
         state.loading = false;
         state.error = action.payload; // Store the error message
-      });
+      })
+      .addCase(getAllFavoriteStations.pending, (state) => {
+        // console.log("Fetching favorite stations...");
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllFavoriteStations.fulfilled, (state, action) => {
+        // console.log("Favorite stations fetched successfully:", action.payload);
+        state.loading = false;
+        state.favorite = action.payload.data; // Update the favorite stations list
+        console.log("favorite stations:", state.favorite); // Log the favorite stations for debugging
+      })
+      .addCase(getAllFavoriteStations.rejected, (state, action) => {
+        // console.log("Error fetching favorite stations:", action.payload);
+        state.loading = false;
+        state.error = action.payload; // Store the error message
+      })  
   },
 });
 

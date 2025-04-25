@@ -30,8 +30,13 @@ const FavoriteScreen = ({ navigation }) => {
   const [showSnackBar, setShowSnackBar] = useState(false);
   const stations = useSelector(selectStations);
   const favStations = useSelector(selectFavoriteStations);
-  const [listData, setListData] = useState([...favStations]);
-  console.log("stations in favorite", stations?.length);
+  // const [listData, setListData] = useState([...favStations]);
+  const [listData, setListData] = useState(
+    favStations
+      .map((favStation) => stations.find((station) => station.id === favStation.stationId))
+      .filter((station) => station !== undefined) // Filter out undefined values in case of unmatched stations
+  );
+  console.log("stations in listData", listData);
 
   const formatDistance = (distance) => {
     if (distance >= 1000) {

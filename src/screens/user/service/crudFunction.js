@@ -1,7 +1,7 @@
 //get Access Token from Async Storage
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { getAllStationsByLocationAPI, updateUserProfileAPI , getUserByKeyAPI, getEnrouteStationsAPI} from "./api"; // Import the API function
+import { getAllStationsByLocationAPI, updateUserProfileAPI , getUserByKeyAPI, getEnrouteStationsAPI, getAllFavoriteStationsAPI, postFavoriteStationAPI, unFavoriteStationAPI} from "./api"; // Import the API function
 // Async thunk to fetch stations
 export const fetchStationsByLocation = createAsyncThunk(
   "stations/fetchStations",
@@ -57,6 +57,48 @@ export const getEnrouteStations = createAsyncThunk(
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
       const response = await getEnrouteStationsAPI({...data, accessToken}); // Call the API to fetch stations by location
       console.log("response of enroute:", response.data); // Log the response for debugging
+      return response.data; // Assuming the API returns a list of stations
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const getAllFavoriteStations = createAsyncThunk(
+  "favorite/getAllFavoriteStations",
+  async (data, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
+      const response = await getAllFavoriteStationsAPI({...data, accessToken}); // Call the API to fetch stations by location
+      console.log("response of favorite:", response.data); // Log the response for debugging
+      return response.data; // Assuming the API returns a list of stations
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const postFavoriteStation = createAsyncThunk(
+  "favorite/postFavoriteStation",
+  async (data, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
+      const response = await postFavoriteStationAPI({...data, accessToken}); // Call the API to fetch stations by location
+      console.log("response of favorite:", response.data); // Log the response for debugging
+      return response.data; // Assuming the API returns a list of stations
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const unFavoriteStation = createAsyncThunk(
+  "favorite/unFavoriteStation",
+  async (data, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
+      const response = await unFavoriteStationAPI({...data, accessToken}); // Call the API to fetch stations by location
+      console.log("response of favorite:", response.data); // Log the response for debugging
       return response.data; // Assuming the API returns a list of stations
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);

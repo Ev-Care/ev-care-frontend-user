@@ -25,8 +25,9 @@ import MapView, { Marker } from "react-native-maps";
 import { Overlay } from "@rneui/themed";
 import { addToFavorite } from "../service/stationSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { selectFavoriteStations } from "../service/selector";
+import { selectFavoriteStations, selectUser } from "../service/selector";
 import imageURL from "../../../constants/baseURL";
+import { getAllFavoriteStations, postFavoriteStation, unFavoriteStation } from "../service/crudFunction";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -76,6 +77,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
   const [showSnackBar, setshowSnackBar] = useState(false);
   const scrollViewRef = useRef(null);
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
 
   const station = route?.params?.item;
 
@@ -83,7 +85,14 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     return <Text>Loading...</Text>; // Handle when station is not available
   }
 
-  const [inFavorite, setinFavorite] = useState(favStations.has(station));
+  const [inFavorite, setinFavorite] = useState(false);
+
+  useEffect(() => {
+    if (favStations && station) {
+      const isFavorite = favStations.some((favStation) => favStation.stationId === station.id);
+      setinFavorite(isFavorite);
+    }
+  }, [favStations, station]);
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",
     CHAdeMO: "ev-plug-chademo",
@@ -122,10 +131,18 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     Linking.openURL(url);
   };
 
-  const handleAddToFavorite = (stationId) => {
-    if (station) {
-      dispatch(addToFavorite(station));
+  const handleAddToFavorite = (station) => {
+    if (station && !inFavorite) {
+      dispatch(postFavoriteStation({stationId:station.id, userId: user.id}));
+      console.log("station favorited ");
       setinFavorite((prev) => !prev);
+      dispatch(getAllFavoriteStations({user_key: user.user_key}));
+      setshowSnackBar(true);
+    } else {
+      dispatch(unFavoriteStation({stationId:station.id, userId: user.id}));
+      console.log("station unfavorited ");
+      setinFavorite((prev) => !prev);
+      dispatch(getAllFavoriteStations({user_key: user.user_key}));
       setshowSnackBar(true);
     }
   };

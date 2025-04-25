@@ -28,7 +28,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../../auth/services/selector";
 import * as Location from "expo-location";
-import { fetchStationsByLocation } from "../service/crudFunction";
+import { fetchStationsByLocation, getAllFavoriteStations } from "../service/crudFunction";
 import { selectStations } from "../service/selector";
 import { RefreshControl } from 'react-native';
 import imageURL from "../../../constants/baseURL";
@@ -89,6 +89,7 @@ const UserHome = ({ navigation }) => {
             console.log({ currentLocation });
             dispatch(updateUserCoordinate(coords)); // update user coordinates in redux store
             dispatch(fetchStationsByLocation({ radius, coords })); // dispatch when location updates
+            dispatch(getAllFavoriteStations({ user_key: user?.user_key })); // dispatch to get favorite stations
           }
         );
       } catch (err) {

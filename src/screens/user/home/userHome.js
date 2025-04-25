@@ -11,6 +11,7 @@ import {
   Image,
   Linking,
   Animated,
+  ActivityIndicator,
   FlatList,
   Platform,
   StatusBar,
@@ -26,14 +27,23 @@ import {
   screenWidth,
 } from "../../../constants/styles";
 import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../../auth/services/selector";
+import {  selectUser } from "../../auth/services/selector";
 import * as Location from "expo-location";
-import { fetchStationsByLocation, getAllFavoriteStations } from "../service/crudFunction";
-import { selectStations } from "../service/selector";
-import { RefreshControl } from 'react-native';
+import {
+  fetchStationsByLocation,
+  getAllFavoriteStations,
+} from "../service/crudFunction";
+import { selectStations, selectStationsLoading, selectUserLoading } from "../service/selector";
+import { RefreshControl } from "react-native";
 import imageURL from "../../../constants/baseURL";
-import { handleRefreshStations, handleRefreshStationsByLocation } from "../service/handleRefresh";
+import {
+  handleRefreshStations,
+  handleRefreshStationsByLocation,
+} from "../service/handleRefresh";
 import { updateUserCoordinate } from "../../../redux/store/userSlice";
+import { Overlay } from "@rneui/themed";
+import { openHourFormatter ,formatDistance} from "../../../utils/globalMethods";
+
 
 const COLORS = {
   primary: "#101942",
@@ -48,11 +58,12 @@ const COLORS = {
 const UserHome = ({ navigation }) => {
   const [count, setCount] = useState(0);
   const scrollY = useRef(new Animated.Value(0)).current;
-  const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
+  const AnimatedLinearGradient =
+    Animated.createAnimatedComponent(LinearGradient);
   const user = useSelector(selectUser);
   const [radius, setRadius] = useState(30000);
   const [refreshing, setRefreshing] = useState(false);
-
+  const isLoading = useSelector(selectStationsLoading || selectUserLoading);
   const stations = useSelector(selectStations);
 
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -105,23 +116,14 @@ const UserHome = ({ navigation }) => {
     };
   }, [refreshing]);
 
-
-  const formatDistance = (distance) => {
-    if (distance >= 1000) {
-      return (distance / 1000).toFixed(1).replace(/\.0$/, "") + "k km";
-    } else if (distance % 1 !== 0) {
-      return distance.toFixed(1) + " km";
-    } else {
-      return distance + " km";
-    }
-  };
+ 
   const handleRefresh = async () => {
     const data = {
       radius: radius,
       coords: currentLocation,
-    }
+    };
     await handleRefreshStationsByLocation(dispatch, data, setRefreshing);
-  }
+  };
   const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
       ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
@@ -193,8 +195,8 @@ const UserHome = ({ navigation }) => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={['#9Bd35A', '#101942']}  // Android spinner colors
-            tintColor="#101942"            // iOS spinner color
+            colors={["#9Bd35A", "#101942"]} // Android spinner colors
+            tintColor="#101942" // iOS spinner color
           />
         }
         style={styles.content}
@@ -235,7 +237,9 @@ const UserHome = ({ navigation }) => {
               style={styles.featureCard}
             >
               <TouchableOpacity
-                onPress={() => navigation.push("AllChargingStations", { setRefreshing })}
+                onPress={() =>
+                  navigation.push("AllChargingStations", { setRefreshing })
+                }
                 style={styles.featureCardTouchOpacity}
               >
                 <View>
@@ -253,7 +257,9 @@ const UserHome = ({ navigation }) => {
                     color={COLORS.white}
                   />
                   <Text style={styles.featureText}>
-                    {stations?.length > 0 ? `${stations[0].distance_km} km` : "N/A"}
+                    {stations?.length > 0
+                      ? `${stations[0].distance_km} km`
+                      : "N/A"}
                   </Text>
                   <Text style={styles.featureText}>(From here)</Text>
                 </View>
@@ -313,12 +319,36 @@ const UserHome = ({ navigation }) => {
         </View>
         <View style={{ height: 20 }} />
       </Animated.ScrollView>
+      {loadingDialog()}
     </SafeAreaView>
   );
+
+  function loadingDialog() {
+    return (
+      <Overlay isVisible={isLoading} overlayStyle={styles.dialogStyle}>
+        <ActivityIndicator
+          size={50}
+          color={Colors.primaryColor}
+          style={{ alignSelf: "center" }}
+        />
+        <Text
+          style={{
+            marginTop: Sizes.fixPadding,
+            textAlign: "center",
+            ...Fonts.blackColor16Regular,
+          }}
+        >
+          Please wait...
+        </Text>
+      </Overlay>
+    );
+  }
   function recentStationsInfo() {
     if (!stations || stations.length === 0) {
       return (
-        <Text style={{ textAlign: 'center', marginVertical: 10, color: 'gray' }}>
+        <Text
+          style={{ textAlign: "center", marginVertical: 10, color: "gray" }}
+        >
           No stations found.
         </Text>
       );
@@ -344,7 +374,7 @@ const UserHome = ({ navigation }) => {
           <Text
             style={[
               styles.statusClosed,
-              { color: item?.status === "Inactive" ? "#FF5722" : "white" }
+              { color: item?.status === "Inactive" ? "#FF5722" : "white" },
             ]}
           >
             {item?.status === "Inactive" ? "Closed" : "Open"}
@@ -360,17 +390,23 @@ const UserHome = ({ navigation }) => {
               {item?.address ?? "Address not available"}
             </Text>
 
-            <View style={{ marginTop: Sizes.fixPadding, ...commonStyles.rowAlignCenter }}>
+            <View
+              style={{
+                marginTop: Sizes.fixPadding,
+                ...commonStyles.rowAlignCenter,
+              }}
+            >
               <View style={{ ...commonStyles.rowAlignCenter }}>
-                <Text style={{ ...Fonts.blackColor18Medium }}>3.5</Text>
-                <MaterialIcons name="star" color={Colors.yellowColor} size={20} />
+                <Text style={{ ...Fonts.blackColor16Medium }}>
+                {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).opening} - {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).closing}
+                </Text>
               </View>
 
               <View
                 style={{
                   marginLeft: Sizes.fixPadding * 2.0,
                   ...commonStyles.rowAlignCenter,
-                  flex: 1
+                  flex: 1,
                 }}
               >
                 <View style={styles.primaryColorDot} />
@@ -379,10 +415,10 @@ const UserHome = ({ navigation }) => {
                   style={{
                     marginLeft: Sizes.fixPadding,
                     ...Fonts.grayColor14Medium,
-                    flex: 1
+                    flex: 1,
                   }}
                 >
-                  {item?.chargers?.length ?? 0} Charging Points
+                  {item?.chargers?.length ?? 0} Chargers
                 </Text>
               </View>
             </View>
@@ -392,7 +428,7 @@ const UserHome = ({ navigation }) => {
             style={{
               ...commonStyles.rowAlignCenter,
               paddingLeft: Sizes.fixPadding,
-              marginTop: Sizes.fixPadding
+              marginTop: Sizes.fixPadding,
             }}
           >
             <Text
@@ -400,7 +436,7 @@ const UserHome = ({ navigation }) => {
               style={{
                 ...Fonts.blackColor16Medium,
                 flex: 1,
-                marginRight: Sizes.fixPadding - 5.0
+                marginRight: Sizes.fixPadding - 5.0,
               }}
             >
               {formatDistance(item?.distance_km)}
@@ -431,7 +467,6 @@ const UserHome = ({ navigation }) => {
       />
     );
   }
-
 };
 
 const styles = StyleSheet.create({

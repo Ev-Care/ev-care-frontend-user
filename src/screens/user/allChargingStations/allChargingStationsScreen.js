@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, TouchableOpacity, Text, Image, View, Linking, Platform, } from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity, Text, Image, View, Linking, Platform,ActivityIndicator } from "react-native";
 import React, { useState } from "react";
 import {
   Colors,
@@ -11,11 +11,13 @@ import {
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useDispatch, useSelector } from "react-redux";
-import { selectStations, selectUserCoordinate } from "../service/selector";
+import { selectStations, selectStationsLoading, selectUserCoordinate } from "../service/selector";
 import { filterStations } from "../../../utils/filter";
+
 import imageURL from "../../../constants/baseURL";
 import { RefreshControl } from 'react-native';
 import { handleRefreshStationsByLocation } from "../service/handleRefresh";
+import { openHourFormatter ,formatDistance} from "../../../utils/globalMethods";
 
 
 
@@ -23,6 +25,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
   const stations = useSelector(selectStations);
   const [refreshing, setRefreshing] = useState(false);
   const userCoords = useSelector(selectUserCoordinate);
+    const isLoading = useSelector(selectStationsLoading);
   const dispatch = useDispatch();
   
   const openGoogleMaps = (latitude, longitude) => {
@@ -40,16 +43,9 @@ const AllChargingStationsScreen = ({ navigation }) => {
     const result = filterStations(stations, filters);
     setFilteredStations(result);
   };
+ 
+  
 
-  const formatDistance = (distance) => {
-    if (distance >= 1000) {
-      return (distance / 1000).toFixed(1).replace(/\.0$/, '') + 'k km';
-    } else if (distance % 1 !== 0) {
-      return distance.toFixed(1) + ' km';
-    } else {
-      return distance + ' km';
-    }
-  };
    const handleRefresh = async () => {
     console.log("handle refresh called");
       const data = {
@@ -63,8 +59,15 @@ const AllChargingStationsScreen = ({ navigation }) => {
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
       <View style={{ flex: 1 }}>
-        {header()}
+       {isLoading ? (
+               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+               <ActivityIndicator size="large" color = {Colors.primaryColor} />
+             </View>
+             
+             ) : ( <>
+             {header()}
         {allStationsInfo()}
+        </>)}
       </View>
     </View>
   );
@@ -72,7 +75,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
   function allStationsInfo() {
     if (filteredStations.length === 0) {
       return (
-        <View style={styles.centeredContainer}>
+        <View style={[styles.centeredContainer ,{}]}>
           <Text style={styles.noStationsText}>No Charging Stations Found</Text>
         </View>
       );
@@ -83,7 +86,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
         onPress={() => {
           navigation.navigate("ChargingStationDetail", { item });
         }}
-        style={styles.enrouteChargingStationWrapStyle}
+        style={[styles.enrouteChargingStationWrapStyle,{}]}
       >
         <Image
           source={
@@ -115,10 +118,11 @@ const AllChargingStationsScreen = ({ navigation }) => {
                 ...commonStyles.rowAlignCenter,
               }}
             >
-              <View style={{ ...commonStyles.rowAlignCenter }}>
-                <Text style={{ ...Fonts.blackColor18Medium }}>4.8</Text>
-                <MaterialIcons name="star" color={Colors.yellowColor} size={20} />
-              </View>
+             <View style={{ ...commonStyles.rowAlignCenter }}>
+              <Text style={{ ...Fonts.blackColor16Medium }}>
+               {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).opening} - {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).closing}
+               </Text>
+               </View>
               <View
                 style={{
                   marginLeft: Sizes.fixPadding * 2.0,
@@ -135,7 +139,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
                     flex: 1,
                   }}
                 >
-                  {item?.chargers?.length || 0} Charging Points
+                  {item?.chargers?.length || 0} Chargers
                 </Text>
               </View>
             </View>
@@ -176,6 +180,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
         keyExtractor={(item) => `${item?.id}`}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: 15 }} 
       />
     );
   }
@@ -184,12 +189,15 @@ const AllChargingStationsScreen = ({ navigation }) => {
 
   function header() {
     return (
-      <View style={{ ...commonStyles.rowSpaceBetween, margin: 20.0 }}>
+      <View style={{ ...commonStyles.rowSpaceBetween, elevation:10,padding:15, backgroundColor:Colors.bodyBackColor
+       
+      }}>
         <View
           style={{
             ...commonStyles.rowAlignCenter,
             flex: 1,
             marginRight: Sizes.fixPadding - 5.0,
+           
           }}
         >
           <MaterialIcons
@@ -205,6 +213,8 @@ const AllChargingStationsScreen = ({ navigation }) => {
             style={{
               ...Fonts.blackColor20SemiBold,
               flex: 1,
+              color:"black",
+              textAlign:"center",
               marginLeft: Sizes.fixPadding * 2.0,
             }}
           >
@@ -241,7 +251,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1.0,
     flexDirection: "row",
     marginHorizontal: Sizes.fixPadding * 2.0,
-    marginBottom: Sizes.fixPadding * 2.0,
+    marginBottom: Sizes.fixPadding * 1.0,
+   
   },
   enrouteChargingStationImage: {
     width: screenWidth / 3.2,

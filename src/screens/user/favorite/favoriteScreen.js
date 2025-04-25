@@ -4,10 +4,11 @@ import {
   View,
   Platform,
   Linking,
+  ActivityIndicator,
   Image,
   TouchableOpacity,
 } from "react-native";
-import React, { useState,useRef  } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Colors,
   Fonts,
@@ -17,36 +18,52 @@ import {
 } from "../../../constants/styles";
 import MyStatusBar from "../../../components/myStatusBar";
 // import { useNavigation } from "@react-navigation/native";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+// import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { SwipeListView } from "react-native-swipe-list-view";
 import { Snackbar } from "react-native-paper";
-import { useSelector } from "react-redux";
-import { selectFavoriteStations, selectStations } from "../service/selector";
+import { useDispatch, useSelector } from "react-redux";
+import { selectFavoriteStations, selectStations, selectStationsLoading } from "../service/selector";
 import imageURL from "../../../constants/baseURL";
-
-
+import {
+  default as Icon,
+  default as MaterialIcons,
+} from "react-native-vector-icons/MaterialIcons";
+import {
+  unFavoriteStation,
+  getAllFavoriteStations,
+} from "../service/crudFunction";
+import { selectUser } from "../../auth/services/selector";
+import { openHourFormatter,formatDistance } from "../../../utils/globalMethods";
 
 const FavoriteScreen = ({ navigation }) => {
   const [showSnackBar, setShowSnackBar] = useState(false);
   const stations = useSelector(selectStations);
+  const user = useSelector(selectUser);
   const favStations = useSelector(selectFavoriteStations);
-  // const [listData, setListData] = useState([...favStations]);
-  const [listData, setListData] = useState(
-    favStations
-      .map((favStation) => stations.find((station) => station.id === favStation.stationId))
-      .filter((station) => station !== undefined) // Filter out undefined values in case of unmatched stations
-  );
-  console.log("stations in listData", listData);
+  const isLoading = useSelector(selectStationsLoading);
+  const dispatch = useDispatch();
+  const [listData, setListData] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const formatDistance = (distance) => {
-    if (distance >= 1000) {
-      return (distance / 1000).toFixed(1).replace(/\.0$/, '') + 'k km';
-    } else if (distance % 1 !== 0) {
-      return distance.toFixed(1) + ' km';
-    } else {
-      return distance + ' km';
+  useEffect(() => {
+    dispatch(getAllFavoriteStations(user.user_key));
+    if (stations && favStations) {
+      const filtered = favStations
+        .map((fav) => stations.find((station) => station.id == fav.station.id))
+        .filter(Boolean);
+
+      setListData(filtered);
     }
-  };
+  }, [stations, favStations]);
+
+  // console.log("stations in  stations fav screen", stations.length);
+  // console.log("stations in fav stations fav screen", favStations.length);
+  //   console.log("stations in listData fav screen", listData.length);
+
+    const handleRefresh = async() => {
+    
+    await  dispatch(getAllFavoriteStations(user.user_key));
+     }
 
   const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
@@ -59,10 +76,16 @@ const FavoriteScreen = ({ navigation }) => {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
-      <View style={{ flex: 1 }}>
-        {header()}
-        {listData?.length === 0 ? noItemsInfo() : favoriteItems()}
-      </View>
+       {isLoading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color = {Colors.primaryColor} />
+    n  </View>
+      ) : (
+        <View style={{ flex: 1 }}>
+          {header()}
+          {listData?.length === 0 ? noItemsInfo() : favoriteItems()}
+        </View>
+      )}
       {snackBar()}
     </View>
   );
@@ -95,10 +118,11 @@ const FavoriteScreen = ({ navigation }) => {
 
     const renderHiddenItem = (data, rowMap) => (
       <View style={{ alignItems: "center", flex: 1 }}>
+        {console.log("data in render hidden", data)}
         <TouchableOpacity
           activeOpacity={0.8}
           style={{ ...styles.backDeleteContinerStyle }}
-          onPress={() => deleteRow(rowMap, data?.item?.key)}
+          onPress={() => deleteRow(rowMap, data?.item?.id)}
         >
           <View style={styles.deleteIconWrapper}>
             <MaterialIcons name="delete" size={22} color={Colors.whiteColor} />
@@ -116,9 +140,9 @@ const FavoriteScreen = ({ navigation }) => {
         setShowSnackBar(true);
         setListData(newData);
       }
+      dispatch(unFavoriteStation({ stationId: rowKey, userId: user.id }));
+      dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
     };
-
-
 
     const renderItem = (data) => (
       <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -133,7 +157,9 @@ const FavoriteScreen = ({ navigation }) => {
             source={
               data?.item?.station_images
                 ? { uri: imageURL.baseURL + data.item.station_images }
-                : { uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" }
+                : {
+                    uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                  }
             }
             style={styles.enrouteChargingStationImage}
           />
@@ -142,7 +168,8 @@ const FavoriteScreen = ({ navigation }) => {
               style={[
                 styles.statusClosed,
                 {
-                  color: data?.item?.status === "Inactive" ? "#FF5722" : "white",
+                  color:
+                    data?.item?.status === "Inactive" ? "#FF5722" : "white",
                 },
               ]}
             >
@@ -164,13 +191,10 @@ const FavoriteScreen = ({ navigation }) => {
                 }}
               >
                 <View style={{ ...commonStyles.rowAlignCenter }}>
-                  <Text style={{ ...Fonts.blackColor18Medium }}>3.5</Text>
-                  <MaterialIcons
-                    name="star"
-                    color={Colors.yellowColor}
-                    size={20}
-                  />
-                </View>
+                <Text style={{ ...Fonts.blackColor16Medium }}>
+                {openHourFormatter(data?.item?.open_hours_opening_time, data?.item?.open_hours_closing_time).opening} - {openHourFormatter(data?.item?.open_hours_opening_time, data?.item?.open_hours_closing_time).closing}
+                </Text>
+              </View>
                 <View
                   style={{
                     marginLeft: Sizes.fixPadding * 2.0,
@@ -187,7 +211,7 @@ const FavoriteScreen = ({ navigation }) => {
                       flex: 1,
                     }}
                   >
-                    {data?.item?.chargers?.length} Charging Points
+                    {data?.item?.chargers?.length} Chargers
                   </Text>
                 </View>
               </View>
@@ -218,18 +242,21 @@ const FavoriteScreen = ({ navigation }) => {
                 }
                 style={styles.getDirectionButton}
               >
-                <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
+                <Text style={{ ...Fonts.whiteColor16Medium }}>
+                  Get Direction
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
         </TouchableOpacity>
       </View>
     );
-    
 
     return (
       <View style={{ flex: 1 }}>
         <SwipeListView
+           refreshing={refreshing}
+           onRefresh={handleRefresh}
           data={listData}
           renderItem={renderItem}
           renderHiddenItem={renderHiddenItem}
@@ -259,15 +286,13 @@ const FavoriteScreen = ({ navigation }) => {
 
   function header() {
     return (
-      <Text
-        style={{
-          ...Fonts.blackColor20SemiBold,
-          margin: Sizes.fixPadding * 2.0,
-          // marginTop:50,
-        }}
-      >
-        Favorite
-      </Text>
+      <View style={styles.appBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Icon name="arrow-back" size={24} color={Colors.primary} />
+        </TouchableOpacity>
+        <Text style={styles.title}>Favorite</Text>
+        <View style={{ width: 24 }} />
+      </View>
     );
   }
 };
@@ -280,6 +305,15 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  appBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: Colors.bodyBackColor,
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0eb",
   },
   deleteIconWrapper: {
     width: 46.0,

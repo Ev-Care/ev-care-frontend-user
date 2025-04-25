@@ -20,6 +20,7 @@ import React, { useState } from "react";
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import imageURL from "../../../constants/baseURL";
+import { openHourFormatter,formatDistance } from "../../../utils/globalMethods";
 
 const allStationsList = [
   {
@@ -128,28 +129,6 @@ const AllPendingStations = ({ navigation }) => {
   );
   // Dummy coordinates for the location
 
-  const formatDistance = (distance) => {
-    if (distance >= 1000) {
-      return (distance / 1000).toFixed(1).replace(/\.0$/, "") + "k km";
-    } else if (distance % 1 !== 0) {
-      return distance?.toFixed(1) + " km";
-    } else {
-      return distance + " km";
-    }
-  };
-  const openHourFormatter = (openingTime, closingTime) => {
-    const formatTime = (time) => {
-      const [hour, minute] = time.split(':').map(Number);
-      const ampm = hour >= 12 ? 'PM' : 'AM';
-      const adjustedHour = hour % 12 || 12;
-      return `${adjustedHour}:${minute.toString().padStart(2, '0')}${ampm}`;
-    };
-  
-    return {
-      opening: formatTime(openingTime),
-      closing: formatTime(closingTime)
-    };
-  };
   
   const openGoogleMaps = (latitude,longitude) => {
     const url = Platform.select({

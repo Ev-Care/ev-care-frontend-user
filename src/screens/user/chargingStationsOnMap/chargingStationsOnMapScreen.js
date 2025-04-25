@@ -24,7 +24,7 @@ import * as Location from "expo-location";
 import { useSelector } from "react-redux";
 import { selectStations } from "../service/selector";
 import imageURL from "../../../constants/baseURL";
-
+import { openHourFormatter ,formatDistance} from "../../../utils/globalMethods";
 const width = screenWidth;
 const cardWidth = width / 1.15;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
@@ -188,15 +188,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
     return { scale };
   });
 
-  const formatDistance = (distance) => {
-    if (distance >= 1000) {
-      return (distance / 1000).toFixed(1).replace(/\.0$/, '') + 'k km';
-    } else if (distance % 1 !== 0) {
-      return distance.toFixed(1) + ' km';
-    } else {
-      return distance + ' km';
-    }
-  };
+
 
   const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
@@ -369,9 +361,10 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                   }}
                 >
                   <View style={{ ...commonStyles.rowAlignCenter }}>
-                    <Text style={{ ...Fonts.blackColor18Medium }}>4.5</Text>
-                    <MaterialIcons name="star" color={Colors.yellowColor} size={20} />
-                  </View>
+                <Text style={{ ...Fonts.blackColor16Medium }}>
+                {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).opening} - {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).closing}
+                </Text>
+              </View>
                   <View
                     style={{
                       marginLeft: Sizes.fixPadding * 2.0,
@@ -388,7 +381,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
                         flex: 1,
                       }}
                     >
-                      {item?.chargers?.length} Charging Points
+                      {item?.chargers?.length} Chargers
                     </Text>
                   </View>
                 </View>

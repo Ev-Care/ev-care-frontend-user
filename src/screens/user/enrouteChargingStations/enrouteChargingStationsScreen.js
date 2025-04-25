@@ -13,7 +13,7 @@ import {
 import { BottomSheet } from "@rneui/themed";
 import React, { useState, createRef, useEffect, useRef } from "react";
 import MyStatusBar from "../../../components/myStatusBar";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE,Polyline } from "react-native-maps";
 import {
   Colors,
   screenWidth,
@@ -25,107 +25,112 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MapViewDirections from "react-native-maps-directions";
 import Key from "../../../constants/key";
 import imageURL from "../../../constants/baseURL";
+import {
+  openHourFormatter,
+  formatDistance,
+} from "../../../utils/globalMethods";
+import polyline from '@mapbox/polyline';
 
 const width = screenWidth;
 const cardWidth = width / 1.15;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
-const allStationsList = [
-  {
-    owner_id: 7,
-    station_name: "Tesla EV India",
-    address: "Rajstan india",
-    coordinates: {
-      latitude: 18.4745984,
-      longitude: 73.8197504,
-    },
-    amenities: "restroom,wifi,store, car care,lodging",
-    rate: null,
-    rate_type: null,
-    station_images: null,
-    additional_comment: null,
-    distance_km:5000, //check it
-    open_hours_opening_time: "00:00:00",
-    open_hours_closing_time: "23:59:59",
-    id: 2,
-    status: "Planned",
-    created_at: "2025-04-21T02:23:19.671Z",
-    update_at: "2025-04-21T02:23:19.671Z",
-    updated_by: 0,
-    chargers: [
-      {
-        charger_type: "AC",
-        max_power_kw: 60,
-        station: {
-          id: 2,
-          owner_id: 7,
-          station_name: "Tesla EV India",
-          address: "Rajstan india",
-          coordinates: {
-            latitude: 18.4745984,
-            longitude: 73.8197504,
-          },
-          amenities: "restroom,wifi,store, car care,lodging",
-          rate: null,
-          rate_type: null,
-          station_images: null,
-          additional_comment: null,
-          open_hours_opening_time: "00:00:00",
-          open_hours_closing_time: "23:59:59",
-          status: "Planned",
-          created_at: "2025-04-21T02:23:19.671Z",
-          update_at: "2025-04-21T02:23:19.671Z",
-          updated_by: 0,
-        },
-        charger_id: 3,
-        status: "Available",
-        created_at: "2025-04-21T02:23:19.760Z",
-        update_at: "2025-04-21T02:23:19.760Z",
-        updated_by: 0,
-        connectors: [
-          {
-            connector_status: "operational",
-            charger: {
-              charger_id: 3,
-              charger_type: "AC",
-              max_power_kw: 60,
-              status: "Available",
-              created_at: "2025-04-21T02:23:19.760Z",
-              update_at: "2025-04-21T02:23:19.760Z",
-              updated_by: 0,
-              station: {
-                id: 2,
-                owner_id: 7,
-                station_name: "Tesla EV India",
-                address: "Rajstan india",
-                coordinates: {
-                  latitude: 18.4745984,
-                  longitude: 73.8197504,
-                },
-                amenities: "restroom,wifi,store, car care,lodging",
-                rate: null,
-                rate_type: null,
-                station_images: null,
-                additional_comment: null,
-                open_hours_opening_time: "00:00:00",
-                open_hours_closing_time: "23:59:59",
-                status: "Planned",
-                created_at: "2025-04-21T02:23:19.671Z",
-                update_at: "2025-04-21T02:23:19.671Z",
-                updated_by: 0,
-              },
-            },
-            connectorType: {
-              connector_type_id: 1,
-              max_power_kw: "60.00",
-              description: "CCS-2",
-            },
-            charger_connector_id: 2,
-          },  
-        ],
-      },
-    ],
-  },
-];
+// const allStationsList = [
+//   {
+//     owner_id: 7,
+//     station_name: "Tesla EV India",
+//     address: "Rajstan india",
+//     coordinates: {
+//       latitude: 18.4745984,
+//       longitude: 73.8197504,
+//     },
+//     amenities: "restroom,wifi,store, car care,lodging",
+//     rate: null,
+//     rate_type: null,
+//     station_images: null,
+//     additional_comment: null,
+//     distance_km:5000, //check it
+//     open_hours_opening_time: "00:00:00",
+//     open_hours_closing_time: "23:59:59",
+//     id: 2,
+//     status: "Planned",
+//     created_at: "2025-04-21T02:23:19.671Z",
+//     update_at: "2025-04-21T02:23:19.671Z",
+//     updated_by: 0,
+//     chargers: [
+//       {
+//         charger_type: "AC",
+//         max_power_kw: 60,
+//         station: {
+//           id: 2,
+//           owner_id: 7,
+//           station_name: "Tesla EV India",
+//           address: "Rajstan india",
+//           coordinates: {
+//             latitude: 18.4745984,
+//             longitude: 73.8197504,
+//           },
+//           amenities: "restroom,wifi,store, car care,lodging",
+//           rate: null,
+//           rate_type: null,
+//           station_images: null,
+//           additional_comment: null,
+//           open_hours_opening_time: "00:00:00",
+//           open_hours_closing_time: "23:59:59",
+//           status: "Planned",
+//           created_at: "2025-04-21T02:23:19.671Z",
+//           update_at: "2025-04-21T02:23:19.671Z",
+//           updated_by: 0,
+//         },
+//         charger_id: 3,
+//         status: "Available",
+//         created_at: "2025-04-21T02:23:19.760Z",
+//         update_at: "2025-04-21T02:23:19.760Z",
+//         updated_by: 0,
+//         connectors: [
+//           {
+//             connector_status: "operational",
+//             charger: {
+//               charger_id: 3,
+//               charger_type: "AC",
+//               max_power_kw: 60,
+//               status: "Available",
+//               created_at: "2025-04-21T02:23:19.760Z",
+//               update_at: "2025-04-21T02:23:19.760Z",
+//               updated_by: 0,
+//               station: {
+//                 id: 2,
+//                 owner_id: 7,
+//                 station_name: "Tesla EV India",
+//                 address: "Rajstan india",
+//                 coordinates: {
+//                   latitude: 18.4745984,
+//                   longitude: 73.8197504,
+//                 },
+//                 amenities: "restroom,wifi,store, car care,lodging",
+//                 rate: null,
+//                 rate_type: null,
+//                 station_images: null,
+//                 additional_comment: null,
+//                 open_hours_opening_time: "00:00:00",
+//                 open_hours_closing_time: "23:59:59",
+//                 status: "Planned",
+//                 created_at: "2025-04-21T02:23:19.671Z",
+//                 update_at: "2025-04-21T02:23:19.671Z",
+//                 updated_by: 0,
+//               },
+//             },
+//             connectorType: {
+//               connector_type_id: 1,
+//               max_power_kw: "60.00",
+//               description: "CCS-2",
+//             },
+//             charger_connector_id: 2,
+//           },
+//         ],
+//       },
+//     ],
+//   },
+// ];
 const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const [expanded, setExpanded] = useState(false);
@@ -149,7 +154,57 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
     latitude: route.params?.destinationCoordinate?.latitude || 0,
     longitude: route.params?.destinationCoordinate?.longitude || 0,
   };
-  const [markerList] = useState(enrouteStations || []); 
+  const [coordinates, setCoordinates] = useState([]);
+
+  useEffect(() => {
+    const source = {
+      latitude: fromDefaultLocation?.latitude,
+      longitude: fromDefaultLocation?.longitude,
+    };
+    const destination = {
+      latitude: toDefaultLocation?.latitude,
+      longitude: toDefaultLocation?.longitude,
+    };
+  
+    getRouteBetweenCoordinates(source, destination)
+      .then(setCoordinates)
+      .catch(console.error);
+  }, []);
+ const getRouteBetweenCoordinates = async (origin, destination) => {
+  const originStr = `${origin.latitude},${origin.longitude}`;
+  const destinationStr = `${destination.latitude},${destination.longitude}`;
+  const apiKey = Key.apiKey; // Replace with your actual key
+
+  const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${originStr}&destination=${destinationStr}&key=${apiKey}&mode=driving&overview=full&steps=true`;
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  if (data.routes.length) {
+    // Get polyline points from the steps
+    let allPoints = [];
+    
+    // Loop through each step to collect polyline points
+    data.routes[0].legs.forEach((leg) => {
+      leg.steps.forEach((step) => {
+        if (step.polyline) {
+          const decodedPoints = polyline.decode(step.polyline.points);
+          allPoints = [...allPoints, ...decodedPoints];
+        }
+      });
+    });
+
+    // Convert the decoded points to { latitude, longitude } format
+    return allPoints.map(([lat, lng]) => ({ latitude: lat, longitude: lng }));
+  } else {
+    throw new Error('No route found');
+  }
+};
+
+  
+
+
+  const [markerList] = useState(enrouteStations || []);
   const [region, setRegion] = useState({
     latitude: fromDefaultLocation.latitude,
     longitude: fromDefaultLocation.longitude,
@@ -217,15 +272,17 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
     };
   });
 
-
   const toggleStop = (station) => {
     console.log("Toggle Stop called with station:", station.id);
-  
+
     const exists = addedStops.find((stop) => stop.id === station.id);
     console.log("Exists:", exists);
-    console.log("Existing stop IDs:", addedStops.map((s) => s.id));
+    console.log(
+      "Existing stop IDs:",
+      addedStops.map((s) => s.id)
+    );
     console.log("Station ID being checked:", station.id);
-  
+
     if (exists) {
       console.log("Station exists, removing...");
       setAddedStops((prev) => prev.filter((stop) => stop.id !== station.id));
@@ -234,41 +291,35 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       setAddedStops((prev) => [...prev, station]);
     }
   };
-  
+
   // Use useEffect to monitor changes to addedStops
   useEffect(() => {
     console.log("Updated added stops:", addedStops);
   }, [addedStops]);
-  
-  
-  
+
   const removeStop = (id) => {
     console.log("Remove Stop called with id:", id);
     debugger;
-  
+
     const updatedStops = addedStops.filter((stop) => stop?.id !== id);
     console.log("Updated stops after removal:", updatedStops);
     setAddedStops(updatedStops);
   };
-  
-
-  
 
   const openGoogleMapsWithStops = () => {
     const source = `${fromDefaultLocation.latitude},${fromDefaultLocation.longitude}`;
     const destination = `${toDefaultLocation.latitude},${toDefaultLocation.longitude}`;
-  
+
     const waypoints = addedStops
       .map(
         (stop) => `${stop.coordinates.latitude},${stop.coordinates.longitude}`
       )
       .join("|");
-  
+
     const url = `https://www.google.com/maps/dir/?api=1&origin=${source}&destination=${destination}&waypoints=${waypoints}&travelmode=driving`;
-  
+
     Linking.openURL(url);
   };
-  
 
   const onMarkerPress = (mapEventData) => {
     const markerID = mapEventData._targetInst.return.key;
@@ -286,15 +337,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
     }
     return str.substring(0, threshold) + ".....";
   }
-  const formatDistance = (distance) => {
-    if (distance >= 1000) {
-      return (distance / 1000).toFixed(1).replace(/\.0$/, "") + "k km";
-    } else if (distance % 1 !== 0) {
-      return distance.toFixed(1) + " km";
-    } else {
-      return distance + " km";
-    }
-  };
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -307,8 +350,9 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
     </View>
   );
   function bottomSheet() {
-    if (!addedStops || !Array.isArray(addedStops) || addedStops.length === 0) return null;
-  
+    if (!addedStops || !Array.isArray(addedStops) || addedStops.length === 0)
+      return null;
+
     return (
       <Animated.View
         style={[
@@ -320,14 +364,14 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={() => setExpanded(!expanded)}>
           <View style={styles.bottomSheetHandle} />
         </TouchableOpacity>
-  
+
         {/* Scrollable content */}
         <ScrollView style={styles.bottomSheetScroll}>
           {pickupInfo()}
           {addedStopsInfo()}
           {destinationInfo()}
         </ScrollView>
-  
+
         {/* Bottom Button */}
         <TouchableOpacity
           onPress={openGoogleMapsWithStops}
@@ -338,7 +382,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       </Animated.View>
     );
   }
-  
+
   function destinationInfo() {
     return (
       <View style={styles.stopsContainer}>
@@ -407,7 +451,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   }
   function addedStopsInfo() {
     if (!Array.isArray(addedStops) || addedStops.length === 0) return null;
-  
+
     return (
       <>
         {addedStops.map((stop, index) => (
@@ -431,7 +475,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                 }}
               />
             </View>
-  
+
             <View style={styles.stops}>
               <View
                 style={{
@@ -460,7 +504,6 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       </>
     );
   }
-  
 
   function backArrow() {
     return (
@@ -544,12 +587,21 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                   }}
                 >
                   <View style={{ ...commonStyles.rowAlignCenter }}>
-                    <Text style={{ ...Fonts.blackColor18Medium }}>4.7</Text>
-                    <MaterialIcons
-                      name="star"
-                      color={Colors.yellowColor}
-                      size={20}
-                    />
+                    <Text style={{ ...Fonts.blackColor16Medium }}>
+                      {
+                        openHourFormatter(
+                          item?.open_hours_opening_time,
+                          item?.open_hours_closing_time
+                        ).opening
+                      }{" "}
+                      -{" "}
+                      {
+                        openHourFormatter(
+                          item?.open_hours_opening_time,
+                          item?.open_hours_closing_time
+                        ).closing
+                      }
+                    </Text>
                   </View>
                   <View
                     style={{
@@ -567,7 +619,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                         flex: 1,
                       }}
                     >
-                      {item?.chargers?.length} Charging Points
+                      {item?.chargers?.length} Chargers
                     </Text>
                   </View>
                 </View>
@@ -595,7 +647,9 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                   style={[
                     styles.getDirectionButton,
                     {
-                      backgroundColor: addedStops.some((s) => s?.id === item?.id)
+                      backgroundColor: addedStops.some(
+                        (s) => s?.id === item?.id
+                      )
                         ? Colors.orangeColor
                         : Colors.primaryColor,
                     },
@@ -644,14 +698,24 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
           );
         })}
 
-        <MapViewDirections
+        {/* <MapViewDirections
           origin={fromDefaultLocation}
           destination={toDefaultLocation}
           apikey={Key.apiKey}
           strokeColor={Colors.primaryColor}
           strokeWidth={3}
-        />
-
+          mode="DRIVING"
+          optimizeWaypoints={true}
+        /> */}
+  {coordinates.length > 0 && (
+   <Polyline
+   coordinates={coordinates}
+   strokeWidth={8} 
+   strokeColor="rgba(0, 0, 255, 0.5)"
+   lineCap="round" 
+ />
+ 
+  )}
         <Marker coordinate={fromDefaultLocation}>
           <Image
             source={require("../../../../assets/images/userMarker.png")}

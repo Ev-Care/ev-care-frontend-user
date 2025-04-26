@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const apiDeleteRequest = async (request) => {
     try {
-        // console.log("Calling API:", request);
+        console.log("Calling delete API:", request);
         // console.log("Headers:", { Authorization: `Bearer ${request.accessToken}` });
 
         const response = await axios.delete(request.apiUrl, {
@@ -14,7 +14,7 @@ export const apiDeleteRequest = async (request) => {
         });
 
         // Log the raw response for debugging
-        // console.log("Raw API Response:", response.data);
+        console.log("Raw Delete API Response:", response.data);
 
         return response; // Axios automatically parses JSON
     } catch (error) {

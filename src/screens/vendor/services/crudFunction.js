@@ -14,6 +14,7 @@ export const fetchStations = createAsyncThunk(
       try {
         const accessToken = await AsyncStorage.getItem("accessToken"); 
         // const accessToken = await useSelector(selectToken);
+        console.log("vendorId", vendorId);
         const response = await getAllStationsAPI({ owner_id: vendorId, accessToken });
         
         return response.data; // Assuming the API returns an array of stations
@@ -27,7 +28,7 @@ export const fetchStations = createAsyncThunk(
   export const addStation = createAsyncThunk(
     'vendorStations/addStation',
     async (stationData, { rejectWithValue }) => {
-        console.log("stationData in thunk", stationData);
+        // console.log("stationData in thunk", stationData);
       try {
         const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve accessToken inside the thunk
         const response = await postStationAPI({stationData, accessToken});

@@ -111,12 +111,12 @@ const AllStations = ({route}) => {
               <View style={styles.infoContainer}>
                 <View style={styles.headerRow}>
                   <Text style={styles.stationName}>
-                    {trimText(station.station_name, 18)}
+                    {trimText(station?.station_name, 18)}
                   </Text>
                   <Switch
                     trackColor={{ false: COLORS.secondary, true: COLORS.green }}
                     thumbColor={COLORS.white}
-                    value={station.status !== "Inactive"}
+                    value={station?.status !== "Inactive"}
                     onValueChange={async () => {
 
                       // console.log("Station Status Before toggle:", availability[station.id]);
@@ -129,9 +129,9 @@ const AllStations = ({route}) => {
                       
                       var stationData = {
                   
-                        station_id: station.id,
+                        station_id: station?.id,
                         statusType: "station",
-                        status: station.status === "Active" || station.status === "Planned" ? "Inactive" : "active",
+                        status: station?.status === "Active" || station?.status === "Planned" ? "Inactive" : "active",
 
                       }
                       

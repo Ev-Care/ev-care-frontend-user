@@ -72,7 +72,7 @@ const StationManagement = ({ navigation, route }) => {
   const [showDeleteDialogue, setshowDeleteDialogue] = useState(false);
   const dispatch = useDispatch();
   const [isChargerAvailable, setIsChargerAvailable] = useState(false);
-  console.log("StationManagement", JSON.stringify(station, null, 2));
+  // console.log("StationManagement", JSON.stringify(station, null, 2));
   const handleTabPress = (index) => {
     setActiveTab(index);
     scrollViewRef.current.scrollTo({ x: index * width, animated: true });
@@ -81,7 +81,7 @@ const StationManagement = ({ navigation, route }) => {
   useEffect(() => {
     if (!station) {
       console.log("Station no longer exists. Navigating back.");
-      navigation.pop(); // Navigate back if the station is undefined
+      navigation.goBack(); // Navigate back if the station is undefined
     }
   }, [station]);
 
@@ -179,11 +179,13 @@ const StationManagement = ({ navigation, route }) => {
       const response = await dispatch(deleteStation(stationId));
       if (response.payload.code === 200) {
         console.log("Station deleted successfully", response.payload);
-        navigation.pop();
+        navigation.goBack();
+        
   
         try {
-          const response2 = await dispatch(fetchStations({ owner_id: station.owner_id }));
+          const response2 = await dispatch(fetchStations( station?.owner_id ));
           if (response2.payload.code === 200) {
+            navigation.navigate("AllStations");
             console.log("All stations fetched successfully", response2.payload.data);
           } else {
             console.error("Failed to fetch all stations", response2.payload.message);
@@ -219,10 +221,10 @@ const StationManagement = ({ navigation, route }) => {
     return <View style={{ flexDirection: "row" }}>{stars}</View>;
   };
   function trimName(threshold, str) {
-    if (str.length <= threshold) {
+    if (str?.length <= threshold) {
       return str;
     }
-    return str.substring(0, threshold) + ".....";
+    return str?.substring(0, threshold) + ".....";
   }
 
   return (
@@ -256,10 +258,10 @@ const StationManagement = ({ navigation, route }) => {
           </View>
 
           <Text style={styles.stationName}>
-            {trimName(50, station.station_name)}
+            {trimName(50, station?.station_name)}
           </Text>
           <Text style={styles.stationAddress}>
-            {trimName(50, station.address)}
+            {trimName(50, station?.address)}
           </Text>
           <View style={styles.statusContainer}>
             <Text
@@ -267,28 +269,28 @@ const StationManagement = ({ navigation, route }) => {
                 styles.statusClosed,
                 {
                   color:
-                    station.status === "Active"
+                    station?.status === "Active"
                       ? "green"
-                      : station.status === "Inactive"
+                      : station?.status === "Inactive"
                       ? "#FF5722"
-                      : station.status === "Planned"
+                      : station?.status === "Planned"
                       ? "blue"
                       : "black", // fallback color
                 },
               ]}
             >
-              {station.status}
+              {station?.status}
             </Text>
 
             <Text style={styles.statusTime}>
-              • {station.open_hours_opening_time} -{" "}
-              {station.open_hours_closing_time}
+              • {station?.open_hours_opening_time} -{" "}
+              {station?.open_hours_closing_time}
             </Text>
-             { station.status !== "Inactive" && (<View style={styles.newBadge}>
+             { station?.status !== "Inactive" && (<View style={styles.newBadge}>
               <Text style={styles.newText}>
-                {station.status === "Active"
+                {station?.status === "Active"
                   ? "VERIFIED"
-                  : station.status === "Planned"
+                  : station?.status === "Planned"
                   ? "PENDING"
                   : ""}
               </Text>
@@ -370,15 +372,15 @@ const StationManagement = ({ navigation, route }) => {
                 {"Charger " + (index + 1)}
               </Text>
               <Switch
-                value={charger.status === "Available"}
+                value={charger?.status === "Available"}
                 onValueChange={() =>
                   dispatch(
                     updateStationsChargersConnectorsStatus({
                       statusType: "charger",
                       status:
-                        charger.status === "Available" ? "inactive" : "active",
-                      station_id: station.id,
-                      charger_id: charger.charger_id,
+                        charger?.status === "Available" ? "inactive" : "active",
+                      station_id: station?.id,
+                      charger_id: charger?.charger_id,
                     })
                   )
                 }
@@ -389,11 +391,11 @@ const StationManagement = ({ navigation, route }) => {
 
             <View style={styles.chargerSpecs}>
               <Text style={styles.chargerSpecText}>
-                Type: {charger.charger_type}
+                Type: {charger?.charger_type}
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
               <Text style={styles.chargerSpecText}>
-                Power: {charger.max_power_kw} kW
+                Power: {charger?.max_power_kw} kW
               </Text>
             </View>
 
@@ -440,25 +442,25 @@ const StationManagement = ({ navigation, route }) => {
           <MapView
             style={styles.map}
             initialRegion={{
-              latitude: station.coordinates.latitude,
-              longitude: station.coordinates.longitude,
+              latitude: station?.coordinates?.latitude,
+              longitude: station?.coordinates?.longitude,
               latitudeDelta: 0.01,
               longitudeDelta: 0.01,
             }}
           >
             <Marker
               coordinate={{
-                latitude: station.coordinates.latitude,
-                longitude: station.coordinates.longitude,
+                latitude: station?.coordinates?.latitude,
+                longitude: station?.coordinates?.longitude,
               }}
-              title={station.station_name}
-              description={station.address}
+              title={station?.station_name}
+              description={station?.address}
             />
           </MapView>
         </View>
         <Text style={styles.sectionTitle}>Address</Text>
         <View style={styles.landmarkContainer}>
-          <Text style={styles.landmarkTitle}>{station.address}</Text>
+          <Text style={styles.landmarkTitle}>{station?.address}</Text>
         </View>
 
         <Text style={styles.sectionTitle}>Amenities</Text>

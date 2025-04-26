@@ -54,7 +54,10 @@ const PreviewPage = ({ navigation, route }) => {
   const { stationData, type, stationImage } = route?.params; // Retrieve the passed data
   const isLoading = useSelector(selectVendorLoading);
 
-  console.log('Transformed station data preview:', JSON.stringify(stationData, null, 2));
+
+  useEffect(() => {
+    console.log('Transformed station data preview:', JSON.stringify(stationData, null, 2));
+  }, [stationData]);
 
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",
@@ -88,7 +91,7 @@ const PreviewPage = ({ navigation, route }) => {
   const handleSubmit = async () => {
     try {
       if (type === "add") {
-        console.log("Submitting station data:", JSON.stringify(stationData));
+        // console.log("Submitting station data:", JSON.stringify(stationData));
 
         // Validate chargers
         if (!stationData.chargers || stationData.chargers.length === 0) {
@@ -114,7 +117,8 @@ const PreviewPage = ({ navigation, route }) => {
 
           // Fetch all stations after adding the new one
           try {
-            const response2 = await dispatch(fetchStations({ owner_id: stationData.owner_id }));
+            console.log('owner_id', stationData.owner_id);  
+            const response2 = await dispatch(fetchStations( stationData?.owner_id ));
             console.log("All stations fetched successfully:", response2.payload);
             if (response2.payload.code === 200) {
               // Clear the form after successfully adding the station
@@ -256,7 +260,7 @@ const PreviewPage = ({ navigation, route }) => {
     return (
       <ScrollView style={styles.tabContent}>
         {stationData?.chargers?.map((charger, index) => (
-          <View key={charger.charger_id} style={styles.chargerCard}>
+          <View key={index} style={styles.chargerCard}>
             <Text style={styles.chargerTitle}>
               {charger?.name || `Charger ${index + 1}`}
             </Text>
@@ -266,7 +270,7 @@ const PreviewPage = ({ navigation, route }) => {
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
               <Text style={styles.chargerSpecText}>
-                Power: {charger?.max_power_kw || "Unknown Power"} KW
+                Power: {charger?.power_rating || "Unknown Power"} KW
               </Text>
             </View>
 

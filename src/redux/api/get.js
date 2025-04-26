@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const apiGetRequest = async (request) => {
     try {
-        // console.log("Calling API:", request);
+        console.log("Calling GET API:", request);
         // console.log("Headers:", { Authorization: `Bearer ${request.accessToken}` });
 
         const response = await axios.get(request.apiUrl, {

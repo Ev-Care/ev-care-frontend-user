@@ -25,8 +25,9 @@ import MapView, { Marker } from 'react-native-maps';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectToken } from '../../../auth/services/selector';
-import { addStation, postStation } from '../../services/crudFunction';
+import { addStation, fetchStations, postStation } from '../../services/crudFunction';
 import { selectVendorLoading } from '../../services/selector';
+import { getAllStationsAPI } from '../../services/api';
 
 // Define colors at the top for easy customization
 const COLORS = {
@@ -87,67 +88,64 @@ const PreviewPage = ({ navigation, route }) => {
   const handleSubmit = async () => {
     try {
       if (type === "add") {
-        console.log('Submitting station data:', JSON.stringify(stationData));
+        console.log("Submitting station data:", JSON.stringify(stationData));
 
         // Validate chargers
         if (!stationData.chargers || stationData.chargers.length === 0) {
-          Alert.alert('Validation Error', 'At least one charger must be added.');
+          Alert.alert("Validation Error", "At least one charger must be added.");
           return;
         }
 
         for (let i = 0; i < stationData.chargers.length; i++) {
           const charger = stationData.chargers[i];
-          console.log(!charger.charger_type, !charger.power_rating, !charger.connectors, charger.connector_type);
-          if (!charger.charger_type || !charger.power_rating || !charger.connector_type ) {
+          if (!charger.charger_type || !charger.power_rating || !charger.connector_type) {
             Alert.alert(
-              'Validation Error',
-              `Charger ${i + 1} details is incomplete. Please ensure all fields are filled.`
+              "Validation Error",
+              `Charger ${i + 1} details are incomplete. Please ensure all fields are filled.`
             );
             return;
           }
-
-          // for (let j = 0; j < charger.connectors.length; j++) {
-          //   const connector = charger.connectors[j];
-          //   // console.log(connector.connectorType.connector_type_id);
-          //   if (!connector?.connector_type_id) {
-          //     Alert.alert(
-          //       'Validation Error',
-          //       `Connector ${j + 1} details of Charger ${i + 1} is incomplete. Please ensure all fields are filled.`
-          //     );
-          //     return;
-          //   }
-          // }
         }
 
-        // Call the API (replace with your actual API call)
-        // const response = await dispatch(addStation(stationData));
-        // console.log('after dispatching add response:', response.payload);
-
-        // Show success message
-
+        // Call the API to add the station
         const response = await dispatch(addStation(stationData));
-        if (response.payload.code == 200 || response.payload.code == 201) {
-          Alert.alert('Success', 'Station added successfully!');
-          navigation.navigate("AllStations"); // Go back to the previous screen
-      
+        if (response.payload.code === 200 || response.payload.code === 201) {
+          console.log("Station added successfully:", response.payload.data);
+
+          // Fetch all stations after adding the new one
+          try {
+            const response2 = await dispatch(fetchStations({ owner_id: stationData.owner_id }));
+            console.log("All stations fetched successfully:", response2.payload);
+            if (response2.payload.code === 200) {
+              // Clear the form after successfully adding the station
+              // if (clearForm) {
+              //   clearForm();
+              // }
+              console.log("All stations fetched successfully:");
+              Alert.alert("Success", "Station added successfully!");
+              navigation.navigate("VendorBottomTabBar"); // Navigate to the AllStations screen
+            } else {
+              console.error("Failed to fetch all stations:");
+              Alert.alert("Error", "Failed to fetch all stations. Please try again.");
+            }
+          } catch (error) {
+            console.error("Error fetching all stations:", error);
+            Alert.alert("Error", "An error occurred while fetching all stations.");
+          }
+
+
         } else {
-          Alert.alert('Error', response.payload.message || 'Failed to add station. Please try again.');
+          console.error("Error adding station:", response.payload.message);
+          Alert.alert("Error", response.payload.message || "Failed to add station. Please try again.");
         }
       } else {
-        Alert.alert('Success', 'Currently, this is a preview. The station will be added to the database soon.');
+        Alert.alert("Success", "Currently, this is a preview. The station will be added to the database soon.");
       }
-
-
-      // Alert.alert('Success', 'Currently, this is a preview. The station will be added to the database soon.');
-      // navigation.navigate('VendorBottomTabBar'); // Navigate back after successful submission
-      // navigation.goBack(); // Go back to the previous screen
-      // navigation.goBack(); // Go back to the previous screen
     } catch (error) {
-      console.error('Error adding station:', error);
-      Alert.alert('Error', 'Failed to add station. Please try again.');
+      console.error("Error adding station:", error);
+      Alert.alert("Error", "An error occurred while adding the station. Please try again.");
     }
   };
-
   const handleTabPress = (index) => {
     setActiveTab(index);
     scrollViewRef.current.scrollTo({ x: index * width, animated: true });
@@ -271,7 +269,7 @@ const PreviewPage = ({ navigation, route }) => {
                 Power: {charger?.max_power_kw || "Unknown Power"} KW
               </Text>
             </View>
-  
+
             {/* Connector Type */}
             <View style={styles.connector}>
               <Text style={styles.connectorTitle}>

@@ -39,7 +39,7 @@ const EditProfileScreen = ({ navigation }) => {
   const [email, setemail] = useState(user?.email);
   const [showChangeProfilePicSheet, setshowChangeProfilePicSheet] =
     useState(false);
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState(imageURL.baseURL + user?.avatar);
   const [imageLoading, setImageLoading] = useState(false);
   const [profileImageURI, setProfileImageURI] = useState(null);
   const dispatch = useDispatch(); // Get the dispatch function
@@ -50,7 +50,7 @@ const EditProfileScreen = ({ navigation }) => {
   );
   const [panNumber, setPanNumber] = useState(user?.tan_no || "Anonymous User");
   const [tanNumber, setTanNumber] = useState(user?.pan_no || "Anonymous User");
-
+  console.log("user in edit profile screen", user);
   console.log("user profile URL", imageURL.baseURL + user?.adhar_front_pic);
 
   const handleSubmit = async () => {
@@ -63,10 +63,12 @@ const EditProfileScreen = ({ navigation }) => {
     };
     console.log("Updated Data:", updatedData);
     const response = await dispatch(patchUpdateUserProfile(updatedData));
-    Alert.alert(
-      "Profile Updated",
-      "Your profile has been updated successfully."
-    );
+    console.log("Response from update profile:", response.payload);
+    // Alert.alert(
+    //   "Profile Updated",
+    //   "Your profile has been updated successfully."
+    // );
+    // navigation.pop();
   };
 
   const pickImage = async (source) => {

@@ -1,11 +1,11 @@
 import axios from "axios";
 
-export const apiGetRequest = async (request) => {
+export const apiDeleteRequest = async (request) => {
     try {
         // console.log("Calling API:", request);
         // console.log("Headers:", { Authorization: `Bearer ${request.accessToken}` });
 
-        const response = await axios.get(request.apiUrl, {
+        const response = await axios.delete(request.apiUrl, {
             headers: {
                 "accept": "*/*",
                 "content-type": request.content_type,
@@ -14,7 +14,7 @@ export const apiGetRequest = async (request) => {
         });
 
         // Log the raw response for debugging
-        console.log("Raw API Response:", response.data);
+        // console.log("Raw API Response:", response.data);
 
         return response; // Axios automatically parses JSON
     } catch (error) {

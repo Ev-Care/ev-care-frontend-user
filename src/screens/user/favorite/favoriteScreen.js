@@ -290,7 +290,7 @@ const FavoriteScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color={Colors.primary} />
         </TouchableOpacity>
-        <Text style={styles.title}>Favorite</Text>
+        <Text style={styles.title}>Favorite Stations</Text>
         <View style={{ width: 24 }} />
       </View>
     );
@@ -314,6 +314,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0eb",
+    elevation:5
   },
   deleteIconWrapper: {
     width: 46.0,

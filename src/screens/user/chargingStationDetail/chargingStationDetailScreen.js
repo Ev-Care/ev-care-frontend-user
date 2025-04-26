@@ -130,8 +130,13 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     });
     Linking.openURL(url);
   };
-
+  useEffect(() => {
+    const isFav = favStations?.some((fav) => fav.station_id === station?.id);
+    setinFavorite(isFav);
+  }, [favStations, station]);
+  
   const handleAddToFavorite = (station) => {
+
     if (station && !inFavorite) {
       dispatch(postFavoriteStation({stationId:station.id, userId: user.id}));
       console.log("station favorited ");

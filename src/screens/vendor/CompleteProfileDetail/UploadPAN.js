@@ -3,14 +3,12 @@ import {
   View,
   Text,
   TouchableOpacity,
+  ActivityIndicator,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
   Image,
   Alert,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import * as ImagePicker from "expo-image-picker";
 import {
   Colors,
   screenWidth,
@@ -18,20 +16,27 @@ import {
   Sizes,
   commonStyles,
 } from "../../../constants/styles";
+import { useNavigation } from "@react-navigation/native";
+import * as ImagePicker from "expo-image-picker";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 import { useDispatch, useSelector } from "react-redux";
-import { selectToken } from "../../auth/services/selector";
+import { selectToken, selectUser } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "./vendorDetailForm";
+import { patchUpdateVendorProfile } from "../../auth/services/crudFunction";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const UploadPAN = ({ route, navigation }) => {
-  // const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
   const [frontImageUri, setFrontImageUri] = useState(null);
   const [loading, setLoading] = useState(false); // Loader state
-  const { VendorDetailAtAadharPage } = route.params || {};
+  const { VendorDetailAtAadharPage ,isCheckBoxClicked} = route?.params || {};
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
+  const user = useSelector(selectUser);
+  const [imageloading, setImageLoading] = useState(false); 
+
 
   // Function to pick an image
 
@@ -44,7 +49,7 @@ const UploadPAN = ({ route, navigation }) => {
       permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     }
   
-    if (permissionResult.granted === false) {
+    if (!permissionResult.granted) {
       alert("Permission is required!");
       return;
     }
@@ -67,7 +72,7 @@ const UploadPAN = ({ route, navigation }) => {
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
       const file = await setupImagePicker(imageUri);
-      setLoading(true);
+      setImageLoading(true);
   
       try {
         const response = await dispatch(
@@ -78,7 +83,9 @@ const UploadPAN = ({ route, navigation }) => {
           if (type === "front") {
             setFrontImage(imageUri);
             setFrontImageUri(response?.payload?.data?.filePathUrl);
-            console.log("Image URI set successfully:", response?.payload?.data?.filePathUrl);
+            console.log("PAN image uploaded:", response?.payload?.data?.filePathUrl);
+          } else if (type === "back") {
+            // For future-proofing
           }
         } else {
           Alert.alert("Error", "File Should be less than 5 MB");
@@ -86,28 +93,59 @@ const UploadPAN = ({ route, navigation }) => {
       } catch (error) {
         Alert.alert("Error", "Something went wrong while uploading.");
       } finally {
-        setLoading(false);
+        setImageLoading(false);
       }
     }
   };
   
+
   // Handle Submit
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+      console.log("handle submit clicked");
     if (!frontImageUri) {
       Alert.alert("Error", "Please upload the image.");
       return;
     }
-
+    console.log("Updated Vendor Detail at aadhar page", VendorDetailAtAadharPage);
     if (!VendorDetailAtAadharPage) {
       console.warn("vendorDetail not passed at pan Page!");
       return null;
     }
-    let VendorDetailAtPanPage = {
+    const VendorDetailAtPanPage = {
       ...VendorDetailAtAadharPage,
       pan_pic: frontImageUri,
     };
-    // console.log("Updated Vendor Detail at page 3:", VendorDetailAtPanPage );
-    navigation.navigate("UploadTAN", { VendorDetailAtPanPage });
+    console.log("Updated Vendor Detail at pan page", VendorDetailAtPanPage);
+    try {
+      console.log("vendor Detail Submitted ", response);
+      const response = await dispatch(patchUpdateVendorProfile({detail:VendorDetailAtPanPage, user_key:user.user_key, accessToken: accessToken})
+      ).unwrap();
+      
+      console.log("code = ",response?.code);
+      if (response?.code === 200 || response?.code === 201) {
+      
+      
+          await AsyncStorage.setItem("user", JSON.stringify(user));
+         
+          console.log("User data saved successfully:", response.payload.data);
+      
+        
+        Alert.alert("Success", "details updated successfully.");
+      } else {
+        console.error("Error saving user data:", error);
+        Alert.alert("Error", "Failed to update vendor details. Please try again.");
+      }
+
+      // navigation.navigate("PendingApprovalScreen", { VendorDetailAtTanPage });
+    } catch (error) {
+      console.error("Vendor detail submission failed:", error);
+      Alert.alert(
+        "Submission Failed",
+        "Please check your details and try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -125,11 +163,11 @@ const UploadPAN = ({ route, navigation }) => {
         </View>
 
         {/* Progress Bar */}
-        <CompleteDetailProgressBar completedSteps={2} />
+        <CompleteDetailProgressBar completedSteps={isCheckBoxClicked?3:2} totalSteps={isCheckBoxClicked?4:3} />
 
         {/* Upload Front Side */}
         <View style={styles.uploadBox}>
-          {loading ? (
+          {imageloading? (
             <ActivityIndicator size={40} color="black" />
           ) : frontImage ? (
             <Image source={{ uri: frontImage }} style={styles.uploadedImage} />
@@ -157,8 +195,17 @@ const UploadPAN = ({ route, navigation }) => {
         </View>
 
         {/* Submit Button */}
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitText}>Next</Text>
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          {/* <Text style={styles.submitText}>Submit</Text> */}
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={{ ...Fonts.whiteColor18SemiBold }}>Submit</Text>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>

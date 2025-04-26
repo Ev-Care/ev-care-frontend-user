@@ -26,7 +26,7 @@ const UploadAadhar = ({ route, navigation }) => {
   const [backImageUri, setBackImageUri] = useState(null);
   const [frontImageloading, setFrontImageLoading] = useState(false); 
   const [backImageloading, setBackImageLoading] = useState(false); 
-  const { vendorDetail } = route.params || {};
+  const { vendorDetail ,isCheckBoxClicked } = route.params || {};
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
 
@@ -127,7 +127,7 @@ const UploadAadhar = ({ route, navigation }) => {
       adhar_back_pic: backImageUri,
     };
     // console.log("Updated Vendor Detail at page 2:", VendorDetailAtAadharPage);
-    navigation.navigate("UploadPAN", { VendorDetailAtAadharPage });
+    navigation.navigate("UploadPAN", { VendorDetailAtAadharPage ,isCheckBoxClicked });
   };
 
   return (
@@ -145,7 +145,7 @@ const UploadAadhar = ({ route, navigation }) => {
         </View>
 
         {/* Progress Bar */}
-        <CompleteDetailProgressBar completedSteps={1} />
+        <CompleteDetailProgressBar  completedSteps={isCheckBoxClicked?2:1} totalSteps={isCheckBoxClicked?4:3} />
 
         {/* Upload Front Side */}
         <View style={styles.uploadBox}>

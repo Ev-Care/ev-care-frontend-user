@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Instruction from "../screens/vendor/CompleteProfileDetail/Instruction";
 import UploadAadhar from "../screens/vendor/CompleteProfileDetail/UploadAadhar";
 import UploadPAN from "../screens/vendor/CompleteProfileDetail/UploadPAN";
-import UploadTAN from "../screens/vendor/CompleteProfileDetail/UploadTAN";
+// import UploadTAN from "../screens/vendor/CompleteProfileDetail/UploadTAN";
 import VendorDetailForm from "../screens/vendor/CompleteProfileDetail/vendorDetailForm";
 import PickLocationScreen from "../screens/user/pickLocation/pickLocationScreen";
 import VendorAccountDetailsForm from "../screens/vendor/CompleteProfileDetail/vendorAccountDetail";
@@ -25,7 +25,9 @@ import { selectProfileStatus, selectUser } from "../screens/auth/services/select
 import { selectloader } from "../screens/auth/services/selector"; // Ensure correct import
 import UpdateStation from "../screens/vendor/pages/updateStation/UpdateStation";
 import EditProfileVendor from "../screens/vendor/pages/vendorProfile/EditProfileVendor";
+import UploadGst from "../screens/vendor/CompleteProfileDetail/UploadGst";
 // import VendorProfile from "../screens/vendor/pages/vendorProfile/vendorProfile";
+
 const Stack = createStackNavigator();
 
 export function VendorStack() {
@@ -51,7 +53,8 @@ export function VendorStack() {
           <Stack.Screen name="Instruction" component={Instruction} />
           <Stack.Screen name="UploadAadhar" component={UploadAadhar} />
           <Stack.Screen name="UploadPAN" component={UploadPAN} />
-          <Stack.Screen name="UploadTAN" component={UploadTAN} />
+          {/* <Stack.Screen name="UploadTAN" component={UploadTAN} /> */}
+          <Stack.Screen name="UploadGst" component={UploadGst} />
           <Stack.Screen name="VendorDetailForm" component={VendorDetailForm} />
           <Stack.Screen name="PickLocation" component={PickLocationScreen} />
           {/* <Stack.Screen name="VendorAccountDetailsForm" component={VendorAccountDetailsForm} /> */}
@@ -77,6 +80,8 @@ export function VendorStack() {
           <Stack.Screen name="PreviewPage" component={PreviewPage} />
           <Stack.Screen name="StationManagement" component={StationManagement} />
           <Stack.Screen name="UpdateStation" component={UpdateStation} />
+         
+
           {/* //comment this line to use the add station screen */}
           {/* <Stack.Screen name="Instruction" component={Instruction} />
           <Stack.Screen name="UploadAadhar" component={UploadAadhar} />

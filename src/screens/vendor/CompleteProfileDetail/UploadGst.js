@@ -3,12 +3,14 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
   Image,
   Alert,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import * as ImagePicker from "expo-image-picker";
 import {
   Colors,
   screenWidth,
@@ -16,27 +18,20 @@ import {
   Sizes,
   commonStyles,
 } from "../../../constants/styles";
-import { useNavigation } from "@react-navigation/native";
-import * as ImagePicker from "expo-image-picker";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 import { useDispatch, useSelector } from "react-redux";
-import { selectToken, selectUser } from "../../auth/services/selector";
+import { selectToken } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "./vendorDetailForm";
-import { patchUpdateVendorProfile } from "../../auth/services/crudFunction";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const UploadTAN = ({ route, navigation }) => {
+const UploadGst = ({ route, navigation }) => {
+  // const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
   const [frontImageUri, setFrontImageUri] = useState(null);
   const [loading, setLoading] = useState(false); // Loader state
-  const { VendorDetailAtPanPage } = route.params || {};
+  const { vendorDetail,isCheckBoxClicked } = route.params || {};
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
-  const user = useSelector(selectUser);
-  const [imageloading, setImageLoading] = useState(false); 
-
 
   // Function to pick an image
 
@@ -49,7 +44,7 @@ const UploadTAN = ({ route, navigation }) => {
       permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     }
   
-    if (!permissionResult.granted) {
+    if (permissionResult.granted === false) {
       alert("Permission is required!");
       return;
     }
@@ -58,13 +53,11 @@ const UploadTAN = ({ route, navigation }) => {
     if (source === "camera") {
       result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        aspect: [4, 3],
         quality: 1,
       });
     } else {
       result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: true,
-        aspect: [4, 3],
         quality: 1,
       });
     }
@@ -72,7 +65,7 @@ const UploadTAN = ({ route, navigation }) => {
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
       const file = await setupImagePicker(imageUri);
-      setImageLoading(true);
+      setLoading(true);
   
       try {
         const response = await dispatch(
@@ -83,9 +76,7 @@ const UploadTAN = ({ route, navigation }) => {
           if (type === "front") {
             setFrontImage(imageUri);
             setFrontImageUri(response?.payload?.data?.filePathUrl);
-            console.log("TAN image uploaded:", response?.payload?.data?.filePathUrl);
-          } else if (type === "back") {
-            // For future-proofing
+            console.log("Image URI set successfully:", response?.payload?.data?.filePathUrl);
           }
         } else {
           Alert.alert("Error", "File Should be less than 5 MB");
@@ -93,58 +84,32 @@ const UploadTAN = ({ route, navigation }) => {
       } catch (error) {
         Alert.alert("Error", "Something went wrong while uploading.");
       } finally {
-        setImageLoading(false);
+        setLoading(false);
       }
     }
   };
   
-
+  
   // Handle Submit
-  const handleSubmit = async () => {
-    if (!frontImageUri) {
-      Alert.alert("Error", "Please upload the image.");
-      return;
-    }
-    if (!VendorDetailAtPanPage) {
-      console.warn("vendorDetail not passed at tan Page!");
-      return null;
-    }
-    let VendorDetailAtTanPage = {
-      ...VendorDetailAtPanPage,
-      tan_pic: frontImageUri,
-    };
-    // console.log("Updated Vendor Detail at page 4 up:", VendorDetailAtTanPage);
-    try {
-      console.log("vendor Detail Submitted ", response);
-      const response = await dispatch(patchUpdateVendorProfile({detail:VendorDetailAtTanPage, user_key:user.user_key, accessToken: accessToken})
-      ).unwrap();
+  const handleSubmit = () => {
+  
+     if (!frontImageUri) {
+       Alert.alert("Error", "Please upload image.");
+       return;
+     }
+    
+     if (!vendorDetail) {
+       console.warn("vendorDetail not passed at aadhar Page!");
+       return null;
+     }
+     let VendorDetailAtGstPage = {
+       ...vendorDetail,
+       gstin_image: frontImageUri,
       
-      console.log("code = ",response?.code);
-      if (response?.code === 200 || response?.code === 201) {
-      
-      
-          await AsyncStorage.setItem("user", JSON.stringify(user));
-         
-          console.log("User data saved successfully:", response.payload.data);
-      
-        
-        Alert.alert("Success", "details updated successfully.");
-      } else {
-        console.error("Error saving user data:", error);
-        Alert.alert("Error", "Failed to update vendor details. Please try again.");
-      }
-
-      // navigation.navigate("PendingApprovalScreen", { VendorDetailAtTanPage });
-    } catch (error) {
-      console.error("Vendor detail submission failed:", error);
-      Alert.alert(
-        "Submission Failed",
-        "Please check your details and try again."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+     };
+   
+     navigation.navigate("UploadAadhar", { vendorDetail:VendorDetailAtGstPage ,isCheckBoxClicked });
+   };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -157,20 +122,20 @@ const UploadTAN = ({ route, navigation }) => {
           >
             <Ionicons name="arrow-back" size={24} color="black" />
           </TouchableOpacity>
-          <Text style={styles.appBarTitle}>Upload TAN</Text>
+          <Text style={styles.appBarTitle}>Upload GST Image</Text>
         </View>
 
         {/* Progress Bar */}
-        <CompleteDetailProgressBar completedSteps={3} />
+        <CompleteDetailProgressBar completedSteps={1} totalSteps={4} />
 
         {/* Upload Front Side */}
         <View style={styles.uploadBox}>
-          {imageloading? (
+          {loading ? (
             <ActivityIndicator size={40} color="black" />
           ) : frontImage ? (
             <Image source={{ uri: frontImage }} style={styles.uploadedImage} />
           ) : (
-            <Text style={styles.uploadText}>Upload Front Side</Text>
+            <Text style={styles.uploadText}>Upload Image</Text>
           )}
         </View>
 
@@ -193,24 +158,15 @@ const UploadTAN = ({ route, navigation }) => {
         </View>
 
         {/* Submit Button */}
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
-          {/* <Text style={styles.submitText}>Submit</Text> */}
-          {loading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={{ ...Fonts.whiteColor18SemiBold }}>Submit</Text>
-          )}
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <Text style={styles.submitText}>Next</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
 };
 
-export default UploadTAN;
+export default UploadGst;
 
 const styles = StyleSheet.create({
   scrollContainer: {

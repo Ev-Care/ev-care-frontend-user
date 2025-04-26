@@ -54,7 +54,7 @@ const VendorDetailForm = () => {
   const [coordinate, setCoordinate] = useState(null);
   const [aadharNumber, setAadharNumber] = useState("");
   const [panNumber, setPanNumber] = useState("");
-  const [tanNumber, setTanNumber] = useState("");
+  const [gstNumber, setGstNumber] = useState("");
   const [avatar, setAvatar] = useState(null);
   const [imageloading, setImageLoading] = useState(false);
   const accessToken = useSelector(selectToken); // Get access token from Redux store
@@ -71,9 +71,12 @@ const VendorDetailForm = () => {
 
   const handleSubmit = () => {
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    const tanRegex = /^[A-Z]{4}[0-9]{5}[A-Z]{1}$/;
+  
 
-    if (!avatarUri || !businessName || !address || !aadharNumber || !panNumber || !tanNumber) {
+    if (!avatarUri || !businessName || !address || !aadharNumber || !panNumber ) {
+      if(isCheckBoxClicked && !gstNumber){
+        Alert.alert("Error", "Enter GST Number If You Have Or UnCheck The Box");
+      }
       Alert.alert("Error", "All fields are required!");
       return;
     }
@@ -88,27 +91,28 @@ const VendorDetailForm = () => {
       return;
     }
 
-    if (!tanRegex.test(tanNumber)) {
-      Alert.alert("Error", "Invalid TAN number format.");
-      return;
-    }
+   
 
 
     // Fill the vendor detail object
     let vendorDetail = {
       business_name: businessName,
       pan_no: panNumber,
-      tan_no: tanNumber,
+      tan_no: gstNumber,
       adhar_no: aadharNumber,
       address: address,
       avatar: avatarUri,
       adhar_front_pic: null,
       adhar_back_pic: null,
       pan_pic: null,
-      tan_pic: null,
+      gstin_number:gstNumber,
+      gstin_image:null
     };
     // console.log(" Vendor Detail at page 1:", vendorDetail);
-    navigation.navigate("UploadAadhar", { vendorDetail });
+    if(isCheckBoxClicked){
+      navigation.navigate("UploadGst", { vendorDetail ,isCheckBoxClicked});
+    }else{
+      navigation.navigate("UploadAadhar", { vendorDetail ,isCheckBoxClicked});}
   };
 
   const selectOnMap = () => {
@@ -253,8 +257,8 @@ const VendorDetailForm = () => {
         style={styles.input}
         placeholder="Enter GST number"
         placeholderTextColor="gray"
-        value={tanNumber}
-        onChangeText={(text) => setTanNumber(text.toUpperCase())}
+        value={gstNumber}
+        onChangeText={(text) => setGstNumber(text.toUpperCase())}
       /> </>)}
 
 

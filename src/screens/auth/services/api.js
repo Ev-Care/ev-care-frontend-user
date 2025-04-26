@@ -1,6 +1,7 @@
 import { apiPostRequest } from "../../../redux/api/post";
 import { apiPatchRequest } from "../../../redux/api/patch";
 import { apiPostFileRequest } from "../../../redux/api/postSingleFile";
+import { apiGetRequest } from "../../../redux/api/get";
 
 const API_URL = process.env.APP_BACKEND_API || "http://89.116.34.17:3010";
 
@@ -48,4 +49,12 @@ export const updateVendorAPI = async (data) => {
     return error;
    
   }
+  
 };
+
+export const getUserByKeyApi = (data) =>
+  apiGetRequest({
+    apiUrl: `${API_URL}/users/get-user/${data.user_key}`,
+    content_type: "application/json",
+    accessToken: data.accessToken
+  });

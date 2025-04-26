@@ -6,9 +6,10 @@ import {
     signUpSuccess, 
     signUpFailed 
 } from "./slice"; 
-
-import { signInAPI, verifyOtpAPI, signupAPI, postSingleFileAPI ,updateVendorAPI } from "./api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { signInAPI, verifyOtpAPI, signupAPI, postSingleFileAPI ,updateVendorAPI, getUserByKeyApi } from "./api";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import { getUserByKeyAPI } from "../../user/service/api";
 
 // Async Thunks
 export const postSignIn = createAsyncThunk(
@@ -114,3 +115,26 @@ export const postSingleFile = createAsyncThunk(
       }
     }
   );
+
+  export const getUserByKey =createAsyncThunk(
+    "auth/getUserByKey",
+    async (user_key, { rejectWithValue }) => {
+      try {
+        const accessToken = await AsyncStorage.getItem("accessToken");
+        console.log("payload in crud getuserbykey",user_key,"access token",accessToken);
+        const response = await getUserByKeyApi({user_key,accessToken});
+        console.log("response at crud func page",response);
+        if (response.status === 200 || response.status === 201) {
+         
+          return response.data; // or `bodyData` if you want
+        } else {
+          console.log("resposne in else",response);
+          // return rejectWithValue(response.message + " "+response.statusCode);
+          throw new Error(response.message + " "+response.statusCode);
+        }
+      } catch (error) {
+        console.log("error at crud ",error);
+        return rejectWithValue(error || "Request failed");
+      }
+    }
+  )

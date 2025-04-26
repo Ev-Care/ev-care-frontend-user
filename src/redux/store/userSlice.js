@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createSlice } from "@reduxjs/toolkit";
-import { postSignIn, postSignUp, postSingleFile, postVerifyOtp, patchUpdateVendorProfile } from "../../screens/auth/services/crudFunction";
+import { postSignIn, postSignUp, postSingleFile, postVerifyOtp, patchUpdateVendorProfile, getUserByKey } from "../../screens/auth/services/crudFunction";
 import { patchUpdateUserProfile , getUserDetailsByKey} from "../../screens/user/service/crudFunction";
 
 const initialState = {
@@ -146,6 +146,20 @@ const authSlice = createSlice({
         // console.log("User data after fetching in slice:", state.user);
       })
       .addCase(getUserDetailsByKey.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch user details";
+      })
+      .addCase(getUserByKey.pending ,(state)=>{
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getUserByKey.fulfilled, (state, action) => {
+          // console.log("User details fetched successfully:", action.payload.data);
+     
+        state.loading = false;
+        state.user = extractUser(action.payload.data); 
+       })
+      .addCase(getUserByKey.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to fetch user details";
       });

@@ -61,7 +61,7 @@ const VerificationScreen = ({ navigation, route }) => {
         } else /* if (user && user.status !== "New" && token) */ {
           try {
       
-            await AsyncStorage.setItem("user", JSON.stringify(response.payload.data.user));
+            await AsyncStorage.setItem("user",response.payload.data.user.user_key);
             await AsyncStorage.setItem("accessToken", response.payload.data.access_token);
             // Alert.alert("Sucess", "Otp verified.");
             return;

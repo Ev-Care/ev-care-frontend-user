@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { getAllStationsAPI, getStationByIdAPI, postStationAPI, updateStationsChargersConnectorsStatusAPI } from "./api";
+import { deleteStationAPI, getAllStationsAPI, getStationByIdAPI, postStationAPI, updateStationsChargersConnectorsStatusAPI } from "./api";
 
 //get Access Token from Async Storage
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -67,8 +67,12 @@ export const fetchStations = createAsyncThunk(
     'vendorStations/deleteStation',
     async (stationId, { rejectWithValue }) => {
       try {
-        await axios.delete(`${API_URL}/stations/${stationId}`);
-        return stationId; // Return the deleted station ID
+        const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve accessToken inside the thunk
+        const response = await deleteStationAPI({ station_id: stationId, accessToken });
+        if(response.status !== 200 && response.status !== 201) {
+            throw new Error("Failed to delete station");
+        }
+        return response.data; // Assuming the API returns a success message or the deleted station
       } catch (error) {
         return rejectWithValue(error.response?.data || 'Failed to delete station');
       }

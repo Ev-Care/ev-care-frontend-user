@@ -205,6 +205,26 @@ const AddStations = () => {
     setChargerForms(chargerForms.filter((_, i) => i !== index));
   };
 
+  // const clearForm = () => {
+  //   setSelectedAmenities([]);
+  //   setOpenHours('24 Hours');
+  //   setPhoto(null);
+  //   setAddress("");
+  //   setOpenTime('');
+  //   setCloseTime('');
+  //   setShowPicker(false);
+  //   setSelectedField(null);
+  //   setStationName(null);
+  //   setchargerType(null);
+  //   setPowerRating(0);
+  //   setChargerForms([{}]);
+  //   setSelectedForm(null);
+  //   setCoordinate(null);
+  //   setConnectorsList([]);
+  //   setViewImage(null);
+  //   setSelectedConnectors({});
+  // };
+
 
   return (
     <ScrollView style={styles.container}>

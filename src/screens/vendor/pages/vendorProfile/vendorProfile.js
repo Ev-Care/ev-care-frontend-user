@@ -33,6 +33,8 @@ const VendorProfile = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
 
+  console.log("user in profile screen", user);
+
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);

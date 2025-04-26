@@ -10,6 +10,7 @@ import {
   Switch,
   Platform,
   FlatList,
+  Alert,
 } from "react-native";
 import {
   Colors,
@@ -24,9 +25,10 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import MapView, { Marker } from "react-native-maps";
 import { Overlay } from "@rneui/themed";
 import { useDispatch, useSelector } from "react-redux";
-import { updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
+import { deleteStation, fetchStations, updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
 import { selectStation } from "../../services/selector";
 import imageURL from "../../../../constants/baseURL";
+import { getAllStationsAPI } from "../../services/api";
 
 // Define colors at the top for easy customization
 const COLORS = {
@@ -77,8 +79,9 @@ const StationManagement = ({ navigation, route }) => {
   };
 
   useEffect(() => {
-    if (station) {
-      console.log("Station changedd");
+    if (!station) {
+      console.log("Station no longer exists. Navigating back.");
+      navigation.pop(); // Navigate back if the station is undefined
     }
   }, [station]);
 
@@ -170,8 +173,34 @@ const StationManagement = ({ navigation, route }) => {
   //   });
   // };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     console.log("handleDelete Called");
+    try {
+      const response = await dispatch(deleteStation(stationId));
+      if (response.payload.code === 200) {
+        console.log("Station deleted successfully", response.payload);
+        navigation.pop();
+  
+        try {
+          const response2 = await dispatch(fetchStations({ owner_id: station.owner_id }));
+          if (response2.payload.code === 200) {
+            console.log("All stations fetched successfully", response2.payload.data);
+          } else {
+            console.error("Failed to fetch all stations", response2.payload.message);
+            Alert.alert("Error", "Failed to fetch all stations");
+          }
+        } catch (error) {
+          console.error("Error fetching all stations:", error);
+          Alert.alert("Error", "An error occurred while fetching all stations.");
+        }
+      } else {
+        console.error("Failed to delete station", response.payload.message);
+        Alert.alert("Error", "Failed to delete the station.");
+      }
+    } catch (error) {
+      console.error("Error deleting station:", error);
+      Alert.alert("Error", "An error occurred while deleting the station.");
+    }
   };
 
   const renderStars = (rating) => {
@@ -202,8 +231,8 @@ const StationManagement = ({ navigation, route }) => {
       <View style={styles.header}>
         <Image
           source={
-            station.station_images
-              ? { uri: imageURL.baseURL + station.station_images }
+            station?.station_images
+              ? { uri: imageURL.baseURL + station?.station_images }
               : {
                   uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                 }

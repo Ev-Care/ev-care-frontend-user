@@ -30,6 +30,7 @@ import { patchUpdateUserProfile } from "../service/crudFunction";
 import imageURL from "../../../constants/baseURL";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RefreshControl } from 'react-native';
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 const EditProfileScreen = ({ navigation }) => {
   const user = useSelector(selectUser);
   const [name, setname] = useState(user?.name || "Anonymous User");
@@ -44,6 +45,7 @@ const EditProfileScreen = ({ navigation }) => {
   const [profileImageURI, setProfileImageURI] = useState(null);
   const dispatch = useDispatch();
   const accessToken = useSelector(selectToken);
+  console.log('token', accessToken);
 
   const handleSubmit = async () => {
     const updatedData = {
@@ -57,17 +59,13 @@ const EditProfileScreen = ({ navigation }) => {
 
     const response = await dispatch(patchUpdateUserProfile(updatedData));
 
-    if (response?.payload?.code === 200 || response?.payload?.code === 201) {
-      console.log("Profile updated successfully:", response?.payload?.data);
-      AsyncStorage.setItem("user", JSON.stringify(response?.payload?.data));
-      Alert.alert(
-        "Profile Updated",
-        "Your profile has been updated successfully."
-      );
+    if (patchUpdateUserProfile.fulfilled.match(response)) {
+      dispatch(showSnackbar({ message: 'Profile Updated Successfully.', type: "success" }));
       navigation.goBack();
-    } else {
-      Alert.alert("Error", "Failed to update profile. Please try again.");
+    } else if (patchUpdateUserProfile.rejected.match(response)) {
+      dispatch(showSnackbar({ message: errorMessage || "Failed to update profile.", type: "error" }));
     }
+   
   };
 
   const pickImage = async (source) => {
@@ -95,8 +93,7 @@ const EditProfileScreen = ({ navigation }) => {
     } else {
       result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: true,
-        aspect: [1, 1],
-        quality: 1,
+        quality: 0.2,
       });
     }
 
@@ -112,6 +109,7 @@ const EditProfileScreen = ({ navigation }) => {
       const file = await setupImagePicker(imageUri);
 
       try {
+        console.log("request:", { file: file, accessToken: accessToken })
         const response = await dispatch(
           postSingleFile({ file: file, accessToken: accessToken })
         );
@@ -125,14 +123,16 @@ const EditProfileScreen = ({ navigation }) => {
           setProfileImage(
             imageURL.baseURL + (response?.payload?.data?.filePathUrl || "")
           );
-          setImageLoading(false);
+
         } else {
           Alert.alert("Error", "File Should be less than 5 MB");
         }
       } catch (error) {
-        setImageLoading(false);
+
         console.log("Error uploading file:", error);
         Alert.alert("Error", "Upload failed. Please try again.");
+      } finally {
+        setImageLoading(false);
       }
     }
   };
@@ -141,7 +141,7 @@ const EditProfileScreen = ({ navigation }) => {
     setTimeout(() => {
       setRefreshing(false);
       console.log("Refresh completed!");
-    }, 2000); 
+    }, 2000);
   }
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -149,14 +149,14 @@ const EditProfileScreen = ({ navigation }) => {
       <View style={{ flex: 1 }}>
         {header()}
         <ScrollView
-         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            colors={['#9Bd35A', '#101942']}  // Android spinner colors
-            tintColor= "#101942"            // iOS spinner color
-          />
-        }
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={['#9Bd35A', '#101942']}  // Android spinner colors
+              tintColor="#101942"            // iOS spinner color
+            />
+          }
           showsVerticalScrollIndicator={false}
           automaticallyAdjustKeyboardInsets={true}
           contentContainerStyle={{
@@ -313,12 +313,13 @@ const EditProfileScreen = ({ navigation }) => {
         {/* {console.log("Profile Image URI:", user?.avatar)} */}
         {profileImage ? (
           <>
+            {console.log('imageLoading', imageLoading)}
             {imageLoading && <ActivityIndicator size={40} color="#ccc" />}
             <Image
               source={profileImage ? { uri: profileImage } : null}
               style={styles.profilePicStyle}
-              onLoadStart={() => setImageLoading(true)}
-              onLoadEnd={() => setImageLoading(false)}
+            // onLoadStart={() => setImageLoading(false)}
+            // onLoadEnd={() => setImageLoading(false)}
             />
           </>
         ) : (

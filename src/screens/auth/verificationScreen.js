@@ -9,7 +9,7 @@ import {
   Platform,
   Alert,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Colors,
   screenWidth,
@@ -24,8 +24,9 @@ import OTPTextView from "react-native-otp-textinput";
 import { useDispatch, useSelector } from "react-redux";
 import { postVerifyOtp } from "./services/crudFunction";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { selectUser, selectToken, selectAuthloader } from "./services/selector";
+import { selectUser, selectToken, selectAuthloader, selectAuthError } from "./services/selector";
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
+import { setAuthLoaderFalse } from "../../redux/store/userSlice";
 
 const VerificationScreen = ({ navigation, route }) => {
   const [otpInput, setOtpInput] = useState("");
@@ -33,48 +34,68 @@ const VerificationScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const token = useSelector(selectToken);
+  const error = useSelector(selectAuthError); // Get error from Redux store
+  const [userKey, setUserKey] = useState(null);
+
+  console.log("isLoading in VerificationScreen:", isLoading); // Debugging line
 
   const verifyOtp = async () => {
     if (otpInput.length !== 6) {
-      await dispatch(showSnackbar({ message: "Invalid OTP, Please enter a 6-digit OTP.", type: "error" }));
-
-      // Alert.alert("Invalid OTP", "Please enter a 6-digit OTP.");
+      dispatch(showSnackbar({ message: "Invalid OTP, Please enter a 6-digit OTP.", type: "error" }));
       return;
     }
-
-    try {
-      // Dispatch the action to verify OTP
-      await dispatch(postVerifyOtp({ otp: otpInput, mobileNumber: route.params?.phoneNumber }));
-
-      // Access the updated state values
-      if (user) {
-        console.log("User status in VerificationScreen:", user.status);
-
-        if (user.status === "New") {
-          console.log("User is new. Navigating to Register screen.");
-          navigation.push("Register", { userKey: user.user_key });
-        } else {
-          try {
-            // Save user data and token to AsyncStorage
-             AsyncStorage.setItem("user", user.user_key);
-             AsyncStorage.setItem("accessToken", token);
-
-            // Show success snackbar
-            dispatch(showSnackbar({ message: "OTP verified successfully", type: "success" }));
-            return;
-          } catch (error) {
-            dispatch(showSnackbar({ message: "User data not saved in device", type: "error" }));
-          }
-        }
-      } else {
-        dispatch(showSnackbar({ message: "Incorrect OTP entered. Please try again.", type: "error" }));
-      }
-    } catch (error) {
-      console.error("Error verifying OTP:", error);
-      dispatch(showSnackbar({ message: "An error occurred while verifying OTP. Please try again.", type: "error" }));
+  
+    // dispatch(setAuthLoaderTrue()); // Optional: You can set loading true manually before API call
+    
+    const response = await dispatch(postVerifyOtp({ otp: otpInput, mobileNumber: route.params?.phoneNumber }));
+  
+    if (postVerifyOtp.fulfilled.match(response)) {
+      console.log("OTP verified successfully:", response.payload);
+      const extractedUserKey = response.payload?.data?.user?.user_key;
+      setUserKey(extractedUserKey);
+      console.log("user key after verify", extractedUserKey);
+      
+    } else if (postVerifyOtp.rejected.match(response)) {
+      console.error("OTP verification failed:", response.payload);
+      dispatch(showSnackbar({ message: response.payload || "OTP verification failed.", type: "error" }));
     }
+   
   };
   
+
+  // useEffect to handle user and token updates
+  useEffect(() => {
+    console.log("User and token updated in useEffect above:");
+
+    // condition for user when user is new 
+    if (!user && token && userKey) {
+      console.log("register case ", userKey)
+      navigation.push("Register", { userKey });
+      dispatch(showSnackbar({ message: "OTP verified successfully", type: "success" }));
+      return;
+    }
+    // condition for user when user is already exist and details completed 
+    if (user && token) {
+      console.log("User and token updated in useEffect:", user, token);
+
+        try {
+          // Save user data and token to AsyncStorage
+          AsyncStorage.setItem("user", user.user_key);
+          AsyncStorage.setItem("accessToken", token);
+
+          console.log("Access token stored in AsyncStorage:", token);
+
+          // Show success snackbar
+          dispatch(showSnackbar({ message: "OTP verified successfully", type: "success" }));
+        } catch (error) {
+          dispatch(showSnackbar({ message: "User data not saved in device", type: "error" }));
+        }
+      
+    } else if (error) {
+      dispatch(showSnackbar({ message: "Incorrect OTP entered. Please try again.", type: "error" }));
+    }
+  }, [user, token, error, navigation, dispatch]);
+
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>

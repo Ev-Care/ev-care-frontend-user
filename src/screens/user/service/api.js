@@ -13,7 +13,7 @@ export const getAllStationsByLocationAPI = (data) =>
 
 export const updateUserProfileAPI = (data) =>
   apiPatchRequest({
-    apiUrl: `${API_URL}/users/${data.user_key}`,
+    apiUrl: `${API_URL}/users/update-vendor-profile/${data.user_key}`,
     content_type: "application/json",
     data: {
       owner_legal_name: data.owner_legal_name,

@@ -22,7 +22,7 @@ import MyStatusBar from "../../../components/myStatusBar";
 import { SwipeListView } from "react-native-swipe-list-view";
 import { Snackbar } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
-import { selectFavoriteStations, selectStations, selectStationsLoading } from "../service/selector";
+import { selectFavoriteStations, selectStations, selectStationsError, selectStationsLoading } from "../service/selector";
 import imageURL from "../../../constants/baseURL";
 import {
   default as Icon,
@@ -33,7 +33,8 @@ import {
   getAllFavoriteStations,
 } from "../service/crudFunction";
 import { selectUser } from "../../auth/services/selector";
-import { openHourFormatter,formatDistance } from "../../../utils/globalMethods";
+import { openHourFormatter, formatDistance } from "../../../utils/globalMethods";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 const FavoriteScreen = ({ navigation }) => {
   const [showSnackBar, setShowSnackBar] = useState(false);
@@ -44,9 +45,43 @@ const FavoriteScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const [listData, setListData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const errorMessage = useSelector(selectStationsError);
 
   useEffect(() => {
-    dispatch(getAllFavoriteStations(user.user_key));
+    const fetchFavoritesAndFilter = async () => {
+      const favResponse = await dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
+
+      if (getAllFavoriteStations.fulfilled.match(favResponse)) {
+        dispatch(showSnackbar({ message: 'Favorite stations found.', type: "success" }));
+      } else if (getAllFavoriteStations.rejected.match(favResponse)) {
+        dispatch(showSnackbar({ message: errorMessage || "Failed to fetch favorite stations.", type: "error" }));
+      }
+
+      if (stations && favStations) {
+        const filtered = favStations
+          .map((fav) => stations.find((station) => station.id == fav.station.id))
+          .filter(Boolean);
+
+        setListData(filtered);
+      }
+    };
+
+    fetchFavoritesAndFilter();
+  }, []);
+
+  // console.log("stations in  stations fav screen", stations.length);
+  // console.log("stations in fav stations fav screen", favStations.length);
+  //   console.log("stations in listData fav screen", listData.length);
+
+  const handleRefresh = async () => {
+
+    const favResponse = await dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
+
+    if (getAllFavoriteStations.fulfilled.match(favResponse)) {
+      dispatch(showSnackbar({ message: 'Favorite stations found.', type: "success" }));
+    } else if (getAllFavoriteStations.rejected.match(favResponse)) {
+      dispatch(showSnackbar({ message: errorMessage || "Failed to fetch favorite stations.", type: "error" }));
+    }
     if (stations && favStations) {
       const filtered = favStations
         .map((fav) => stations.find((station) => station.id == fav.station.id))
@@ -54,16 +89,7 @@ const FavoriteScreen = ({ navigation }) => {
 
       setListData(filtered);
     }
-  }, [stations, favStations]);
-
-  // console.log("stations in  stations fav screen", stations.length);
-  // console.log("stations in fav stations fav screen", favStations.length);
-  //   console.log("stations in listData fav screen", listData.length);
-
-    const handleRefresh = async() => {
-    
-    await  dispatch(getAllFavoriteStations(user.user_key));
-     }
+  };
 
   const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
@@ -76,10 +102,10 @@ const FavoriteScreen = ({ navigation }) => {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
-       {isLoading ? (
+      {isLoading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color = {Colors.primaryColor} />
-    n  </View>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+          n  </View>
       ) : (
         <View style={{ flex: 1 }}>
           {header()}
@@ -118,7 +144,7 @@ const FavoriteScreen = ({ navigation }) => {
 
     const renderHiddenItem = (data, rowMap) => (
       <View style={{ alignItems: "center", flex: 1 }}>
-     
+
         <TouchableOpacity
           activeOpacity={0.8}
           style={{ ...styles.backDeleteContinerStyle }}
@@ -158,8 +184,8 @@ const FavoriteScreen = ({ navigation }) => {
               data?.item?.station_images
                 ? { uri: imageURL.baseURL + data.item.station_images }
                 : {
-                    uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                  }
+                  uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                }
             }
             style={styles.enrouteChargingStationImage}
           />
@@ -191,10 +217,10 @@ const FavoriteScreen = ({ navigation }) => {
                 }}
               >
                 <View style={{ ...commonStyles.rowAlignCenter }}>
-                <Text style={{ ...Fonts.blackColor16Medium }}>
-                {openHourFormatter(data?.item?.open_hours_opening_time, data?.item?.open_hours_closing_time).opening} - {openHourFormatter(data?.item?.open_hours_opening_time, data?.item?.open_hours_closing_time).closing}
-                </Text>
-              </View>
+                  <Text style={{ ...Fonts.blackColor16Medium }}>
+                    {openHourFormatter(data?.item?.open_hours_opening_time, data?.item?.open_hours_closing_time).opening} - {openHourFormatter(data?.item?.open_hours_opening_time, data?.item?.open_hours_closing_time).closing}
+                  </Text>
+                </View>
                 <View
                   style={{
                     marginLeft: Sizes.fixPadding * 2.0,
@@ -255,8 +281,8 @@ const FavoriteScreen = ({ navigation }) => {
     return (
       <View style={{ flex: 1 }}>
         <SwipeListView
-           refreshing={refreshing}
-           onRefresh={handleRefresh}
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
           data={listData}
           renderItem={renderItem}
           renderHiddenItem={renderHiddenItem}
@@ -314,7 +340,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0eb",
-    elevation:5
+    elevation: 5
   },
   deleteIconWrapper: {
     width: 46.0,

@@ -16,6 +16,9 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+    setAuthLoaderFalse: (state) => {
+      state.loading = false;
+    },
     logoutUser: (state) => {
       state.user = null;
       state.accessToken = null;
@@ -24,10 +27,10 @@ const authSlice = createSlice({
       // console.log("User logged out successfully");
     },
     restoreUser: (state, action) => {
-      state.user = extractUser(action.payload.user);
-      state.accessToken = action.payload.accessToken;
+      // state.user = extractUser(action.payload.user);
+      state.accessToken = action.payload;
       // console.log("User data restored from AsyncStorage:", action.payload.user);
-      // console.log("Access token restored from AsyncStorage:", action.payload.accessToken);
+      console.log("Access token restored from AsyncStorage:", action.payload);
     },
     signUpUser: (state, action) => {
       // console.log("singup is called in redux");
@@ -64,16 +67,20 @@ const authSlice = createSlice({
       })
       .addCase(postVerifyOtp.fulfilled, (state, action) => {
         state.loading = false;
-        
-        if (action.payload.data.user.status !== "New") {
+        console.log("inside slice");
+        if (action.payload?.data?.user?.status !== "New") {
           state.user = extractUser(action.payload.data.user); // Extract user data from the response
-
+          
         }
+        // state.user = extractUser(action.payload.data.user); // Extract user data from the response
         state.accessToken = action.payload.data.access_token;
+        console.log("token saved successfully - ", state.accessToken);
+        console.log("user saved successfully - ", state.user);
       }
       )
       .addCase(postVerifyOtp.rejected, (state, action) => {
         state.loading = false;
+        console.log("error in slice",action.payload);
         state.error = action.payload.message;
       })
 
@@ -196,5 +203,5 @@ const extractUser = (data) => ({
   password: data.password,
 });
 
-export const { logoutUser, restoreUser, signUpUser, updateUserCoordinate } = authSlice.actions;
+export const { setAuthLoaderFalse, logoutUser, restoreUser, signUpUser, updateUserCoordinate } = authSlice.actions;
 export default authSlice.reducer;

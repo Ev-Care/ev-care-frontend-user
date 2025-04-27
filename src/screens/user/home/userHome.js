@@ -27,13 +27,13 @@ import {
   screenWidth,
 } from "../../../constants/styles";
 import { useDispatch, useSelector } from "react-redux";
-import {  selectUser } from "../../auth/services/selector";
+import { selectUser } from "../../auth/services/selector";
 import * as Location from "expo-location";
 import {
   fetchStationsByLocation,
   getAllFavoriteStations,
 } from "../service/crudFunction";
-import { selectStations, selectStationsLoading, selectUserLoading } from "../service/selector";
+import { selectStations, selectStationsError, selectStationsLoading, selectUserLoading } from "../service/selector";
 import { RefreshControl } from "react-native";
 import imageURL from "../../../constants/baseURL";
 import {
@@ -42,7 +42,8 @@ import {
 } from "../service/handleRefresh";
 import { updateUserCoordinate } from "../../../redux/store/userSlice";
 import { Overlay } from "@rneui/themed";
-import { openHourFormatter ,formatDistance} from "../../../utils/globalMethods";
+import { openHourFormatter, formatDistance } from "../../../utils/globalMethods";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 
 const COLORS = {
@@ -66,6 +67,8 @@ const UserHome = ({ navigation }) => {
   const isLoading = useSelector(selectStationsLoading || selectUserLoading);
   const stations = useSelector(selectStations);
 
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
   const [currentLocation, setCurrentLocation] = useState(null);
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -74,56 +77,92 @@ const UserHome = ({ navigation }) => {
     return "Good Evening";
   };
 
-  const [errorMsg, setErrorMsg] = useState(null);
+  const errorMessage = useSelector(selectStationsError);
   const dispatch = useDispatch();
 
   useEffect(() => {
     let subscription = null;
-
+  
     const startLocationUpdates = async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
-          setErrorMsg("Permission to access location was denied");
+          dispatch(showSnackbar({ message: 'Permission to access location was denied.', type: "error" }));
           return;
         }
-
+  
         subscription = await Location.watchPositionAsync(
           {
             accuracy: Location.Accuracy.High,
             timeInterval: 5000, // minimum time (ms) between updates
             distanceInterval: 50, // minimum distance (m) between updates
           },
-          (loc) => {
+          async (loc) => {   // <-- important: make this function async
             const coords = loc.coords;
             setCurrentLocation(coords);
             console.log({ currentLocation });
-            dispatch(updateUserCoordinate(coords)); // update user coordinates in redux store
-            dispatch(fetchStationsByLocation({ radius, coords })); // dispatch when location updates
-            dispatch(getAllFavoriteStations({ user_key: user?.user_key })); // dispatch to get favorite stations
+  
+            dispatch(updateUserCoordinate(coords)); // Update user coordinates
+  
+            // 1. Fetch stations
+            const locationResponse = await dispatch(fetchStationsByLocation({ radius, coords }));
+            if (fetchStationsByLocation.fulfilled.match(locationResponse)) {
+              dispatch(showSnackbar({ message: 'Charging stations found.', type: "success" }));
+             
+            } else if (fetchStationsByLocation.rejected.match(locationResponse)) {
+              dispatch(showSnackbar({ message: errorMessage || "Failed to fetch stations.", type: "error" }));
+            }
+  
+           
           }
         );
       } catch (err) {
         console.error("Error watching location:", err);
       }
     };
-
+  
     startLocationUpdates();
-
+  
     return () => {
-      // Cleanup subscription on unmount
       if (subscription) subscription.remove();
     };
   }, [refreshing]);
+  
 
- 
   const handleRefresh = async () => {
-    const data = {
-      radius: radius,
-      coords: currentLocation,
-    };
-    await handleRefreshStationsByLocation(dispatch, data, setRefreshing);
+    try {
+      setRefreshing(true);
+      // 1. Get location permission
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        dispatch(showSnackbar({ message: 'Permission to access location was denied.', type: "error" }))
+        return;
+      }
+      // 2. Get current location
+      const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      const coords = location.coords;
+      setCurrentLocation(coords);
+
+      // 3. Update coordinates in Redux
+      dispatch(updateUserCoordinate(coords));
+
+      // 4. Fetch stations based on new location
+      const locationResponse = await dispatch(fetchStationsByLocation({ radius, coords }));
+
+      if (fetchStationsByLocation.fulfilled.match(locationResponse)) {
+        dispatch(showSnackbar({ message: 'Charging stations found.', type: "success" }));
+      } else if (fetchStationsByLocation.rejected.match(locationResponse)) {
+        dispatch(showSnackbar({ message: errorMessage || "Failed to fetch stations.", type: "error" }));
+      }
+     
+    } catch (error) {
+      console.error("Error during refresh:", error);
+      dispatch(showSnackbar({ message: "Error refreshing data.", type: "error" }));
+    } finally {
+      setRefreshing(false);
+    }
   };
+
   const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
       ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
@@ -398,7 +437,7 @@ const UserHome = ({ navigation }) => {
             >
               <View style={{ ...commonStyles.rowAlignCenter }}>
                 <Text style={{ ...Fonts.blackColor16Medium }}>
-                {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).opening} - {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).closing}
+                  {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).opening} - {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).closing}
                 </Text>
               </View>
 

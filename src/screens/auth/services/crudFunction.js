@@ -37,22 +37,31 @@ export const postSignIn = createAsyncThunk(
 
   
 export const postVerifyOtp = createAsyncThunk(
-    "auth/verifyOtp",
-    async (data, { rejectWithValue }) => {
-      try {
-        const response = await verifyOtpAPI(data);
-  
-        if (response.status === 200 || response.status === 201) {
+  "auth/verifyOtp",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await verifyOtpAPI(data);
+      // console.log("response in postVerifyOtp", response);
 
-          return response.data; // Axios automatically parses JSON
-        } else {
-          throw new Error("OTP verification failed");
-        }
-      } catch (error) {
-        return rejectWithValue(error?.response?.data?.message || "OTP verification failed");
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data; // Success, return data
+      } else {
+        // Fail case: return error message
+        return rejectWithValue(response.data.message || "OTP verification failed");
       }
+    } catch (error) {
+      console.log("Error in postVerifyOtp:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message ||  // API sent error message
+        error?.message ||                  // JS error message
+        "OTP verification failed";          // fallback message
+
+      return rejectWithValue(errorMessage);
     }
-  );
+  }
+);
 
 
   
@@ -62,13 +71,21 @@ export const postSignUp = createAsyncThunk(
       try {
         const response = await signupAPI(data);
         
-        if (response.status === 200 || response.status === 201) {
-          return response.data; // or `bodyData` if you want
+        if (response.data.code === 200 || response.data.code === 201) {
+          return response.data;
         } else {
-          throw new Error("Signup failed");
+          return rejectWithValue(response.data.message || "OTP verification failed");
         }
       } catch (error) {
-        return rejectWithValue(error?.response?.data?.message || "Signup failed");
+        console.log("Error in postSignUp:", error);
+  
+        // Always extract message properly even in catch
+        const errorMessage =
+          error?.response?.data?.message ||  // API sent error message
+          error?.message ||                  // JS error message
+          "OTP verification failed";          // fallback message
+  
+        return rejectWithValue(errorMessage);
       }
     }
   
@@ -116,7 +133,7 @@ export const postSingleFile = createAsyncThunk(
     }
   );
 
-  export const getUserByKey =createAsyncThunk(
+  export const getUserByKey = createAsyncThunk(
     "auth/getUserByKey",
     async (user_key, { rejectWithValue }) => {
       try {

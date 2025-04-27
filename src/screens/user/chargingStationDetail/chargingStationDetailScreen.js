@@ -28,6 +28,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectFavoriteStations, selectUser } from "../service/selector";
 import imageURL from "../../../constants/baseURL";
 import { getAllFavoriteStations, postFavoriteStation, unFavoriteStation } from "../service/crudFunction";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -74,7 +75,7 @@ const reviews = [
 const ChargingStationDetailScreen = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const favStations = useSelector(selectFavoriteStations);
-  const [showSnackBar, setshowSnackBar] = useState(false);
+  // const [showSnackBar, setshowSnackBar] = useState(false);
   const scrollViewRef = useRef(null);
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
@@ -85,14 +86,23 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     return <Text>Loading...</Text>; // Handle when station is not available
   }
 
-  const [inFavorite, setinFavorite] = useState(false);
+  const [inFavorite, setInFavorite] = useState(false);
+  console.log(station.id);
 
   useEffect(() => {
     if (favStations && station) {
       const isFavorite = favStations.some((favStation) => favStation.stationId === station.id);
-      setinFavorite(isFavorite);
+      setInFavorite(isFavorite);
+      console.log("stationdetail useEffect called.", inFavorite);
     }
   }, [favStations, station]);
+
+
+  useEffect(() => {
+    console.log("inFavorite changed to", inFavorite)
+  }, [inFavorite]);
+
+
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",
     CHAdeMO: "ev-plug-chademo",
@@ -130,25 +140,34 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     });
     Linking.openURL(url);
   };
-  useEffect(() => {
-    const isFav = favStations?.some((fav) => fav.station_id === station?.id);
-    setinFavorite(isFav);
-  }, [favStations, station]);
-  
-  const handleAddToFavorite = (station) => {
+
+
+  const handleAddToFavorite = async(station) => {
 
     if (station && !inFavorite) {
-      dispatch(postFavoriteStation({stationId:station.id, userId: user.id}));
+      const postFavresponse = await dispatch(postFavoriteStation({ stationId: station.id, userId: user.id }));
       console.log("station favorited ");
-      setinFavorite((prev) => !prev);
-      dispatch(getAllFavoriteStations({user_key: user.user_key}));
-      setshowSnackBar(true);
+     
+      await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
+      if (postFavoriteStation.fulfilled.match(postFavresponse)) {
+        await dispatch(showSnackbar({ message: 'Station added to favorite.', type: "success" }));
+        setInFavorite(true);
+      } else if (postFavoriteStation.rejected.match(postFavresponse)) {
+        await dispatch(showSnackbar({ message: errorMessage || "Failed to favorite station", type: "error" }));
+      }
+
     } else {
-      dispatch(unFavoriteStation({stationId:station.id, userId: user.id}));
+      const unFavResponse = await dispatch(unFavoriteStation({ stationId: station.id, userId: user.id }));
       console.log("station unfavorited ");
-      setinFavorite((prev) => !prev);
-      dispatch(getAllFavoriteStations({user_key: user.user_key}));
-      setshowSnackBar(true);
+      
+      await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
+      if (unFavoriteStation.fulfilled.match(unFavResponse)) {
+        await dispatch(showSnackbar({ message: 'Station removed from favorite.', type: "success" }));
+        setInFavorite(false);
+      } else if (postFavoriteStation.rejected.match(unFavResponse)) {
+        await dispatch(showSnackbar({ message: errorMessage || "Failed unfavorite station", type: "error" }));
+      }
+      // navigation.navigate("FavoriteScreen");
     }
   };
 
@@ -170,7 +189,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
 
       {/* Bottom Buttons */}
       {buttons()}
-     
+
     </View>
   );
 
@@ -182,8 +201,8 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     const imageUrl = station?.station_images
       ? { uri: imageURL.baseURL + station.station_images }
       : {
-          uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        };
+        uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      };
 
     return (
       <View style={styles.header}>
@@ -232,8 +251,8 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
                   {station.status === "Active"
                     ? "VERIFIED"
                     : station.status === "Planned"
-                    ? "PENDING"
-                    : ""}
+                      ? "PENDING"
+                      : ""}
                 </Text>
               </View>
             </View>
@@ -276,7 +295,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
           </Text>
           {activeTab === 1 && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
-      
+
       </View>
     );
   }
@@ -294,7 +313,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         {chargerTab()}
         {/* Details Tab */}
         {detailTab()}
-       
+
       </ScrollView>
     );
   }
@@ -312,7 +331,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         >
           <Text style={styles.directionButtonText}>Get Direction</Text>
         </TouchableOpacity>
-      
+
       </View>
     );
   }
@@ -428,11 +447,11 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
       </ScrollView>
     );
   }
- 
 
 
 
- 
+
+
   function snackBarInfo() {
     return (
       <Snackbar
@@ -667,7 +686,7 @@ const styles = StyleSheet.create({
     marginRight: 16,
     marginBottom: 10,
   },
- 
+
   bottomButtons: {
     flexDirection: "row",
     padding: 16,

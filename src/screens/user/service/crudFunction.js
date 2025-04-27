@@ -1,19 +1,33 @@
 //get Access Token from Async Storage
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { getAllStationsByLocationAPI, updateUserProfileAPI , getUserByKeyAPI, getEnrouteStationsAPI, getAllFavoriteStationsAPI, postFavoriteStationAPI, unFavoriteStationAPI} from "./api"; // Import the API function
+import { getAllStationsByLocationAPI, updateUserProfileAPI, getUserByKeyAPI, getEnrouteStationsAPI, getAllFavoriteStationsAPI, postFavoriteStationAPI, unFavoriteStationAPI } from "./api"; // Import the API function
 // Async thunk to fetch stations
 export const fetchStationsByLocation = createAsyncThunk(
   "stations/fetchStations",
   async (data, { rejectWithValue }) => {
+
+
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
-      // console.log("data:",  {...data}); // Log the access token for debugging
-      const response = await getAllStationsByLocationAPI({...data, accessToken}); // Call the API to fetch stations by location
-      // console.log("response:", response.data); // Log the response for debugging
-      return response.data; // Assuming the API returns a list of stations
+
+      const response = await getAllStationsByLocationAPI({ ...data, accessToken }); // Call the API to fetch stations by location
+
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data.message || "OTP verification failed");
+      }
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      console.log("Error in postSignUp:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message ||  // API sent error message
+        error?.message ||                  // JS error message
+        "OTP verification failed";          // fallback message
+
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -23,15 +37,27 @@ export const fetchStationsByLocation = createAsyncThunk(
 export const getUserDetailsByKey = createAsyncThunk(
   'auth/getUserDetailsByKey',
   async (user_key, { rejectWithValue }) => {
+   
     try {
-      console.log("inside thunk", );
-      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve accessToken inside the thunk
-      const response = await getUserByKeyAPI({ user_key, accessToken });
-       await AsyncStorage.setItem('user', JSON.stringify(response.data.data)); // Store the user data in AsyncStorage.
-      return response.data; // Assuming the API returns the vendor details
-    } catch (error) {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
 
-      return rejectWithValue(error.response?.data || 'Failed to fetch vendor details');
+      const response = await getUserByKeyAPI({ user_key, accessToken });
+
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data.message || "Failed to fetch user details");
+      }
+    } catch (error) {
+      console.log("Error in getUserDetailsByKey:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message ||  // API sent error message
+        error?.message ||                  // JS error message
+        "Failed to fetch user details";          // fallback message
+
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -42,10 +68,22 @@ export const patchUpdateUserProfile = createAsyncThunk(
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
       // console.log("data:",  {...data, accessToken}); // Log the access token for debugging
-      const response = await updateUserProfileAPI({...data, accessToken}); // Call the API to fetch stations by location
-      return response.data; // Assuming the API returns a list of stations
+      const response = await updateUserProfileAPI({ ...data, accessToken }); // Call the API to fetch stations by location
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data.message || "Failed to update user details");
+      }
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      console.log("Error in patchUpdateUserProfile:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message ||  // API sent error message
+        error?.message ||                  // JS error message
+        "Failed to update user details";          // fallback message
+
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -55,11 +93,22 @@ export const getEnrouteStations = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
-      const response = await getEnrouteStationsAPI({...data, accessToken}); // Call the API to fetch stations by location
-      console.log("response of enroute:", response.data); // Log the response for debugging
-      return response.data; // Assuming the API returns a list of stations
+      const response = await getEnrouteStationsAPI({ ...data, accessToken }); // Call the API to fetch stations by location
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data.message || "Failed to get enroute stations details");
+      }
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      console.log("Error in getEnrouteStations:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message ||  // API sent error message
+        error?.message ||                  // JS error message
+        "Failed to get enroute stations details";          // fallback message
+
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -69,11 +118,22 @@ export const getAllFavoriteStations = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
-      const response = await getAllFavoriteStationsAPI({...data, accessToken}); // Call the API to fetch stations by location
-      console.log("response of favorite:", response.data); // Log the response for debugging
-      return response.data; // Assuming the API returns a list of stations
+      const response = await getAllFavoriteStationsAPI({ ...data, accessToken }); // Call the API to fetch stations by location
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data.message || "Fav. Stations not found");
+      }
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      console.log("Error in getAllFavoriteStations:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message ||  // API sent error message
+        error?.message ||                  // JS error message
+        "Failed to fetch favorite details";          // fallback message
+
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -83,11 +143,22 @@ export const postFavoriteStation = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
-      const response = await postFavoriteStationAPI({...data, accessToken}); // Call the API to fetch stations by location
-      console.log("response of favorite:", response.data); // Log the response for debugging
-      return response.data; // Assuming the API returns a list of stations
+      const response = await postFavoriteStationAPI({ ...data, accessToken }); // Call the API to fetch stations by location
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data.message || "Station not added to favorite.");
+      }
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      console.log("Error in postFavoriteStation:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message ||  // API sent error message
+        error?.message ||                  // JS error message
+        "Failed to add favorite stations";          // fallback message
+
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -97,11 +168,22 @@ export const unFavoriteStation = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
-      const response = await unFavoriteStationAPI({...data, accessToken}); // Call the API to fetch stations by location
-      console.log("response of favorite:", response.data); // Log the response for debugging
-      return response.data; // Assuming the API returns a list of stations
+      const response = await unFavoriteStationAPI({ ...data, accessToken }); // Call the API to fetch stations by location
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data.message || "Station not removed from favorites");
+      }
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      console.log("Error in unFavoriteStation:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message ||  // API sent error message
+        error?.message ||                  // JS error message
+        "Station not removed from favorites";          // fallback message
+
+      return rejectWithValue(errorMessage);
     }
   }
 );

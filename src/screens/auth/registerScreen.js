@@ -11,7 +11,7 @@ import {
   View,
 } from "react-native";
 import { RadioButton } from "react-native-paper";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Colors,
   screenWidth,
@@ -24,8 +24,9 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
 import { useDispatch, useSelector } from "react-redux";
 import { postSignUp } from "./services/crudFunction";
-import { selectToken, selectUser } from "./services/selector";
+import { selectAuthError, selectToken, selectUser } from "./services/selector";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setfullName] = useState("");
   const [email, setemail] = useState("");
@@ -34,10 +35,11 @@ const RegisterScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser); // Get user data from Redux store
   const token = useSelector(selectToken); // Get user data from Redux store
-  
-  const userKey = route.params?.userKey;
+  const error = useSelector(selectAuthError); // Get error from Redux store
+  const userKey = route?.params?.userKey;
 
-  console.log(" register screen opened");
+  console.log("user key in register : ", userKey);
+
   const handleSignUp = async () => {
     if (!fullName.trim() || !email.trim()) {
       Alert.alert("Error", "Please fill in all the fields.");
@@ -47,30 +49,48 @@ const RegisterScreen = ({ navigation, route }) => {
     setLoading(true);
 
     const userData = {
-        email: email,
-        owner_legal_name: fullName,
-        role: role,
-        user_key: userKey,
+      email: email,
+      owner_legal_name: fullName,
+      role: role,
+      user_key: userKey // Use user_key from Redux state
     };
 
-    console.log("post signup called");
-
+    console.log("Post signup called");
     try {
-        const response = await dispatch(postSignUp(userData)).unwrap(); // ✅ Ensure API response is returned
-        AsyncStorage.setItem("user", user?.user_key);
-        AsyncStorage.setItem("accessToken", token);
-        
-        Alert.alert("Success", "Registration successful!");
-        return;
-      
+      const response = await dispatch(postSignUp(userData));
 
     } catch (error) {
-        console.error("Signup failed:", error);
-        Alert.alert("Registration Failed", "Please check your details and try again.");
-    } finally {
-        setLoading(false);
+      console.log("Error during registration");
+      dispatch(showSnackbar({ message: error || "Registration Failed", type: "error" }));
+
     }
-};
+
+  };
+
+  // useEffect to handle user and token updates
+  useEffect(() => {
+    if (user && user?.status !== "New" && token) {
+      console.log("User and token updated in useEffect:", user, token);
+
+      try {
+        // Save user data and token to AsyncStorage
+        AsyncStorage.setItem("user", user.user_key);
+        AsyncStorage.setItem("accessToken", token);
+
+        console.log("Access token stored in AsyncStorage:", AsyncStorage.getItem("token"));
+
+        dispatch(showSnackbar({ message: error || "Registration Success", type: "success" }));
+
+        navigation.navigate("userHome"); // Navigate to the home screen
+      } catch (error) {
+        console.error("Error saving user data:", error);
+        dispatch(showSnackbar({ message: "Error in saving user data", type: "error" }));
+      }
+    } else if (error) {
+      console.error("Error during registration:", error);
+      dispatch(showSnackbar({ message: error || "Registration Failed", type: "error" }));
+    }
+  }, [user, token, error, navigation]);
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -196,7 +216,7 @@ const RegisterScreen = ({ navigation, route }) => {
             name="arrow-back"
             color={Colors.whiteColor}
             size={26}
-            onPress={() => navigation.pop()}
+            onPress={() => navigation.goBack()} // Use goBack instead of navigate
           />
           <View>
             <Text style={{ ...Fonts.whiteColor22SemiBold }}>Register</Text>

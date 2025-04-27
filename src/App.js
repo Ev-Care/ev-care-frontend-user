@@ -23,6 +23,7 @@ import VerificationScreen from "./screens/auth/verificationScreen";
 import { AdminStack } from "./roleStack/adminStack";
 import { UserStack } from "./roleStack/userStack";
 import { VendorStack } from "./roleStack/vendorStack";
+import Snackbar from "./components/snackbar"; // Ensure correct import
 
 LogBox.ignoreAllLogs();
 
@@ -94,6 +95,7 @@ function AppNavigator() {
 export default function MyApp() {
   return (
     <Provider store={store}>
+      <Snackbar />
       <AppNavigator />
     </Provider>
   );

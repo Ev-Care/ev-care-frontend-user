@@ -21,15 +21,19 @@ import {
 } from "../../constants/styles";
 import MyStatusBar from "../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { signUpUser } from "../../redux/store/userSlice";
-import { useDispatch } from "react-redux";
+
+import { useDispatch, useSelector } from "react-redux";
 import { postSignUp } from "./services/crudFunction";
+import { selectToken, selectUser } from "./services/selector";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setfullName] = useState("");
   const [email, setemail] = useState("");
   const [role, setRole] = useState("User");
   const [loading, setLoading] = useState(false); // Loader state
   const dispatch = useDispatch();
+  const user = useSelector(selectUser); // Get user data from Redux store
+  const token = useSelector(selectToken); // Get user data from Redux store
   
   const userKey = route.params?.userKey;
 
@@ -53,11 +57,12 @@ const RegisterScreen = ({ navigation, route }) => {
 
     try {
         const response = await dispatch(postSignUp(userData)).unwrap(); // ✅ Ensure API response is returned
-        // userData.status = "";
-        // dispatch(signUpUser(userData)); // ✅ Use actual API response data
-        console.log("post signup success", response);
+        AsyncStorage.setItem("user", user?.user_key);
+        AsyncStorage.setItem("accessToken", token);
+        
         Alert.alert("Success", "Registration successful!");
-        navigation.push("Signin");
+        return;
+      
 
     } catch (error) {
         console.error("Signup failed:", error);

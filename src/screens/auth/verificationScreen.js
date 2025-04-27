@@ -24,57 +24,54 @@ import OTPTextView from "react-native-otp-textinput";
 import { useDispatch, useSelector } from "react-redux";
 import { postVerifyOtp } from "./services/crudFunction";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { selectUser, selectToken } from "./services/selector";
+import { selectUser, selectToken, selectAuthloader } from "./services/selector";
+import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 
 const VerificationScreen = ({ navigation, route }) => {
   const [otpInput, setOtpInput] = useState("");
-  const isLoading = useSelector(state => state.auth.loading);
+  const isLoading = useSelector(selectAuthloader);
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const token = useSelector(selectToken);
 
   const verifyOtp = async () => {
     if (otpInput.length !== 6) {
-      Alert.alert("Invalid OTP", "Please enter a 6-digit OTP.");
+      await dispatch(showSnackbar({ message: "Invalid OTP, Please enter a 6-digit OTP.", type: "error" }));
+
+      // Alert.alert("Invalid OTP", "Please enter a 6-digit OTP.");
       return;
     }
-  
+
     try {
-      const response = await dispatch(postVerifyOtp({ otp: otpInput, mobileNumber: route.params?.phoneNumber }));
-      
-      if (response.payload) {
-        /* const user = {
-          user_key: response.payload.data.user.user_key,
-          id: response.payload.data.user.id,
-          name: response.payload.data.user.owner_legal_name,
-          mobile_number: response.payload.data.user.mobile_number,
-          role: response.payload.data.user.role,
-          status: response.payload.data.user.status,
-        };
-        const token = response.payload.data.access_token;
-        */
-       console.log("response in VerificationScreen", response.payload.data.user.status)
-  
-        if ( response.payload.data.user.status === "New") {
-          console.log("response in VerificationScreen", response.payload.data.user.status)
-          navigation.push("Register", { userKey:response.payload.data.user.user_key });
-        } else /* if (user && user.status !== "New" && token) */ {
+      // Dispatch the action to verify OTP
+      await dispatch(postVerifyOtp({ otp: otpInput, mobileNumber: route.params?.phoneNumber }));
+
+      // Access the updated state values
+      if (user) {
+        console.log("User status in VerificationScreen:", user.status);
+
+        if (user.status === "New") {
+          console.log("User is new. Navigating to Register screen.");
+          navigation.push("Register", { userKey: user.user_key });
+        } else {
           try {
-      
-            await AsyncStorage.setItem("user",response.payload.data.user.user_key);
-            await AsyncStorage.setItem("accessToken", response.payload.data.access_token);
-            // Alert.alert("Sucess", "Otp verified.");
+            // Save user data and token to AsyncStorage
+             AsyncStorage.setItem("user", user.user_key);
+             AsyncStorage.setItem("accessToken", token);
+
+            // Show success snackbar
+            dispatch(showSnackbar({ message: "OTP verified successfully", type: "success" }));
             return;
           } catch (error) {
-            console.error("Error saving user data:", error);
+            dispatch(showSnackbar({ message: "User data not saved in device", type: "error" }));
           }
         }
       } else {
-        Alert.alert("Verification Failed", "Incorrect OTP. Please try again.");
+        dispatch(showSnackbar({ message: "Incorrect OTP entered. Please try again.", type: "error" }));
       }
     } catch (error) {
-      console.log("Error verifying OTP:", error);
-      Alert.alert("Error", "An error occurred while verifying OTP. Please try again.");
+      console.error("Error verifying OTP:", error);
+      dispatch(showSnackbar({ message: "An error occurred while verifying OTP. Please try again.", type: "error" }));
     }
   };
   

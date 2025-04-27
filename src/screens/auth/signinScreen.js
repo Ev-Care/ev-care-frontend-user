@@ -25,6 +25,7 @@ import { Overlay } from "@rneui/themed";
 import { postSignIn } from "./services/crudFunction";
 import { useDispatch, useSelector } from "react-redux";
 import { selectloader } from "./services/selector";
+import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 const SigninScreen = ({ navigation }) => {
   const [backClickCount, setBackClickCount] = useState(0);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -61,7 +62,7 @@ const SigninScreen = ({ navigation }) => {
     }, 1000);
   }
 
-  const handleSignIn = async () => {
+  const handleSignIn =  () => {
     if (!phoneNumber || phoneNumber.length < 10) {
       Alert.alert("Invalid Phone Number");
       return;
@@ -72,13 +73,13 @@ const SigninScreen = ({ navigation }) => {
       // console.log("Calling API with:", sanitizedPhoneNumber);
 
       // Dispatch the Redux action
-      const response = await dispatch(postSignIn({ mobileNumber: sanitizedPhoneNumber })).unwrap();
-      
+      dispatch(postSignIn({ mobileNumber: sanitizedPhoneNumber })).unwrap();
+      dispatch(showSnackbar({ message: 'OTP Sent Successfuly', type: 'success' }));
       navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber });
       
     } catch (error) {
       console.log("Error in handleSignIn:", error);
-      Alert.alert("Error", error?.message || "Something went wrong. Please try again.");
+      dispatch(showSnackbar({ message: 'Error ocurred', type: 'error' }));
     } finally {
       console.log("Signin API call completed");
     }

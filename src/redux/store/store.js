@@ -4,11 +4,14 @@ import authReducer, { restoreUser } from "./userSlice";
 import vendorReducer from "../../screens/vendor/services/vendorSlice";
 import stationReducer from "../../screens/user/service/stationSlice"; // Import the stationReducer
 import { getUserByKey } from "../../screens/auth/services/crudFunction";
+import snackbarReducer from '../snackbar/snackbarSlice'
+
 const store = configureStore({
   reducer: {
     auth: authReducer,
     vendor: vendorReducer,
-    station: stationReducer
+    station: stationReducer,
+    snackbar: snackbarReducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
 });

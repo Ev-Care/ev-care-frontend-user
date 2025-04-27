@@ -118,7 +118,7 @@ const FavoriteScreen = ({ navigation }) => {
 
     const renderHiddenItem = (data, rowMap) => (
       <View style={{ alignItems: "center", flex: 1 }}>
-        {console.log("data in render hidden", data)}
+     
         <TouchableOpacity
           activeOpacity={0.8}
           style={{ ...styles.backDeleteContinerStyle }}

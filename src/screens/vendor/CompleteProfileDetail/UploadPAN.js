@@ -117,7 +117,7 @@ const UploadPAN = ({ route, navigation }) => {
     };
     console.log("Updated Vendor Detail at pan page", VendorDetailAtPanPage);
     try {
-      console.log("vendor Detail Submitted ", response);
+  
       const response = await dispatch(patchUpdateVendorProfile({detail:VendorDetailAtPanPage, user_key:user.user_key, accessToken: accessToken})
       ).unwrap();
       

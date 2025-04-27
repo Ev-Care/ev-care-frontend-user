@@ -324,6 +324,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     backgroundColor: "#f5f5f5",
     marginBottom: 15,
+    height: 45,
   },
   textArea: {
     height: 80,

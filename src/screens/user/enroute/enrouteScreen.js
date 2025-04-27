@@ -212,15 +212,26 @@ const EnRouteScreen = () => {
             style={[styles.input]}
             placeholderTextColor="#888"
           />
-          <TouchableOpacity
+         { !sourceText.length>0 ? (<TouchableOpacity
             style={styles.iconContainer}
             onPress={() => getUserLocation("source")}
           >
             <Ionicons name="locate" size={20} color={Colors.primaryColor} />
-          </TouchableOpacity>
+          </TouchableOpacity>):
+          (<TouchableOpacity
+            style={styles.iconContainer}
+            onPress={() => {
+              setSourceText("");
+              setSourceCoordinate(null);
+              setSourceSuggestions([]);
+            }}
+
+          >
+            <Ionicons name="close-outline" size={20} color={Colors.primaryColor} />
+          </TouchableOpacity>)}
         </View>
 
-        {sourceSuggestions.length > 0 && (
+        {sourceSuggestions.length > 0 &&  (
           <FlatList
             data={sourceSuggestions}
             keyExtractor={(item) => item.place_id}
@@ -255,12 +266,21 @@ const EnRouteScreen = () => {
             style={[styles.input]}
             placeholderTextColor="#888"
           />
-          <TouchableOpacity
+          {!destinationText>0?(<TouchableOpacity
             style={styles.iconContainer}
             onPress={() => getUserLocation("destination")}
           >
             <Ionicons name="locate" size={20} color={Colors.primaryColor} />
-          </TouchableOpacity>
+          </TouchableOpacity>):(
+          <TouchableOpacity
+            style={styles.iconContainer}
+            onPress={() => {setDestinationText("");
+              setDestinationCoordinate(null);
+                setDestinationSuggestions([]);
+            }}
+          >
+            <Ionicons name="close" size={20} color={Colors.primaryColor} />
+          </TouchableOpacity>)}
         </View>
 
         {destinationSuggestions.length > 0 && (

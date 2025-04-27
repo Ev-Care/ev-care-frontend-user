@@ -89,15 +89,13 @@ const EditProfileScreen = ({ navigation }) => {
     let result;
     if (source === "camera") {
       result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 1,
+        allowsEditing: true, 
+        quality: 0.1, 
       });
     } else {
       result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 1,
+        allowsEditing: true, 
+        quality: 0.1, 
       });
     }
 

@@ -147,9 +147,17 @@ const ChargingStationMap = () => {
       setRegion({ latitude, longitude, latitudeDelta: 0.05, longitudeDelta: 0.05 });
       setCurrentLocation({ latitude, longitude });
       reverseGeocode(latitude, longitude);
+     
       if (mapRef.current) {
         mapRef.current.animateCamera({ center: { latitude, longitude }, zoom: 15 }, { duration: 0 });
       }
+      mapRef.current.fitToCoordinates(
+        stations.map(station=> station.coordinates),
+        {
+          edgePadding: { top: 50, right: 50, bottom: 50, left: 50 }, // 50px padding
+          animated: true, // Smooth transition
+        }
+      );
     } catch (error) {
       console.error("Location error:", error);
     }
@@ -201,7 +209,14 @@ const ChargingStationMap = () => {
         setSelectedLocation({ latitude: lat, longitude: lng });
         if (mapRef.current) {
           mapRef.current.animateCamera({ center: newRegion, zoom: 15 }, { duration: 1000 });
-        }
+        } 
+        mapRef.current.fitToCoordinates(
+          stations.map(station=> station.coordinates),
+          {
+            edgePadding: { top: 50, right: 50, bottom: 50, left: 50 }, // 50px padding
+            animated: true, // Smooth transition
+          }
+        );
       }
     } catch (error) {
       console.error("Place details error:", error);

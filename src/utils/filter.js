@@ -1,10 +1,10 @@
 export const filterStations = (stations, filters) => {
     const distanceRanges = [
-      [0, Infinity],    // Index 0: All distances
-      [0, 50],          // Index 1: Less than or equal to 50
-      [50, 150],        // Index 2: Between 50 and 150
-      [150, 300],       // Index 3: Between 150 and 300
-      [300, Infinity],  // Index 4: Greater than 300
+      [0, 5],    // Index 0: All distances
+      [0, 10],          // Index 1: Less than or equal to 50
+      [0, 20],        // Index 2: Between 50 and 150
+      [0, 30],       // Index 3: Between 150 and 300
+      [30, Infinity],  // Index 4: Greater than 300
     ];
   
     const [minDistance, maxDistance] = distanceRanges[filters.selectedDistanceIndex];

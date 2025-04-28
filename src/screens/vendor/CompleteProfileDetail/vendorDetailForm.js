@@ -21,6 +21,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useDispatch, useSelector } from "react-redux";
 import { selectToken, selectUser } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 export const setupImagePicker = (file) => {
   // console.log("inside setup image");
@@ -64,37 +65,43 @@ const VendorDetailForm = () => {
   const [isCheckBoxClicked, setCheckBoxClicked] = useState(false);
   const userKey = user?.user_key; // Get the user key from the Redux store
 
-  console.log("User =:", user); // Log the user key for debugging
   let vendorDetail = {};
 
 
-
-  const handleSubmit = () => {
+console.log('hi');
+  const handleSubmit = async () => {
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[A-Z0-9]{1}[A-Z0-9]{1}$/;
   
-
-    if (!avatarUri || !businessName || !address || !aadharNumber || !panNumber ) {
-      if(isCheckBoxClicked && !gstNumber){
-        Alert.alert("Error", "Enter GST Number If You Have Or UnCheck The Box");
+    // Check for required fields
+    if (!avatarUri || !businessName || !address || !aadharNumber || !panNumber) {
+      if (isCheckBoxClicked && !gstNumber) {
+        await dispatch(showSnackbar({ message: "Enter GST Number If You Have Or UnCheck The Box", type: "error" }));
+      } else {
+        await dispatch(showSnackbar({ message: "All fields are required!", type: "error" }));
       }
-      Alert.alert("Error", "All fields are required!");
       return;
     }
-
+  
+    // Validate Aadhaar number
     if (aadharNumber.length !== 12 || !/^\d+$/.test(aadharNumber)) {
-      Alert.alert("Error", "Aadhaar number must be number and of 12 digits.");
+      await dispatch(showSnackbar({ message: "Aadhaar number must be number and of 12 digits.", type: "error" }));
       return;
     }
-
+  
+    // Validate PAN number
     if (!panRegex.test(panNumber)) {
-      Alert.alert("Error", "Invalid PAN number format.");
+      await dispatch(showSnackbar({ message: "Invalid PAN number format.", type: "error" }));
       return;
     }
-
-   
-
-
-    // Fill the vendor detail object
+  
+    // Validate GST number
+    if (isCheckBoxClicked && (!gstNumber || !gstRegex.test(gstNumber))) {
+      await dispatch(showSnackbar({ message: "Invalid GST number format.", type: "error" }));
+      return;
+    }
+  
+    // Proceed with vendor detail creation
     let vendorDetail = {
       business_name: businessName,
       pan_no: panNumber,
@@ -105,15 +112,19 @@ const VendorDetailForm = () => {
       adhar_front_pic: null,
       adhar_back_pic: null,
       pan_pic: null,
-      gstin_number:gstNumber,
-      gstin_image:null
+      gstin_number: gstNumber,
+      gstin_image: null
     };
-    // console.log(" Vendor Detail at page 1:", vendorDetail);
-    if(isCheckBoxClicked){
-      navigation.navigate("UploadGst", { vendorDetail ,isCheckBoxClicked});
-    }else{
-      navigation.navigate("UploadAadhar", { vendorDetail ,isCheckBoxClicked});}
+  
+    // Navigate based on checkbox selection
+    if (isCheckBoxClicked) {
+      navigation.navigate("UploadGst", { vendorDetail, isCheckBoxClicked });
+    } else {
+      navigation.navigate("UploadAadhar", { vendorDetail, isCheckBoxClicked });
+    }
   };
+  
+  
 
   const selectOnMap = () => {
     navigation.push("PickLocation", {
@@ -210,8 +221,16 @@ const VendorDetailForm = () => {
         placeholder="Enter Business name"
         placeholderTextColor="gray"
         value={businessName}
-        onChangeText={setBusinessName}
+        onChangeText={(text) => {
+          if (text.length > 100) {
+            dispatch(showSnackbar({ message: 'Business name cannot exceed 50 characters', type: 'error' }));
+            return;
+          }
+          setBusinessName(text);
+        }}
+      // maxLength={50}
       />
+
 
       {/* <Text style={styles.label}>Public Contact Number</Text> */}
       {/* <TextInput
@@ -224,14 +243,29 @@ const VendorDetailForm = () => {
       /> */}
 
       <Text style={styles.label}>Aadhaar Number</Text>
+      import {Alert} from 'react-native'; // Make sure this is imported
+
       <TextInput
         style={styles.input}
         placeholder="Enter Aadhaar number"
         placeholderTextColor="gray"
         keyboardType="number-pad"
         value={aadharNumber}
-        onChangeText={setAadharNumber}
+        onChangeText={(text) => {
+          const numericText = text.replace(/[^0-9]/g, ''); // Allow only numbers
+
+          if (numericText.length > 12) {
+            console.log("number > 12")
+            dispatch(showSnackbar({ message: 'Aadhaar number cannot exceed 12 digits', type: 'error' }));
+            return; // Don't update if more than 12 digits
+          }
+
+          setAadharNumber(numericText); // Otherwise, update normally
+        }}
+
       />
+
+
 
       <Text style={styles.label}>PAN Number</Text>
       <TextInput
@@ -239,27 +273,72 @@ const VendorDetailForm = () => {
         placeholder="Enter PAN number"
         placeholderTextColor="gray"
         value={panNumber}
-        onChangeText={(text) => setPanNumber(text.toUpperCase())}
+        onChangeText={(text) => {
+          const upperText = text.toUpperCase();
+          const validText = upperText.replace(/[^A-Z0-9]/g, ''); // Only letters and numbers
+
+          if (validText.length > 10) {
+            dispatch(showSnackbar({ message: 'PAN number cannot exceed 10 characters', type: 'error' }));
+            return; // Don't update if more than 10 characters
+          }
+
+          // Check format if length becomes exactly 10
+          if (validText.length === 10) {
+            const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+            if (!panRegex.test(validText)) {
+              dispatch(showSnackbar({ message: 'Invalid PAN format. Example: ABCDE1234F', type: 'error' }));
+              // (Optional) you can also choose not to update if invalid
+              // return;
+            }
+          }
+
+          setPanNumber(validText); // Update normally
+        }}
+      // maxLength={10}
       />
-      
+
+
       <View style={styles.checkboxContainer}>
         <Checkbox
           value={isCheckBoxClicked}
           onValueChange={setCheckBoxClicked}
           color={isCheckBoxClicked ? Colors.primaryColor : undefined}
         />
-        <Text style={[styles.checkboxLabel,{color:Colors.primaryColor}]}>Do You Have GST Number ?</Text>
+        <Text style={[styles.checkboxLabel, { color: Colors.primaryColor }]}>Do You Have GST Number ?</Text>
       </View>
 
-      {isCheckBoxClicked && ( <>
-      <Text style={styles.label}>GST Number</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter GST number"
-        placeholderTextColor="gray"
-        value={gstNumber}
-        onChangeText={(text) => setGstNumber(text.toUpperCase())}
-      /> </>)}
+      {isCheckBoxClicked && (<>
+        <Text style={styles.label}>GST Number</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter GST number"
+          placeholderTextColor="gray"
+          value={gstNumber}
+          onChangeText={(text) => {
+            const upperText = text.toUpperCase();
+            const validText = upperText.replace(/[^A-Z0-9]/g, ''); // Only A-Z and 0-9
+
+            // Don't allow more than 15 characters
+            if (validText.length > 15) {
+              dispatch(showSnackbar({ message: 'GST number cannot exceed 15 characters', type: 'error' }));
+              return;
+            }
+
+            // Always update first
+            setGstNumber(validText);
+
+            // If full 15 characters entered, then check format
+            if (validText.length === 15) {
+              const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
+              if (!gstRegex.test(validText)) {
+                dispatch(showSnackbar({ message: 'Invalid GST format. Please check the entered number.', type: 'error' }));
+              }
+            }
+          }}
+        // maxLength={15}
+        />
+
+      </>)}
 
 
       <Text style={styles.label}>Address</Text>
@@ -269,8 +348,16 @@ const VendorDetailForm = () => {
         placeholderTextColor="gray"
         multiline
         value={address}
-        onChangeText={setAddress}
+        onChangeText={(text) => {
+          if (text.length > 100) {
+            dispatch(showSnackbar({ message: 'Address cannot exceed 100 characters', type: 'error' }));
+            return;
+          }
+          setAddress(text);
+        }}
+        // maxLength={100}
       />
+
       <Text style={styles.label}>OR</Text>
       <TouchableOpacity style={styles.mapButton} onPress={selectOnMap}>
         <Text style={styles.mapButtonText}>Select on Map</Text>
@@ -397,7 +484,7 @@ const styles = StyleSheet.create({
   checkboxLabel: {
     marginLeft: 8,
     fontSize: 14,
-   
+
   },
 
 });

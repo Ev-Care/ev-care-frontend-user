@@ -24,12 +24,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectToken } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "./vendorDetailForm";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 const UploadGst = ({ route, navigation }) => {
   // const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
   const [frontImageUri, setFrontImageUri] = useState(null);
   const [loading, setLoading] = useState(false); // Loader state
-  const { vendorDetail,isCheckBoxClicked } = route.params || {};
+  const { vendorDetail, isCheckBoxClicked } = route.params || {};
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
 
@@ -37,41 +38,41 @@ const UploadGst = ({ route, navigation }) => {
 
   const pickImage = async (source, type) => {
     let permissionResult;
-  
+
     if (source === "camera") {
       permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     } else {
       permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     }
-  
+
     if (permissionResult.granted === false) {
       alert("Permission is required!");
       return;
     }
-  
+
     let result;
     if (source === "camera") {
       result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        quality: 1,
+        quality: 0.2,
       });
     } else {
       result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: true,
-        quality: 1,
+        quality: 0.2,
       });
     }
-  
+
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
       const file = await setupImagePicker(imageUri);
       setLoading(true);
-  
+
       try {
         const response = await dispatch(
           postSingleFile({ file: file, accessToken: accessToken })
         );
-  
+
         if (response?.payload.code === 200 || response?.payload.code === 201) {
           if (type === "front") {
             setFrontImage(imageUri);
@@ -79,37 +80,40 @@ const UploadGst = ({ route, navigation }) => {
             console.log("Image URI set successfully:", response?.payload?.data?.filePathUrl);
           }
         } else {
-          Alert.alert("Error", "File Should be less than 5 MB");
+          dispatch(showSnackbar({ message: 'File Size should be less that 5 MB', type: 'error' }));
+
         }
       } catch (error) {
-        Alert.alert("Error", "Something went wrong while uploading.");
+        dispatch(showSnackbar({ message: 'Some Error occured while uploading file', type: 'error' }));
       } finally {
         setLoading(false);
       }
     }
   };
-  
-  
+
+
   // Handle Submit
   const handleSubmit = () => {
-  
-     if (!frontImageUri) {
-       Alert.alert("Error", "Please upload image.");
-       return;
-     }
-    
-     if (!vendorDetail) {
-       console.warn("vendorDetail not passed at aadhar Page!");
-       return null;
-     }
-     let VendorDetailAtGstPage = {
-       ...vendorDetail,
-       gstin_image: frontImageUri,
-      
-     };
-   
-     navigation.navigate("UploadAadhar", { vendorDetail:VendorDetailAtGstPage ,isCheckBoxClicked });
-   };
+
+    if (!frontImageUri) {
+      dispatch(showSnackbar({ message: 'Please upload the GST Image', type: 'error' }));
+      return;
+    }
+
+    if (!vendorDetail) {
+      dispatch(showSnackbar({ message: 'VendorDetail is not available at GST Page', type: 'error' }));
+
+      console.warn("vendorDetail not passed at GST Page!");
+      return null;
+    }
+    let VendorDetailAtGstPage = {
+      ...vendorDetail,
+      gstin_image: frontImageUri,
+
+    };
+
+    navigation.navigate("UploadAadhar", { vendorDetail: VendorDetailAtGstPage, isCheckBoxClicked });
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>

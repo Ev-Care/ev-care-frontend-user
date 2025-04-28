@@ -26,6 +26,7 @@ import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "./vendorDetailForm";
 import { patchUpdateVendorProfile } from "../../auth/services/crudFunction";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 const UploadPAN = ({ route, navigation }) => {
   const [frontImage, setFrontImage] = useState(null);
@@ -50,7 +51,8 @@ const UploadPAN = ({ route, navigation }) => {
     }
   
     if (!permissionResult.granted) {
-      alert("Permission is required!");
+      dispatch(showSnackbar({ message: 'Permission is required!', type: 'error' }));
+      // alert("Permission is required!");
       return;
     }
   
@@ -58,14 +60,12 @@ const UploadPAN = ({ route, navigation }) => {
     if (source === "camera") {
       result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
+        quality: 0.2,
       });
     } else {
       result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
+        quality: 0.2,
       });
     }
   
@@ -88,10 +88,14 @@ const UploadPAN = ({ route, navigation }) => {
             // For future-proofing
           }
         } else {
-          Alert.alert("Error", "File Should be less than 5 MB");
+          dispatch(showSnackbar({ message: 'File Should be less than 5 MB', type: 'error' }));
+
+          // Alert.alert("Error", "File Should be less than 5 MB");
         }
       } catch (error) {
-        Alert.alert("Error", "Something went wrong while uploading.");
+        dispatch(showSnackbar({ message: 'Something went wrong while uploading.', type: 'error' }));
+
+        // Alert.alert("Error", "Something went wrong while uploading.");
       } finally {
         setImageLoading(false);
       }
@@ -103,11 +107,15 @@ const UploadPAN = ({ route, navigation }) => {
   const handleSubmit = async () => {
       console.log("handle submit clicked");
     if (!frontImageUri) {
-      Alert.alert("Error", "Please upload the image.");
+      dispatch(showSnackbar({ message: 'Please upload the PAN image.', type: 'error' }));
+
+      // Alert.alert("Error", "Please upload the image.");
       return;
     }
     console.log("Updated Vendor Detail at aadhar page", VendorDetailAtAadharPage);
     if (!VendorDetailAtAadharPage) {
+      dispatch(showSnackbar({ message: 'VendorDetail not available at PAN Page!', type: 'error' }));
+
       console.warn("vendorDetail not passed at pan Page!");
       return null;
     }
@@ -121,28 +129,30 @@ const UploadPAN = ({ route, navigation }) => {
       const response = await dispatch(patchUpdateVendorProfile({detail:VendorDetailAtPanPage, user_key:user.user_key, accessToken: accessToken})
       ).unwrap();
       
-      console.log("code = ",response?.code);
-      if (response?.code === 200 || response?.code === 201) {
+      console.log("code = ",response?.payload?.code);
+      if (response?.payload?.code === 200 || response?.payload?.code === 201) {
       
-      
-          await AsyncStorage.setItem("user", JSON.stringify(user));
-         
+          await AsyncStorage.setItem("user",user?.user_key);
           console.log("User data saved successfully:", response.payload.data);
-      
-        
-        Alert.alert("Success", "details updated successfully.");
+          dispatch(showSnackbar({ message: 'Your details updated successfully.', type: 'success' }));
+
+        // Alert.alert("Success", "details updated successfully.");
       } else {
         console.error("Error saving user data:", error);
-        Alert.alert("Error", "Failed to update vendor details. Please try again.");
+        dispatch(showSnackbar({ message: 'Failed to update vendor details. Please try again.', type: 'error' }));
+
+        // Alert.alert("Error", "Failed to update vendor details. Please try again.");
       }
 
       // navigation.navigate("PendingApprovalScreen", { VendorDetailAtTanPage });
     } catch (error) {
       console.error("Vendor detail submission failed:", error);
-      Alert.alert(
-        "Submission Failed",
-        "Please check your details and try again."
-      );
+      dispatch(showSnackbar({ message: 'Submission Failed, Please check your details and try again.', type: 'error' }));
+
+      // Alert.alert(
+      //   "Submission Failed",
+      //   "Please check your details and try again."
+      // );
     } finally {
       setLoading(false);
     }

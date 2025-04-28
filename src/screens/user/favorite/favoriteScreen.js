@@ -67,7 +67,7 @@ const FavoriteScreen = ({ navigation }) => {
     };
 
     fetchFavoritesAndFilter();
-  }, []);
+  }, [user?.user_key, dispatch]);
 
   // console.log("stations in  stations fav screen", stations.length);
   // console.log("stations in fav stations fav screen", favStations.length);

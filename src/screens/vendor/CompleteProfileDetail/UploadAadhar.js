@@ -18,6 +18,7 @@ import { setupImagePicker } from "./vendorDetailForm";
 import { useDispatch, useSelector } from "react-redux";
 import { selectToken } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 const UploadAadhar = ({ route, navigation }) => {
   // const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
@@ -41,7 +42,7 @@ const UploadAadhar = ({ route, navigation }) => {
     }
   
     if (permissionResult.granted === false) {
-      alert("Permission is required!");
+      dispatch(showSnackbar({ message: 'Permission is required!', type: 'error' }));
       return;
     }
   
@@ -49,14 +50,12 @@ const UploadAadhar = ({ route, navigation }) => {
     if (source === "camera") {
       result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
+        quality: 0.2,
       });
     } else {
       result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
+        quality: 0.2,
       });
     }
   
@@ -76,7 +75,7 @@ const UploadAadhar = ({ route, navigation }) => {
           postSingleFile({ file: file, accessToken: accessToken })
         );
   
-        if (response?.payload.code === 200 || response?.payload.code === 201) {
+        if (response?.payload?.code === 200 || response?.payload?.code === 201) {
           if (type === "front") {
             setFrontImage(imageUri);
             setFrontImageUri(response?.payload?.data?.filePathUrl);
@@ -87,10 +86,14 @@ const UploadAadhar = ({ route, navigation }) => {
             console.log("back Image URI set successfully:", response?.payload?.data?.filePathUrl);
           }
         } else {
-          Alert.alert("Error", "File Should be less than 5 MB");
+          dispatch(showSnackbar({ message: 'File Should be less than 5 MB', type: 'error' }));
+
+          // Alert.alert("Error", "File Should be less than 5 MB");
         }
       } catch (error) {
-        Alert.alert("Error", "Upload failed. Please try again.");
+        dispatch(showSnackbar({ message: 'Upload failed. Please try again.', type: 'error' }));
+
+        // Alert.alert("Error", "Upload failed. Please try again.");
       } finally {
         // 👉 Always stop loader
         if (type === "front") {
@@ -106,18 +109,25 @@ const UploadAadhar = ({ route, navigation }) => {
   // Handle Submit
   const handleSubmit = () => {
     if (!frontImageUri && !backImageUri) {
-      Alert.alert("Error", "Please upload both front and back images.");
+      dispatch(showSnackbar({ message: 'Please upload both front and back images.', type: 'error' }));
+      // Alert.alert("Error", "Please upload both front and back images.");
       return;
     }
     if (!frontImageUri) {
-      Alert.alert("Error", "Please upload the front side image.");
+      dispatch(showSnackbar({ message: 'Please upload the Aadhar front side image.', type: 'error' }));
+
+      // Alert.alert("Error", "Please upload the front side image.");
       return;
     }
     if (!backImageUri) {
-      Alert.alert("Error", "Please upload the back side image.");
+      dispatch(showSnackbar({ message: 'Please upload the Aadhar back side image.', type: 'error' }));
+
+      // Alert.alert("Error", "Please upload the back side image.");
       return;
     }
     if (!vendorDetail) {
+      dispatch(showSnackbar({ message: 'VendorDetail not passed at aadhar Page!', type: 'error' }));
+
       console.warn("vendorDetail not passed at aadhar Page!");
       return null;
     }

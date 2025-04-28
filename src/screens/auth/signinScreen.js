@@ -138,6 +138,7 @@ const SigninScreen = ({ navigation }) => {
           phoneInputStyle={{ flex: 1, ...Fonts.blackColor16Medium }}
           dialCodeTextStyle={{ ...Fonts.blackColor16Medium, marginHorizontal: Sizes.fixPadding - 2.0 }}
           modalCountryItemCountryNameStyle={{ ...Fonts.blackColor16SemiBold }}
+          maxLength={10}
         />
       </View>
     );

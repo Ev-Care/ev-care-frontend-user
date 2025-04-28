@@ -90,60 +90,13 @@ const UpdateStation = ({ navigation, route }) => {
     setChargerForms((prevForms) => [
       ...prevForms,
       {
-        charger_id: -1,
+        // charger_id: -1,
         charger_type: null,
         max_power_kw: null,
         connectors: [],
       },
     ]);
   const [connectorsList, setConnectorsList] = useState([]);
-
-  const incrementConnector = (id, chargerIndex) => {
-    setChargerForms((prev) =>
-      prev.map((charger, i) => {
-        if (i !== chargerIndex) return charger;
-
-        const connectorInfo = connectors.find((c) => c.id === id);
-        if (!connectorInfo) return charger;
-
-        const newConnector = {
-          charger_connector_id: -1, // Or use any unique ID generator
-          connectorType: {
-            connector_type_id: connectorInfo.id,
-            description: connectorInfo.type,
-          },
-          connector_status: "operational",
-        };
-
-        return {
-          ...charger,
-          connectors: [...(charger.connectors || []), newConnector],
-        };
-      })
-    );
-  };
-
-  const decrementConnector = (id, chargerIndex) => {
-    setChargerForms((prev) =>
-      prev.map((charger, i) => {
-        if (i !== chargerIndex) return charger;
-
-        const updatedConnectors = [...(charger.connectors || [])];
-        const indexToRemove = updatedConnectors.findIndex(
-          (c) => c.connectorType?.connector_type_id === id
-        );
-
-        if (indexToRemove !== -1) {
-          updatedConnectors.splice(indexToRemove, 1); // remove one occurrence
-        }
-
-        return {
-          ...charger,
-          connectors: updatedConnectors,
-        };
-      })
-    );
-  };
 
   const handleTimeChange = (event, selectedDate) => {
     setShowPicker(false);
@@ -207,19 +160,7 @@ const UpdateStation = ({ navigation, route }) => {
       .map((id) => amenities.find((amenity) => amenity.id === id)?.label)
       .join(",");
 
-    // Transform chargers and connectors
-    const chargers = chargerForms.map((charger, index) => ({
-      charger_type: chargerType || null,
-      power_rating: parseFloat(charger.max_power_kw) || null,
-      connectors: connectorsList
-        .filter((connector) => connector.chargerIndex === index)
-        .flatMap((connector) =>
-          Array(connector.count).fill({
-            connector_type_id: connector.id,
-            connector_status: "operational",
-          })
-        ),
-    }));
+    
 
     // Prepare the final station data
     const stationData = {
@@ -541,77 +482,7 @@ const UpdateStation = ({ navigation, route }) => {
     );
   }
 
-  function connectorsInfo1(chargerIndex) {
-    console.log("connectorsList", chargerForms[chargerIndex]?.connectors);
-    console.log("connectors", connectors);
-    return (
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Connectors</Text>
-        <View style={styles.connectorsBox}>
-          {connectors.map((connector) => {
-            // Find the count for the current connector in connectorsList
-            const connectorData = chargerForms[chargerIndex]?.connectors.find(
-              (c) =>
-                c.connectorType.connector_type_id === connector.id &&
-                c.chargerIndex === chargerIndex
-            );
-            console.log("connectorData", connectorData);
-            const count = connectorData ? connectorData.count : 0;
 
-            return (
-              <View
-                key={`connector-${connector.id}`}
-                style={[styles.connectorsItem]}
-              >
-                {/* Connector Icon */}
-                <View
-                  style={{ alignItems: "center", flexDirection: "row", gap: 4 }}
-                >
-                  <Icon name={connector.icon} size={24} color="#101942" />
-                  <Text style={[styles.optional]}>{connector.type}</Text>
-                </View>
-
-                {/* Increment Decrement Counter */}
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginTop: 8,
-                  }}
-                >
-                  <TouchableOpacity
-                    onPress={() =>
-                      decrementConnector(connector.id, chargerIndex)
-                    }
-                    style={[
-                      styles.incDecButton,
-                      { backgroundColor: "#FF5722" },
-                    ]}
-                  >
-                    <Text style={{ color: "#fff", fontSize: 14 }}>−</Text>
-                  </TouchableOpacity>
-
-                  <Text style={styles.countText}>{count}</Text>
-
-                  <TouchableOpacity
-                    onPress={() =>
-                      incrementConnector(connector.id, chargerIndex)
-                    }
-                    style={[
-                      styles.incDecButton,
-                      { backgroundColor: "#101942" },
-                    ]}
-                  >
-                    <Text style={{ color: "#fff", fontSize: 14 }}>+</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            );
-          })}
-        </View>
-      </View>
-    );
-  }
 
   function amenitiesSection() {
     return (
@@ -849,22 +720,8 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 10,
   },
-  incDecButton: {
-    borderRadius: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  countText: {
-    marginHorizontal: 10,
-    fontSize: 14,
-    borderColor: "#e0e0e0",
-    color: "gray",
-    borderRadius: 4,
-    borderWidth: 0.8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    textAlign: "center",
-  },
+
+
   amenityItem: {
     width: "18%",
     alignItems: "center",

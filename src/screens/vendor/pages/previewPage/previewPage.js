@@ -49,11 +49,9 @@ const PreviewPage = ({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState(0);
   const scrollViewRef = useRef(null);
   const mapRef = useRef(null);
-  const dispatch = useDispatch(); // Get the dispatch function
-  // const route = useRoute();
-  const { stationData, type, stationImage ,clearForm} = route?.params; // Retrieve the passed data
+  const dispatch = useDispatch(); 
+  const { stationData, type, stationImage, clearForm } = route?.params || {}; 
   const isLoading = useSelector(selectVendorLoading);
-
 
   useEffect(() => {
     console.log('Transformed station data preview:', JSON.stringify(stationData, null, 2));
@@ -75,33 +73,31 @@ const PreviewPage = ({ navigation, route }) => {
     "Car Care": "car",
     "Lodging": "bed"
   };
+
   useEffect(() => {
-    if (mapRef.current && stationData.coordinates) {
-      const { latitude, longitude } = stationData.coordinates;
+    if (mapRef.current && stationData?.coordinates) {
+      const { latitude, longitude } = stationData?.coordinates || {};
       mapRef.current.animateCamera({
         center: {
           latitude: latitude || 0,
           longitude: longitude || 0,
         },
-        zoom: 15, // Adjust zoom level as needed
+        zoom: 15,
       });
     }
-  }, [stationData.coordinates]); // Trigger whenever coordinates change
+  }, [stationData?.coordinates]);
 
   const handleSubmit = async () => {
     try {
       if (type === "add") {
-        // console.log("Submitting station data:", JSON.stringify(stationData));
-
-        // Validate chargers
-        if (!stationData.chargers || stationData.chargers.length === 0) {
+        if (!stationData?.chargers || stationData?.chargers?.length === 0) {
           Alert.alert("Validation Error", "At least one charger must be added.");
           return;
         }
 
-        for (let i = 0; i < stationData.chargers.length; i++) {
-          const charger = stationData.chargers[i];
-          if (!charger.charger_type || !charger.power_rating || !charger.connector_type) {
+        for (let i = 0; i < stationData?.chargers?.length; i++) {
+          const charger = stationData?.chargers[i];
+          if (!charger?.charger_type || !charger?.power_rating || !charger?.connector_type) {
             Alert.alert(
               "Validation Error",
               `Charger ${i + 1} details are incomplete. Please ensure all fields are filled.`
@@ -110,26 +106,22 @@ const PreviewPage = ({ navigation, route }) => {
           }
         }
 
-        // Call the API to add the station
         const response = await dispatch(addStation(stationData));
-        if (response.payload.code === 200 || response.payload.code === 201) {
-          console.log("Station added successfully:", response.payload.data);
+        if (response?.payload?.code === 200 || response?.payload?.code === 201) {
+          console.log("Station added successfully:", response?.payload?.data);
 
-          // Fetch all stations after adding the new one
           try {
-            console.log('owner_id', stationData.owner_id);  
-            const response2 = await dispatch(fetchStations( stationData?.owner_id ));
-            console.log("All stations fetched successfully:", response2.payload);
-            if (response2.payload.code === 200) {
-             // Clearing the form after successfully adding the station
+            console.log('owner_id', stationData?.owner_id);  
+            const response2 = await dispatch(fetchStations(stationData?.owner_id));
+            console.log("All stations fetched successfully:", response2?.payload);
+            if (response2?.payload?.code === 200) {
               if (clearForm) {
                 clearForm();
               }
-              console.log("All stations fetched successfully:");
               Alert.alert("Success", "Station added successfully!");
-              navigation.navigate("VendorBottomTabBar"); // Navigate to the AllStations screen
+              navigation.navigate("VendorBottomTabBar");
             } else {
-              console.error("Failed to fetch all stations:");
+              console.error("Failed to fetch all stations");
               Alert.alert("Error", "Failed to fetch all stations. Please try again.");
             }
           } catch (error) {
@@ -137,10 +129,9 @@ const PreviewPage = ({ navigation, route }) => {
             Alert.alert("Error", "An error occurred while fetching all stations.");
           }
 
-
         } else {
-          console.error("Error adding station:", response.payload.message);
-          Alert.alert("Error", response.payload.message || "Failed to add station. Please try again.");
+          console.error("Error adding station:", response?.payload?.message);
+          Alert.alert("Error", response?.payload?.message || "Failed to add station. Please try again.");
         }
       } else {
         Alert.alert("Success", "Currently, this is a preview. The station will be added to the database soon.");
@@ -150,24 +141,29 @@ const PreviewPage = ({ navigation, route }) => {
       Alert.alert("Error", "An error occurred while adding the station. Please try again.");
     }
   };
+
   const handleTabPress = (index) => {
     setActiveTab(index);
-    scrollViewRef.current.scrollTo({ x: index * width, animated: true });
+    scrollViewRef?.current?.scrollTo({ x: index * width, animated: true });
   };
 
   const handleScroll = (event) => {
-    const scrollPosition = event.nativeEvent.contentOffset.x;
+    const scrollPosition = event?.nativeEvent?.contentOffset?.x ?? 0;
     const index = Math.round(scrollPosition / width);
     if (activeTab !== index) {
       setActiveTab(index);
     }
   };
+
   function trimName(threshold, str) {
-    if (str.length <= threshold) {
+    if (!str) return "";
+    if (str?.length <= threshold) {
       return str;
     }
-    return str.substring(0, threshold) + ".....";
+    return str?.substring(0, threshold) + ".....";
   }
+
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -182,13 +178,12 @@ const PreviewPage = ({ navigation, route }) => {
           <View style={styles.communityBadge}>
             <Text style={styles.communityText}>Public</Text>
           </View>
-          <Text style={styles.stationName}>{trimName(30, stationData.station_name)}</Text>
-          <Text style={styles.stationAddress}>{trimName(50, stationData.address)}</Text>
+          <Text style={styles.stationName}>{trimName(30, stationData?.station_name)}</Text>
+          <Text style={styles.stationAddress}>{trimName(50, stationData?.address)}</Text>
           <View style={styles.statusContainer}>
             <Text style={styles.openHour}>Open Hours</Text>
             <Text style={styles.statusTime}>
-              • {stationData.open_hours_opening_time} -{' '}
-              {stationData.open_hours_closing_time}
+              • {stationData?.open_hours_opening_time} - {stationData?.open_hours_closing_time}
             </Text>
             <View style={styles.newBadge}>
               <Text style={styles.newText}>New</Text>
@@ -196,16 +191,14 @@ const PreviewPage = ({ navigation, route }) => {
           </View>
         </View>
       </View>
-
+  
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
           onPress={() => handleTabPress(0)}
         >
-          <Text
-            style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
-          >
+          <Text style={[styles.tabText, activeTab === 0 && styles.activeTabText]}>
             Charger
           </Text>
           {activeTab === 0 && <View style={styles.activeTabIndicator} />}
@@ -214,15 +207,13 @@ const PreviewPage = ({ navigation, route }) => {
           style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
           onPress={() => handleTabPress(1)}
         >
-          <Text
-            style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
-          >
+          <Text style={[styles.tabText, activeTab === 1 && styles.activeTabText]}>
             Details
           </Text>
           {activeTab === 1 && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
       </View>
-
+  
       {/* Swipeable Content */}
       <ScrollView
         ref={scrollViewRef}
@@ -233,17 +224,17 @@ const PreviewPage = ({ navigation, route }) => {
         scrollEventThrottle={16}
       >
         {/* Charger Tab */}
-        {chargerTab()}
+        {chargerTab?.()}
         {/* Details Tab */}
-        {detailTab()}
-        {loadingDialog()}
+        {detailTab?.()}
+        {loadingDialog?.()}
       </ScrollView>
-
+  
       {/* Bottom Buttons */}
       <View style={styles.bottomButtons}>
         <TouchableOpacity
           onPress={() => {
-            navigation.pop();
+            navigation?.pop?.();
           }}
           style={styles.editButton}
         >
@@ -255,6 +246,7 @@ const PreviewPage = ({ navigation, route }) => {
       </View>
     </View>
   );
+  
 
   function chargerTab() {
     return (
@@ -270,10 +262,10 @@ const PreviewPage = ({ navigation, route }) => {
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
               <Text style={styles.chargerSpecText}>
-                Power: {charger?.power_rating || "Unknown Power"} KW
+                Power: {charger?.max_power_kw || "Unknown Power"} KW
               </Text>
             </View>
-
+  
             {/* Connector Type */}
             <View style={styles.connector}>
               <Text style={styles.connectorTitle}>
@@ -283,7 +275,7 @@ const PreviewPage = ({ navigation, route }) => {
                 <Icon
                   name={
                     charger?.connector_type
-                      ? connectorIcons[charger?.connector_type]
+                      ? connectorIcons?.[charger?.connector_type] || "ev-plug-type1"
                       : "ev-plug-type1"
                   }
                   size={20}
@@ -296,19 +288,23 @@ const PreviewPage = ({ navigation, route }) => {
       </ScrollView>
     );
   }
-
+  
   function loadingDialog() {
     return (
       <Overlay isVisible={isLoading} overlayStyle={styles.dialogStyle}>
-        <ActivityIndicator size={50} color={COLORS.primary} style={{ alignSelf: "center" }} />
+        <ActivityIndicator
+          size={50}
+          color={COLORS.primary}
+          style={{ alignSelf: "center" }}
+        />
         <Text style={{ marginTop: Sizes.fixPadding, textAlign: "center", ...Fonts.blackColor16Regular }}>
           Please wait...
         </Text>
       </Overlay>
     );
   }
-
-  //This will be used to show the error dialog in future
+  
+  // This will be used to show the error dialog in future
   function errorDialog() {
     return (
       <Overlay isVisible={isError} overlayStyle={styles.dialogStyle}>
@@ -331,43 +327,46 @@ const PreviewPage = ({ navigation, route }) => {
       </Overlay>
     );
   }
-
-
+  
   function detailTab() {
     return (
       <ScrollView style={styles.tabContent}>
         <Text style={styles.sectionTitle}>Location Details</Text>
         <View style={styles.mapContainer}>
           <MapView
-            ref={mapRef} // Attach the ref to the MapView
+            ref={mapRef}
             style={styles.map}
             initialRegion={{
-              latitude: stationData.coordinates.latitude || 0,
-              longitude: stationData.coordinates.longitude || 0,
+              latitude: stationData?.coordinates?.latitude || 0,
+              longitude: stationData?.coordinates?.longitude || 0,
               latitudeDelta: 0.01,
               longitudeDelta: 0.01,
             }}
           >
             <Marker
               coordinate={{
-                latitude: stationData.coordinates.latitude || 0,
-                longitude: stationData.coordinates.longitude || 0,
+                latitude: stationData?.coordinates?.latitude || 0,
+                longitude: stationData?.coordinates?.longitude || 0,
               }}
-              title={stationData.station_name}
-              description={stationData.address}
+              title={stationData?.station_name}
+              description={stationData?.address}
             />
           </MapView>
         </View>
+  
         <Text style={styles.sectionTitle}>Address</Text>
         <View style={styles.landmarkContainer}>
-          <Text style={styles.landmarkTitle}>{stationData.address}</Text>
+          <Text style={styles.landmarkTitle}>
+            {stationData?.address}
+          </Text>
         </View>
+  
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
-          {stationData.amenities.split(',').map((amenityName, index) => {
-            const trimmedName = amenityName.trim();
-            const iconName = amenityMap[trimmedName] || "help-circle";
-
+          {stationData?.amenities?.split(',').map((amenityName, index) => {
+            const trimmedName = amenityName?.trim();
+            const iconName = amenityMap?.[trimmedName] || "help-circle";
+  
             return (
               <View key={index} style={styles.amenityItem}>
                 <Icon name={iconName} size={24} color={COLORS.primary} />
@@ -379,6 +378,7 @@ const PreviewPage = ({ navigation, route }) => {
       </ScrollView>
     );
   }
+  
 };
 
 const styles = StyleSheet.create({

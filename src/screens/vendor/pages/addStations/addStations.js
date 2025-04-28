@@ -1,5 +1,5 @@
 // AddStations.js this is add station this is ravi
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -11,42 +11,42 @@ import {
   Image,
   Alert,
   Platform,
-} from 'react-native';
+} from "react-native";
 import MyStatusBar from "../../../../components/myStatusBar";
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import * as ImagePicker from 'expo-image-picker';
-import { Picker } from '@react-native-picker/picker';
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import * as ImagePicker from "expo-image-picker";
+import { Picker } from "@react-native-picker/picker";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { setupImagePicker } from "../../CompleteProfileDetail/vendorDetailForm";
 import { postSingleFile } from "../../../auth/services/crudFunction";
 import { selectToken, selectUser } from "../../../auth/services/selector";
 
-const PRIMARY_COLOR = '#101942';
+const PRIMARY_COLOR = "#101942";
 const amenities = [
-  { id: 1, icon: 'toilet', label: 'Restroom' },
-  { id: 2, icon: 'coffee', label: 'Cafe' },
-  { id: 3, icon: 'wifi', label: 'Wifi' },
-  { id: 4, icon: 'cart', label: 'Store' },
-  { id: 5, icon: 'car', label: 'Car Care' },
-  { id: 6, icon: 'bed', label: 'Lodging' },
+  { id: 1, icon: "toilet", label: "Restroom" },
+  { id: 2, icon: "coffee", label: "Cafe" },
+  { id: 3, icon: "wifi", label: "Wifi" },
+  { id: 4, icon: "cart", label: "Store" },
+  { id: 5, icon: "car", label: "Car Care" },
+  { id: 6, icon: "bed", label: "Lodging" },
 ];
 const connectors = [
-  { id: 1, icon: 'ev-plug-ccs2', type: 'CCS-2' },
-  { id: 2, icon: 'ev-plug-chademo', type: 'CHAdeMO' },
-  { id: 3, icon: 'ev-plug-type2', type: 'Type-2' },
-  { id: 4, icon: 'ev-plug-type1', type: 'Wall' },
-  { id: 5, icon: 'ev-plug-type2', type: 'GBT' },
+  { id: 1, icon: "ev-plug-ccs2", type: "CCS-2" },
+  { id: 2, icon: "ev-plug-chademo", type: "CHAdeMO" },
+  { id: 3, icon: "ev-plug-type2", type: "Type-2" },
+  { id: 4, icon: "ev-plug-type1", type: "Wall" },
+  { id: 5, icon: "ev-plug-type2", type: "GBT" },
 ];
 const AddStations = () => {
   const navigation = useNavigation();
   const [selectedAmenities, setSelectedAmenities] = useState([]);
-  const [openHours, setOpenHours] = useState('24 Hours');
+  const [openHours, setOpenHours] = useState("24 Hours");
   const [photo, setPhoto] = useState(null);
   const [address, setAddress] = useState("");
-  const [openTime, setOpenTime] = useState('');
-  const [closeTime, setCloseTime] = useState('');
+  const [openTime, setOpenTime] = useState("");
+  const [closeTime, setCloseTime] = useState("");
   const [showPicker, setShowPicker] = useState(false);
   const [selectedField, setSelectedField] = useState(null);
   const [stationName, setStationName] = useState(null);
@@ -55,7 +55,8 @@ const AddStations = () => {
   const [chargerForms, setChargerForms] = useState([{}]);
   const [selectedForm, setSelectedForm] = useState(null);
   const [coordinate, setCoordinate] = useState(null);
-  const addChargerForm = () => setChargerForms(prevForms => [...prevForms, {}]);
+  const addChargerForm = () =>
+    setChargerForms((prevForms) => [...prevForms, {}]);
   const [connectorsList, setConnectorsList] = useState([]);
   const accessToken = useSelector(selectToken); // Get access token from Redux store
   const dispatch = useDispatch(); // Get the dispatch function
@@ -64,40 +65,16 @@ const AddStations = () => {
   const user = useSelector(selectUser); // Get user data
   const [selectedConnectors, setSelectedConnectors] = useState({});
 
-  // const incrementConnector = (id, chargerIndex) => {
-  //   setConnectorsList((prev) => {
-  //     const exists = prev.find((c) => c.id === id && c.chargerIndex === chargerIndex);
-  //     if (exists) {
-  //       return prev.map((c) =>
-  //         c.id === id && c.chargerIndex === chargerIndex
-  //           ? { ...c, count: c.count + 1 }
-  //           : c
-  //       );
-  //     } else {
-  //       return [...prev, { id, count: 1, chargerIndex }];
-  //     }
-  //   });
-  // };
-
-  // const decrementConnector = (id, chargerIndex) => {
-  //   setConnectorsList((prev) =>
-  //     prev
-  //       .map((c) =>
-  //         c.id === id && c.chargerIndex === chargerIndex && c.count > 0
-  //           ? { ...c, count: c.count - 1 }
-  //           : c
-  //       )
-  //       .filter((c) => c.count > 0)
-  //   );
-  // };
-
   const handleTimeChange = (event, selectedDate) => {
     setShowPicker(false);
     if (selectedDate) {
-      const formattedTime = selectedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      if (selectedField === 'open') {
+      const formattedTime = selectedDate.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      if (selectedField === "open") {
         setOpenTime(formattedTime);
-      } else if (selectedField === 'close') {
+      } else if (selectedField === "close") {
         setCloseTime(formattedTime);
       }
     }
@@ -105,7 +82,7 @@ const AddStations = () => {
 
   const toggleAmenity = (id) => {
     if (selectedAmenities.includes(id)) {
-      setSelectedAmenities(selectedAmenities.filter(item => item !== id));
+      setSelectedAmenities(selectedAmenities.filter((item) => item !== id));
     } else {
       setSelectedAmenities([...selectedAmenities, id]);
     }
@@ -113,8 +90,8 @@ const AddStations = () => {
 
   const handleImagePick = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      alert('Sorry, we need camera roll permissions to make this work!');
+    if (status !== "granted") {
+      alert("Sorry, we need camera roll permissions to make this work!");
       return;
     }
 
@@ -137,10 +114,16 @@ const AddStations = () => {
           postSingleFile({ file: file, accessToken: accessToken })
         );
 
-        if (response?.payload?.code === 200 || response?.payload?.code === 201) {
+        if (
+          response?.payload?.code === 200 ||
+          response?.payload?.code === 201
+        ) {
           setPhoto(response?.payload?.data?.filePathUrl);
           setViewImage(imageUri);
-          console.log("Station image uploaded:", response?.payload?.data?.filePathUrl);
+          console.log(
+            "Station image uploaded:",
+            response?.payload?.data?.filePathUrl
+          );
         } else {
           Alert.alert("Error", "File Should be less than 5 MB");
         }
@@ -156,7 +139,7 @@ const AddStations = () => {
     navigation.push("PickLocation", {
       addressFor: "stationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
-      setCoordinate: (newCoordinate) => setCoordinate(newCoordinate)
+      setCoordinate: (newCoordinate) => setCoordinate(newCoordinate),
     });
   };
 
@@ -164,14 +147,13 @@ const AddStations = () => {
     console.log("in the preview page");
     const amenitiesString = selectedAmenities
       .map((id) => amenities.find((amenity) => amenity.id === id)?.label)
-      .join(',');
+      .join(",");
 
     const chargers = chargerForms.map((charger, index) => ({
       charger_type: charger.chargerType || null,
       power_rating: parseFloat(charger.powerRating) || null,
 
       connector_type: charger.connector_type || null,
-
     }));
 
     const stationData = {
@@ -183,15 +165,25 @@ const AddStations = () => {
         longitude: coordinate?.longitude || null,
       },
       amenities: amenitiesString,
-      open_hours_opening_time: openHours === '24 Hours' ? '00:00:00' : openTime || '00:00:00',
-      open_hours_closing_time: openHours === '24 Hours' ? '23:59:59' : closeTime || '23:59:59',
+      open_hours_opening_time:
+        openHours === "24 Hours" ? "00:00:00" : openTime || "00:00:00",
+      open_hours_closing_time:
+        openHours === "24 Hours" ? "23:59:59" : closeTime || "23:59:59",
       chargers,
       station_images: photo ? photo : "",
     };
 
-    console.log('Transformed Station Data:', JSON.stringify(stationData, null, 2));
+    console.log(
+      "Transformed Station Data:",
+      JSON.stringify(stationData, null, 2)
+    );
 
-    navigation.push('PreviewPage', { stationData, type: "add", stationImage: viewImage, clearForm });
+    navigation.push("PreviewPage", {
+      stationData,
+      type: "add",
+      stationImage: viewImage,
+      clearForm,
+    });
   };
 
   const handleVisibility = (form) => {
@@ -207,11 +199,11 @@ const AddStations = () => {
 
   const clearForm = () => {
     setSelectedAmenities([]);
-    setOpenHours('24 Hours');
+    setOpenHours("24 Hours");
     setPhoto(null);
-    setAddress('');
-    setOpenTime('');
-    setCloseTime('');
+    setAddress("");
+    setOpenTime("");
+    setCloseTime("");
     setShowPicker(false);
     setSelectedField(null);
     setStationName(null);
@@ -225,14 +217,14 @@ const AddStations = () => {
     setViewImage(null);
     setSelectedConnectors({});
   };
-  
-
 
   return (
     <ScrollView style={styles.container}>
       <MyStatusBar />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation?.navigate("VendorBottomTabBar")}>
+        <TouchableOpacity
+          onPress={() => navigation?.navigate("VendorBottomTabBar")}
+        >
           <Icon name="arrow-left" size={24} color={PRIMARY_COLOR} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>List a Station</Text>
@@ -242,9 +234,7 @@ const AddStations = () => {
       {locationDetail()}
       {additionalDetail()}
       {chargerForms.map((_, index) => (
-        <View key={`charger-${index}`}>
-          {chargerDetail(index)}
-        </View>
+        <View key={`charger-${index}`}>{chargerDetail(index)}</View>
       ))}
       {/* Bottom Buttons */}
       <View style={styles.bottomButtons}>
@@ -261,22 +251,26 @@ const AddStations = () => {
         onPress={() => handleVisibility("locationdetail")}
       >
         <Text style={styles?.sectionTitle}>Location Details</Text>
-        {selectedForm === "locationdetail" && (<>
-          <TouchableOpacity style={styles?.mapButton} onPress={selectOnMap}>
-            <Text style={styles?.mapButtonText}>Select on Map (required)</Text>
-          </TouchableOpacity>
+        {selectedForm === "locationdetail" && (
+          <>
+            <TouchableOpacity style={styles?.mapButton} onPress={selectOnMap}>
+              <Text style={styles?.mapButtonText}>
+                Select on Map (required)
+              </Text>
+            </TouchableOpacity>
 
-          {address ? (
-            <TextInput
-              style={[styles?.input, styles?.textArea, { marginBottom: 20 }]}
-              placeholder="Home/Street/Locality, City, State, Pincode"
-              placeholderTextColor="gray"
-              multiline
-              value={address}
-              onChangeText={setAddress}
-            />
-          ) : null}
-        </>)}
+            {address ? (
+              <TextInput
+                style={[styles?.input, styles?.textArea, { marginBottom: 20 }]}
+                placeholder="Home/Street/Locality, City, State, Pincode"
+                placeholderTextColor="gray"
+                multiline
+                value={address}
+                onChangeText={setAddress}
+              />
+            ) : null}
+          </>
+        )}
       </TouchableOpacity>
     );
   }
@@ -288,12 +282,14 @@ const AddStations = () => {
         onPress={() => handleVisibility("additionaldetail")}
       >
         <Text style={styles?.sectionTitle}>Additional Details</Text>
-        {selectedForm === "additionaldetail" && (<>
-          {stationNameSection?.()}
-          {amenitiesSection?.()}
-          {openHoursSection?.()}
-          {uploadPhotoSection?.()}
-        </>)}
+        {selectedForm === "additionaldetail" && (
+          <>
+            {stationNameSection?.()}
+            {amenitiesSection?.()}
+            {openHoursSection?.()}
+            {uploadPhotoSection?.()}
+          </>
+        )}
       </TouchableOpacity>
     );
   }
@@ -324,7 +320,8 @@ const AddStations = () => {
                 <TouchableOpacity
                   style={[
                     styles?.hoursButton,
-                    chargerForms?.[index]?.chargerType === "AC" && styles?.selectedButton,
+                    chargerForms?.[index]?.chargerType === "AC" &&
+                      styles?.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -340,7 +337,7 @@ const AddStations = () => {
                     style={[
                       styles?.buttonText,
                       chargerForms?.[index]?.chargerType === "AC" &&
-                      styles?.selectedButtonText,
+                        styles?.selectedButtonText,
                     ]}
                   >
                     AC
@@ -350,7 +347,8 @@ const AddStations = () => {
                 <TouchableOpacity
                   style={[
                     styles?.hoursButton,
-                    chargerForms?.[index]?.chargerType === "DC" && styles?.selectedButton,
+                    chargerForms?.[index]?.chargerType === "DC" &&
+                      styles?.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -366,7 +364,7 @@ const AddStations = () => {
                     style={[
                       styles?.buttonText,
                       chargerForms?.[index]?.chargerType === "DC" &&
-                      styles?.selectedButtonText,
+                        styles?.selectedButtonText,
                     ]}
                   >
                     DC
@@ -383,10 +381,16 @@ const AddStations = () => {
                 style={styles?.input}
                 placeholder="Power Rating In kW"
                 value={chargerForms?.[index]?.powerRating || ""}
+                keyboardType="numeric"
                 onChangeText={(text) =>
                   setChargerForms((prev) =>
                     prev.map((charger, i) =>
-                      i === index ? { ...charger, powerRating: text } : charger
+                      i === index
+                        ? {
+                            ...charger,
+                            powerRating: text.replace(/[^0-9]/g, ""),
+                          }
+                        : charger
                     )
                   )
                 }
@@ -460,9 +464,8 @@ const AddStations = () => {
                     setSelectedConnectors((prev) => ({
                       ...prev,
                       [chargerIndex]: connector?.id,
-                    }))
-                  }
-                  }
+                    }));
+                  }}
                 >
                   {isSelected && (
                     <View
@@ -486,11 +489,12 @@ const AddStations = () => {
     );
   }
 
-
   function amenitiesSection() {
     return (
       <View style={styles.section}>
-        <Text style={styles.questionText}>What amenities are available at your station?</Text>
+        <Text style={styles.questionText}>
+          What amenities are available at your station?
+        </Text>
         <Text style={styles.sectionLabel}>
           Amenities <Text style={styles.optional}>(Optional)</Text>
         </Text>
@@ -500,19 +504,25 @@ const AddStations = () => {
               key={amenity.id}
               style={[
                 styles.amenityItem,
-                selectedAmenities.includes(amenity.id) && styles.selectedAmenity,
+                selectedAmenities.includes(amenity.id) &&
+                  styles.selectedAmenity,
               ]}
               onPress={() => toggleAmenity(amenity.id)}
             >
               <Icon
                 name={amenity.icon}
                 size={24}
-                color={selectedAmenities.includes(amenity.id) ? '#fff' : PRIMARY_COLOR}
+                color={
+                  selectedAmenities.includes(amenity.id)
+                    ? "#fff"
+                    : PRIMARY_COLOR
+                }
               />
               <Text
                 style={[
                   styles.amenityLabel,
-                  selectedAmenities.includes(amenity.id) && styles.selectedAmenityText,
+                  selectedAmenities.includes(amenity.id) &&
+                    styles.selectedAmenityText,
                 ]}
               >
                 {amenity.label}
@@ -521,56 +531,74 @@ const AddStations = () => {
           ))}
         </View>
       </View>
-    )
+    );
   }
   function openHoursSection() {
     return (
       <View style={styles.section}>
-        <Text style={styles.questionText}>What are your station's operating hours?</Text>
+        <Text style={styles.questionText}>
+          What are your station's operating hours?
+        </Text>
         <Text style={styles.sectionLabel}>Open Hours</Text>
         <View style={styles.hoursContainer}>
           <TouchableOpacity
-            style={[styles.hoursButton, openHours === '24 Hours' && styles.selectedButton]}
+            style={[
+              styles.hoursButton,
+              openHours === "24 Hours" && styles.selectedButton,
+            ]}
             onPress={() => {
-              setOpenHours('24 Hours');
-              setOpenTime('');
-              setCloseTime('');
+              setOpenHours("24 Hours");
+              setOpenTime("");
+              setCloseTime("");
             }}
           >
-            <Text style={[styles.buttonText, openHours === '24 Hours' && styles.selectedButtonText]}>
+            <Text
+              style={[
+                styles.buttonText,
+                openHours === "24 Hours" && styles.selectedButtonText,
+              ]}
+            >
               24 Hours
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.hoursButton, openHours === 'Custom' && styles.selectedButton]}
-            onPress={() => setOpenHours('Custom')}
+            style={[
+              styles.hoursButton,
+              openHours === "Custom" && styles.selectedButton,
+            ]}
+            onPress={() => setOpenHours("Custom")}
           >
-            <Text style={[styles.buttonText, openHours === 'Custom' && styles.selectedButtonText]}>
+            <Text
+              style={[
+                styles.buttonText,
+                openHours === "Custom" && styles.selectedButtonText,
+              ]}
+            >
               Custom
             </Text>
           </TouchableOpacity>
         </View>
 
-        {openHours === 'Custom' && (
+        {openHours === "Custom" && (
           <View style={styles.customTimeContainer}>
             <TouchableOpacity
               style={styles.timeInput}
               onPress={() => {
-                setSelectedField('open');
+                setSelectedField("open");
                 setShowPicker(true);
               }}
             >
-              <Text>{openTime || 'Opening Time'}</Text>
+              <Text>{openTime || "Opening Time"}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.timeInput}
               onPress={() => {
-                setSelectedField('close');
+                setSelectedField("close");
                 setShowPicker(true);
               }}
             >
-              <Text>{closeTime || 'Closing Time'}</Text>
+              <Text>{closeTime || "Closing Time"}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -578,22 +606,22 @@ const AddStations = () => {
         {showPicker && (
           <DateTimePicker
             mode="time"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            display={Platform.OS === "ios" ? "spinner" : "default"}
             value={new Date()}
             onChange={handleTimeChange}
           />
         )}
       </View>
-    )
+    );
   }
 
   function stationNameSection() {
     return (
       <View style={styles.section}>
-        <Text style={styles.questionText}>What is the name of your charging station?</Text>
-        <Text style={styles.sectionLabel}>
-          Station Name
+        <Text style={styles.questionText}>
+          What is the name of your charging station?
         </Text>
+        <Text style={styles.sectionLabel}>Station Name</Text>
         <TextInput
           style={styles.input}
           placeholder="Enter Station Name"
@@ -601,12 +629,14 @@ const AddStations = () => {
           onChangeText={setStationName}
         />
       </View>
-    )
+    );
   }
   function uploadPhotoSection() {
     return (
       <View style={styles.section}>
-        <Text style={styles.questionText}>Can you upload a clear photo of the station or charger?</Text>
+        <Text style={styles.questionText}>
+          Can you upload a clear photo of the station or charger?
+        </Text>
         <Text style={styles.sectionLabel}>
           Upload Photo <Text style={styles.optional}>(Required)</Text>
         </Text>
@@ -625,33 +655,31 @@ const AddStations = () => {
       </View>
     );
   }
-
-
 };
 // export default  AddStations ;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: PRIMARY_COLOR,
   },
   card: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 12,
     margin: 16,
     padding: 20,
     paddingBottom: 5,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -659,7 +687,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: PRIMARY_COLOR,
     marginBottom: 16,
   },
@@ -671,43 +699,41 @@ const styles = StyleSheet.create({
   picker: {
     fontSize: 12,
     height: 50,
-    width: '100%',
+    width: "100%",
     borderColor: PRIMARY_COLOR,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
     borderRadius: 8,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   section: {
     marginBottom: 24,
   },
   sectionLabel: {
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: PRIMARY_COLOR,
     marginBottom: 12,
   },
   networkType: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   optional: {
     fontSize: 12,
-    fontWeight: 'normal',
-    color: '#888',
+    fontWeight: "normal",
+    color: "#888",
   },
   amenitiesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
   },
 
-
-
   amenityItem: {
-    width: '18%',
-    alignItems: 'center',
+    width: "18%",
+    alignItems: "center",
     padding: 10,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: "#e0e0e0",
     borderRadius: 8,
     marginBottom: 10,
   },
@@ -721,10 +747,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 4,
     borderRadius: 6,
-  }
-  ,
+  },
   connectorsBox: {
-    width: '100%',
+    width: "100%",
     // alignItems: 'center',
     marginBottom: 4,
   },
@@ -736,26 +761,26 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 10,
     color: PRIMARY_COLOR,
-    textAlign: 'center',
+    textAlign: "center",
   },
   connectorLabel: {
     marginTop: 4,
     fontSize: 10,
     color: PRIMARY_COLOR,
-    textAlign: 'center',
+    textAlign: "center",
   },
   selectedAmenityText: {
-    color: 'white',
+    color: "white",
   },
   hoursContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 10,
   },
   hoursButton: {
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: "#e0e0e0",
     borderRadius: 8,
   },
   selectedButton: {
@@ -764,49 +789,49 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 12,
-    color: '#555',
+    color: "#555",
   },
   selectedButtonText: {
-    color: 'white',
+    color: "white",
   },
   photoDescription: {
     fontSize: 10,
-    color: '#666',
+    color: "#666",
     marginBottom: 12,
   },
   photoUpload: {
     width: 120,
     height: 120,
     borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: '#ccc',
+    borderStyle: "dashed",
+    borderColor: "#ccc",
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   previewImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: "#e0e0e0",
     borderRadius: 8,
     padding: 12,
     fontSize: 12,
   },
   textArea: {
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: "#e0e0e0",
     borderRadius: 8,
     padding: 12,
     fontSize: 12,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
     minHeight: 100,
   },
   nextButtonContainer: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
     marginTop: 16,
   },
   nextButton: {
@@ -815,12 +840,12 @@ const styles = StyleSheet.create({
   },
   nextButtonText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#ff5722',
+    fontWeight: "bold",
+    color: "#ff5722",
   },
   bottomButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     padding: 16,
     marginBottom: 20,
   },
@@ -830,35 +855,35 @@ const styles = StyleSheet.create({
   },
   addNewButtonText: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#ff5722',
+    fontWeight: "bold",
+    color: "#ff5722",
   },
   previewButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#FF5722",
     paddingVertical: 10,
     paddingHorizontal: 40,
     borderRadius: 8,
-    width: '100%'
+    width: "100%",
   },
   previewButtonText: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: "bold",
+    color: "white",
   },
   customTimeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 10,
   },
   timeInput: {
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: "#e0e0e0",
     borderRadius: 8,
     padding: 10,
     fontSize: 12,
-    width: '48%',
+    width: "48%",
   },
   mapButton: {
     backgroundColor: "white",
@@ -873,7 +898,6 @@ const styles = StyleSheet.create({
     color: "#F4721E",
     fontSize: 12,
   },
-
 });
 
 export default AddStations;

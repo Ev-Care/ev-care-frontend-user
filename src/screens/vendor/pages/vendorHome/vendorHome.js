@@ -47,7 +47,7 @@ const COLORS = {
 
 const VendorHome = () => {
   const navigation = useNavigation();
-  const vendorStations = useDispatch(selectVendorStation);
+  const stations = useSelector(selectVendorStation);
   const [isLive, setIsLive] = useState(true);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
@@ -58,6 +58,9 @@ const VendorHome = () => {
     // console.log("useEffect called");
     const fetchData = async () => {
       if (user?.id) {
+        if(stations){
+          console.log("station = ", stations);
+        }
         console.log("Dispatching fetchStations for user ID:", user?.id);
         const response = await dispatch(fetchStations(user?.id));
         if (fetchStations.fulfilled.match(response)) {
@@ -68,6 +71,7 @@ const VendorHome = () => {
 
         }
       } else {
+        
         console.log("User ID is not available");
         // console.log(useSelector(selectStation));
 
@@ -93,7 +97,7 @@ const VendorHome = () => {
     return "Good Evening";
   };
 
-  const stations = useSelector(selectVendorStation);
+  
 
 
 

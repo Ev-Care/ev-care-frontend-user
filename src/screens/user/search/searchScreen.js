@@ -87,6 +87,7 @@ const ChargingStationMap = () => {
     }, [mapAnimation, stations]);
 
     const getUserLocation = async (calledBy) => {
+   
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
@@ -99,7 +100,7 @@ const ChargingStationMap = () => {
         setRegion({ latitude, longitude, latitudeDelta: 0.05, longitudeDelta: 0.05 });
         setCurrentLocation({ latitude, longitude });
         reverseGeocode(latitude, longitude);
-    
+        scrollTo();
         if (mapRef.current) {
           mapRef.current.animateCamera(
             { center: { latitude, longitude }, zoom: 15 },
@@ -166,12 +167,13 @@ const ChargingStationMap = () => {
       const response = await fetch(url);
       const data = await response.json();
       if (data.results.length > 0) {
+        
         const { lat, lng } = data.results[0].geometry.location;
         const newRegion = { latitude: lat, longitude: lng, latitudeDelta: 0.03, longitudeDelta: 0.03 };
         setRegion(newRegion);
         const selectedCoord = { latitude: lat, longitude: lng };
         setSelectedLocation(selectedCoord);
-  
+        scrollTo();
         if (mapRef.current) {
           mapRef.current.animateCamera({ center: newRegion, zoom: 15 }, { duration: 1000 });
         }
@@ -194,6 +196,18 @@ const ChargingStationMap = () => {
       console.error("Place details error:", error);
     }
   };
+
+  const scrollTo = () => {
+    if (stations.length > 0 && _scrollView.current) {
+      _scrollView.current.scrollTo({
+        x: 0,  // Scroll directly to the start of the first item
+        y: 0,
+        animated: true
+      });
+    }
+  };
+  
+  
   
 
   const interpolation = stations?.map((marker, index) => { // Optional chaining

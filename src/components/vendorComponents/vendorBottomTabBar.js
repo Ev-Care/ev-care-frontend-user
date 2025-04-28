@@ -53,7 +53,13 @@ const VendorBottomTabBar = ({ navigation }) => {
           tabBarInactiveTintColor: Colors.lightGrayColor,
           tabBarHideOnKeyboard: true,
           headerShown: false,
-          tabBarShowLabel: false,
+          
+          tabBarShowLabel: true, 
+          tabBarLabelStyle: {
+            fontSize: 10, 
+            marginTop: 4, 
+            fontWeight: '400', 
+          },
           tabBarStyle: styles.tabBarStyle,
           tabBarIconStyle: { alignSelf: "center" },
         }}
@@ -69,38 +75,60 @@ const VendorBottomTabBar = ({ navigation }) => {
                 color={focused ? Colors.primaryColor : Colors.grayColor}
               />
             ),
+            tabBarLabel: 'Home', 
           }}
+        
         />
 <Tab.Screen
   name="AddStations"
   component={AddStations}
   options={{
     tabBarButton: (props) => (
-      <TouchableOpacity
-        {...props}
+      <View
         style={{
           justifyContent: "center",
           alignItems: "center",
           width: 60,
-          height: 60,
-          borderRadius: 40,
-          backgroundColor: Colors.primaryColor,
+          height: 80, // Increased height to accommodate label
           position: "absolute",
           bottom: 20,
           left: "50%",
           marginLeft: -40, // Half of width to center it
-          shadowColor: Colors.primaryColor,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.4,
-          shadowRadius: 5,
-          elevation: 8,
         }}
       >
-        <MaterialIcons name="add" size={35} color={Colors.whiteColor} />
-      </TouchableOpacity>
+        <TouchableOpacity
+          {...props}
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            width: 60,
+            height: 60,
+            borderRadius: 40,
+            backgroundColor: Colors.primaryColor,
+            shadowColor: Colors.primaryColor,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.4,
+            shadowRadius: 5,
+            elevation: 8,
+          }}
+        >
+          <MaterialIcons name="add" size={35} color={Colors.whiteColor} />
+        </TouchableOpacity>
+        {/* <Text
+          style={{
+            color: Colors.primaryColor,
+            fontSize: 10, // Adjust font size
+            marginTop: 18, // Space between icon and label
+            fontWeight: "400", // Optional
+          }}
+        >
+          Add Station
+        </Text> */}
+      </View>
     ),
   }}
 />
+
 
 
         <Tab.Screen
@@ -114,6 +142,7 @@ const VendorBottomTabBar = ({ navigation }) => {
                 color={focused ? Colors.primaryColor : Colors.grayColor}
               />
             ),
+            tabBarLabel: 'Profile', 
           }}
         />
       </Tab.Navigator>

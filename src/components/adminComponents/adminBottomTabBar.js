@@ -13,21 +13,19 @@ import { useFocusEffect } from "@react-navigation/native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AdminHome from "../../screens/admin/adminHome/AdminHomePage";
 import AdminProfilePage from "../../screens/admin/adminProfile/AdminProfile";
-
 import ViewAllUserPage from "../../screens/admin/viewAllUsers/ViewAllUsersPage";
 import ViewAllStationsPage from "../../screens/admin/viewAllStations/ViewAllStationsPage";
 
 const Tab = createBottomTabNavigator();
-const AdminBottomTabBar = ({ navigation }) => {
-  const [backClickCount, setBackClickCount] = useState(0);
 
+const AdminBottomTabBar = ({ navigation }) => {
   const backAction = () => {
     if (Platform.OS === "ios") {
       navigation.addListener("beforeRemove", (e) => {
         e.preventDefault();
       });
     } else {
-      backClickCount === 1 ? BackHandler.exitApp() : _spring();
+      backClickCount == 1 ? BackHandler.exitApp() : _spring();
       return true;
     }
   };
@@ -40,7 +38,7 @@ const AdminBottomTabBar = ({ navigation }) => {
         BackHandler.removeEventListener("hardwareBackPress", backAction);
         navigation.removeListener("gestureEnd", backAction);
       };
-    }, [backClickCount])
+    }, [backAction])
   );
 
   function _spring() {
@@ -50,6 +48,8 @@ const AdminBottomTabBar = ({ navigation }) => {
     }, 1000);
   }
 
+  const [backClickCount, setBackClickCount] = useState(0);
+
   return (
     <>
       <Tab.Navigator
@@ -58,63 +58,106 @@ const AdminBottomTabBar = ({ navigation }) => {
           tabBarInactiveTintColor: Colors.lightGrayColor,
           tabBarHideOnKeyboard: true,
           headerShown: false,
-          tabBarShowLabel: false,
+          tabBarShowLabel: true, 
+          tabBarLabelStyle: {
+            fontSize: 10, 
+            marginTop: 4, 
+            fontWeight: '400', 
+          },
+          tabBarIconStyle: { alignSelf: "center" }, 
           tabBarStyle: styles.tabBarStyle,
-          tabBarIconStyle: { alignSelf: "center" },
         }}
       >
         <Tab.Screen
-          name="AdminHome"
+          name="Home"
           component={AdminHome}
           options={{
-            tabBarIcon: ({ focused }) => (
-              <MaterialIcons
-                name="home"
-                size={26}
-                color={focused ? Colors.primaryColor : Colors.grayColor}
-              />
-            ),
+            tabBarIcon: ({ focused }) =>
+              focused ? (
+                <View style={styles.selectedTabCircleStyle}>
+                  <MaterialIcons
+                    name="home"
+                    size={26}
+                    color={Colors.whiteColor}
+                  />
+                </View>
+              ) : (
+                <MaterialIcons
+                  name="home"
+                  size={26}
+                  color={Colors.primaryColor}
+                />
+              ),
+            tabBarLabel: 'Home', 
           }}
         />
         <Tab.Screen
-          name="ViewAllStationsPage"
+          name="stations"
           component={ViewAllStationsPage}
           options={{
-            tabBarIcon: ({ focused }) => (
-              <MaterialIcons
-                name="ev-station"
-                size={26}
-                color={focused ? Colors.primaryColor : Colors.grayColor}
-              />
-            ),
+            tabBarIcon: ({ focused }) =>
+              focused ? (
+                <View style={styles.selectedTabCircleStyle}>
+                  <MaterialIcons
+                    name="ev-station"
+                    size={22}
+                    color={Colors.whiteColor}
+                  />
+                </View>
+              ) : (
+                <MaterialIcons
+                  name="ev-station"
+                  size={22}
+                  color={Colors.primaryColor}
+                />
+              ),
+            tabBarLabel: 'stations',
           }}
         />
-      
         <Tab.Screen
-          name="ViewAllUserPage"
+          name="users"
           component={ViewAllUserPage}
           options={{
-            tabBarIcon: ({ focused }) => (
-              <MaterialIcons
-                name="people-outline"
-                size={26}
-                color={focused ? Colors.primaryColor : Colors.grayColor}
-              />
-            ),
+            tabBarIcon: ({ focused }) =>
+              focused ? (
+                <View style={styles.selectedTabCircleStyle}>
+                  <MaterialIcons
+                    name="people-outline"
+                    size={24}
+                    color={Colors.whiteColor}
+                  />
+                </View>
+              ) : (
+                <MaterialIcons
+                  name="people-outline"
+                  size={24}
+                  color={Colors.primaryColor}
+                />
+              ),
+            tabBarLabel: 'users', 
           }}
         />
-
         <Tab.Screen
-          name="AdminProfilePage"
+          name="Profile"
           component={AdminProfilePage}
           options={{
-            tabBarIcon: ({ focused }) => (
-              <MaterialIcons
-                name="person"
-                size={26}
-                color={focused ? Colors.primaryColor : Colors.grayColor}
-              />
-            ),
+            tabBarIcon: ({ focused }) =>
+              focused ? (
+                <View style={styles.selectedTabCircleStyle}>
+                  <MaterialIcons
+                    name="person"
+                    size={25}
+                    color={Colors.whiteColor}
+                  />
+                </View>
+              ) : (
+                <MaterialIcons
+                  name="person"
+                  size={25}
+                  color={Colors.primaryColor}
+                />
+              ),
+            tabBarLabel: 'Profile', 
           }}
         />
       </Tab.Navigator>
@@ -123,7 +166,7 @@ const AdminBottomTabBar = ({ navigation }) => {
   );
 
   function exitInfo() {
-    return backClickCount === 1 ? (
+    return backClickCount == 1 ? (
       <View style={styles.exitInfoWrapStyle}>
         <Text style={{ ...Fonts.whiteColor14Medium }}>
           Press Back Once Again To Exit!
@@ -135,39 +178,34 @@ const AdminBottomTabBar = ({ navigation }) => {
 
 export default AdminBottomTabBar;
 
+
 const styles = StyleSheet.create({
-  floatingButton: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: Colors.primaryColor,
+  exitInfoWrapStyle: {
+    backgroundColor: Colors.lightBlackColor,
+    position: "absolute",
+    bottom: 50,
+    alignSelf: "center",
+    borderRadius: Sizes.fixPadding * 2.0,
+    paddingHorizontal: Sizes.fixPadding + 5.0,
+    paddingVertical: Sizes.fixPadding,
     justifyContent: "center",
     alignItems: "center",
-    position: "absolute",
-    bottom: 20,
-    alignSelf: "center",
-    shadowColor: Colors.primaryColor,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
-    elevation: 8,
+  },
+  selectedTabCircleStyle: {
+    width: 35.0,
+    height: 35.0,
+    borderRadius: 25.0,
+    backgroundColor: Colors.primaryColor,
+    alignItems: "center",
+    justifyContent: "center",
   },
   tabBarStyle: {
     backgroundColor: Colors.bodyBackColor,
     ...commonStyles.shadow,
     borderTopColor: Colors.extraLightGrayColor,
     borderTopWidth: 1.0,
-    height: Platform.OS === "ios" ? 100.0 : 70.0,
-    paddingTop: 10,
-    paddingBottom: Platform.OS === "ios" ? 20 : 10,
-  },
-  exitInfoWrapStyle: {
-    position: "absolute",
-    bottom: 50,
-    alignSelf: "center",
-    backgroundColor: "rgba(0,0,0,0.6)",
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 5,
+    height: Platform.OS == "ios" ? 100.0 : 70.0,
+    paddingTop:10,
+   paddingBottom: Platform.OS === "ios" ? 20 : 10, 
   },
 });

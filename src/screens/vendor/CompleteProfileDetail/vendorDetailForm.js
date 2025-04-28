@@ -19,7 +19,7 @@ import { Colors } from "../../../constants/styles";
 import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useDispatch, useSelector } from "react-redux";
-import { selectToken, selectUser } from "../../auth/services/selector";
+import { selectAuthError, selectToken, selectUser } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
@@ -62,17 +62,20 @@ const VendorDetailForm = () => {
   const [avatarUri, setAvatarUri] = useState(null); // State to hold the image URI
   const dispatch = useDispatch(); // Get the dispatch function
   const user = useSelector(selectUser);
+  const authErrorMessage = useSelector(selectAuthError);
   const [isCheckBoxClicked, setCheckBoxClicked] = useState(false);
   const userKey = user?.user_key; // Get the user key from the Redux store
-
+  const [panTimer, setPanTimer] = useState(null);
+  const [aadharTimer, setAadharTimer] = useState(null);
+  const [gstTimer, setGstTimer] = useState(null);
   let vendorDetail = {};
 
 
-console.log('hi');
+  console.log('hi');
   const handleSubmit = async () => {
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[A-Z0-9]{1}[A-Z0-9]{1}$/;
-  
+
     // Check for required fields
     if (!avatarUri || !businessName || !address || !aadharNumber || !panNumber) {
       if (isCheckBoxClicked && !gstNumber) {
@@ -82,25 +85,25 @@ console.log('hi');
       }
       return;
     }
-  
+
     // Validate Aadhaar number
     if (aadharNumber.length !== 12 || !/^\d+$/.test(aadharNumber)) {
-      await dispatch(showSnackbar({ message: "Aadhaar number must be number and of 12 digits.", type: "error" }));
+      await dispatch(showSnackbar({ message: "Invalid Aadhaar number.", type: "error" }));
       return;
     }
-  
+
     // Validate PAN number
     if (!panRegex.test(panNumber)) {
-      await dispatch(showSnackbar({ message: "Invalid PAN number format.", type: "error" }));
+      await dispatch(showSnackbar({ message: "Invalid PAN number", type: "error" }));
       return;
     }
-  
+
     // Validate GST number
     if (isCheckBoxClicked && (!gstNumber || !gstRegex.test(gstNumber))) {
-      await dispatch(showSnackbar({ message: "Invalid GST number format.", type: "error" }));
+      await dispatch(showSnackbar({ message: "Invalid GST number.", type: "error" }));
       return;
     }
-  
+
     // Proceed with vendor detail creation
     let vendorDetail = {
       business_name: businessName,
@@ -115,7 +118,7 @@ console.log('hi');
       gstin_number: gstNumber,
       gstin_image: null
     };
-  
+
     // Navigate based on checkbox selection
     if (isCheckBoxClicked) {
       navigation.navigate("UploadGst", { vendorDetail, isCheckBoxClicked });
@@ -123,8 +126,8 @@ console.log('hi');
       navigation.navigate("UploadAadhar", { vendorDetail, isCheckBoxClicked });
     }
   };
-  
-  
+
+
 
   const selectOnMap = () => {
     navigation.push("PickLocation", {
@@ -140,10 +143,12 @@ console.log('hi');
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert(
-          "Permission Denied",
-          "Camera roll permissions are required to upload an image."
-        );
+        await dispatch(showSnackbar({ message: "Camera permissions are required to upload an image.", type: 'error' }));
+
+        // Alert.alert(
+        //   "Permission Denied",
+        //   "Camera roll permissions are required to upload an image."
+        // );
         return;
       }
 
@@ -151,7 +156,7 @@ console.log('hi');
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images, // Ensure this is correctly accessed
         allowsEditing: true,
-        quality: 1,
+        quality: 0.2,
       });
 
       if (!result.canceled) {
@@ -173,13 +178,17 @@ console.log('hi');
         } else {
           // console.error("Image upload failed:", response.data);
           setImageLoading(false);
-          Alert.alert("Error", "File Should be less than 5 MB");
+          await dispatch(showSnackbar({ message: authErrorMessage || "File Should be less than 5 MB", type: 'error' }));
+
+          // Alert.alert("Error", "File Should be less than 5 MB");
         }
       }
     } catch (error) {
       setImageLoading(false);
       console.error("Error in handleImagePick:", error);
-      Alert.alert("Error", error.message || "An unexpected error occurred.");
+      await dispatch(showSnackbar({ message: authErrorMessage || "An unexpected error occurred.", type: 'error' }));
+
+      // Alert.alert("Error", error.message || "An unexpected error occurred.");
     }
   };
 
@@ -243,7 +252,7 @@ console.log('hi');
       /> */}
 
       <Text style={styles.label}>Aadhaar Number</Text>
-      import {Alert} from 'react-native'; // Make sure this is imported
+      {/* import {Alert} from 'react-native'; // Make sure this is imported */}
 
       <TextInput
         style={styles.input}
@@ -255,15 +264,27 @@ console.log('hi');
           const numericText = text.replace(/[^0-9]/g, ''); // Allow only numbers
 
           if (numericText.length > 12) {
-            console.log("number > 12")
             dispatch(showSnackbar({ message: 'Aadhaar number cannot exceed 12 digits', type: 'error' }));
-            return; // Don't update if more than 12 digits
+            return;
           }
 
-          setAadharNumber(numericText); // Otherwise, update normally
-        }}
+          setAadharNumber(numericText);
 
+          if (aadharTimer) {
+            clearTimeout(aadharTimer);
+          }
+
+          const timer = setTimeout(() => {
+            if (numericText.length !== 12) {
+              dispatch(showSnackbar({ message: 'Aadhaar number must be exactly 12 digits', type: 'error' }));
+            }
+          }, 500); // After 500ms of no typing
+
+          setAadharTimer(timer);
+        }}
+        maxLength={12}
       />
+
 
 
 
@@ -282,19 +303,23 @@ console.log('hi');
             return; // Don't update if more than 10 characters
           }
 
-          // Check format if length becomes exactly 10
-          if (validText.length === 10) {
+          setPanNumber(validText); // Update normally
+
+          if (panTimer) {
+            clearTimeout(panTimer);
+          }
+
+          // Set a timer: if user stops typing for 500ms, validate
+          const timer = setTimeout(() => {
             const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
             if (!panRegex.test(validText)) {
               dispatch(showSnackbar({ message: 'Invalid PAN format. Example: ABCDE1234F', type: 'error' }));
-              // (Optional) you can also choose not to update if invalid
-              // return;
             }
-          }
+          }, 500);
 
-          setPanNumber(validText); // Update normally
+          setPanTimer(timer);
         }}
-      // maxLength={10}
+        maxLength={10}
       />
 
 
@@ -314,28 +339,32 @@ console.log('hi');
           placeholder="Enter GST number"
           placeholderTextColor="gray"
           value={gstNumber}
+          maxLength={15}
           onChangeText={(text) => {
             const upperText = text.toUpperCase();
             const validText = upperText.replace(/[^A-Z0-9]/g, ''); // Only A-Z and 0-9
 
-            // Don't allow more than 15 characters
-            if (validText.length > 15) {
-              dispatch(showSnackbar({ message: 'GST number cannot exceed 15 characters', type: 'error' }));
-              return;
+            setGstNumber(validText); // Update normally
+
+            if (gstTimer) {
+              clearTimeout(gstTimer); // Clear existing timer
             }
 
-            // Always update first
-            setGstNumber(validText);
+            // Set a new timer: validate after 500ms pause
+            const timer = setTimeout(() => {
+              if (validText.length !== 15) {
+                dispatch(showSnackbar({ message: 'GST number must be exactly 15 characters.', type: 'error' }));
+                return;
+              }
 
-            // If full 15 characters entered, then check format
-            if (validText.length === 15) {
               const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
               if (!gstRegex.test(validText)) {
-                dispatch(showSnackbar({ message: 'Invalid GST format. Please check the entered number.', type: 'error' }));
+                dispatch(showSnackbar({ message: 'Invalid GST Number.', type: 'error' }));
               }
-            }
+            }, 500);
+
+            setGstTimer(timer);
           }}
-        // maxLength={15}
         />
 
       </>)}
@@ -355,7 +384,7 @@ console.log('hi');
           }
           setAddress(text);
         }}
-        // maxLength={100}
+      // maxLength={100}
       />
 
       <Text style={styles.label}>OR</Text>

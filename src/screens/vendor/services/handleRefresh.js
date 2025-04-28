@@ -1,22 +1,26 @@
 import { Alert } from "react-native";
 import { fetchStations } from "./crudFunction";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import { useSelector } from "react-redux";
+import { selectVendorError } from "./selector";
 
-export const handleRefreshStations = async (dispatch, userId, setRefreshing) => {
+export const handleRefreshStations = async (dispatch, userId, setRefreshing, errorMessage) => {
+
   try {
     console.log("Refreshing stations...");
     if (setRefreshing) setRefreshing(true);
     const response = await dispatch(fetchStations(userId));
-    if(response.payload.code !== 200) {
-      throw new Error("Failed to fetch stations");
+    if (fetchStations.fulfilled.match(response)) {
+      await dispatch(showSnackbar({ message: "Station fetched Successfully." , type : 'success'}));
+
+    } else if (fetchStations.rejected.match(response)) {
+      await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station.",  type : 'error' }));
+
     }
-    console.log("Stations refreshed successfully.", response.payload);
   } catch (error) {
     console.error("Error refreshing stations:", error);
-    Alert.alert(
-      "Error",
-      "Failed to refresh stations. Please try again later.",
-      [{ text: "OK" }]
-    );
+    await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station.",  type : 'error' }));
+
   } finally {
     if (setRefreshing) setRefreshing(false);
   }

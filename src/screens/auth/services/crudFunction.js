@@ -1,15 +1,6 @@
-import { 
-    signInSuccess, 
-    signInFailed, 
-    verifyOtpSuccess, 
-    verifyOtpFailed, 
-    signUpSuccess, 
-    signUpFailed 
-} from "./slice"; 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { signInAPI, verifyOtpAPI, signupAPI, postSingleFileAPI ,updateVendorAPI, getUserByKeyApi } from "./api";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { getUserByKeyAPI } from "../../user/service/api";
+import { getUserByKeyApi, postSingleFileAPI, signInAPI, signupAPI, updateVendorAPI, verifyOtpAPI } from "./api";
 
 // Async Thunks
 export const postSignIn = createAsyncThunk(
@@ -99,13 +90,21 @@ export const postSingleFile = createAsyncThunk(
         // console.log("postSingleFile called with:", data);
         const response = await postSingleFileAPI(data);
         
-        if (response.status === 200 || response.status === 201) {
+        if (response.data.code === 200 || response.data.code === 201) {
           return response.data;
         } else {
-          throw new Error("Signup failed");
+          return rejectWithValue(response.data.message || "File Upload failed.");
         }
       } catch (error) {
-        return rejectWithValue(error?.response?.data?.message || "Signup failed");
+        console.log("Error in postSingleFile:", error);
+  
+        // Always extract message properly even in catch
+        const errorMessage =
+          error?.response?.data?.message ||  // API sent error message
+          error?.message ||                  // JS error message
+          "Something went wrong. Please try again";          // fallback message
+        console.log("error message : ", errorMessage);
+        return rejectWithValue(errorMessage);
       }
     }
   
@@ -115,20 +114,24 @@ export const postSingleFile = createAsyncThunk(
     "auth/UpdateVendorProfile",
     async (data, { rejectWithValue }) => {
       try {
-        console.log("data at crud func page",data.user_key);
+       
         const response = await updateVendorAPI(data);
         console.log("response at crud func page",response);
-        if (response.status === 200 || response.status === 201) {
-         
-          return response.data; // or `bodyData` if you want
+        if (response.data.code === 200 || response.data.code === 201) {
+          return response.data;
         } else {
-          console.log("resposne in else",response);
-          // return rejectWithValue(response.message + " "+response.statusCode);
-          throw new Error(response.message + " "+response.statusCode);
+          return rejectWithValue(response.data.message || "Profile Update Failed");
         }
       } catch (error) {
-        console.log("error at crud ",error);
-        return rejectWithValue(error || "Request failed");
+        console.log("Error in patchUpdateVendorProfile:", error);
+  
+        // Always extract message properly even in catch
+        const errorMessage =
+          error?.response?.data?.message ||  // API sent error message
+          error?.message ||                  // JS error message
+         "Something went wrong. Please try again";          // fallback message
+  
+        return rejectWithValue(errorMessage);
       }
     }
   );
@@ -138,20 +141,22 @@ export const postSingleFile = createAsyncThunk(
     async (user_key, { rejectWithValue }) => {
       try {
         const accessToken = await AsyncStorage.getItem("accessToken");
-        console.log("payload in crud getuserbykey",user_key,"access token",accessToken);
         const response = await getUserByKeyApi({user_key,accessToken});
-        console.log("response at crud func page",response);
-        if (response.status === 200 || response.status === 201) {
-         
-          return response.data; // or `bodyData` if you want
+        if (response.data.code === 200 || response.data.code === 201) {
+          return response.data;
         } else {
-          console.log("resposne in else",response);
-          // return rejectWithValue(response.message + " "+response.statusCode);
-          throw new Error(response.message + " "+response.statusCode);
+          return rejectWithValue(response.data.message || "Failed to get user details.");
         }
       } catch (error) {
-        console.log("error at crud ",error);
-        return rejectWithValue(error || "Request failed");
+        console.log("Error in getUserByKey:", error);
+  
+        // Always extract message properly even in catch
+        const errorMessage =
+          error?.response?.data?.message ||  // API sent error message
+          error?.message ||                  // JS error message
+          "Failed to get user details.";          // fallback message
+  
+        return rejectWithValue(errorMessage);
       }
     }
   )

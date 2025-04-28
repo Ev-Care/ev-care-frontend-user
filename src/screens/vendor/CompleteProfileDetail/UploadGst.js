@@ -21,7 +21,7 @@ import {
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 import { useDispatch, useSelector } from "react-redux";
-import { selectToken } from "../../auth/services/selector";
+import { selectAuthError, selectToken } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "./vendorDetailForm";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
@@ -33,7 +33,7 @@ const UploadGst = ({ route, navigation }) => {
   const { vendorDetail, isCheckBoxClicked } = route.params || {};
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
-
+  const authErrorMessage = useSelector(selectAuthError);
   // Function to pick an image
 
   const pickImage = async (source, type) => {
@@ -80,11 +80,11 @@ const UploadGst = ({ route, navigation }) => {
             console.log("Image URI set successfully:", response?.payload?.data?.filePathUrl);
           }
         } else {
-          dispatch(showSnackbar({ message: 'File Size should be less that 5 MB', type: 'error' }));
+          dispatch(showSnackbar({ message: authErrorMessage || 'File Size should be less that 5 MB', type: 'error' }));
 
         }
       } catch (error) {
-        dispatch(showSnackbar({ message: 'Some Error occured while uploading file', type: 'error' }));
+        dispatch(showSnackbar({ message: authErrorMessage || 'Some Error occured while uploading file', type: 'error' }));
       } finally {
         setLoading(false);
       }

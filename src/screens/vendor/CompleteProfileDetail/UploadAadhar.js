@@ -16,7 +16,7 @@ import CompleteDetailProgressBar from "../../../components/vendorComponents/Comp
 import { Colors } from "../../../constants/styles";
 import { setupImagePicker } from "./vendorDetailForm";
 import { useDispatch, useSelector } from "react-redux";
-import { selectToken } from "../../auth/services/selector";
+import { selectAuthError, selectToken } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 const UploadAadhar = ({ route, navigation }) => {
@@ -30,7 +30,7 @@ const UploadAadhar = ({ route, navigation }) => {
   const { vendorDetail ,isCheckBoxClicked } = route.params || {};
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
-
+  const authErrorMessage = useSelector(selectAuthError);
   // Function to pick an image
   const pickImage = async (source, type) => {
     let permissionResult;
@@ -86,12 +86,12 @@ const UploadAadhar = ({ route, navigation }) => {
             console.log("back Image URI set successfully:", response?.payload?.data?.filePathUrl);
           }
         } else {
-          dispatch(showSnackbar({ message: 'File Should be less than 5 MB', type: 'error' }));
+          dispatch(showSnackbar({ message: authErrorMessage || 'File Should be less than 5 MB', type: 'error' }));
 
           // Alert.alert("Error", "File Should be less than 5 MB");
         }
       } catch (error) {
-        dispatch(showSnackbar({ message: 'Upload failed. Please try again.', type: 'error' }));
+        dispatch(showSnackbar({ message: authErrorMessage || 'Upload failed. Please try again.', type: 'error' }));
 
         // Alert.alert("Error", "Upload failed. Please try again.");
       } finally {

@@ -41,4 +41,11 @@ export const deleteStationAPI = (data) =>
     content_type: "application/json",
     accessToken: data.accessToken,
   });
+  
+export const updateAllStationStatusAPI = (data) =>
+    apiDeleteRequest({
+    apiUrl: `${API_URL}/charging-stations/${data.station_id}`,
+    content_type: "application/json",
+    accessToken: data.accessToken,
+  });
 

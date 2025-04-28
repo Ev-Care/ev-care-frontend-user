@@ -30,6 +30,7 @@ const PickLocationScreen = ({ navigation, route }) => {
     latitudeDelta: 0.03,
     longitudeDelta: 0.03,
   });
+  const [errorMsg, setErrorMsg] = useState(null);
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (mapRef.current) {

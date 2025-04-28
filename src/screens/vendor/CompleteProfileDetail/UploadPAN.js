@@ -21,7 +21,7 @@ import * as ImagePicker from "expo-image-picker";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 import { useDispatch, useSelector } from "react-redux";
-import { selectToken, selectUser } from "../../auth/services/selector";
+import { selectAuthError, selectToken, selectUser } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "./vendorDetailForm";
 import { patchUpdateVendorProfile } from "../../auth/services/crudFunction";
@@ -38,7 +38,7 @@ const UploadPAN = ({ route, navigation }) => {
   const user = useSelector(selectUser);
   const [imageloading, setImageLoading] = useState(false); 
 
-
+  const authErrorMessage = useSelector(selectAuthError);
   // Function to pick an image
 
   const pickImage = async (source, type) => {
@@ -88,12 +88,12 @@ const UploadPAN = ({ route, navigation }) => {
             // For future-proofing
           }
         } else {
-          dispatch(showSnackbar({ message: 'File Should be less than 5 MB', type: 'error' }));
+          dispatch(showSnackbar({ message: authErrorMessage, type: 'error' }));
 
           // Alert.alert("Error", "File Should be less than 5 MB");
         }
       } catch (error) {
-        dispatch(showSnackbar({ message: 'Something went wrong while uploading.', type: 'error' }));
+        dispatch(showSnackbar({ message: authErrorMessage || 'Something went wrong while uploading.', type: 'error' }));
 
         // Alert.alert("Error", "Something went wrong while uploading.");
       } finally {
@@ -132,14 +132,14 @@ const UploadPAN = ({ route, navigation }) => {
       console.log("code = ",response?.payload?.code);
       if (response?.payload?.code === 200 || response?.payload?.code === 201) {
       
-          await AsyncStorage.setItem("user",user?.user_key);
-          console.log("User data saved successfully:", response.payload.data);
+          // await AsyncStorage.setItem("user",user?.user_key);
+          // console.log("User data saved successfully:", response.payload.data);
           dispatch(showSnackbar({ message: 'Your details updated successfully.', type: 'success' }));
 
         // Alert.alert("Success", "details updated successfully.");
       } else {
-        console.error("Error saving user data:", error);
-        dispatch(showSnackbar({ message: 'Failed to update vendor details. Please try again.', type: 'error' }));
+        console.error("Error saving user data:", authErrorMessage);
+        dispatch(showSnackbar({ message: authErrorMessage, type: 'error' }));
 
         // Alert.alert("Error", "Failed to update vendor details. Please try again.");
       }
@@ -147,7 +147,7 @@ const UploadPAN = ({ route, navigation }) => {
       // navigation.navigate("PendingApprovalScreen", { VendorDetailAtTanPage });
     } catch (error) {
       console.error("Vendor detail submission failed:", error);
-      dispatch(showSnackbar({ message: 'Submission Failed, Please check your details and try again.', type: 'error' }));
+      dispatch(showSnackbar({ message: authErrorMessage || 'Submission Failed, Please check your details and try again.', type: 'error' }));
 
       // Alert.alert(
       //   "Submission Failed",

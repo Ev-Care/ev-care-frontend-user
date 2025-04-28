@@ -28,11 +28,12 @@ import MyStatusBar from "../../../../components/myStatusBar";
 import { useNavigation } from "@react-navigation/native";
 import { selectUser } from "../../../auth/services/selector";
 import { useSelector, useDispatch } from "react-redux";
-import { selectStation } from "../../services/selector";
+import { selectStation, selectVendorError, selectVendorStation } from "../../services/selector";
 import { fetchStations } from "../../services/crudFunction";
 import { selectStations } from "../../../user/service/selector";
 import { RefreshControl } from 'react-native';
 import { handleRefreshStations } from "../../services/handleRefresh";
+import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
 // Colors
 const COLORS = {
   primary: "#101942",
@@ -44,28 +45,37 @@ const COLORS = {
   green: "#00FF00",
 };
 
-const VendorHome =  () => {
+const VendorHome = () => {
   const navigation = useNavigation();
+  const vendorStations = useDispatch(selectVendorStation);
   const [isLive, setIsLive] = useState(true);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const [refreshing, setRefreshing] = useState(false);
+  const errorMessage = useSelector(selectVendorError);
 
   useEffect(() => {
     // console.log("useEffect called");
     const fetchData = async () => {
       if (user?.id) {
         console.log("Dispatching fetchStations for user ID:", user?.id);
-        await dispatch(fetchStations(user?.id));
+        const response = await dispatch(fetchStations(user?.id));
+        if (fetchStations.fulfilled.match(response)) {
+          await dispatch(showSnackbar({ message: "Station fetched Successfully." }));
+
+        } else if (fetchStations.rejected.match(response)) {
+          await dispatch(showSnackbar({ message: errorMessage || "Station fetched Successfully." }));
+
+        }
       } else {
         console.log("User ID is not available");
-        console.log(useSelector(selectStation));
+        // console.log(useSelector(selectStation));
 
       }
     };
-  
+
     fetchData();
-  
+
     return () => {
       console.log("Cleaning up VendorHome...");
     };
@@ -73,9 +83,9 @@ const VendorHome =  () => {
 
 
   // Get current time to display appropriate greeting
-  
-  
-  
+
+
+
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good Morning";
@@ -83,9 +93,9 @@ const VendorHome =  () => {
     return "Good Evening";
   };
 
-  const stations = useSelector(selectStation);
-  
-  
+  const stations = useSelector(selectVendorStation);
+
+
 
   const feature = [
     {
@@ -103,32 +113,33 @@ const VendorHome =  () => {
     if (!fullName) return "";
     return fullName.trim().split(" ")[0];
   }
-  const handleRefresh = async() => {
-    await handleRefreshStations(dispatch, user?.id, setRefreshing);
-    }
-    
+  const handleRefresh = async () => {
+    await handleRefreshStations(dispatch, user?.id, setRefreshing, errorMessage);
+  };
   
+
+
 
   return (
     <SafeAreaView style={styles.container}>
       <MyStatusBar />
       <ScrollView showsVerticalScrollIndicator={false}
-       refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          colors={['#9Bd35A', '#101942']}  // Android spinner colors
-          tintColor= "#101942"            // iOS spinner color
-        />
-      }
-      
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#9Bd35A', '#101942']}  // Android spinner colors
+            tintColor="#101942"            // iOS spinner color
+          />
+        }
+
       >
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.greetingContainer}>
-          <Text style={styles.greeting}>
-      Hi {getFirstName(user?.business_name)} {" "}!
-       </Text>
+            <Text style={styles.greeting}>
+              Hi {getFirstName(user?.business_name)} {" "}!
+            </Text>
             <Text style={styles.subGreeting}>{getGreeting()}</Text>
           </View>
 

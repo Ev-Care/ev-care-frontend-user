@@ -9,7 +9,7 @@ import {
   Platform,
   Alert,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useRef } from "react";
 import {
   Colors,
   screenWidth,
@@ -27,6 +27,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { selectUser, selectToken, selectAuthloader, selectAuthError } from "./services/selector";
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 import { setAuthLoaderFalse } from "../../redux/store/userSlice";
+import Timer from "../../components/Timer";
 
 const VerificationScreen = ({ navigation, route }) => {
   const [otpInput, setOtpInput] = useState("");
@@ -36,6 +37,16 @@ const VerificationScreen = ({ navigation, route }) => {
   const token = useSelector(selectToken);
   const error = useSelector(selectAuthError); // Get error from Redux store
   const [userKey, setUserKey] = useState(null);
+  
+  const [timerStarted, setTimerStarted] = useState(false);
+  const { handleSignIn } = route?.params;
+
+
+  const handleStartTimer = () => {
+     handleSignIn();
+     setTimerStarted(true);
+  };
+ 
 
   console.log("isLoading in VerificationScreen:", isLoading); // Debugging line
 
@@ -118,17 +129,27 @@ const VerificationScreen = ({ navigation, route }) => {
 
   function resendText() {
     return (
-      <Text
-        style={{
-          ...Fonts.grayColor18SemiBold,
-          textAlign: "center",
-          marginHorizontal: Sizes.fixPadding * 2.0,
-        }}
-      >
-        Resend
-      </Text>
+      timerStarted ? (
+        <Timer 
+        startTimer={timerStarted} 
+        setTimerStarted={setTimerStarted}
+        
+        />
+      ) : (
+        <Text
+          onPress={handleStartTimer}
+          style={{
+            ...Fonts.grayColor18SemiBold,
+            textAlign: "center",
+            marginHorizontal: Sizes.fixPadding * 2.0,
+          }}
+        >
+          Resend
+        </Text>
+      )
     );
   }
+  
 
   function loadingDialog() {
     return (

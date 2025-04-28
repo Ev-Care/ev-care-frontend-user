@@ -63,6 +63,7 @@ const SigninScreen = ({ navigation }) => {
   }
 
   const handleSignIn =  () => {
+    console.log(" handle Signin called ");
     if (!phoneNumber || phoneNumber.length < 10) {
       Alert.alert("Invalid Phone Number");
       return;
@@ -75,7 +76,7 @@ const SigninScreen = ({ navigation }) => {
       // Dispatch the Redux action
       dispatch(postSignIn({ mobileNumber: sanitizedPhoneNumber })).unwrap();
       dispatch(showSnackbar({ message: 'OTP Sent Successfuly', type: 'success' }));
-      navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber });
+      navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber,handleSignIn });
       
     } catch (error) {
       console.log("Error in handleSignIn:", error);

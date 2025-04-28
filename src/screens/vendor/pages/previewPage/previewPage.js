@@ -51,7 +51,7 @@ const PreviewPage = ({ navigation, route }) => {
   const mapRef = useRef(null);
   const dispatch = useDispatch(); // Get the dispatch function
   // const route = useRoute();
-  const { stationData, type, stationImage } = route?.params; // Retrieve the passed data
+  const { stationData, type, stationImage ,clearForm} = route?.params; // Retrieve the passed data
   const isLoading = useSelector(selectVendorLoading);
 
 
@@ -121,10 +121,10 @@ const PreviewPage = ({ navigation, route }) => {
             const response2 = await dispatch(fetchStations( stationData?.owner_id ));
             console.log("All stations fetched successfully:", response2.payload);
             if (response2.payload.code === 200) {
-              // Clear the form after successfully adding the station
-              // if (clearForm) {
-              //   clearForm();
-              // }
+             // Clearing the form after successfully adding the station
+              if (clearForm) {
+                clearForm();
+              }
               console.log("All stations fetched successfully:");
               Alert.alert("Success", "Station added successfully!");
               navigation.navigate("VendorBottomTabBar"); // Navigate to the AllStations screen
@@ -540,7 +540,7 @@ const styles = StyleSheet.create({
   },
   connectorTypeText: {
     fontSize: 10,
-    marginLeft: 8,
+   
     color: COLORS.gray,
   },
   divider: {
@@ -577,9 +577,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   amenityItem: {
-    width: 50,
-    height: 50,
+    minWidth: 60,
+    minHeight: 60,
     borderRadius: 8,
+    padding:6,
     backgroundColor: COLORS.lightGray,
     justifyContent: 'center',
     alignItems: 'center',

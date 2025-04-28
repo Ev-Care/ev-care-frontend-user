@@ -640,7 +640,7 @@ const styles = StyleSheet.create({
   },
   connectorTypeText: {
     fontSize: 10,
-    marginLeft: 8,
+  
     color: COLORS.gray,
   },
   divider: {
@@ -677,8 +677,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   amenityItem: {
-    width: 60,
-    height: 50,
+    padding:6,
+    minWidth: 60,
+    minHeight: 60,
     borderRadius: 8,
     backgroundColor: COLORS.lightGray,
     justifyContent: "center",

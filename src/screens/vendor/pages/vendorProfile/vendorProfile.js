@@ -33,7 +33,7 @@ const VendorProfile = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
 
-  console.log("user in profile screen", user);
+  console.log("user image on vendor profile screen",imageURL?.baseURL + user?.avatar);
 
   const showFullImage = (uri) => {
     if (!uri) return;
@@ -41,7 +41,7 @@ const VendorProfile = () => {
     setModalVisible(true);
   };
 
-  console.log("user profile URL", imageURL + user.avatar);
+  
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -143,25 +143,26 @@ const VendorProfile = () => {
   function profileInfoWithOptions() {
     return (
       <View style={styles.profileInfoWithOptionsWrapStyle}>
-        <TouchableOpacity
-          onPress={() => {
-            if (user?.avatar) showFullImage(imageURL?.baseURL + user?.avatar);
-          }}
-          style={{ alignItems: "center",  
-            }}
-        >
-          {user?.avatar ? (
-            <Image
-              source={{ uri: imageURL?.baseURL + user?.avatar }}
-              style={styles.userImageStyle}
-            />
-          ) : (
-            <View  style={styles.userIconStyle}  >
-              <Icon  name="person-off" size={60} color="#e0e0eb" />
-            </View>
-            
-          )}
-        </TouchableOpacity>
+     <TouchableOpacity
+  onPress={() => {
+    if (user?.avatar && user.avatar.trim() !== "") {
+      showFullImage(imageURL?.baseURL + user.avatar);
+    }
+  }}
+  style={{ alignItems: "center" }}
+>
+  {user?.avatar && user.avatar.trim() !== "" ? (
+    <Image
+      source={{ uri: imageURL?.baseURL + user.avatar }}
+      style={styles.userImageStyle}
+    />
+  ) : (
+    <View style={styles.userIconStyle}>
+      <Icon name="person-off" size={60} color="#e0e0eb" />
+    </View>
+  )}
+</TouchableOpacity>
+
 
         <View
           style={{

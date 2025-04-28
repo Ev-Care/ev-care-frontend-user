@@ -142,7 +142,7 @@ const ProfileScreen = ({ navigation }) => {
       <View style={styles.profileInfoWithOptionsWrapStyle}>
               <TouchableOpacity
                  onPress={() => {
-                   if (user?.avatar) showFullImage(imageURL?.baseURL + user?.avatar);
+                   if (user?.avatar ) showFullImage(imageURL?.baseURL + user?.avatar);
                  }}
                  style={{ alignItems: "center",  
                    }}

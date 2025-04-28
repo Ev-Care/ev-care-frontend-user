@@ -191,7 +191,7 @@ const AddStations = () => {
 
     console.log('Transformed Station Data:', JSON.stringify(stationData, null, 2));
 
-    navigation.push('PreviewPage', { stationData, type: "add", stationImage: viewImage });
+    navigation.push('PreviewPage', { stationData, type: "add", stationImage: viewImage, clearForm });
   };
 
   const handleVisibility = (form) => {
@@ -205,32 +205,34 @@ const AddStations = () => {
     setChargerForms(chargerForms.filter((_, i) => i !== index));
   };
 
-  // const clearForm = () => {
-  //   setSelectedAmenities([]);
-  //   setOpenHours('24 Hours');
-  //   setPhoto(null);
-  //   setAddress("");
-  //   setOpenTime('');
-  //   setCloseTime('');
-  //   setShowPicker(false);
-  //   setSelectedField(null);
-  //   setStationName(null);
-  //   setchargerType(null);
-  //   setPowerRating(0);
-  //   setChargerForms([{}]);
-  //   setSelectedForm(null);
-  //   setCoordinate(null);
-  //   setConnectorsList([]);
-  //   setViewImage(null);
-  //   setSelectedConnectors({});
-  // };
+  const clearForm = () => {
+    setSelectedAmenities([]);
+    setOpenHours('24 Hours');
+    setPhoto(null);
+    setAddress('');
+    setOpenTime('');
+    setCloseTime('');
+    setShowPicker(false);
+    setSelectedField(null);
+    setStationName(null);
+    setchargerType(null);
+    setPowerRating(0);
+    setChargerForms([{}]);
+    setSelectedForm(null);
+    setCoordinate(null);
+    setConnectorsList([]);
+    setImageLoading(false);
+    setViewImage(null);
+    setSelectedConnectors({});
+  };
+  
 
 
   return (
     <ScrollView style={styles.container}>
       <MyStatusBar />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation?.goBack()}>
+        <TouchableOpacity onPress={() => navigation?.navigate("VendorBottomTabBar")}>
           <Icon name="arrow-left" size={24} color={PRIMARY_COLOR} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>List a Station</Text>

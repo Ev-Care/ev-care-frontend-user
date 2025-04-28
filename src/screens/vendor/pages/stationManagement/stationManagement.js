@@ -471,8 +471,11 @@ const StationManagement = ({ navigation, route }) => {
 
             return (
               <View key={index} style={styles.amenityItem}>
+               
                 <Icon name={iconName} size={24} color={COLORS.primary} />
-                <Text style={styles.connectorTypeText}>{trimmedName}</Text>
+               
+                <Text style={styles.connectorTypeText}>{trimmedName} </Text>
+             
               </View>
             );
           })}
@@ -733,7 +736,6 @@ const styles = StyleSheet.create({
   },
   connectorTypeText: {
     fontSize: 10,
-    marginLeft: 8,
     color: COLORS.gray,
   },
   divider: {
@@ -770,9 +772,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   amenityItem: {
-    width: 60,
-    height: 50,
+     minWidth: 60,
+    minhHeight: 60,
     borderRadius: 8,
+    padding:6,
     backgroundColor: COLORS.lightGray,
     justifyContent: "center",
     alignItems: "center",

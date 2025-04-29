@@ -297,8 +297,9 @@ const UserHome = ({ navigation }) => {
                   />
                   <Text style={styles.featureText}>
                     {stations?.length > 0
-                      ? `${stations[0].distance_km} km`
+                      ? `${formatDistance(stations[0]?.distance_km)}`
                       : "N/A"}
+                    
                   </Text>
                   <Text style={styles.featureText}>(From here)</Text>
                 </View>

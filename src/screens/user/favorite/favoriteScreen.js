@@ -106,36 +106,38 @@ const FavoriteScreen = ({ navigation }) => {
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color={Colors.primaryColor} />
           n  </View>
-      ) : (
+         ) : (
         <View style={{ flex: 1 }}>
           {header()}
-          {listData?.length === 0 ? noItemsInfo() : favoriteItems()}
+          {favoriteItems()}
         </View>
       )}
       {snackBar()}
     </View>
   );
 
-  function noItemsInfo() {
-    return (
-      <View style={styles.noItemsInfoWrapStyle}>
-        <Image
-          source={require("../../../../assets/images/icons/heart_broken.png")}
-          style={{ width: 100.0, height: 100.0, resizeMode: "contain" }}
-        />
-        <Text
-          style={{
-            ...Fonts.grayColor18Medium,
-            marginTop: Sizes.fixPadding - 5.0,
-          }}
-        >
-          Your favorite list is empty..!
-        </Text>
-      </View>
-    );
-  }
+ 
 
   function favoriteItems() {
+    
+function noItemsInfo() {
+      return (
+        <View style={[styles.noItemsInfoWrapStyle,{ paddingVertical:"60%",}]}>
+          <Image
+            source={require("../../../../assets/images/icons/heart_broken.png")}
+            style={{ width: 100.0, height: 100.0, resizeMode: "contain" }}
+          />
+          <Text
+            style={{
+              ...Fonts.grayColor18Medium,
+              marginTop: Sizes.fixPadding - 5.0,
+            }}
+          >
+            Your favorite list is empty..!
+          </Text>
+        </View>
+      );
+}
     const closeRow = (rowMap, rowKey) => {
       if (rowMap?.[rowKey]) {
         rowMap[rowKey].closeRow();
@@ -279,17 +281,20 @@ const FavoriteScreen = ({ navigation }) => {
 
     return (
       <View style={{ flex: 1 }}>
-        <SwipeListView
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          data={listData}
-          renderItem={renderItem}
-          renderHiddenItem={renderHiddenItem}
-          rightOpenValue={-66}
-          useNativeDriver={false}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingTop: Sizes.fixPadding - 5.0 }}
-        />
+        <View style={{ flex: 1 }}>
+      <SwipeListView
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        data={listData}
+        renderItem={renderItem}
+        renderHiddenItem={renderHiddenItem}
+        rightOpenValue={-66}
+        useNativeDriver={false}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: Sizes.fixPadding - 5.0 }}
+        ListEmptyComponent={noItemsInfo} // for no fav stations
+      />
+    </View>
       </View>
     );
   }
@@ -303,7 +308,7 @@ const FavoriteScreen = ({ navigation }) => {
         onDismiss={() => setShowSnackBar(false)}
       >
         <Text style={{ ...Fonts.whiteColor14Medium }}>
-          Charging station remove from favorite
+          Charging station removed from favorite
         </Text>
       </Snackbar>
     );
@@ -329,8 +334,11 @@ const styles = StyleSheet.create({
     margin: Sizes.fixPadding * 2.0,
     flex: 1,
     alignItems: "center",
+  absolute:"true",
+ 
     justifyContent: "center",
   },
+
   appBar: {
     flexDirection: "row",
     alignItems: "center",

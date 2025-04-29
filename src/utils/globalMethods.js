@@ -1,13 +1,14 @@
+export const formatDistance = (distanceInKm) => {
+  if (distanceInKm < 1) {
+    const meters = Math.round(distanceInKm * 1000);
+    return `${meters} m`;
+  } else {
+    const kilometers = Math.round(distanceInKm);
+    return `${kilometers} km`;
+  }
+};
 
- export  const formatDistance = (distance) => {
-    if (distance >= 1000) {
-      return (distance / 1000).toFixed(1).replace(/\.0$/, '') + 'k km';
-    } else if (distance % 1 !== 0) {
-      return distance.toFixed(1) + ' km';
-    } else {
-      return distance + ' km';
-    }
-  };
+
   export const openHourFormatter = (openingTime, closingTime) => {
     const is24x7 = openingTime === '00:00:00' && closingTime === '23:59:59';
   

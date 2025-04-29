@@ -640,7 +640,7 @@ const styles = StyleSheet.create({
   },
   connectorTypeText: {
     fontSize: 10,
-  
+    marginLeft:10,
     color: COLORS.gray,
   },
   divider: {

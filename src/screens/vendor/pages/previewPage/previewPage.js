@@ -1,34 +1,27 @@
 
-import React, { useState, useRef, useEffect } from 'react';
 import { Overlay } from "@rneui/themed";
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  ScrollView,
+  ActivityIndicator,
   Dimensions,
-  Alert,
-  FlatList,
-  ActivityIndicator
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Colors,
-  screenWidth,
   Fonts,
-  Sizes,
-  commonStyles,
+  Sizes
 } from "../../../../constants/styles";
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import MapView, { Marker } from 'react-native-maps';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { useSelector, useDispatch } from 'react-redux';
-import { selectToken } from '../../../auth/services/selector';
-import { addStation, fetchStations, postStation, updateStation } from '../../services/crudFunction';
-import { selectVendorError, selectVendorLoading } from '../../services/selector';
-import { getAllStationsAPI } from '../../services/api';
-
+import { addStation, fetchStations, updateStation } from '../../services/crudFunction';
+import { selectVendorError, selectVendorLoading, selectVendorStation } from '../../services/selector';
+import { showSnackbar } from '../../../../redux/snackbar/snackbarSlice'
 // Define colors at the top for easy customization
 const COLORS = {
   primary: '#101942',
@@ -49,10 +42,16 @@ const PreviewPage = ({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState(0);
   const scrollViewRef = useRef(null);
   const mapRef = useRef(null);
-  const dispatch = useDispatch(); 
-  const { stationData, type, stationImage, clearForm } = route?.params || {}; 
+  const dispatch = useDispatch();
+  const { stationData, type, stationImage, clearForm } = route?.params || {};
   const isLoading = useSelector(selectVendorLoading);
   const errorMessage = useSelector(selectVendorError);
+  const stations = useSelector(selectVendorStation);
+  const station = stations.find((station) => station.id === stationData.station_id);
+
+
+  console.log('error in preview', errorMessage);
+  console.log('stations in preview', stations);
   useEffect(() => {
     console.log('Transformed station data preview:', JSON.stringify(stationData, null, 2));
   }, [stationData]);
@@ -91,57 +90,61 @@ const PreviewPage = ({ navigation, route }) => {
     try {
       if (type === "add") {
         if (!stationData?.chargers || stationData?.chargers?.length === 0) {
-           dispatch(showSnackbar({message: "At least one charger must be added." , type: 'error'}));
+          dispatch(showSnackbar({ message: "At least one charger must be added.", type: 'error' }));
           return;
         }
 
         for (let i = 0; i < stationData?.chargers?.length; i++) {
           const charger = stationData?.chargers[i];
           if (!charger?.charger_type || !charger?.power_rating || !charger?.connector_type) {
-             dispatch(showSnackbar({message: `Charger ${i + 1} details are incomplete.` , type: 'error'}));
+            dispatch(showSnackbar({ message: `Charger ${i + 1} details are incomplete.`, type: 'error' }));
             return;
           }
         }
 
         const addStationresponse = await dispatch(addStation(stationData));
-        if(addStation.fulfilled.match(addStationresponse)){
-          await dispatch(showSnackbar({message: "Station added Successfully."}));
- 
-         }else if(addStation.rejected.match(addStationresponse)){
-           await dispatch(showSnackbar({message: errorMessage || "Failed to add station."}));
- 
-         }
-         const stationResponse = await dispatch(fetchStations(stationData?.owner_id));
-         if(fetchStations.fulfilled.match(stationResponse)){
-          await dispatch(showSnackbar({message: "Station fetched Successfully."}));
- 
-         }else if(fetchStations.rejected.match(stationResponse)){
-           await dispatch(showSnackbar({message: errorMessage || "Failed to fetch station."}));
- 
-         }
+        if (addStation.fulfilled.match(addStationresponse)) {
+          await dispatch(showSnackbar({ message: "Station added Successfully.", type:'success' }));
 
-        
+        } else if (addStation.rejected.match(addStationresponse)) {
+          await dispatch(showSnackbar({ message: errorMessage || "Failed to add station.", type:'error' }));
+
+        }
+        const stationResponse = await dispatch(fetchStations(stationData?.owner_id));
+        if (fetchStations.fulfilled.match(stationResponse)) {
+          await dispatch(showSnackbar({ message: "Station fetched Successfully.", type:'success' }));
+
+        } else if (fetchStations.rejected.match(stationResponse)) {
+          await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station." , type:'error'}));
+
+        }
+
+
       } else {
         const updateStationResponse = await dispatch(updateStation(stationData));
-        if(updateStation.fulfilled.match(updateStationResponse)){
-          await dispatch(showSnackbar({message: "Station updated Successfully."}));
- 
-         }else if(updateStation.rejected.match(updateStationResponse)){
-           await dispatch(showSnackbar({message: errorMessage || "Failed to update station."}));
- 
-         }
-         const stationResponse = await dispatch(fetchStations(stationData?.owner_id));
-         if(fetchStations.fulfilled.match(stationResponse)){
-          await dispatch(showSnackbar({message: "Station fetched Successfully."}));
- 
-         }else if(fetchStations.rejected.match(stationResponse)){
-           await dispatch(showSnackbar({message: errorMessage || "Failed to fetch station."}));
- 
-         }
+        if (updateStation.fulfilled.match(updateStationResponse)) {
+          await dispatch(showSnackbar({ message: "Station updated Successfully.", type:'success' }));
+
+        } else if (updateStation.rejected.match(updateStationResponse)) {
+          await dispatch(showSnackbar({ message: errorMessage || "Failed to update station.", type:'error' }));
+
+        }
+        const stationResponse = await dispatch(fetchStations(stationData?.owner_id));
+        if (fetchStations.fulfilled.match(stationResponse)) {
+          console.log('station updated');
+
+          await dispatch(showSnackbar({ message: "Station fetched Successfully." , type:'success'}));
+          navigation.navigate("StationManagement", { station })
+
+        } else if (fetchStations.rejected.match(stationResponse)) {
+          console.log('station update failed');
+          await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station.", type:'error' }));
+
+        }
       }
     } catch (error) {
       console.error("Error adding station:", error);
-      await dispatch(showSnackbar({message: errorMessage || "Something went wrong. Please try again later."}));
+      await dispatch(showSnackbar({ message: errorMessage || "Something went wrong. Please try again later.", type:'error' }));
     }
   };
 
@@ -194,7 +197,7 @@ const PreviewPage = ({ navigation, route }) => {
           </View>
         </View>
       </View>
-  
+
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
@@ -216,7 +219,7 @@ const PreviewPage = ({ navigation, route }) => {
           {activeTab === 1 && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
       </View>
-  
+
       {/* Swipeable Content */}
       <ScrollView
         ref={scrollViewRef}
@@ -232,7 +235,7 @@ const PreviewPage = ({ navigation, route }) => {
         {detailTab?.()}
         {loadingDialog?.()}
       </ScrollView>
-  
+
       {/* Bottom Buttons */}
       <View style={styles.bottomButtons}>
         <TouchableOpacity
@@ -249,7 +252,7 @@ const PreviewPage = ({ navigation, route }) => {
       </View>
     </View>
   );
-  
+
 
   function chargerTab() {
     return (
@@ -268,7 +271,7 @@ const PreviewPage = ({ navigation, route }) => {
                 Power: {charger?.max_power_kw || "Unknown Power"} KW
               </Text>
             </View>
-  
+
             {/* Connector Type */}
             <View style={styles.connector}>
               <Text style={styles.connectorTitle}>
@@ -291,7 +294,7 @@ const PreviewPage = ({ navigation, route }) => {
       </ScrollView>
     );
   }
-  
+
   function loadingDialog() {
     return (
       <Overlay isVisible={isLoading} overlayStyle={styles.dialogStyle}>
@@ -306,7 +309,7 @@ const PreviewPage = ({ navigation, route }) => {
       </Overlay>
     );
   }
-  
+
   // This will be used to show the error dialog in future
   function errorDialog() {
     return (
@@ -330,7 +333,7 @@ const PreviewPage = ({ navigation, route }) => {
       </Overlay>
     );
   }
-  
+
   function detailTab() {
     return (
       <ScrollView style={styles.tabContent}>
@@ -356,20 +359,20 @@ const PreviewPage = ({ navigation, route }) => {
             />
           </MapView>
         </View>
-  
+
         <Text style={styles.sectionTitle}>Address</Text>
         <View style={styles.landmarkContainer}>
           <Text style={styles.landmarkTitle}>
             {stationData?.address}
           </Text>
         </View>
-  
+
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
           {stationData?.amenities?.split(',').map((amenityName, index) => {
             const trimmedName = amenityName?.trim();
             const iconName = amenityMap?.[trimmedName] || "help-circle";
-  
+
             return (
               <View key={index} style={styles.amenityItem}>
                 <Icon name={iconName} size={24} color={COLORS.primary} />
@@ -381,7 +384,7 @@ const PreviewPage = ({ navigation, route }) => {
       </ScrollView>
     );
   }
-  
+
 };
 
 const styles = StyleSheet.create({
@@ -543,7 +546,7 @@ const styles = StyleSheet.create({
   },
   connectorTypeText: {
     fontSize: 10,
-   
+
     color: COLORS.gray,
   },
   divider: {
@@ -583,7 +586,7 @@ const styles = StyleSheet.create({
     minWidth: 60,
     minHeight: 60,
     borderRadius: 8,
-    padding:6,
+    padding: 6,
     backgroundColor: COLORS.lightGray,
     justifyContent: 'center',
     alignItems: 'center',

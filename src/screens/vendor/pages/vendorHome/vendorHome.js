@@ -250,7 +250,7 @@ const VendorHome = () => {
                }
               const stationResponse = await dispatch(fetchStations(user?.id));
               if(fetchStations.fulfilled.match(stationResponse)){
-                await dispatch(showSnackbar({message: "Station fetched Successfully."}));
+                // await dispatch(showSnackbar({message: "Station fetched Successfully."}));
        
                }else if(fetchStations.rejected.match(stationResponse)){
                  await dispatch(showSnackbar({message: errorMessage || "Failed to fetch station."}));

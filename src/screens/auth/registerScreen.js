@@ -79,7 +79,7 @@ const RegisterScreen = ({ navigation, route }) => {
 
         console.log("Access token stored in AsyncStorage:", AsyncStorage.getItem("token"));
 
-        dispatch(showSnackbar({ message: error || "Registration Success", type: "success" }));
+        dispatch(showSnackbar({ message: error || "Registration Successfull", type: "success" }));
 
         navigation.navigate("userHome"); // Navigate to the home screen
       } catch (error) {

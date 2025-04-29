@@ -107,7 +107,7 @@ const UserHome = ({ navigation }) => {
             // 1. Fetch stations
             const locationResponse = await dispatch(fetchStationsByLocation({ radius, coords }));
             if (fetchStationsByLocation.fulfilled.match(locationResponse)) {
-              dispatch(showSnackbar({ message: 'Charging stations found.', type: "success" }));
+              // dispatch(showSnackbar({ message: 'Charging stations found.', type: "success" }));
              
             } else if (fetchStationsByLocation.rejected.match(locationResponse)) {
               dispatch(showSnackbar({ message: errorMessage || "Failed to fetch stations.", type: "error" }));
@@ -150,7 +150,7 @@ const UserHome = ({ navigation }) => {
       const locationResponse = await dispatch(fetchStationsByLocation({ radius, coords }));
 
       if (fetchStationsByLocation.fulfilled.match(locationResponse)) {
-        dispatch(showSnackbar({ message: 'Charging stations found.', type: "success" }));
+        // dispatch(showSnackbar({ message: 'Charging stations found.', type: "success" }));
       } else if (fetchStationsByLocation.rejected.match(locationResponse)) {
         dispatch(showSnackbar({ message: errorMessage || "Failed to fetch stations.", type: "error" }));
       }

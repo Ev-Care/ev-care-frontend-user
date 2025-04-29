@@ -1,6 +1,6 @@
 
 import { createSlice } from '@reduxjs/toolkit';
-import { fetchStations, addStation, deleteStation, updateStationsChargersConnectorsStatus, updateAllStationStatus } from './crudFunction';
+import { fetchStations, addStation, deleteStation, updateStationsChargersConnectorsStatus, updateAllStationStatus, updateStation } from './crudFunction';
 
 // Initial State
 const initialState = {
@@ -67,26 +67,26 @@ const vendorSlice = createSlice({
       });
 
     // Update Station
-    /* builder
+     builder
        .addCase(updateStation.pending, (state) => {
          state.loading = true;
          state.error = null;
        })
        .addCase(updateStation.fulfilled, (state, action) => {
          state.loading = false;
-         const updatedStation = action.payload;
-         const index = state.stations.findIndex((station) => station.id === updatedStation.id);
-         if (index !== -1) {
-           state.stations[index] = updatedStation;
-         }
+        //  const updatedStation = action.payload;
+        //  const index = state.stations.findIndex((station) => station.id === updatedStation.id);
+        //  if (index !== -1) {
+        //    state.stations[index] = updatedStation;
+        //  }
        })
        .addCase(updateStation.rejected, (state, action) => {
          state.loading = false;
          state.error = action.payload;
-       });
- */
+       })
+
     // Delete Station
-    builder
+    
       .addCase(deleteStation.pending, (state) => {
         state.loading = true;
         state.error = null;

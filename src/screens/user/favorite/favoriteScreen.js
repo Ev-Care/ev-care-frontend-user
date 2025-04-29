@@ -52,7 +52,7 @@ const FavoriteScreen = ({ navigation }) => {
       const favResponse = await dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
 
       if (getAllFavoriteStations.fulfilled.match(favResponse)) {
-        dispatch(showSnackbar({ message: 'Favorite stations found.', type: "success" }));
+        // dispatch(showSnackbar({ message: 'Favorite stations found.', type: "success" }));
       } else if (getAllFavoriteStations.rejected.match(favResponse)) {
         dispatch(showSnackbar({ message: errorMessage || "Failed to fetch favorite stations.", type: "error" }));
       }
@@ -78,7 +78,7 @@ const FavoriteScreen = ({ navigation }) => {
     const favResponse = await dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
 
     if (getAllFavoriteStations.fulfilled.match(favResponse)) {
-      dispatch(showSnackbar({ message: 'Favorite stations found.', type: "success" }));
+      // dispatch(showSnackbar({ message: 'Favorite stations found.', type: "success" }));
     } else if (getAllFavoriteStations.rejected.match(favResponse)) {
       dispatch(showSnackbar({ message: errorMessage || "Failed to fetch favorite stations.", type: "error" }));
     }

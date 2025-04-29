@@ -16,10 +16,10 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../../../auth/services/selector";
 import imageURL from "../../../../constants/baseURL";
-
+import {showSnackbar} from '../../../../redux/snackbar/snackbarSlice'
 const PRIMARY_COLOR = "#101942";
 const amenities = [
   { id: 1, icon: "toilet", label: "Restroom" },
@@ -54,6 +54,7 @@ const mapAmenitiesToIds = (amenitiesLabelString) => {
 const UpdateStation = ({ navigation, route }) => {
   const station = route?.params?.station;
   const user = useSelector(selectUser);
+  const dispatch = useDispatch();
   const [selectedAmenities, setSelectedAmenities] = useState(
     mapAmenitiesToIds(station?.amenities || "")
   );
@@ -160,7 +161,7 @@ const UpdateStation = ({ navigation, route }) => {
       .map((id) => amenities.find((amenity) => amenity.id === id)?.label)
       .join(",");
 
-    
+
 
     // Prepare the final station data
     const stationData = {
@@ -373,14 +374,29 @@ const UpdateStation = ({ navigation, route }) => {
                 placeholder="Power Rating In kW"
                 keyboardType="numeric"
                 value={String(chargerForms[index]?.max_power_kw ?? "")}
-                onChangeText={(text) =>
+                onChangeText={(text) => {
+                  // Remove non-numeric characters
+                  let numericText = text.replace(/[^0-9]/g, '');
+
+                  // Prevent leading zeros
+                  if (numericText.length > 1 && numericText.startsWith('0')) {
+                    numericText = numericText.replace(/^0+/, '');
+                  }
+
+                  // If input is not empty and > 99, block it
+                  if (numericText && parseInt(numericText, 10) > 99) {
+                    dispatch(showSnackbar({ message: "Power rating cannot exceed 99 kW", type: "error" }));
+                    return;
+                  }
+
                   setChargerForms((prev) =>
                     prev.map((charger, i) =>
-                      i === index ? { ...charger, max_power_kw: text } : charger
+                      i === index ? { ...charger, max_power_kw: numericText } : charger
                     )
-                  )
-                }
+                  );
+                }}
               />
+
             </View>
 
             {connectorsInfo(charger, index)}

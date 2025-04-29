@@ -11,7 +11,7 @@ export const handleRefreshStations = async (dispatch, userId, setRefreshing, err
     if (setRefreshing) setRefreshing(true);
     const response = await dispatch(fetchStations(userId));
     if (fetchStations.fulfilled.match(response)) {
-      await dispatch(showSnackbar({ message: "Station fetched Successfully." , type : 'success'}));
+      // await dispatch(showSnackbar({ message: "Station fetched Successfully." , type : 'success'}));
 
     } else if (fetchStations.rejected.match(response)) {
       await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station.",  type : 'error' }));

@@ -7,7 +7,7 @@ export const handleRefreshStationsByLocation = async (dispatch, data, setRefresh
     if (setRefreshing) setRefreshing(true);
     const stationsResponse = await dispatch(fetchStationsByLocation(data));
     if (fetchStationsByLocation.fulfilled.match(stationsResponse)) {
-      dispatch(showSnackbar({ message: 'Stations refreshed successfully.', type: "success" }))
+      // dispatch(showSnackbar({ message: 'Stations refreshed successfully.', type: "success" }))
     } else if (fetchStationsByLocation.rejected.match(stationsResponse)) {
       dispatch(showSnackbar({ message: errorMessage, type: "error" }))
 

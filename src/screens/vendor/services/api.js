@@ -41,11 +41,19 @@ export const deleteStationAPI = (data) =>
     content_type: "application/json",
     accessToken: data.accessToken,
   });
-  
+
 export const updateAllStationStatusAPI = (data) =>
-    apiDeleteRequest({
-    apiUrl: `${API_URL}/charging-stations/${data.station_id}`,
+    apiPostRequest({
+    apiUrl: `${API_URL}/charging-stations/update-station-by-vendor`,
     content_type: "application/json",
+    data: {status: data.status, statusType: data.statusType},
+    accessToken: data.accessToken,
+  });
+export const updateStationAPI = (data) =>
+    apiPatchRequest({
+    apiUrl: `${API_URL}/charging-stations/update-station/${data.stationDetails.owner_id}`,
+    content_type: "application/json",
+    data: data.stationDetails,
     accessToken: data.accessToken,
   });
 

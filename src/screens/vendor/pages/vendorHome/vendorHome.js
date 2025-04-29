@@ -29,7 +29,7 @@ import { useNavigation } from "@react-navigation/native";
 import { selectUser } from "../../../auth/services/selector";
 import { useSelector, useDispatch } from "react-redux";
 import { selectStation, selectVendorError, selectVendorStation } from "../../services/selector";
-import { fetchStations } from "../../services/crudFunction";
+import { fetchStations, updateAllStationStatus } from "../../services/crudFunction";
 import { selectStations } from "../../../user/service/selector";
 import { RefreshControl } from 'react-native';
 import { handleRefreshStations } from "../../services/handleRefresh";
@@ -48,17 +48,27 @@ const COLORS = {
 const VendorHome = () => {
   const navigation = useNavigation();
   const stations = useSelector(selectVendorStation);
-  const [isLive, setIsLive] = useState(true);
+  const [isLive, setIsLive] = useState(false);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const [refreshing, setRefreshing] = useState(false);
   const errorMessage = useSelector(selectVendorError);
 
   useEffect(() => {
+    if (stations && stations.length > 0) {
+      const anyActiveStation = stations.some(station => station.status === "Active");
+     
+      setIsLive(anyActiveStation);
+      console.log("useEffect called");
+      console.log("anyActiveStation called", anyActiveStation);
+    } 
+  }, [stations]);
+
+  useEffect(() => {
     // console.log("useEffect called");
     const fetchData = async () => {
       if (user?.id) {
-        if(stations){
+        if (stations) {
           console.log("station = ", stations);
         }
         console.log("Dispatching fetchStations for user ID:", user?.id);
@@ -71,7 +81,7 @@ const VendorHome = () => {
 
         }
       } else {
-        
+
         console.log("User ID is not available");
         // console.log(useSelector(selectStation));
 
@@ -97,7 +107,7 @@ const VendorHome = () => {
     return "Good Evening";
   };
 
-  
+
 
 
 
@@ -120,7 +130,7 @@ const VendorHome = () => {
   const handleRefresh = async () => {
     await handleRefreshStations(dispatch, user?.id, setRefreshing, errorMessage);
   };
-  
+
 
 
 
@@ -229,7 +239,24 @@ const VendorHome = () => {
           </Text>
           <Switch
             value={isLive}
-            onValueChange={() => setIsLive(!isLive)}
+            onValueChange={async () => {
+              const statusResponse = await dispatch(updateAllStationStatus({ statusType: "station", status: isLive ? "inactive" : "active" }));
+              if(updateAllStationStatus.fulfilled.match(statusResponse)){
+                await dispatch(showSnackbar({message: "Station status updated Successfully."}));
+       
+               }else if(updateAllStationStatus.rejected.match(statusResponse)){
+                 await dispatch(showSnackbar({message: errorMessage || "Failed to update station status"}));
+       
+               }
+              const stationResponse = await dispatch(fetchStations(user?.id));
+              if(fetchStations.fulfilled.match(stationResponse)){
+                await dispatch(showSnackbar({message: "Station fetched Successfully."}));
+       
+               }else if(fetchStations.rejected.match(stationResponse)){
+                 await dispatch(showSnackbar({message: errorMessage || "Failed to fetch station."}));
+       
+               }
+            }}
             trackColor={{ false: COLORS.secondary, true: COLORS.green }}
             thumbColor={COLORS.white}
           />

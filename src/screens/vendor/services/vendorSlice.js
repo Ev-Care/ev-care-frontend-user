@@ -1,6 +1,6 @@
 
 import { createSlice } from '@reduxjs/toolkit';
-import { fetchStations, addStation, deleteStation, updateStationsChargersConnectorsStatus } from './crudFunction';
+import { fetchStations, addStation, deleteStation, updateStationsChargersConnectorsStatus, updateAllStationStatus } from './crudFunction';
 
 // Initial State
 const initialState = {
@@ -40,6 +40,7 @@ const vendorSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchStations.fulfilled, (state, action) => {
+        console.log("station in vendorslice", action.payload.data.chargingStations);
         state.stations = action.payload.data.chargingStations;
         state.loading = false;
         // console.log("fetch stations fullfilled called", action.payload.data.chargingStations)
@@ -125,7 +126,22 @@ const vendorSlice = createSlice({
       .addCase(updateStationsChargersConnectorsStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+      .addCase(updateAllStationStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        console.log("update station pending called");
+      })
+      .addCase(updateAllStationStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        console.log("update All station fulfilled called");
+      })
+      .addCase(updateAllStationStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        console.log("update All station Error called");
+      })
   },
 });
 export const { toggleStationStatus,setStations } = vendorSlice.actions; // Export the action

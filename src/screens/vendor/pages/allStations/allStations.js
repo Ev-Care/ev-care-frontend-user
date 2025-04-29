@@ -17,12 +17,13 @@ import {
   Colors,
   commonStyles
 } from "../../../../constants/styles";
-import { selectUser } from "../../../auth/services/selector";
+import { selectAuthError, selectUser } from "../../../auth/services/selector";
 import { selectVendorStation } from "../../services/selector";
-import { updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
+import { fetchStations, updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
 import imageURL from "../../../../constants/baseURL";
 import { RefreshControl } from 'react-native';
 import { handleRefreshStations } from "../../services/handleRefresh";
+import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
 const COLORS = {
   primary: "#101942",
   secondary: "#FF8C00",
@@ -37,33 +38,42 @@ const COLORS = {
 const trimText = (text, limit) =>
   text.length > limit ? text.substring(0, limit) + "..." : text;
 
-const AllStations = ({route}) => {
+const AllStations = ({ route }) => {
   const navigation = useNavigation();
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
-  const [refreshing, setRefreshing] = useState(false); 
+  const [refreshing, setRefreshing] = useState(false);
   const stations = useSelector(selectVendorStation);
-  
+  const errorMessage = useSelector(selectAuthError);
   // console.log("Stations in AllStations:", stations?.length);
   const updateStationStatus = async (stationData) => {
     try {
       const response = await dispatch(updateStationsChargersConnectorsStatus(stationData));
-      console.log("Response after update station status:", response.payload);
-      if (response.payload) {
-        Alert.alert("Success", "Station status updated successfully.");
-      } else {
-        Alert.alert("Error", "Failed to update station status.");
+      if (updateStationsChargersConnectorsStatus.fulfilled.match(response)) {
+        await dispatch(showSnackbar({ message: "Station status updated.", type: 'success' }));
+
+      } else if (updateStationsChargersConnectorsStatus.rejected.match(response)) {
+        await dispatch(showSnackbar({ message: errorMessage || "Failed to add station." ,  type: 'error'}));
+
+      }
+      const stationResponse = await dispatch(fetchStations(user?.id));
+      if (fetchStations.fulfilled.match(stationResponse)) {
+        // await dispatch(showSnackbar({ message: "Station fetched Successfully." , type: 'success'}));
+
+      } else if (fetchStations.rejected.match(stationResponse)) {
+        await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station.", type: 'error' }));
+
       }
     } catch (error) {
       console.error("Error updating station status:", error);
-      Alert.alert("Error", "Failed to update station status.");
+      await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station.", type: 'error' }));
     }
   }
 
-  const handleRefresh = async() => {
+  const handleRefresh = async () => {
     console.log("Refreshing stations...in all stations");
     await handleRefreshStations(dispatch, user?.id, setRefreshing);
-    }
+  }
 
   return (
     <View style={styles.container}>
@@ -78,14 +88,14 @@ const AllStations = ({route}) => {
       </View>
 
       <ScrollView style={styles.scrollContainer}
-       refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          colors={['#9Bd35A', '#101942']}  // Android spinner colors
-          tintColor= "#101942"            // iOS spinner color
-        />
-      }
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#9Bd35A', '#101942']}  // Android spinner colors
+            tintColor="#101942"            // iOS spinner color
+          />
+        }
       >
 
         {/* Check if stations is defined and not empty */}
@@ -97,7 +107,7 @@ const AllStations = ({route}) => {
               style={styles.card}
             >
               {station?.station_images ? (
-                <Image source={{ uri: imageURL.baseURL+station?.station_images }} style={styles.image} />
+                <Image source={{ uri: imageURL.baseURL + station?.station_images }} style={styles.image} />
               ) : (
                 <View style={[styles.image, { alignItems: "center", justifyContent: "center", backgroundColor: "gray", opacity: 0.1 }]}>
                   <MaterialIcons
@@ -121,21 +131,22 @@ const AllStations = ({route}) => {
 
                       // console.log("Station Status Before toggle:", availability[station.id]);
 
-                    //  await toggleStationAvailability(station.id);
+                      //  await toggleStationAvailability(station.id);
 
                       // Retrieve the updated station data
                       // const updatedStation = stations.find((s) => s.id === station.id);
                       // console.log("Station Status after toggle:", availability[station.id]);
-                      
+
                       var stationData = {
-                  
+
                         station_id: station?.id,
                         statusType: "station",
                         status: station?.status === "Active" || station?.status === "Planned" ? "Inactive" : "active",
 
                       }
+
+                      const statusResponse = await updateStationStatus(stationData);
                       
-                     await updateStationStatus(stationData);
 
                     }
                     }

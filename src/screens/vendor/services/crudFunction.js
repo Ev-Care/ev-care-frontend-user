@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { deleteStationAPI, getAllStationsAPI, getStationByIdAPI, postStationAPI, updateStationsChargersConnectorsStatusAPI } from "./api";
+import { deleteStationAPI, getAllStationsAPI, getStationByIdAPI, postStationAPI, updateAllStationStatusAPI, updateStationAPI, updateStationsChargersConnectorsStatusAPI } from "./api";
 
 //get Access Token from Async Storage
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -118,10 +118,35 @@ export const deleteStation = createAsyncThunk(
 );
 export const updateAllStationStatus = createAsyncThunk(
   'vendorStations/updateAllStationStatus',
-  async (stationId, { rejectWithValue }) => {
+  async (data, { rejectWithValue }) => {
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve accessToken inside the thunk
-      const response = await deleteStationAPI({ station_id: stationId, accessToken });
+      const response = await updateAllStationStatusAPI({ ...data, accessToken });
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data.message || "Failed to fetch Stations");
+      }
+    } catch (error) {
+      console.log("Error in fetchStations:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message ||  // API sent error message
+        error?.message ||                  // JS error message
+        "Something went wrong. Please try again";          // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const updateStation = createAsyncThunk(
+  'vendorStations/updateStation',
+  async (stationDetails, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve accessToken inside the thunk
+      const response = await updateStationAPI({stationDetails, accessToken });
       if (response.data.code === 200 || response.data.code === 201) {
         return response.data;
       } else {

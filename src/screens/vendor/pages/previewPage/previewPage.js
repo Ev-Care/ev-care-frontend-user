@@ -25,8 +25,8 @@ import MapView, { Marker } from 'react-native-maps';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectToken } from '../../../auth/services/selector';
-import { addStation, fetchStations, postStation } from '../../services/crudFunction';
-import { selectVendorLoading } from '../../services/selector';
+import { addStation, fetchStations, postStation, updateStation } from '../../services/crudFunction';
+import { selectVendorError, selectVendorLoading } from '../../services/selector';
 import { getAllStationsAPI } from '../../services/api';
 
 // Define colors at the top for easy customization
@@ -52,7 +52,7 @@ const PreviewPage = ({ navigation, route }) => {
   const dispatch = useDispatch(); 
   const { stationData, type, stationImage, clearForm } = route?.params || {}; 
   const isLoading = useSelector(selectVendorLoading);
-
+  const errorMessage = useSelector(selectVendorError);
   useEffect(() => {
     console.log('Transformed station data preview:', JSON.stringify(stationData, null, 2));
   }, [stationData]);
@@ -91,54 +91,57 @@ const PreviewPage = ({ navigation, route }) => {
     try {
       if (type === "add") {
         if (!stationData?.chargers || stationData?.chargers?.length === 0) {
-          Alert.alert("Validation Error", "At least one charger must be added.");
+           dispatch(showSnackbar({message: "At least one charger must be added." , type: 'error'}));
           return;
         }
 
         for (let i = 0; i < stationData?.chargers?.length; i++) {
           const charger = stationData?.chargers[i];
           if (!charger?.charger_type || !charger?.power_rating || !charger?.connector_type) {
-            Alert.alert(
-              "Validation Error",
-              `Charger ${i + 1} details are incomplete. Please ensure all fields are filled.`
-            );
+             dispatch(showSnackbar({message: `Charger ${i + 1} details are incomplete.` , type: 'error'}));
             return;
           }
         }
 
-        const response = await dispatch(addStation(stationData));
-        if (response?.payload?.code === 200 || response?.payload?.code === 201) {
-          console.log("Station added successfully:", response?.payload?.data);
+        const addStationresponse = await dispatch(addStation(stationData));
+        if(addStation.fulfilled.match(addStationresponse)){
+          await dispatch(showSnackbar({message: "Station added Successfully."}));
+ 
+         }else if(addStation.rejected.match(addStationresponse)){
+           await dispatch(showSnackbar({message: errorMessage || "Failed to add station."}));
+ 
+         }
+         const stationResponse = await dispatch(fetchStations(stationData?.owner_id));
+         if(fetchStations.fulfilled.match(stationResponse)){
+          await dispatch(showSnackbar({message: "Station fetched Successfully."}));
+ 
+         }else if(fetchStations.rejected.match(stationResponse)){
+           await dispatch(showSnackbar({message: errorMessage || "Failed to fetch station."}));
+ 
+         }
 
-          try {
-            console.log('owner_id', stationData?.owner_id);  
-            const response2 = await dispatch(fetchStations(stationData?.owner_id));
-            console.log("All stations fetched successfully:", response2?.payload);
-            if (response2?.payload?.code === 200) {
-              if (clearForm) {
-                clearForm();
-              }
-              Alert.alert("Success", "Station added successfully!");
-              navigation.navigate("VendorBottomTabBar");
-            } else {
-              console.error("Failed to fetch all stations");
-              Alert.alert("Error", "Failed to fetch all stations. Please try again.");
-            }
-          } catch (error) {
-            console.error("Error fetching all stations:", error);
-            Alert.alert("Error", "An error occurred while fetching all stations.");
-          }
-
-        } else {
-          console.error("Error adding station:", response?.payload?.message);
-          Alert.alert("Error", response?.payload?.message || "Failed to add station. Please try again.");
-        }
+        
       } else {
-        Alert.alert("Success", "Currently, this is a preview. The station will be added to the database soon.");
+        const updateStationResponse = await dispatch(updateStation(stationData));
+        if(updateStation.fulfilled.match(updateStationResponse)){
+          await dispatch(showSnackbar({message: "Station updated Successfully."}));
+ 
+         }else if(updateStation.rejected.match(updateStationResponse)){
+           await dispatch(showSnackbar({message: errorMessage || "Failed to update station."}));
+ 
+         }
+         const stationResponse = await dispatch(fetchStations(stationData?.owner_id));
+         if(fetchStations.fulfilled.match(stationResponse)){
+          await dispatch(showSnackbar({message: "Station fetched Successfully."}));
+ 
+         }else if(fetchStations.rejected.match(stationResponse)){
+           await dispatch(showSnackbar({message: errorMessage || "Failed to fetch station."}));
+ 
+         }
       }
     } catch (error) {
       console.error("Error adding station:", error);
-      Alert.alert("Error", "An error occurred while adding the station. Please try again.");
+      await dispatch(showSnackbar({message: errorMessage || "Something went wrong. Please try again later."}));
     }
   };
 

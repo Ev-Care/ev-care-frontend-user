@@ -216,6 +216,17 @@ const ChargingStationMap = () => {
       });
       Linking.openURL(url);
     };
+
+   const onMarkerPress = (mapEventData) => {
+      const markerID = mapEventData?._targetInst?.return?.key; // Optional chaining
+  
+      let x = markerID * cardWidth + markerID * 20;
+      if (Platform.OS === "ios") {
+        x = x - SPACING_FOR_CARD_INSET;
+      }
+  
+      _scrollView.current?.scrollTo({ x: x, y: 0, animated: true }); // Optional chaining
+    };
   
 
   const interpolation = stations?.map((marker, index) => { // Optional chaining
@@ -302,7 +313,10 @@ const ChargingStationMap = () => {
                     <Marker
                       key={index}
                       coordinate={marker?.coordinates} // Optional chaining for coordinates
-                      onPress={()=>navigation.navigate("ChargingStationDetail",{item:marker})}
+                      onPress={(e)=>{
+                      onMarkerPress(e);
+                      navigation.navigate("ChargingStationDetail",{item:marker});
+                    }}
                       anchor={{ x: 0.5, y: 0.5 }}
                       pinColor="green"
                     >

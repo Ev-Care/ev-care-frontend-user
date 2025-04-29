@@ -8,6 +8,8 @@ import {
   Text,
   FlatList,
   Animated,
+  Platform,
+  Linking,
   Pressable,
   Alert,
 } from "react-native";
@@ -207,7 +209,13 @@ const ChargingStationMap = () => {
     }
   };
   
-  
+   const openGoogleMaps = (latitude, longitude) => {
+      const url = Platform.select({
+        ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
+        android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
+      });
+      Linking.openURL(url);
+    };
   
 
   const interpolation = stations?.map((marker, index) => { // Optional chaining
@@ -294,7 +302,7 @@ const ChargingStationMap = () => {
                     <Marker
                       key={index}
                       coordinate={marker?.coordinates} // Optional chaining for coordinates
-                      onPress={(e) => onMarkerPress(e)}
+                      onPress={()=>navigation.navigate("ChargingStationDetail",{item:marker})}
                       anchor={{ x: 0.5, y: 0.5 }}
                       pinColor="green"
                     >

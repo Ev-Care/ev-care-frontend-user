@@ -710,7 +710,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   {coordinates.length > 0 && (
    <Polyline
    coordinates={coordinates}
-   strokeWidth={8} 
+   strokeWidth={4} 
    strokeColor="rgba(0, 0, 255, 0.5)"
    lineCap="round" 
  />

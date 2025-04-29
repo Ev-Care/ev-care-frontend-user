@@ -43,6 +43,7 @@ export const addStation = createAsyncThunk(
       if (response?.data?.code === 200 || response?.data?.code === 201) {
         return response?.data;
       } else {
+        console.log('error message:',response?.data?.message );
         return rejectWithValue(response?.data?.message || "Failed to add station");
       }
     } catch (error) {
@@ -101,10 +102,10 @@ export const deleteStation = createAsyncThunk(
       if (response.data.code === 200 || response.data.code === 201) {
         return response.data;
       } else {
-        return rejectWithValue(response.data.message || "Failed to fetch Stations");
+        return rejectWithValue(response.data.message || "Failed to delete Stations");
       }
     } catch (error) {
-      console.log("Error in fetchStations:", error);
+      console.log("Error in deleteStation:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -125,10 +126,10 @@ export const updateAllStationStatus = createAsyncThunk(
       if (response.data.code === 200 || response.data.code === 201) {
         return response.data;
       } else {
-        return rejectWithValue(response.data.message || "Failed to fetch Stations");
+        return rejectWithValue(response.data.message || "Failed to update stations status");
       }
     } catch (error) {
-      console.log("Error in fetchStations:", error);
+      console.log("Error in updateAllStationStatus:", error);
 
       // Always extract message properly even in catch
       const errorMessage =

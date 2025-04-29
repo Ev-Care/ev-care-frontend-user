@@ -22,6 +22,7 @@ import { useNavigation } from "@react-navigation/native";
 import { setupImagePicker } from "../../CompleteProfileDetail/vendorDetailForm";
 import { postSingleFile } from "../../../auth/services/crudFunction";
 import { selectToken, selectUser } from "../../../auth/services/selector";
+import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
 
 const PRIMARY_COLOR = "#101942";
 const amenities = [
@@ -178,6 +179,36 @@ const AddStations = () => {
       JSON.stringify(stationData, null, 2)
     );
 
+    if(!stationData?.station_name || stationData?.station_name ==='') {
+      dispatch(showSnackbar({ message: "Station name cannot be empty.", type: 'error' }));
+      return;
+    }
+    if(!stationData?.address || stationData.address === '') {
+      dispatch(showSnackbar({ message: "Station address cannot be empty.", type: 'error' }));
+      return;
+    }
+    if(!stationData?.amenities || stationData.amenities === '') {
+      dispatch(showSnackbar({ message: "Station Amenities cannot be empty.", type: 'error' }));
+      return;
+    }
+    if(!stationData?.station_images || stationData.station_images === '') {
+      dispatch(showSnackbar({ message: "Please upload Station Images.", type: 'error' }));
+      return;
+    }
+
+    if (!stationData?.chargers || stationData?.chargers?.length === 0) {
+      dispatch(showSnackbar({ message: "At least one charger must be added.", type: 'error' }));
+      return;
+    }
+
+    for (let i = 0; i < stationData?.chargers?.length; i++) {
+      const charger = stationData?.chargers[i];
+      if (!charger?.charger_type || !charger?.power_rating || !charger?.connector_type) {
+        dispatch(showSnackbar({ message: `Charger ${i + 1} details are incomplete.`, type: 'error' }));
+        return;
+      }
+    }
+
     navigation.push("PreviewPage", {
       stationData,
       type: "add",
@@ -321,7 +352,7 @@ const AddStations = () => {
                   style={[
                     styles?.hoursButton,
                     chargerForms?.[index]?.chargerType === "AC" &&
-                      styles?.selectedButton,
+                    styles?.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -337,7 +368,7 @@ const AddStations = () => {
                     style={[
                       styles?.buttonText,
                       chargerForms?.[index]?.chargerType === "AC" &&
-                        styles?.selectedButtonText,
+                      styles?.selectedButtonText,
                     ]}
                   >
                     AC
@@ -348,7 +379,7 @@ const AddStations = () => {
                   style={[
                     styles?.hoursButton,
                     chargerForms?.[index]?.chargerType === "DC" &&
-                      styles?.selectedButton,
+                    styles?.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -364,7 +395,7 @@ const AddStations = () => {
                     style={[
                       styles?.buttonText,
                       chargerForms?.[index]?.chargerType === "DC" &&
-                        styles?.selectedButtonText,
+                      styles?.selectedButtonText,
                     ]}
                   >
                     DC
@@ -382,18 +413,25 @@ const AddStations = () => {
                 placeholder="Power Rating In kW"
                 value={chargerForms?.[index]?.powerRating || ""}
                 keyboardType="numeric"
-                onChangeText={(text) =>
+                onChangeText={(text) => {
+                  const numericText = text.replace(/[^0-9]/g, "");
+
+                  if (numericText && parseInt(numericText) > 1000) {
+                    dispatch(showSnackbar({ message: "Power rating cannot exceed 1000 kW", type: "error" }));
+                    return;
+                  }
+
                   setChargerForms((prev) =>
                     prev.map((charger, i) =>
                       i === index
                         ? {
-                            ...charger,
-                            powerRating: text.replace(/[^0-9]/g, ""),
-                          }
+                          ...charger,
+                          powerRating: numericText,
+                        }
                         : charger
                     )
-                  )
-                }
+                  );
+                }}
               />
             </View>
 
@@ -505,7 +543,7 @@ const AddStations = () => {
               style={[
                 styles.amenityItem,
                 selectedAmenities.includes(amenity.id) &&
-                  styles.selectedAmenity,
+                styles.selectedAmenity,
               ]}
               onPress={() => toggleAmenity(amenity.id)}
             >
@@ -522,7 +560,7 @@ const AddStations = () => {
                 style={[
                   styles.amenityLabel,
                   selectedAmenities.includes(amenity.id) &&
-                    styles.selectedAmenityText,
+                  styles.selectedAmenityText,
                 ]}
               >
                 {amenity.label}
@@ -627,6 +665,7 @@ const AddStations = () => {
           placeholder="Enter Station Name"
           value={stationName}
           onChangeText={setStationName}
+          maxLength={80}
         />
       </View>
     );

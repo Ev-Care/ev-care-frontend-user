@@ -74,10 +74,10 @@ const VendorHome = () => {
         console.log("Dispatching fetchStations for user ID:", user?.id);
         const response = await dispatch(fetchStations(user?.id));
         if (fetchStations.fulfilled.match(response)) {
-          await dispatch(showSnackbar({ message: "Station fetched Successfully." }));
+          // await dispatch(showSnackbar({ message: "Station fetched Successfully." }));
 
         } else if (fetchStations.rejected.match(response)) {
-          await dispatch(showSnackbar({ message: errorMessage || "Station fetched Successfully." }));
+          await dispatch(showSnackbar({ message: errorMessage || "Station not found." }));
 
         }
       } else {
@@ -245,7 +245,7 @@ const VendorHome = () => {
                 await dispatch(showSnackbar({message: "Station status updated Successfully."}));
        
                }else if(updateAllStationStatus.rejected.match(statusResponse)){
-                 await dispatch(showSnackbar({message: errorMessage || "Failed to update station status"}));
+                 await dispatch(showSnackbar({message: errorMessage || "Failed to update stations status"}));
        
                }
               const stationResponse = await dispatch(fetchStations(user?.id));

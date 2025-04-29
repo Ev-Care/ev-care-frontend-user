@@ -8,7 +8,7 @@ import {
   Platform,
   TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Colors,
@@ -24,12 +24,15 @@ import { sendQueryAction } from "../service/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 const HelpScreen = ({ navigation }) => {
-  const [name, setname] = useState("");
-  const [email, setemail] = useState("");
-  const [mobileNumber, setmobileNumber] = useState("");
-  const [message, setmessage] = useState("");
+  const [title, setTitle] = useState("");
+  const [email, setEmail] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const [titleTimer, setTitleTimer] = useState(null);
+  const emailTimer = useRef(null);
+  const mobileTimer = useRef(null);
+  const descriptionTimer = useRef(null);
   const dispatch = useDispatch();
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -42,10 +45,10 @@ const HelpScreen = ({ navigation }) => {
         >
           {helpImage()}
           {talkingInfo()}
-          {nameInfo()}
+          {titleInfo()}
           {emailInfo()}
           {mobileNumberInfo()}
-          {messageInfo()}
+          {descriptionInfo()}
           {submitButton()}
         </ScrollView>
       </View>
@@ -53,16 +56,25 @@ const HelpScreen = ({ navigation }) => {
   );
 
   async function sendQueryActionHandler() {
+    console.log('in query');
     setIsLoading(true);
+    const data = {
+      title: title,
+      description: description,
+      email: email,
+      contactNumber: mobileNumber,
+      image: "",
+    }
     const sendQueryResponse = await dispatch(
       sendQueryAction({
-        title: name,
-        description: message,
+        title: title,
+        description: description,
         email: email,
         contactNumber: mobileNumber,
         image: "",
       })
     );
+    console.log('data - ', data);
     if (sendQueryAction.fulfilled.match(sendQueryResponse)) {
       setIsLoading(false);
       dispatch(
@@ -73,10 +85,10 @@ const HelpScreen = ({ navigation }) => {
         })
       );
       navigation.pop();
-      setemail("");
-      setname("");
-      setmobileNumber("");
-      setmessage("");
+      setEmail("");
+      setTitle("");
+      setMobileNumber("");
+      setDescription("");
     } else if (getAllFavoriteStations.rejected.match(favResponse)) {
       setIsLoading(false);
       dispatch(
@@ -89,12 +101,36 @@ const HelpScreen = ({ navigation }) => {
   }
 
   function submitButton() {
+    const handleSubmit = () => {
+      if (!title || title.trim().length < 3) {
+        dispatch(showSnackbar({ message: "Title must be at least 3 characters", type: "error" }));
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        dispatch(showSnackbar({ message: "Invalid email format", type: "error" }));
+        return;
+      }
+
+      const phoneRegex = /^[0-9]{10}$/;
+      if (!phoneRegex.test(mobileNumber)) {
+        dispatch(showSnackbar({ message: "Mobile number must be exactly 10 digits", type: "error" }));
+        return;
+      }
+
+      if (!description || description.trim().length < 10) {
+        dispatch(showSnackbar({ message: "Description must be at least 10 characters", type: "error" }));
+        return;
+      }
+
+      sendQueryActionHandler();
+    };
+
     return (
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => {
-          sendQueryActionHandler();
-        }}
+        onPress={handleSubmit}
         disabled={isLoading}
         style={[
           { ...styles.submitButtonStyle },
@@ -106,21 +142,33 @@ const HelpScreen = ({ navigation }) => {
     );
   }
 
-  function messageInfo() {
+  function descriptionInfo() {
     return (
       <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
         <Text style={{ ...Fonts.blackColor16SemiBold }}>Message</Text>
         <View style={styles.textFieldWrapper}>
           <TextInput
-            placeholder="Write your message here.."
-            value={message}
-            onChangeText={(text) => setmessage(text)}
+            placeholder="Write your description here.."
+            value={description}
+            onChangeText={(text) => {
+              setDescription(text);
+
+              if (descriptionTimer.current) clearTimeout(descriptionTimer.current);
+
+              descriptionTimer.current = setTimeout(() => {
+                if (!text.trim()) {
+                  dispatch(showSnackbar({ message: "Description cannot be empty", type: "error" }));
+                } else if (text.trim().length < 10) {
+                  dispatch(showSnackbar({ message: "Description must be at least 10 characters", type: "error" }));
+                }
+              }, 600);
+            }}
             style={[
               {
                 ...Fonts.blackColor16Medium,
                 paddingTop: Sizes.fixPadding,
                 paddingHorizontal: Sizes.fixPadding,
-                minHeight: 160, // Increased height for larger box
+                minHeight: 160,
                 textAlignVertical: "top",
               },
             ]}
@@ -143,12 +191,28 @@ const HelpScreen = ({ navigation }) => {
           <TextInput
             placeholder="Enter your mobile number here"
             value={mobileNumber}
-            onChangeText={(text) => setmobileNumber(text)}
+            onChangeText={(text) => {
+              const cleanedText = text.replace(/[^0-9]/g, ""); // Only numbers
+              setMobileNumber(cleanedText);
+
+              // Clear previous timer
+              if (mobileTimer.current) clearTimeout(mobileTimer.current);
+
+              // Delay validation
+              mobileTimer.current = setTimeout(() => {
+                if (!cleanedText) {
+                  dispatch(showSnackbar({ message: "Mobile number is required", type: "error" }));
+                } else if (cleanedText.length !== 10) {
+                  dispatch(showSnackbar({ message: "Mobile number must be exactly 10 digits", type: "error" }));
+                }
+              }, 500);
+            }}
             style={{ ...Fonts.blackColor16Medium }}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}
             keyboardType="phone-pad"
+            maxLength={10}
           />
         </View>
       </View>
@@ -163,7 +227,25 @@ const HelpScreen = ({ navigation }) => {
           <TextInput
             placeholder="Enter your email here"
             value={email}
-            onChangeText={(text) => setemail(text)}
+            onChangeText={(text) => {
+              setEmail(text.trim());
+
+              // Clear previous validation timer
+              if (emailTimer.current) {
+                clearTimeout(emailTimer.current);
+              }
+
+              // Delay validation by 500ms
+              emailTimer.current = setTimeout(() => {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (!text.trim()) {
+                  dispatch(showSnackbar({ message: "Email is required", type: "error" }));
+                } else if (!emailRegex.test(text.trim())) {
+                  dispatch(showSnackbar({ message: "Invalid email format", type: "error" }));
+                }
+              }, 500);
+            }}
             style={{ ...Fonts.blackColor16Medium }}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
@@ -175,15 +257,37 @@ const HelpScreen = ({ navigation }) => {
     );
   }
 
-  function nameInfo() {
+  function titleInfo() {
     return (
       <View style={{ margin: Sizes.fixPadding * 2.0 }}>
         <Text style={{ ...Fonts.blackColor16SemiBold }}>Title</Text>
         <View style={styles.textFieldWrapper}>
           <TextInput
-            placeholder="Enter name here"
-            value={name}
-            onChangeText={(text) => setname(text)}
+            placeholder="Enter Title here"
+            value={title}
+            onChangeText={(text) => {
+              const trimmedText = text.trimStart(); // Allow typing but trim only leading spaces
+
+              // Live feedback validations
+              if (trimmedText.length > 100) {
+                dispatch(showSnackbar({ message: "Title cannot exceed 100 characters", type: "error" }));
+                return;
+              }
+
+              // Optional: restrict invalid characters
+              const validText = trimmedText.replace(/[^a-zA-Z0-9 .,'!?\-]/g, "");
+
+              setTitle(validText);
+
+              // Optional: delayed validation after user stops typing
+              clearTimeout(titleTimer);
+              const timer = setTimeout(() => {
+                if (validText.length < 3) {
+                  dispatch(showSnackbar({ message: "Title must be at least 3 characters", type: "error" }));
+                }
+              }, 500);
+              setTitleTimer(timer);
+            }}
             style={{ ...Fonts.blackColor16Medium }}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}

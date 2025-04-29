@@ -26,9 +26,11 @@ import MapView, { Marker } from "react-native-maps";
 import { Overlay } from "@rneui/themed";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteStation, fetchStations, updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
-import { selectStation } from "../../services/selector";
+import { selectStation, selectVendorError, selectVendorStation } from "../../services/selector";
 import imageURL from "../../../../constants/baseURL";
 import { getAllStationsAPI } from "../../services/api";
+import { selectUser } from "../../../auth/services/selector";
+import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
 
 // Define colors at the top for easy customization
 const COLORS = {
@@ -66,11 +68,12 @@ const amenityMap = {
 const StationManagement = ({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState(0);
   const scrollViewRef = useRef(null);
-  const stationId = route.params.station.id;
-  const station = useSelector(selectStation).find((s) => s.id === stationId);
-
+  const stationId = route?.params?.station?.id;
+  const station = useSelector(selectVendorStation).find((s) => s.id === stationId);
+  const errorMessage = useSelector(selectVendorError);
   const [showDeleteDialogue, setshowDeleteDialogue] = useState(false);
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
   const [isChargerAvailable, setIsChargerAvailable] = useState(false);
   // console.log("StationManagement", JSON.stringify(station, null, 2));
   const handleTabPress = (index) => {
@@ -92,116 +95,40 @@ const StationManagement = ({ navigation, route }) => {
       setActiveTab(index);
     }
   };
-  //  console.log(station.amenities)
-
-  // const toggleChargerAvailability = (chargerId) => {
-  //   setStation((prev) => {
-  //     if (prev.status === "Inactive") {
-  //       console.log("Station is Inactive — can't toggle charger.");
-  //       return prev;
-  //     }
-
-  //     return {
-  //       ...prev,
-  //       chargers: prev.chargers.map((charger) => {
-  //         if (charger.charger_id === chargerId) {
-  //           const newStatus = charger.status === "Available" ? "Out-Of-Service" : "Available";
-
-  //           const updatedConnectors =
-  //             newStatus === "Available"
-  //               ? [...charger.connectors] // leave them as they are
-  //               : charger.connectors.map((conn) => ({
-  //                 ...conn,
-  //                 connector_status: "out-of-service",
-  //               }));
-
-  //           const updatedCharger = {
-  //             ...charger,
-  //             status: newStatus,
-  //             connectors: updatedConnectors,
-  //           };
-
-  //           console.log("Charger after toggle:", updatedCharger);
-  //           return updatedCharger;
-  //         }
-  //         return charger;
-  //       }),
-  //     };
-  //   });
-  // };
-
-  // const toggleConnectorAvailability = (chargerId, chargerConnectorId) => {
-  //   setStation((prev) => {
-  //     if (prev.status === "Inactive") {
-  //       console.log("Station is Inactive — can't toggle connector.");
-  //       return prev;
-  //     }
-
-  //     return {
-  //       ...prev,
-  //       chargers: prev.chargers.map((charger) => {
-  //         if (charger.charger_id === chargerId) {
-  //           if (charger.status !== "Available") {
-  //             console.log("Charger is not Available — connectors must stay out-of-service.");
-  //             return {
-  //               ...charger,
-  //               connectors: charger.connectors.map((conn) => ({
-  //                 ...conn,
-  //                 connector_status: "out-of-service",
-  //               })),
-  //             };
-  //           }
-
-  //           return {
-  //             ...charger,
-  //             connectors: charger.connectors.map((conn) => {
-  //               if (conn.charger_connector_id === chargerConnectorId) {
-  //                 const newStatus =
-  //                   conn.connector_status === "operational" ? "out-of-service" : "operational";
-
-  //                 const updatedConnector = { ...conn, connector_status: newStatus };
-  //                 console.log("Connector after toggle:", updatedConnector);
-  //                 return updatedConnector;
-  //               }
-  //               return conn;
-  //             }),
-  //           };
-  //         }
-  //         return charger;
-  //       }),
-  //     };
-  //   });
-  // };
-
+  
   const handleDelete = async () => {
     console.log("handleDelete Called");
     try {
-      const response = await dispatch(deleteStation(stationId));
-      if (response.payload.code === 200) {
-        console.log("Station deleted successfully", response.payload);
-        navigation.goBack();
-        
-  
-        try {
-          const response2 = await dispatch(fetchStations( station?.owner_id ));
-          if (response2.payload.code === 200) {
-            navigation.navigate("AllStations");
-            console.log("All stations fetched successfully", response2.payload.data);
-          } else {
-            console.error("Failed to fetch all stations", response2.payload.message);
-            Alert.alert("Error", "Failed to fetch all stations");
-          }
-        } catch (error) {
-          console.error("Error fetching all stations:", error);
-          Alert.alert("Error", "An error occurred while fetching all stations.");
+
+      //Deleting station from server
+      const deleteResponse = await dispatch(deleteStation(stationId));
+      if (deleteStation.fulfilled.match(deleteResponse)) {
+        navigation.pop();
+        // Feting new updated station from server.
+        const stationResponse = await dispatch(fetchStations(user?.id));
+        if (fetchStations.fulfilled.match(stationResponse)) {
+          console.log('station updated');
+
+          await dispatch(showSnackbar({ message: "Station deleted successfully.", type: 'success' }));
+          // navigation.navigate("AllStations");
+         
+
+        } else if (fetchStations.rejected.match(stationResponse)) {
+          console.log('Failed to delete station.');
+          await dispatch(showSnackbar({ message: errorMessage || "Failed to delete station.", type: 'error' }));
+
         }
-      } else {
-        console.error("Failed to delete station", response.payload.message);
-        Alert.alert("Error", "Failed to delete the station.");
+
+      } else if (deleteStation.rejected.match(deleteResponse)) {
+        await dispatch(showSnackbar({ message: errorMessage || "Failed to delete station.", type: 'error' }));
+
       }
+
+
+      
     } catch (error) {
       console.error("Error deleting station:", error);
-      Alert.alert("Error", "An error occurred while deleting the station.");
+      await dispatch(showSnackbar({ message: errorMessage || "Failed to delete station.", type: 'error' }));
     }
   };
 
@@ -236,8 +163,8 @@ const StationManagement = ({ navigation, route }) => {
             station?.station_images
               ? { uri: imageURL.baseURL + station?.station_images }
               : {
-                  uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                }
+                uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+              }
           }
           style={styles.mapBackground}
         />
@@ -272,10 +199,10 @@ const StationManagement = ({ navigation, route }) => {
                     station?.status === "Active"
                       ? "green"
                       : station?.status === "Inactive"
-                      ? "#FF5722"
-                      : station?.status === "Planned"
-                      ? "blue"
-                      : "black", // fallback color
+                        ? "#FF5722"
+                        : station?.status === "Planned"
+                          ? "blue"
+                          : "black", // fallback color
                 },
               ]}
             >
@@ -286,13 +213,13 @@ const StationManagement = ({ navigation, route }) => {
               • {station?.open_hours_opening_time} -{" "}
               {station?.open_hours_closing_time}
             </Text>
-             { station?.status !== "Inactive" && (<View style={styles.newBadge}>
+            {station?.status !== "Inactive" && (<View style={styles.newBadge}>
               <Text style={styles.newText}>
                 {station?.status === "Active"
                   ? "VERIFIED"
                   : station?.status === "Planned"
-                  ? "PENDING"
-                  : ""}
+                    ? "PENDING"
+                    : ""}
               </Text>
             </View>)}
           </View>
@@ -411,7 +338,7 @@ const StationManagement = ({ navigation, route }) => {
                   color={COLORS.primary}
                 />
                 <Text style={styles.connectorTypeText}>
-                  {charger?.connector_type}
+                  {' '+charger?.connector_type}
                 </Text>
               </View>
               <Text
@@ -465,17 +392,17 @@ const StationManagement = ({ navigation, route }) => {
 
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
-          {station.amenities.split(",").map((amenityName, index) => {
+          {station?.amenities.split(",").map((amenityName, index) => {
             const trimmedName = amenityName.trim();
             const iconName = amenityMap[trimmedName] || "help-circle";
 
             return (
               <View key={index} style={styles.amenityItem}>
-               
+
                 <Icon name={iconName} size={24} color={COLORS.primary} />
-               
+
                 <Text style={styles.connectorTypeText}>{trimmedName} </Text>
-             
+
               </View>
             );
           })}
@@ -772,10 +699,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   amenityItem: {
-     minWidth: 60,
+    minWidth: 60,
     minhHeight: 60,
     borderRadius: 8,
-    padding:6,
+    padding: 6,
     backgroundColor: COLORS.lightGray,
     justifyContent: "center",
     alignItems: "center",

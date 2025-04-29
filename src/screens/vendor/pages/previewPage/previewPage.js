@@ -89,62 +89,53 @@ const PreviewPage = ({ navigation, route }) => {
   const handleSubmit = async () => {
     try {
       if (type === "add") {
-        if (!stationData?.chargers || stationData?.chargers?.length === 0) {
-          dispatch(showSnackbar({ message: "At least one charger must be added.", type: 'error' }));
-          return;
-        }
-
-        for (let i = 0; i < stationData?.chargers?.length; i++) {
-          const charger = stationData?.chargers[i];
-          if (!charger?.charger_type || !charger?.power_rating || !charger?.connector_type) {
-            dispatch(showSnackbar({ message: `Charger ${i + 1} details are incomplete.`, type: 'error' }));
-            return;
-          }
-        }
+        
 
         const addStationresponse = await dispatch(addStation(stationData));
         if (addStation.fulfilled.match(addStationresponse)) {
-          await dispatch(showSnackbar({ message: "Station added Successfully.", type:'success' }));
+          const stationResponse = await dispatch(fetchStations(stationData?.owner_id));
+          if (fetchStations.fulfilled.match(stationResponse)) {
+            // await dispatch(showSnackbar({ message: "Station fetched Successfully.", type:'success' }));
+            await dispatch(showSnackbar({ message: "New station added.", type: 'success' }));
+            navigation.navigate("VendorHome");
 
+          } else if (fetchStations.rejected.match(stationResponse)) {
+            await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station.", type: 'error' }));
+
+          }
         } else if (addStation.rejected.match(addStationresponse)) {
-          await dispatch(showSnackbar({ message: errorMessage || "Failed to add station.", type:'error' }));
+          await dispatch(showSnackbar({ message: errorMessage || "Failed to add station.", type: 'error' }));
 
         }
-        const stationResponse = await dispatch(fetchStations(stationData?.owner_id));
-        if (fetchStations.fulfilled.match(stationResponse)) {
-          await dispatch(showSnackbar({ message: "Station fetched Successfully.", type:'success' }));
 
-        } else if (fetchStations.rejected.match(stationResponse)) {
-          await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station." , type:'error'}));
-
-        }
 
 
       } else {
         const updateStationResponse = await dispatch(updateStation(stationData));
         if (updateStation.fulfilled.match(updateStationResponse)) {
-          await dispatch(showSnackbar({ message: "Station updated Successfully.", type:'success' }));
+          const stationResponse = await dispatch(fetchStations(stationData?.owner_id));
+          if (fetchStations.fulfilled.match(stationResponse)) {
+            console.log('station updated');
+
+            await dispatch(showSnackbar({ message: "Station updated Successfully.", type: 'success' }));
+            navigation.pop(2);
+            // navigation.navigate("StationManagement", { station })
+
+          } else if (fetchStations.rejected.match(stationResponse)) {
+            console.log('station update failed');
+            await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station.", type: 'error' }));
+
+          }
 
         } else if (updateStation.rejected.match(updateStationResponse)) {
-          await dispatch(showSnackbar({ message: errorMessage || "Failed to update station.", type:'error' }));
+          await dispatch(showSnackbar({ message: errorMessage || "Failed to update station.", type: 'error' }));
 
         }
-        const stationResponse = await dispatch(fetchStations(stationData?.owner_id));
-        if (fetchStations.fulfilled.match(stationResponse)) {
-          console.log('station updated');
 
-          await dispatch(showSnackbar({ message: "Station fetched Successfully." , type:'success'}));
-          navigation.navigate("StationManagement", { station })
-
-        } else if (fetchStations.rejected.match(stationResponse)) {
-          console.log('station update failed');
-          await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station.", type:'error' }));
-
-        }
       }
     } catch (error) {
       console.error("Error adding station:", error);
-      await dispatch(showSnackbar({ message: errorMessage || "Something went wrong. Please try again later.", type:'error' }));
+      await dispatch(showSnackbar({ message: errorMessage || "Something went wrong. Please try again later.", type: 'error' }));
     }
   };
 
@@ -240,7 +231,7 @@ const PreviewPage = ({ navigation, route }) => {
       <View style={styles.bottomButtons}>
         <TouchableOpacity
           onPress={() => {
-            navigation?.pop?.();
+            navigation?.pop();
           }}
           style={styles.editButton}
         >
@@ -268,7 +259,7 @@ const PreviewPage = ({ navigation, route }) => {
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
               <Text style={styles.chargerSpecText}>
-                Power: {charger?.max_power_kw || "Unknown Power"} KW
+                Power: {charger?.power_rating || "Unknown Power"} KW
               </Text>
             </View>
 

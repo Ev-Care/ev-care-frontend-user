@@ -93,7 +93,7 @@ const VendorHome = () => {
     return () => {
       console.log("Cleaning up VendorHome...");
     };
-  }, [user, dispatch]);
+  }, [dispatch]);
 
 
   // Get current time to display appropriate greeting

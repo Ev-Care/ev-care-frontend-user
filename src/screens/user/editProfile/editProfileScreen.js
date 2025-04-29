@@ -28,7 +28,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { patchUpdateUserProfile } from "../../user/service/crudFunction";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
-import { selectToken, selectUser } from "../../auth/services/selector";
+import { selectAuthError, selectToken, selectUser } from "../../auth/services/selector";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 const EditProfileScreen = ({ route, navigation }) => {
   const user = useSelector(selectUser);
   const accessToken = useSelector(selectToken);
@@ -63,7 +64,6 @@ const EditProfileScreen = ({ route, navigation }) => {
   const [gstImageURI, setGstImageURI] = useState(user?.gstin_image);
   const [avatarURI, setAvatarURI] = useState(user?.avatar);
   //   image end
-
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
@@ -71,7 +71,7 @@ const EditProfileScreen = ({ route, navigation }) => {
   const [currentImageLabel, setCurrentImageLabel] = useState(null);
   const [showDialogue, setshowDialogue] = useState(false);
   const [imageloading, setImageLoading] = useState("");
-
+  const  errorMessage = useSelector(selectAuthError);
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
@@ -84,11 +84,20 @@ const EditProfileScreen = ({ route, navigation }) => {
       email: email,
       avatar: avatarURI,
       business_name: businessName,
+      role:user?.role,
       user_key: user?.user_key,
     };
     console.log("Updated Data:", updatedData);
     const response = await dispatch(patchUpdateUserProfile(updatedData));
+      if (patchUpdateUserProfile.fulfilled.match(response)) {
+          await dispatch(showSnackbar({ message: "Profile Updated Successfully.", type: 'success' }));
+    
+        } else if (patchUpdateUserProfile.rejected.match(response)) {
+          await dispatch(showSnackbar({ message: errorMessage || "Failed to Update" ,  type: 'error'}));
+    
+    }
     console.log("Response from update profile:", response.payload);
+
     // Alert.alert(
     //   "Profile Updated",
     //   "Your profile has been updated successfully."
@@ -269,7 +278,7 @@ const EditProfileScreen = ({ route, navigation }) => {
         )}
         {renderInput("Email", email, setEmail, "Enter your email")}
 
-        {user.role === "vendor" && (
+        {user?.role === "vendor" && (
           <>
             {renderInput(
               "Business Name",

@@ -70,6 +70,8 @@ export const patchUpdateUserProfile = createAsyncThunk(
       // console.log("data:",  {...data, accessToken}); // Log the access token for debugging
       const response = await updateUserProfileAPI({ ...data, accessToken }); // Call the API to fetch stations by location
       if (response.data.code === 200 || response.data.code === 201) {
+
+
         return response.data;
       } else {
         return rejectWithValue(response.data.message || "Failed to update user details");

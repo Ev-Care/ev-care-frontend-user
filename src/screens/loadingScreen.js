@@ -15,7 +15,7 @@ const LoadingScreen = ({ navigation }) => {
                 'Poppins-SemiBold': require('../../assets/fonts/Poppins-SemiBold.ttf'),
                 'Poppins-Bold': require('../../assets/fonts/Poppins-Bold.ttf'),                
             });
-            navigation.navigate('Splash');
+            navigation.navigate('FirstSplashScreen');
         }
         loadFont();
     }, [])

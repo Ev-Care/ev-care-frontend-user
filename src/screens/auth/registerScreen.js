@@ -1,4 +1,6 @@
 import {
+  ActivityIndicator,
+  Alert,
   ImageBackground,
   Platform,
   ScrollView,
@@ -9,7 +11,7 @@ import {
   View,
 } from "react-native";
 import { RadioButton } from "react-native-paper";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Colors,
   screenWidth,
@@ -20,13 +22,75 @@ import {
 import MyStatusBar from "../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
-const RegisterScreen = ({ navigation }) => {
+import { useDispatch, useSelector } from "react-redux";
+import { postSignUp } from "./services/crudFunction";
+import { selectAuthError, selectToken, selectUser } from "./services/selector";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
+const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setfullName] = useState("");
-  const [userName, setuserName] = useState("");
   const [email, setemail] = useState("");
   const [role, setRole] = useState("User");
-  
- 
+  const [loading, setLoading] = useState(false); // Loader state
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser); // Get user data from Redux store
+  const token = useSelector(selectToken); // Get user data from Redux store
+  const error = useSelector(selectAuthError); // Get error from Redux store
+  const userKey = route?.params?.userKey;
+
+  console.log("user key in register : ", userKey);
+
+  const handleSignUp = async () => {
+    if (!fullName.trim() || !email.trim()) {
+      Alert.alert("Error", "Please fill in all the fields.");
+      return;
+    }
+
+    setLoading(true);
+
+    const userData = {
+      email: email,
+      owner_legal_name: fullName,
+      role: role,
+      user_key: userKey // Use user_key from Redux state
+    };
+
+    console.log("Post signup called");
+    try {
+      const response = await dispatch(postSignUp(userData));
+
+    } catch (error) {
+      console.log("Error during registration");
+      dispatch(showSnackbar({ message: error || "Registration Failed", type: "error" }));
+
+    }
+
+  };
+
+  // useEffect to handle user and token updates
+  useEffect(() => {
+    if (user && user?.status !== "New" && token) {
+      console.log("User and token updated in useEffect:", user, token);
+
+      try {
+        // Save user data and token to AsyncStorage
+        AsyncStorage.setItem("user", user.user_key);
+        AsyncStorage.setItem("accessToken", token);
+
+        console.log("Access token stored in AsyncStorage:", AsyncStorage.getItem("token"));
+
+        dispatch(showSnackbar({ message: error || "Registration Success", type: "success" }));
+
+        navigation.navigate("userHome"); // Navigate to the home screen
+      } catch (error) {
+        console.error("Error saving user data:", error);
+        dispatch(showSnackbar({ message: "Error in saving user data", type: "error" }));
+      }
+    } else if (error) {
+      console.error("Error during registration:", error);
+      dispatch(showSnackbar({ message: error || "Registration Failed", type: "error" }));
+    }
+  }, [user, token, error, navigation]);
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -37,9 +101,9 @@ const RegisterScreen = ({ navigation }) => {
           automaticallyAdjustKeyboardInsets={true}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: Sizes.fixPadding * 2.0 }}
-        >  {selectRole()}
+        >
+          {selectRole()}
           {fullNameInfo()}
-          {userNameInfo()}
           {emailInfo()}
           {continueButton()}
           {agreeInfo()}
@@ -47,7 +111,8 @@ const RegisterScreen = ({ navigation }) => {
       </View>
     </View>
   );
-   function selectRole() {
+
+  function selectRole() {
     return (
       <View style={{ flexDirection: "row", justifyContent: "space-around", margin: Sizes.fixPadding * 2 }}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -69,13 +134,12 @@ const RegisterScreen = ({ navigation }) => {
       </View>
     );
   }
-  
 
   function agreeInfo() {
     return (
       <View style={{ alignItems: "center", justifyContent: "center" }}>
         <Text style={{ textAlign: "center", ...Fonts.grayColor16Medium }}>
-          By continue you’re agreed to our
+          By continuing, you agree to our
         </Text>
         <Text
           style={{
@@ -84,7 +148,7 @@ const RegisterScreen = ({ navigation }) => {
             marginTop: Sizes.fixPadding - 5.0,
           }}
         >
-          Terms & condition
+          Terms & Conditions
         </Text>
       </View>
     );
@@ -92,12 +156,7 @@ const RegisterScreen = ({ navigation }) => {
 
   function emailInfo() {
     return (
-      <View
-        style={{
-          ...styles.textFieldWrapper,
-          marginBottom: Sizes.fixPadding * 2.0,
-        }}
-      >
+      <View style={{ ...styles.textFieldWrapper, marginBottom: Sizes.fixPadding * 2.0 }}>
         <TextInput
           placeholder="Email address"
           placeholderTextColor={Colors.grayColor}
@@ -112,35 +171,9 @@ const RegisterScreen = ({ navigation }) => {
     );
   }
 
-  function userNameInfo() {
-    return (
-      <View
-        style={{
-          ...styles.textFieldWrapper,
-          marginVertical: Sizes.fixPadding * 2.0,
-        }}
-      >
-        <TextInput
-          placeholder="Username"
-          placeholderTextColor={Colors.grayColor}
-          value={userName}
-          onChangeText={(text) => setuserName(text)}
-          style={{ ...Fonts.blackColor16Medium }}
-          cursorColor={Colors.primaryColor}
-          selectionColor={Colors.primaryColor}
-        />
-      </View>
-    );
-  }
-
   function fullNameInfo() {
     return (
-      <View
-        style={{
-          ...styles.textFieldWrapper,
-         
-        }}
-      >
+      <View style={{ ...styles.textFieldWrapper }}>
         <TextInput
           placeholder="Full name"
           placeholderTextColor={Colors.grayColor}
@@ -158,12 +191,15 @@ const RegisterScreen = ({ navigation }) => {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => {
-          navigation.push("Verification");
-        }}
-        style={{ ...commonStyles.button,borderRadius: Sizes.fixPadding-5.0, margin: Sizes.fixPadding * 2.0 }}
+        onPress={handleSignUp}
+        style={{ ...commonStyles.button, borderRadius: Sizes.fixPadding - 5.0, margin: Sizes.fixPadding * 2.0 }}
+        disabled={loading}
       >
-        <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>
+        {loading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>
+        )}
       </TouchableOpacity>
     );
   }
@@ -180,18 +216,11 @@ const RegisterScreen = ({ navigation }) => {
             name="arrow-back"
             color={Colors.whiteColor}
             size={26}
-            onPress={() => {
-              navigation.pop();
-            }}
+            onPress={() => navigation.goBack()} // Use goBack instead of navigate
           />
           <View>
             <Text style={{ ...Fonts.whiteColor22SemiBold }}>Register</Text>
-            <Text
-              style={{
-                ...Fonts.whiteColor16Regular,
-                marginTop: Sizes.fixPadding,
-              }}
-            >
+            <Text style={{ ...Fonts.whiteColor16Regular, marginTop: Sizes.fixPadding }}>
               Create your account
             </Text>
           </View>
@@ -214,12 +243,14 @@ const styles = StyleSheet.create({
   textFieldWrapper: {
     backgroundColor: Colors.bodyBackColor,
     ...commonStyles.shadow,
-    borderRadius: Sizes.fixPadding-5.0,
+    borderRadius: Sizes.fixPadding - 5.0,
     paddingHorizontal: Sizes.fixPadding * 1.5,
-    paddingVertical:
-      Platform.OS == "ios" ? Sizes.fixPadding + 3.0 : Sizes.fixPadding,
+    paddingVertical: Platform.OS === "ios" ? Sizes.fixPadding + 3.0 : Sizes.fixPadding,
     marginHorizontal: Sizes.fixPadding * 2.0,
-    borderColor:Colors.extraLightGrayColor,
-    borderWidth:1.0,
+    borderColor: Colors.extraLightGrayColor,
+    borderWidth: 1.0,
+    marginBottom: Sizes.fixPadding * 2.0,
+    marginLeft: Sizes.fixPadding,
+    marginRight: Sizes.fixPadding,
   },
 });

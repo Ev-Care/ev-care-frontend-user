@@ -153,7 +153,7 @@ const OnboardingScreen = ({ navigation }) => {
             >
               {item.onboardingTitle}
             </Text>
-            <Text
+            {/* <Text
               style={{
                 textAlign: "center",
                 ...Fonts.grayColor16Regular,
@@ -161,7 +161,7 @@ const OnboardingScreen = ({ navigation }) => {
               }}
             >
               {item.onboardingDescription}
-            </Text>
+            </Text> */}
           </View>
         </View>
       );

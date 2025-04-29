@@ -6,6 +6,8 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
+  Linking,
+  Platform,
 } from "react-native";
 import React from "react";
 import MyStatusBar from "../../../components/myStatusBar";
@@ -17,7 +19,8 @@ import {
   screenWidth,
 } from "../../../constants/styles";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { useSelector, useDispatch } from "react-redux";
+import { selectUser } from "../../auth/services/selector";
+import { useSelector } from "react-redux";
 
 const nearByChargingStationsList = [
   {
@@ -105,7 +108,19 @@ export { nearByChargingStationsList, enrouteChargingStationList };
 
 
 const HomeScreen = ({ navigation }) => {
-const user = useSelector((state) => state.users.loggedInUser);
+ const user = useSelector( selectUser);
+
+ const latitude = 28.6139;  
+ const longitude = 77.2090;
+ 
+
+ const openGoogleMaps = () => {
+  const url = Platform.select({
+    ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
+    android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`
+  });
+  Linking.openURL(url);
+};
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -116,22 +131,22 @@ const user = useSelector((state) => state.users.loggedInUser);
           {nearByChargingStationInfo()}
           {enrouteChargingStationInfo()}
         </ScrollView>
-        {mapViewButton()}
+        {/* {mapViewButton()} */}
       </View>
     </View>
   );
 
-  function mapViewButton() {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.9}
-        onPress={() => navigation.push("ChargingStationsOnMap")}
-        style={styles.mapViewButton}
-      >
-        <MaterialIcons name="map" color={Colors.whiteColor} size={30} />
-      </TouchableOpacity>
-    );
-  }
+  // function mapViewButton() {
+  //   return (
+  //     <TouchableOpacity
+  //       activeOpacity={0.9}
+  //       onPress={() => navigation.push("ChargingStationsOnMap")}
+  //       style={styles.mapViewButton}
+  //     >
+  //       <MaterialIcons name="map" color={Colors.whiteColor} size={30} />
+  //     </TouchableOpacity>
+  //   );
+  // }
 
   function enrouteChargingStationInfo() {
     const renderItem = ({ item }) => (
@@ -215,9 +230,7 @@ const user = useSelector((state) => state.users.loggedInUser);
             </Text>
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => {
-                navigation.push("Direction");
-              }}
+             onPress={openGoogleMaps}
               style={styles.getDirectionButton}
             >
               <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
@@ -301,9 +314,7 @@ const user = useSelector((state) => state.users.loggedInUser);
             </Text>
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => {
-                navigation.push("Direction");
-              }}
+              onPress={openGoogleMaps}
               style={styles.getDirectionButton}
             >
               <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
@@ -376,7 +387,7 @@ const user = useSelector((state) => state.users.loggedInUser);
   function welcomeInfo() {
     return (
       <View style={{ margin: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.blackColor26SemiBold }}>Welcome ,{user.name}</Text>
+        <Text style={{ ...Fonts.blackColor26SemiBold }}>Welcome {user?.name || "Guest"}</Text>
         <Text style={{ ...Fonts.grayColor18Regular }}>
           Find nearest Charging Stations
         </Text>

@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import {Colors} from "../../../constants/styles";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 const VendorAccountDetailsForm = () => {
   const navigation = useNavigation();
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   submitButton: {
-    backgroundColor: "#101942",
+    backgroundColor: Colors.primaryColor,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",

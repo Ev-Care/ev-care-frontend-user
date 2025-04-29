@@ -1,0 +1,250 @@
+
+
+{
+    "code": 200,
+    "status": "success",
+    "message": "Charging Stations has been successfully created",
+    "data": {
+        "owner_id": 13,
+        "station_name": "Tesla Etawah",
+        "address": "Etawah",
+        "coordinates": {
+            "latitude": 26.4242,
+            "longitude": 78.25
+        },
+        "amenities": "restroom,wifi,store, car care,lodging",
+        "rate": null,
+        "rate_type": null,
+        "station_images": null,
+        "additional_comment": null,
+        "open_hours_opening_time": "00:00:00",
+        "open_hours_closing_time": "23:59:59",
+        "id": 8,
+        "status": "Planned",
+        "created_at": "2025-04-13T03:40:18.599Z",
+        "update_at": "2025-04-13T03:40:18.599Z",
+        "updated_by": 0,
+        "chargers": [
+            {
+                "charger_type": "AC",
+                "max_power_kw": 60,
+                "station": {
+                    "id": 8,
+                    "owner_id": 13,
+                    "station_name": "Tesla Etawah",
+                    "address": "Etawah",
+                    "coordinates": {
+                        "latitude": 26.4242,
+                        "longitude": 78.25
+                    },
+                    "amenities": "restroom,wifi,store, car care,lodging",
+                    "rate": null,
+                    "rate_type": null,
+                    "station_images": null,
+                    "additional_comment": null,
+                    "open_hours_opening_time": "00:00:00",
+                    "open_hours_closing_time": "23:59:59",
+                    "status": "Planned",
+                    "created_at": "2025-04-13T03:40:18.599Z",
+                    "update_at": "2025-04-13T03:40:18.599Z",
+                    "updated_by": 0
+                },
+                "charger_id": 15,
+                "status": "Available",
+                "created_at": "2025-04-13T03:40:18.664Z",
+                "update_at": "2025-04-13T03:40:18.664Z",
+                "updated_by": 0,
+                "connectors": [
+                    {
+                        "connector_status": "operational",
+                        "charger": {
+                            "charger_id": 15,
+                            "charger_type": "AC",
+                            "max_power_kw": 60,
+                            "status": "Available",
+                            "created_at": "2025-04-13T03:40:18.664Z",
+                            "update_at": "2025-04-13T03:40:18.664Z",
+                            "updated_by": 0,
+                            "station": {
+                                "id": 8,
+                                "owner_id": 13,
+                                "station_name": "Tesla Etawah",
+                                "address": "Etawah",
+                                "coordinates": {
+                                    "latitude": 26.4242,
+                                    "longitude": 78.25
+                                },
+                                "amenities": "restroom,wifi,store, car care,lodging",
+                                "rate": null,
+                                "rate_type": null,
+                                "station_images": null,
+                                "additional_comment": null,
+                                "open_hours_opening_time": "00:00:00",
+                                "open_hours_closing_time": "23:59:59",
+                                "status": "Planned",
+                                "created_at": "2025-04-13T03:40:18.599Z",
+                                "update_at": "2025-04-13T03:40:18.599Z",
+                                "updated_by": 0
+                            }
+                        },
+                        "connectorType": {
+                            "connector_type_id": 1,
+                            "max_power_kw": "60.00",
+                            "description": "CCS-2"
+                        },
+                        "charger_connector_id": 30
+                    },
+                    {
+                        "connector_status": "operational",
+                        "charger": {
+                            "charger_id": 15,
+                            "charger_type": "AC",
+                            "max_power_kw": 60,
+                            "status": "Available",
+                            "created_at": "2025-04-13T03:40:18.664Z",
+                            "update_at": "2025-04-13T03:40:18.664Z",
+                            "updated_by": 0,
+                            "station": {
+                                "id": 8,
+                                "owner_id": 13,
+                                "station_name": "Tesla Etawah",
+                                "address": "Etawah",
+                                "coordinates": {
+                                    "latitude": 26.4242,
+                                    "longitude": 78.25
+                                },
+                                "amenities": "restroom,wifi,store, car care,lodging",
+                                "rate": null,
+                                "rate_type": null,
+                                "station_images": null,
+                                "additional_comment": null,
+                                "open_hours_opening_time": "00:00:00",
+                                "open_hours_closing_time": "23:59:59",
+                                "status": "Planned",
+                                "created_at": "2025-04-13T03:40:18.599Z",
+                                "update_at": "2025-04-13T03:40:18.599Z",
+                                "updated_by": 0
+                            }
+                        },
+                        "connectorType": {
+                            "connector_type_id": 1,
+                            "max_power_kw": "60.00",
+                            "description": "CCS-2"
+                        },
+                        "charger_connector_id": 32
+                    }
+                ]
+            },
+            {
+                "charger_type": "DC",
+                "station": {
+                    "id": 8,
+                    "owner_id": 13,
+                    "station_name": "Tesla Etawah",
+                    "address": "Etawah",
+                    "coordinates": {
+                        "latitude": 26.4242,
+                        "longitude": 78.25
+                    },
+                    "amenities": "restroom,wifi,store, car care,lodging",
+                    "rate": null,
+                    "rate_type": null,
+                    "station_images": null,
+                    "additional_comment": null,
+                    "open_hours_opening_time": "00:00:00",
+                    "open_hours_closing_time": "23:59:59",
+                    "status": "Planned",
+                    "created_at": "2025-04-13T03:40:18.599Z",
+                    "update_at": "2025-04-13T03:40:18.599Z",
+                    "updated_by": 0
+                },
+                "charger_id": 16,
+                "max_power_kw": 15,
+                "status": "Available",
+                "created_at": "2025-04-13T03:40:18.684Z",
+                "update_at": "2025-04-13T03:40:18.684Z",
+                "updated_by": 0,
+                "connectors": [
+                    {
+                        "connector_status": "operational",
+                        "charger": {
+                            "charger_id": 16,
+                            "charger_type": "DC",
+                            "max_power_kw": 15,
+                            "status": "Available",
+                            "created_at": "2025-04-13T03:40:18.684Z",
+                            "update_at": "2025-04-13T03:40:18.684Z",
+                            "updated_by": 0,
+                            "station": {
+                                "id": 8,
+                                "owner_id": 13,
+                                "station_name": "Tesla Etawah",
+                                "address": "Etawah",
+                                "coordinates": {
+                                    "latitude": 26.4242,
+                                    "longitude": 78.25
+                                },
+                                "amenities": "restroom,wifi,store, car care,lodging",
+                                "rate": null,
+                                "rate_type": null,
+                                "station_images": null,
+                                "additional_comment": null,
+                                "open_hours_opening_time": "00:00:00",
+                                "open_hours_closing_time": "23:59:59",
+                                "status": "Planned",
+                                "created_at": "2025-04-13T03:40:18.599Z",
+                                "update_at": "2025-04-13T03:40:18.599Z",
+                                "updated_by": 0
+                            }
+                        },
+                        "connectorType": {
+                            "connector_type_id": 1,
+                            "max_power_kw": "60.00",
+                            "description": "CCS-2"
+                        },
+                        "charger_connector_id": 29
+                    },
+                    {
+                        "connector_status": "operational",
+                        "charger": {
+                            "charger_id": 16,
+                            "charger_type": "DC",
+                            "max_power_kw": 15,
+                            "status": "Available",
+                            "created_at": "2025-04-13T03:40:18.684Z",
+                            "update_at": "2025-04-13T03:40:18.684Z",
+                            "updated_by": 0,
+                            "station": {
+                                "id": 8,
+                                "owner_id": 13,
+                                "station_name": "Tesla Etawah",
+                                "address": "Etawah",
+                                "coordinates": {
+                                    "latitude": 26.4242,
+                                    "longitude": 78.25
+                                },
+                                "amenities": "restroom,wifi,store, car care,lodging",
+                                "rate": null,
+                                "rate_type": null,
+                                "station_images": null,
+                                "additional_comment": null,
+                                "open_hours_opening_time": "00:00:00",
+                                "open_hours_closing_time": "23:59:59",
+                                "status": "Planned",
+                                "created_at": "2025-04-13T03:40:18.599Z",
+                                "update_at": "2025-04-13T03:40:18.599Z",
+                                "updated_by": 0
+                            }
+                        },
+                        "connectorType": {
+                            "connector_type_id": 1,
+                            "max_power_kw": "60.00",
+                            "description": "CCS-2"
+                        },
+                        "charger_connector_id": 31
+                    }
+                ]
+            }
+        ]
+    }
+}

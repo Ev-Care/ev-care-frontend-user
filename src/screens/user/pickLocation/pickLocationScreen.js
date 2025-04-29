@@ -6,7 +6,7 @@ import {
   Alert,
   PermissionsAndroid,
   Platform,
-  
+  Image,
   Text,
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
@@ -15,73 +15,84 @@ import Geolocation from "react-native-geolocation-service";
 import Key from "../../../constants/key";
 import { Colors, Fonts, commonStyles } from "../../../constants/styles";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation,StackActions } from "@react-navigation/native";
-
+import { useNavigation, StackActions } from "@react-navigation/native";
+import * as Location from "expo-location";
 
 const PickLocationScreen = ({ navigation, route }) => {
   // const navigation = useNavigation();
   const mapRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [currentLocation, setCurrentLocation] = useState(null);
   const [address, setAddress] = useState(""); // Store address
   const [region, setRegion] = useState({
     latitude: 28.6139, // Default to Delhi
-    longitude: 77.2090,
+    longitude: 77.209,
     latitudeDelta: 0.03,
     longitudeDelta: 0.03,
   });
-
-  // Function to request location permission (Android only)
-  const requestLocationPermission = async () => {
-    if (Platform.OS === "android") {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      } catch (err) {
-        console.error("Permission Error:", err);
-        return false;
-      }
-    }
-    return true;
-  };
-
-  // Fetch user's location on component mount
+  const [errorMsg, setErrorMsg] = useState(null);
   useEffect(() => {
-    getUserLocation();
+    const timeout = setTimeout(() => {
+      if (mapRef.current) {
+        getUserLocation();
+      } else {
+        console.log("Map reference is not ready yet");
+      }
+    }, 500);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   const getUserLocation = async () => {
-    const hasPermission = await requestLocationPermission();
-    if (!hasPermission) {
-      Alert.alert("Permission Denied", "Using default location (Delhi).");
-      return;
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        Alert.alert("Permission Denied", "Using default location (Delhi).");
+        setRegion({
+          latitude: 28.6139,
+          longitude: 77.209,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        });
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+
+      const { latitude, longitude } = location.coords;
+    
+      setRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
+
+      setCurrentLocation({ latitude, longitude });
+
+      // ✅ Animate camera IMMEDIATELY without waiting for state update
+      if (mapRef.current) {
+        console.log("Animating camera to..:", latitude, longitude);
+        mapRef.current.animateCamera(
+          {
+            center: { latitude, longitude },
+            zoom: 15, // Adjust zoom level as needed
+          },
+          { duration: 0 }
+        );
+      }
+    } catch (error) {
+      console.error("Error requesting location:", error);
+      Alert.alert("Error", "Failed to fetch location. Using default (Delhi).");
+      setRegion({
+        latitude: 28.6139,
+        longitude: 77.209,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
     }
-
-    Geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        const newRegion = {
-          latitude,
-          longitude,
-          latitudeDelta: 0.03,
-          longitudeDelta: 0.03,
-        };
-
-        setRegion(newRegion);
-        setSelectedLocation({ latitude, longitude });
-        fetchAddressFromCoordinates(latitude, longitude);
-
-        if (mapRef.current) {
-          mapRef.current.animateCamera({ center: newRegion, zoom: 15 }, { duration: 1000 });
-        }
-      },
-      (error) => {
-        console.error("Geolocation Error:", error);
-        Alert.alert("Error", "Failed to get location. Using default (Delhi).");
-      },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-    );
   };
 
   // Fetch address from coordinates using Google Maps API
@@ -121,46 +132,36 @@ const PickLocationScreen = ({ navigation, route }) => {
     fetchAddressFromCoordinates(lat, lng);
 
     if (mapRef.current) {
-      mapRef.current.animateCamera({ center: newRegion, zoom: 15 }, { duration: 1000 });
+      mapRef.current.animateCamera(
+        { center: newRegion, zoom: 15 },
+        { duration: 1000 }
+      );
     }
   };
 
   // Submit function
   const handleSubmit = () => {
-    // console.log("Selected Location:", selectedLocation);
-    // console.log("Address:", address);
-    // console.log("AddressFor:", route.params?.addressFor);
-  
     if (!selectedLocation || !address) {
       Alert.alert("No Location Selected", "Please select a location first.");
       return;
     }
-    if(route.params?.addressFor==="destination"){
-   route.params.setDestinationAddress(address);
-   route.params.setDestinationCoordinate(selectedLocation);
-  }else if(route.params?.addressFor==="pickup"){
-    route.params.setPickupAddress(address);
-    route.params.setPickupCoordinate(selectedLocation);
-  }else{
-    route.params.setAddress(address);
-  }
-    // Replace current screen with Enroute instead of stacking
+
+    if (route.params?.addressFor === "destination") {
+      route.params?.setDestinationAddress(address);
+      route.params?.setDestinationCoordinate(selectedLocation);
+    } else if (route.params?.addressFor === "pickup") {
+      route.params?.setPickupAddress(address);
+      route.params?.setPickupCoordinate(selectedLocation);
+    } else if (route.params?.addressFor === "vendorAddress") {
+      route.params?.setAddress(address);
+      route.params?.setCoordinate(selectedLocation);
+    } else {
+      route.params?.setAddress(address);
+      route.params?.setCoordinate(selectedLocation);
+    }
+
     navigation.dispatch(StackActions.pop(1));
-    // navigation.pop("Enroute", {
-    //   coordinate: selectedLocation,
-    //   address: address,
-    //   addressFor: route.params?.addressFor || "default",
-    // });
-  
-    // console.log("Navigating back...");
   };
-  
-  
-  
-  
-  
-  
-  
 
   return (
     <View style={styles.container}>
@@ -170,7 +171,10 @@ const PickLocationScreen = ({ navigation, route }) => {
         fetchDetails={true}
         onPress={handleSearchSelect}
         query={{ key: Key.apiKey, language: "en" }}
-        styles={{ container: styles.searchContainer, textInput: styles.searchInput }}
+        styles={{
+          container: styles.searchContainer,
+          textInput: styles.searchInput,
+        }}
       />
 
       {/* Map View */}
@@ -180,9 +184,20 @@ const PickLocationScreen = ({ navigation, route }) => {
         style={styles.map}
         region={region}
         onPress={handleMapPress}
-        showsUserLocation={true}
+        showsUserLocation={false}
+        showsMyLocationButton={false}
       >
         {selectedLocation && <Marker coordinate={selectedLocation} />}
+        {/* Custom Current Location Marker */}
+        {currentLocation && (
+          <Marker coordinate={currentLocation} anchor={{ x: 0.5, y: 0.5 }}>
+            <Image
+              source={require("../../../../assets/images/userMarker.png")}
+              style={{ width: 50, height: 50 }}
+              resizeMode="contain"
+            />
+          </Marker>
+        )}
       </MapView>
 
       {/* Display Selected Address */}
@@ -193,12 +208,18 @@ const PickLocationScreen = ({ navigation, route }) => {
       ) : null}
 
       {/* Current Location Button */}
-      <TouchableOpacity style={styles.currentLocationButton} onPress={getUserLocation}>
+      <TouchableOpacity
+        style={styles.currentLocationButton}
+        onPress={getUserLocation}
+      >
         <Ionicons name="locate-outline" size={28} color="black" />
       </TouchableOpacity>
 
       {/* Submit Button */}
-      <TouchableOpacity style={[commonStyles.button, styles.submitButton]} onPress={handleSubmit}>
+      <TouchableOpacity
+        style={[commonStyles.button, styles.submitButton]}
+        onPress={handleSubmit}
+      >
         <Text style={Fonts.whiteColor18Medium}>Select Location</Text>
       </TouchableOpacity>
     </View>
@@ -222,6 +243,13 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     paddingHorizontal: 10,
     fontSize: 16,
+    borderWidth: 0.5,
+    borderColor: "gray",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 2, height: 4 },
+    shadowRadius: 6,
+    elevation: 10,
   },
   map: {
     ...StyleSheet.absoluteFillObject,

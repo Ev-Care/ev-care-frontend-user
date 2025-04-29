@@ -1,0 +1,19 @@
+
+
+export enum CHARGER_STATUS {
+  AVAILABLE = 'Available',
+  
+  OUT_OF_SERVICE = 'Out-Of-Service',
+}
+
+export enum STATION_STATUS {
+  ACTIVE = "Active",
+  INACTIVE = "Inactive",
+  PLANNED = "Planned",
+}
+
+export enum CONNECTOR_STATUS {
+  OPERATIONAL = "operational",
+  
+  OUT_OF_SERVICE = "out-of-service",
+}

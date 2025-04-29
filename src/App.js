@@ -8,11 +8,11 @@ import "react-native-gesture-handler";
 import "react-native-get-random-values";
 import React, { useState, useEffect } from "react";
 import { Provider, useSelector } from "react-redux";
-import { store } from "./redux/store/store";
+import  store  from "./redux/store/store";
+import { selectUser, selectProfileStatus } from "./screens/auth/services/selector"; // Ensure correct import
 
 // Screens
 import LoadingScreen from "./screens/loadingScreen";
-import SecondSplashScreen from "./screens/secondSplashScreen";
 import FirstSplashScreen from "./screens/firstSplashScreen";
 import OnboardingScreen from "./screens/onboardingScreen";
 import SigninScreen from "./screens/auth/signinScreen";
@@ -23,6 +23,7 @@ import VerificationScreen from "./screens/auth/verificationScreen";
 import { AdminStack } from "./roleStack/adminStack";
 import { UserStack } from "./roleStack/userStack";
 import { VendorStack } from "./roleStack/vendorStack";
+import Snackbar from "./components/snackbar"; // Ensure correct import
 
 LogBox.ignoreAllLogs();
 
@@ -30,13 +31,33 @@ const Stack = createStackNavigator();
 
 function AppNavigator() {
   const [userType, setUserType] = useState(null);
-  const user = useSelector((state) => state.users.loggedInUser);
+  const user = useSelector( selectUser); // Get user data
+
 
   useEffect(() => {
-    if (user) {
-      setUserType(user.role); // Update role when user logs in
+    if (user && user.role) { 
+      // if (true) { 
+        setUserType(user.role.toLowerCase());
+      //  setUserType("admin");
+    } else {
+        setUserType(null);
     }
-  }, [user]);
+}, [user]);
+
+  // Function to handle role-based navigation
+  const renderRoleStack = () => {
+    console.log("User role in renderRoleStack:", userType);
+    switch (userType) {
+      case "user":
+        return <Stack.Screen name="UserStack" component={UserStack} />;
+      case "admin":
+        return <Stack.Screen name="AdminStack" component={AdminStack} />;
+      case "vendor":
+        return <Stack.Screen name="VendorStack" component={VendorStack} />;
+      default:
+        return <Stack.Screen name="Loading" component={LoadingScreen} />;
+    }
+  };
 
   return (
     <NavigationContainer>
@@ -46,35 +67,25 @@ function AppNavigator() {
           ...TransitionPresets.SlideFromRightIOS,
         }}
       >
-        {!user ? (
-          // Non-registered users see these screens
+        {!userType ? (
           <>
             <Stack.Screen
               name="FirstSplashScreen"
               component={FirstSplashScreen}
               options={{ ...TransitionPresets.DefaultTransition }}
             />
-            <Stack.Screen
-              name="SecondSplashScreen"
-              component={SecondSplashScreen}
-              options={{ ...TransitionPresets.DefaultTransition }}
-            />
             <Stack.Screen name="Loading" component={LoadingScreen} />
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-            <Stack.Screen name="Signin" component={SigninScreen} />
+            <Stack.Screen name="Signin"  component={SigninScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
             <Stack.Screen name="Verification">
-              {(props) => <VerificationScreen {...props} setUserType={setUserType} />}
+              {(props) => (
+                <VerificationScreen {...props} setUserType={setUserType} />
+              )}
             </Stack.Screen>
           </>
-        ) : userType === "user" ? (
-          <Stack.Screen name="UserStack" component={UserStack} />
-        ) : userType === "admin" ? (
-          <Stack.Screen name="AdminStack" component={AdminStack} />
-        ) : userType === "vendor" ? (
-          <Stack.Screen name="VendorStack" component={VendorStack} />
         ) : (
-          <Stack.Screen name="Loading" component={LoadingScreen} />
+          renderRoleStack()
         )}
       </Stack.Navigator>
     </NavigationContainer>
@@ -84,6 +95,7 @@ function AppNavigator() {
 export default function MyApp() {
   return (
     <Provider store={store}>
+      <Snackbar />
       <AppNavigator />
     </Provider>
   );

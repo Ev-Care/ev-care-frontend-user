@@ -5,29 +5,44 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
   Image,
   Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
-
+import {
+  Colors,
+  screenWidth,
+  Fonts,
+  Sizes,
+  commonStyles,
+} from "../../../constants/styles";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
-
-const UploadTAN = () => {
-  const navigation = useNavigation();
+import { useDispatch, useSelector } from "react-redux";
+import { selectAuthError, selectToken } from "../../auth/services/selector";
+import { postSingleFile } from "../../auth/services/crudFunction";
+import { setupImagePicker } from "./vendorDetailForm";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+const UploadGst = ({ route, navigation }) => {
+  // const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
-  const [backImage, setBackImage] = useState(null);
-
+  const [frontImageUri, setFrontImageUri] = useState(null);
+  const [loading, setLoading] = useState(false); // Loader state
+  const { vendorDetail, isCheckBoxClicked } = route.params || {};
+  const dispatch = useDispatch(); // Get the dispatch function
+  const accessToken = useSelector(selectToken); // Get access token from Redux store
+  const authErrorMessage = useSelector(selectAuthError);
   // Function to pick an image
+
   const pickImage = async (source, type) => {
     let permissionResult;
 
     if (source === "camera") {
       permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     } else {
-      permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     }
 
     if (permissionResult.granted === false) {
@@ -39,46 +54,66 @@ const UploadTAN = () => {
     if (source === "camera") {
       result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
+        quality: 0.2,
       });
     } else {
       result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
+        quality: 0.2,
       });
     }
 
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
-      if (type === "front") {
-        setFrontImage(imageUri);
-      } else {
-        setBackImage(imageUri);
+      const file = await setupImagePicker(imageUri);
+      setLoading(true);
+
+      try {
+        const response = await dispatch(
+          postSingleFile({ file: file, accessToken: accessToken })
+        );
+
+        if (response?.payload.code === 200 || response?.payload.code === 201) {
+          if (type === "front") {
+            setFrontImage(imageUri);
+            setFrontImageUri(response?.payload?.data?.filePathUrl);
+            console.log("Image URI set successfully:", response?.payload?.data?.filePathUrl);
+          }
+        } else {
+          dispatch(showSnackbar({ message: authErrorMessage || 'File Size should be less that 5 MB', type: 'error' }));
+
+        }
+      } catch (error) {
+        dispatch(showSnackbar({ message: authErrorMessage || 'Some Error occured while uploading file', type: 'error' }));
+      } finally {
+        setLoading(false);
       }
     }
   };
 
+
   // Handle Submit
   const handleSubmit = () => {
-    // if (!frontImage && !backImage) {
-    //   Alert.alert("Error", "Please upload both front and back images.");
-    //   return;
-    // }
-    // if (!frontImage) {
-    //   Alert.alert("Error", "Please upload the front side image.");
-    //   return;
-    // }
-    // if (!backImage) {
-    //   Alert.alert("Error", "Please upload the back side image.");
-    //   return;
-    // }
-    
-    // Alert.alert("Success", "Submitted!");
-    navigation.navigate("UploadStationImage");
+
+    if (!frontImageUri) {
+      dispatch(showSnackbar({ message: 'Please upload the GST Image', type: 'error' }));
+      return;
+    }
+
+    if (!vendorDetail) {
+      dispatch(showSnackbar({ message: 'VendorDetail is not available at GST Page', type: 'error' }));
+
+      console.warn("vendorDetail not passed at GST Page!");
+      return null;
+    }
+    let VendorDetailAtGstPage = {
+      ...vendorDetail,
+      gstin_image: frontImageUri,
+
+    };
+
+    navigation.navigate("UploadAadhar", { vendorDetail: VendorDetailAtGstPage, isCheckBoxClicked });
   };
-  
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -91,18 +126,20 @@ const UploadTAN = () => {
           >
             <Ionicons name="arrow-back" size={24} color="black" />
           </TouchableOpacity>
-          <Text style={styles.appBarTitle}>Upload TAN</Text>
+          <Text style={styles.appBarTitle}>Upload GST Image</Text>
         </View>
 
         {/* Progress Bar */}
-        <CompleteDetailProgressBar completedSteps={3} />
+        <CompleteDetailProgressBar completedSteps={1} totalSteps={4} />
 
         {/* Upload Front Side */}
         <View style={styles.uploadBox}>
-          {frontImage ? (
+          {loading ? (
+            <ActivityIndicator size={40} color="black" />
+          ) : frontImage ? (
             <Image source={{ uri: frontImage }} style={styles.uploadedImage} />
           ) : (
-            <Text style={styles.uploadText}>Upload Front Side</Text>
+            <Text style={styles.uploadText}>Upload Image</Text>
           )}
         </View>
 
@@ -124,43 +161,16 @@ const UploadTAN = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Upload Back Side */}
-        <View style={styles.uploadBox}>
-          {backImage ? (
-            <Image source={{ uri: backImage }} style={styles.uploadedImage} />
-          ) : (
-            <Text style={styles.uploadText}>Upload Back Side</Text>
-          )}
-        </View>
-
-        {/* Buttons for Back Side */}
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={styles.outlinedButton}
-            onPress={() => pickImage("camera", "back")}
-          >
-            <MaterialIcons name="photo-camera" size={20} color="#F4721E" />
-            <Text style={styles.buttonText}> Take Image</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.outlinedButton}
-            onPress={() => pickImage("gallery", "back")}
-          >
-            <MaterialIcons name="photo-library" size={20} color="#F4721E" />
-            <Text style={styles.buttonText}> Upload from Gallery</Text>
-          </TouchableOpacity>
-        </View>
-
         {/* Submit Button */}
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitText}>Submit</Text>
+          <Text style={styles.submitText}>Next</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
 };
 
-export default UploadTAN;
+export default UploadGst;
 
 const styles = StyleSheet.create({
   scrollContainer: {
@@ -184,7 +194,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   appBarTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "500",
     color: "black",
     textAlign: "center",
@@ -204,7 +214,7 @@ const styles = StyleSheet.create({
   },
   uploadText: {
     color: "black",
-    fontSize: 16,
+    fontSize: 14,
   },
   uploadedImage: {
     width: "100%",
@@ -226,19 +236,19 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonText: {
-    fontSize: 14,
+    fontSize: 12,
     color: "#F4721E",
   },
   submitButton: {
     width: "100%",
-    backgroundColor: "#101942",
+    backgroundColor: Colors.primaryColor,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
     marginTop: 30,
   },
   submitText: {
-    fontSize: 16,
+    fontSize: 14,
     color: "white",
     fontWeight: "bold",
   },

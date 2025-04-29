@@ -1,64 +1,89 @@
+import React, { useState } from "react";
 import {
-  Image,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  ActivityIndicator,
+  View,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  Image,
+  ActivityIndicator,
+  StyleSheet,
+  Alert,
+  Modal,
+  ScrollView,
 } from "react-native";
-import React, { useState } from "react";
+import * as ImagePicker from "expo-image-picker";
+import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
 import {
   Colors,
-  Fonts,
   Sizes,
+  Fonts,
   commonStyles,
   screenWidth,
 } from "../../../../constants/styles";
-import MyStatusBar from "../../../../components/myStatusBar";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import * as ImagePicker from "expo-image-picker";
-import { BottomSheet } from "@rneui/themed";
-import { Alert } from "react-native";
+import RNModal from "react-native-modal";
+import { Overlay } from "@rneui/themed";
+import imageURL from "../../../../constants/baseURL";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useSelector, useDispatch } from "react-redux";
-import { selectToken, selectUser } from "../../../auth/services/selector";
-import { setupImagePicker } from "../../../vendor/CompleteProfileDetail/vendorDetailForm";
 import { postSingleFile } from "../../../auth/services/crudFunction";
 import { patchUpdateUserProfile } from "../../../user/service/crudFunction";
-import { Ionicons } from "@expo/vector-icons";
-import imageURL from "../../../../constants/baseURL";
-import { RefreshControl } from 'react-native';
-const EditProfileScreen = ({ navigation }) => {
+import { setupImagePicker } from "../../../vendor/CompleteProfileDetail/vendorDetailForm";
+import { selectToken, selectUser } from "../../../auth/services/selector";
+const EditProfileScreen = ({ route, navigation }) => {
   const user = useSelector(selectUser);
+  const accessToken = useSelector(selectToken);
+  const dispatch = useDispatch();
+  const [name, setName] = useState(user?.name || "Not found");
+  const [email, setEmail] = useState(user?.email || "Not found");
+  const [mobNumber, setMobNumber] = useState(
+    user?.mobile_number || "Not found"
+  );
   const [businessName, setBusinessName] = useState(
-    user?.business_name || "Anonymous User"
+    user?.business_name || "Not found"
   );
-  const [name, setname] = useState(user?.name || "Anonymous User");
-  const [email, setemail] = useState(user?.email);
-  const [showChangeProfilePicSheet, setshowChangeProfilePicSheet] =
-    useState(false);
-  const [profileImage, setProfileImage] = useState(imageURL.baseURL + user?.avatar);
-  const [imageLoading, setImageLoading] = useState(false);
-  const [profileImageURI, setProfileImageURI] = useState(null);
-  const dispatch = useDispatch(); // Get the dispatch function
-  const accessToken = useSelector(selectToken); // Get access token from Redux store
-  const [refreshing, setRefreshing] = useState(false);
   const [aadharNumber, setAadharNumber] = useState(
-    user?.adhar_no || "Anonymous User"
+    user?.adhar_no || "Not found"
   );
-  const [panNumber, setPanNumber] = useState(user?.tan_no || "Anonymous User");
-  const [tanNumber, setTanNumber] = useState(user?.pan_no || "Anonymous User");
-  console.log("user in edit profile screen", user);
-  console.log("user profile URL", imageURL.baseURL + user?.adhar_front_pic);
+  const [panNumber, setPanNumber] = useState(user?.pan_no || "Not found");
+  const [gstNumber, setGstNumber] = useState(user?.gstin_number || "Not found");
+  //   image start
+  // const [aadhaarFrontImage, setAadhaarFrontImage] = useState(null);
+  // const [aadhaarBackImage, setAadhaarBackImage] = useState(null);
+  // const [panImage, setPanImage] = useState(null);
+  // const [gstImage, setGstImage] = useState(null);
+  // const [avatar, setAvatar] = useState(null);
+  //   image uri
+  const [aadhaarFrontImageURI, setAadhaarFrontImageURI] = useState(
+    user?.adhar_front_pic
+  );
+  const [aadhaarBackImageURI, setAadhaarBackImageURI] = useState(
+    user?.adhar_back_pic
+  );
+  const [panImageURI, setPanImageURI] = useState(user?.pan_pic);
+  const [gstImageURI, setGstImageURI] = useState(user?.gstin_image);
+  const [avatarURI, setAvatarURI] = useState(user?.avatar);
+  //   image end
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const [currentImageSetter, setCurrentImageSetter] = useState(null);
+  const [currentImageLabel, setCurrentImageLabel] = useState(null);
+  const [showDialogue, setshowDialogue] = useState(false);
+  const [imageloading, setImageLoading] = useState("");
+
+  const showFullImage = (uri) => {
+    if (!uri) return;
+    setSelectedImage(uri);
+    setModalVisible(true);
+  };
 
   const handleSubmit = async () => {
     var updatedData = {
       owner_legal_name: name,
       email: email,
-      avatar: profileImageURI,
-      business_name: user?.business_name,
+      avatar: avatarURI,
+      business_name: businessName,
       user_key: user?.user_key,
     };
     console.log("Updated Data:", updatedData);
@@ -71,41 +96,20 @@ const EditProfileScreen = ({ navigation }) => {
     // navigation.pop();
   };
 
-  const pickImage = async (source) => {
-    let permissionResult;
-
-    if (source === "camera") {
-      permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-    } else {
-      permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-    }
-
-    if (permissionResult.granted === false) {
-      alert("Permission is required!");
-      return;
-    }
-
-    let result;
-    if (source === "camera") {
-      result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true, 
-        quality: 0.1, 
+  const openGallery = async (setter, label) => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.1,
+        allowsEditing: true,
+        aspect: label === "avatar" ? [1, 1] : undefined,
       });
-    } else {
-      result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true, 
-        quality: 0.1, 
-      });
-    }
 
-    if (!result.canceled) {
-      const imageUri = result.assets[0].uri;
+      if (!result.canceled) {
+        const imageUri = result.assets[0].uri;
+        setImageLoading(label);
+        const file = await setupImagePicker(imageUri);
 
-      setImageLoading(true);
-      const file = await setupImagePicker(imageUri);
-
-      try {
         const response = await dispatch(
           postSingleFile({ file: file, accessToken: accessToken })
         );
@@ -114,498 +118,508 @@ const EditProfileScreen = ({ navigation }) => {
           response?.payload?.code === 200 ||
           response?.payload?.code === 201
         ) {
-          setProfileImageURI(response?.payload?.data?.filePathUrl);
+          setter(response?.payload?.data?.filePathUrl);
           console.log(
-            "profile Image URI set successfully:",
+            "Profile Image URI set successfully:",
             response?.payload?.data?.filePathUrl
           );
-          setProfileImage(imageUri);
-          setImageLoading(false);
-          // Alert.alert("Success", "File uploaded successfully!");
         } else {
-          Alert.alert("Error", "File Should be less than 5 MB");
+          Alert.alert("Error", "File should be less than 5 MB");
         }
-      } catch (error) {
-        setImageLoading(false);
-        console.log("Error uploading file:", error);
-        Alert.alert("Error", "Upload failed. Please try again.");
       }
+    } catch (error) {
+      console.log("Error uploading file:", error);
+      Alert.alert("Error", "Upload failed. Please try again.");
+    } finally {
+      setImageLoading("");
+      setBottomSheetVisible(false);
     }
   };
-  const handleRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-      console.log("Refresh completed!");
-    }, 2000);
-  }
-  return (
-    <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
-      <MyStatusBar />
-      <View style={{ flex: 1 }}>
-        {header()}
-        <ScrollView
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              colors={['#9Bd35A', '#101942']}  // Android spinner colors
-              tintColor="#101942"            // iOS spinner color
-            />
-          }
 
-          showsVerticalScrollIndicator={false}
-          automaticallyAdjustKeyboardInsets={true}
-          contentContainerStyle={{
-            paddingTop: Sizes.fixPadding,
-            paddingBottom: Sizes.fixPadding * 2.0,
-          }}
-        >
-          {profilePicInfo()}
-          {nameInfo()}
-          {businessNameInfo()}
-          {emailInfo()}
-          <View
-            style={{
-              marginBottom: 20,
-              alignItems: "center",
-              justifyContent: "center",
+  const openCamera = async (setter, label) => {
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        quality: 0.1,
+        allowsEditing: true,
+        aspect: label === "avatar" ? [1, 1] : undefined,
+      });
+
+      if (!result.canceled) {
+        const imageUri = result.assets[0].uri;
+        setImageLoading(label);
+        const file = await setupImagePicker(imageUri);
+
+        const response = await dispatch(
+          postSingleFile({ file: file, accessToken: accessToken })
+        );
+
+        if (
+          response?.payload?.code === 200 ||
+          response?.payload?.code === 201
+        ) {
+          setter(response?.payload?.data?.filePathUrl);
+          console.log(
+            "Profile Image URI set successfully:",
+            response?.payload?.data?.filePathUrl
+          );
+        } else {
+          Alert.alert("Error", "File should be less than 5 MB");
+        }
+      }
+    } catch (error) {
+      console.log("Error uploading file:", error);
+      Alert.alert("Error", "Upload failed. Please try again.");
+    } finally {
+      setImageLoading("");
+      setBottomSheetVisible(false);
+    }
+  };
+
+  const removeImage = (setter) => {
+    setter(null);
+    setBottomSheetVisible(false);
+  };
+
+  const renderInput = (label, value, setter, placeholder) => (
+    <View style={{ marginBottom: 12 }}>
+      <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+        {label}
+      </Text>
+      <TextInput
+        style={styles.input}
+        value={value}
+        onChangeText={setter}
+        placeholder={placeholder}
+      />
+    </View>
+  );
+  const renderNonEditableInput = (label, value, setter, placeholder) => (
+    <View style={{ marginBottom: 12 }}>
+      <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+        {label}
+      </Text>
+      <TextInput
+        style={[styles.input, { backgroundColor: "#e0e0eb" }]}
+        value={value}
+        onChangeText={setter}
+        placeholder={placeholder}
+        editable={false}
+      />
+    </View>
+  );
+  const renderImageBox = (label, setter, apiRespUri) => (
+    <TouchableOpacity
+      onPress={() => {
+        if (apiRespUri) {
+          showFullImage(imageURL.baseURL + apiRespUri);
+        }
+      }}
+      style={{ alignItems: "center", marginBottom: 20 }}
+    >
+      {" "}
+      <View
+        style={[
+          styles.imageBox,
+          { borderRadius: label === "avatar" ? 50 : 12 },
+        ]}
+      >
+        {imageloading === label ? (
+          <ActivityIndicator size={40} color="#ccc" />
+        ) : apiRespUri ? (
+          <Image
+            source={{ uri: imageURL.baseURL + apiRespUri }}
+            style={[
+              styles.imageStyle,
+              { borderRadius: label === "avatar" ? 50 : 12 },
+            ]}
+          />
+        ) : (
+          <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
+        )}
+
+        {label === "avatar" && (
+          <TouchableOpacity
+            style={styles.editIcon}
+            onPress={() => {
+              setCurrentImageSetter(() => setter);
+              setCurrentImageLabel(label);
+              setBottomSheetVisible(true);
             }}
           >
-            <Text style={{ ...Fonts.grayColor18SemiBold, color: "red" }}>
-              You Can't Edit Below Fields
-            </Text>
-          </View>
-          {aadharInfo()}
-          {panInfo()}
-          {tanInfo()}
-        </ScrollView>
+            <MaterialIcons name="edit" size={20} color="white" />
+          </TouchableOpacity>
+        )}
       </View>
-      {updateProfileButton()}
-      {changeProfilePicOptionSheet()}
+      <Text style={styles.imageLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
+  return (
+    <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Edit Profile</Text>
+        <View style={styles.imageContainerAvatar}>
+          {renderImageBox("avatar", setAvatarURI, avatarURI)}
+        </View>
+        {renderInput("Full Name", name, setName, "Enter your full name")}
+        {renderNonEditableInput(
+          "Mobile Number",
+          mobNumber,
+          setMobNumber,
+          "Enter your full name"
+        )}
+        {renderInput("Email", email, setEmail, "Enter your email")}
+
+        {user.role === "vendor" && (
+          <>
+            {renderInput(
+              "Business Name",
+              businessName,
+              setBusinessName,
+              "Enter business name"
+            )}
+            {renderNonEditableInput(
+              "Aadhar Number",
+              aadharNumber,
+              setAadharNumber,
+              "Enter Aadhar number"
+            )}
+            {renderNonEditableInput(
+              "PAN Number",
+              panNumber,
+              setPanNumber,
+              "Enter PAN number"
+            )}
+            {renderNonEditableInput(
+              "GST Number",
+              gstNumber,
+              setGstNumber,
+              "Enter GST number"
+            )}
+            <View style={styles.imageContainer}>
+              {renderImageBox(
+                "Aadhaar front",
+                setAadhaarFrontImageURI,
+                aadhaarFrontImageURI
+              )}
+              {renderImageBox(
+                "Aadhaar Back",
+                setAadhaarBackImageURI,
+                aadhaarBackImageURI
+              )}
+              {renderImageBox("PAN", setPanImageURI, panImageURI)}
+              {renderImageBox("GST", setGstImageURI, gstImageURI)}
+            </View>
+          </>
+        )}
+
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            onPress={() => {
+              setshowDialogue(true);
+            }}
+            style={[
+              styles.actionButton,
+              { backgroundColor: Colors.primaryColor },
+            ]}
+          >
+            <Text style={styles.buttonText}>Update</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Full Image Modal */}
+        <Modal visible={modalVisible} transparent={true}>
+          <View style={styles.modalContainer}>
+            <Image source={{ uri: selectedImage }} style={styles.fullImage} />
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.closeText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+
+        {/* Bottom Sheet */}
+        <RNModal
+          isVisible={isBottomSheetVisible}
+          onBackdropPress={() => setBottomSheetVisible(false)}
+          style={{ justifyContent: "flex-end", margin: 0 }}
+        >
+          <View style={styles.bottomSheet}>
+            <TouchableOpacity
+              style={styles.sheetOption}
+              onPress={() => openCamera(currentImageSetter, currentImageLabel)}
+            >
+              <Ionicons name="camera" size={22} color="#555" />
+              <Text style={styles.sheetOptionText}>Use Camera</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.sheetOption}
+              onPress={() => openGallery(currentImageSetter, currentImageLabel)}
+            >
+              <Entypo name="image" size={22} color="#555" />
+              <Text style={styles.sheetOptionText}>Choose from Gallery</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.sheetOption}
+              onPress={() => removeImage(currentImageSetter)}
+            >
+              <MaterialIcons name="delete" size={22} color="red" />
+              <Text style={[styles.sheetOptionText, { color: "red" }]}>
+                Remove Image
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </RNModal>
+        {UpdateOverlay()}
+      </ScrollView>
     </View>
   );
 
-  function changeProfilePicOptionSheet() {
+  function UpdateOverlay() {
     return (
-      <BottomSheet
-        isVisible={showChangeProfilePicSheet}
-        onBackdropPress={() => setshowChangeProfilePicSheet(false)}
-        containerStyle={{ backgroundColor: "rgba(0.5, 0.50, 0, 0.50)" }}
+      <Overlay
+        isVisible={showDialogue}
+        onBackdropPress={() => setshowDialogue(false)}
+        overlayStyle={styles.dialogStyle}
       >
-        <View style={styles.sheetWrapStyle}>
-          <Text style={{ textAlign: "center", ...Fonts.blackColor18SemiBold }}>
-            Choose action
-          </Text>
-          <View style={{ marginTop: Sizes.fixPadding + 5.0 }}>
-            {sheetOptionSort({
-              icon: require("../../../../../assets/images/icons/camera.png"),
-              option: "Camera",
-            })}
-            {sheetOptionSort({
-              icon: require("../../../../../assets/images/icons/gallery.png"),
-              option: "Choose from gallery",
-            })}
-            {sheetOptionSort({
-              icon: require("../../../../../assets/images/icons/remove_image.png"),
-              option: "Remove profile picture",
-            })}
-          </View>
-        </View>
-      </BottomSheet>
-    );
-  }
-
-  function sheetOptionSort({ icon, option }) {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => {
-          setshowChangeProfilePicSheet(false);
-          if (option === "Camera") {
-            pickImage("camera");
-          } else if (option === "Choose from gallery") {
-            pickImage("gallery");
-          } else if (option === "Remove profile picture") {
-            setProfileImage(null);
-          }
-        }}
-        style={{
-          ...commonStyles.rowSpaceBetween,
-          marginBottom: Sizes.fixPadding * 1.5,
-        }}
-      >
-        <View style={{ flex: 1, ...commonStyles.rowAlignCenter }}>
-          <View style={{ ...styles.sheetOptionWrapStyle }}>
-            <Image
-              source={icon}
-              style={{ width: 22.0, height: 22.0, resizeMode: "contain" }}
-            />
-          </View>
+        <View>
           <Text
-            numberOfLines={1}
             style={{
               ...Fonts.blackColor18Medium,
-              flex: 1,
-              marginLeft: Sizes.fixPadding * 1.5,
+              textAlign: "center",
+              marginHorizontal: Sizes.fixPadding * 2.0,
+              marginVertical: Sizes.fixPadding * 2.0,
             }}
           >
-            {option}
+            Do You Want To Update?
           </Text>
-        </View>
-        <MaterialIcons
-          name="arrow-forward-ios"
-          color={Colors.primaryColor}
-          size={15}
-        />
-      </TouchableOpacity>
-    );
-  }
-
-  function updateProfileButton() {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={handleSubmit}
-        style={{ ...commonStyles.button, borderRadius: 0 }}
-      >
-        <Text style={{ ...Fonts.whiteColor18Medium }}>Update profile</Text>
-      </TouchableOpacity>
-    );
-  }
-
-  function emailInfo() {
-    return (
-      <View style={{ margin: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.grayColor18SemiBold }}>Email address</Text>
-        <View style={styles.textFieldWrapper}>
-          <TextInput
-            placeholder="Enter your email address here"
-            placeholderTextColor={Colors.grayColor}
-            value={email}
-            onChangeText={(text) => setemail(text)}
-            style={{ ...Fonts.blackColor16Medium }}
-            keyboardType="email-address"
-            cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
-          />
-        </View>
-      </View>
-    );
-  }
-
-  function businessNameInfo() {
-    return (
-      <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.grayColor18SemiBold, marginTop: 10 }}>
-          Business Name
-        </Text>
-        <View style={styles.textFieldWrapper}>
-          <TextInput
-            placeholder="Enter your Business name here"
-            placeholderTextColor={Colors.grayColor}
-            value={businessName}
-            onChangeText={(text) => setBusinessName(text)}
-            style={{ ...Fonts.blackColor16Medium }}
-            cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
-          />
-        </View>
-      </View>
-    );
-  }
-  function nameInfo() {
-    return (
-      <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.grayColor18SemiBold }}>Name</Text>
-        <View style={styles.textFieldWrapper}>
-          <TextInput
-            placeholder="Enter your name here"
-            placeholderTextColor={Colors.grayColor}
-            value={name}
-            onChangeText={(text) => setname(text)}
-            style={{ ...Fonts.blackColor16Medium }}
-            cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
-          />
-        </View>
-      </View>
-    );
-  }
-
-  function profilePicInfo() {
-    return (
-      <View
-        style={{
-          alignSelf: "center",
-          marginHorizontal: Sizes.fixPadding * 2.0,
-          marginBottom: Sizes.fixPadding + 5.0,
-        }}
-      >
-        {profileImage ? (
-          <>
-            {imageLoading && <ActivityIndicator size={40} color="#ccc" />}
-            <Image
-              source={{ uri: profileImage }}
-              style={styles.profilePicStyle}
-              onLoadStart={() => setImageLoading(true)}
-              onLoadEnd={() => setImageLoading(false)}
-            />
-          </>
-        ) : (
-          <MaterialIcons
-            name="account-circle"
-            size={screenWidth / 4.0}
-            color={Colors.grayColor}
-            style={{ textAlign: "center" }}
-          />
-        )}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => {
-            setshowChangeProfilePicSheet(true);
-          }}
-          style={styles.editIconWrapper}
-        >
-          <MaterialIcons name="edit" color={Colors.whiteColor} size={16} />
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  function header() {
-    return (
-      <View
-        style={{
-          ...commonStyles.rowAlignCenter,
-          margin: Sizes.fixPadding * 2.0,
-        }}
-      >
-        <MaterialIcons
-          name="arrow-back"
-          color={Colors.blackColor}
-          size={26}
-          onPress={() => {
-            navigation.pop();
-          }}
-        />
-        <Text
-          style={{
-            ...Fonts.blackColor20SemiBold,
-            flex: 1,
-            marginLeft: Sizes.fixPadding * 2.0,
-          }}
-        >
-          Edit Profile
-        </Text>
-      </View>
-    );
-  }
-  function aadharInfo() {
-    return (
-      <>
-        <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
-          <Text style={{ ...Fonts.grayColor18SemiBold }}>Aadhar Card</Text>
-          <View style={styles.textFieldWrapper}>
-            <TextInput
-              placeholder="Enter your name here"
-              placeholderTextColor={Colors.grayColor}
-              value={aadharNumber}
-              style={{ ...Fonts.blackColor16Medium }}
-              cursorColor={Colors.primaryColor}
-              selectionColor={Colors.primaryColor}
-              editable={false}
+          <View
+            style={{
+              alignSelf: "center",
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              borderWidth: 2,
+              borderColor: Colors.primaryColor,
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: Sizes.fixPadding * 1.5,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="pencil-outline"
+              size={40}
+              color={Colors.primaryColor}
             />
           </View>
-        </View>
 
-        <View style={styles.docContainer}>
-          <View style={styles.box}>
-            <Image
-              source={{
-                uri:
-                  user?.adhar_front_pic && user.adhar_front_pic.trim() !== ""
-                    ? imageURL.baseURL + user.adhar_front_pic
-                    : "https://media.istockphoto.com/id/1154042526/photo/maski-karnataka-india-december-22-2018-aadhaar-card-which-is-issued-by-government-of-india-as.jpg?s=2048x2048&w=is&k=20&c=pahX9npRpBMDr4YT2z-pRKZX2tGXWAOtJ18tHP-KonE=",
+          <View
+            style={{
+              ...commonStyles.rowAlignCenter,
+              marginTop: Sizes.fixPadding,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setshowDialogue(false);
               }}
-              style={styles.docImage}
-              resizeMode="contain"
-            />
-            <TouchableOpacity style={styles.editIconContainer}>
-              <Ionicons name="pencil" size={24} color="green" />
+              style={{
+                ...styles.noButtonStyle,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+            >
+              <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                handleSubmit();
+                setshowDialogue(false);
+                // handle delete logic here
+              }}
+              style={{
+                backgroundColor: Colors.primaryColor,
+                borderBottomRightRadius: 4,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+            >
+              <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
             </TouchableOpacity>
           </View>
         </View>
-        <View style={styles.docContainer}>
-          <View style={styles.box}>
-            <Image
-              source={{
-                uri: user?.adhar_back_pic
-                  ? imageURL.baseURL + user.adhar_back_pic
-                  : "https://media.istockphoto.com/id/1154042526/photo/maski-karnataka-india-december-22-2018-aadhaar-card-which-is-issued-by-government-of-india-as.jpg?s=2048x2048&w=is&k=20&c=pahX9npRpBMDr4YT2z-pRKZX2tGXWAOtJ18tHP-KonE=",
-              }}
-              style={styles.docImage}
-              resizeMode="contain"
-            />
-            <TouchableOpacity style={styles.editIconContainer}>
-              <Ionicons name="pencil" size={24} color="green" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </>
-    );
-  }
-  function panInfo() {
-    return (
-      <>
-        <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
-          <Text style={{ ...Fonts.grayColor18SemiBold }}>Pan Card</Text>
-          <View style={styles.textFieldWrapper}>
-            <TextInput
-              placeholder="Enter your name here"
-              placeholderTextColor={Colors.grayColor}
-              value={panNumber}
-              onChangeText={(text) => setname(text)}
-              style={{ ...Fonts.blackColor16Medium }}
-              cursorColor={Colors.primaryColor}
-              selectionColor={Colors.primaryColor}
-              editable={false}
-            />
-          </View>
-        </View>
-
-        <View style={styles.docContainer}>
-          <View style={styles.box}>
-            <Image
-              source={{
-                uri: user?.pan_pic
-                  ? imageURL.baseURL + user.pan_pic
-                  : "https://media.istockphoto.com/id/1154042526/photo/maski-karnataka-india-december-22-2018-aadhaar-card-which-is-issued-by-government-of-india-as.jpg?s=2048x2048&w=is&k=20&c=pahX9npRpBMDr4YT2z-pRKZX2tGXWAOtJ18tHP-KonE=",
-              }}
-              style={styles.docImage}
-              resizeMode="contain"
-            />
-            <TouchableOpacity style={styles.editIconContainer}>
-              <Ionicons name="pencil" size={24} color="green" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </>
-    );
-  }
-  function tanInfo() {
-    return (
-      <>
-        <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
-          <Text style={{ ...Fonts.grayColor18SemiBold }}>Tan Card</Text>
-          <View style={styles.textFieldWrapper}>
-            <TextInput
-              placeholder="Enter your name here"
-              placeholderTextColor={Colors.grayColor}
-              value={tanNumber}
-              onChangeText={(text) => setname(text)}
-              style={{ ...Fonts.blackColor16Medium }}
-              cursorColor={Colors.primaryColor}
-              selectionColor={Colors.primaryColor}
-              editable={false}
-            />
-          </View>
-        </View>
-
-        <View style={styles.docContainer}>
-          <View style={styles.box}>
-            <Image
-              source={{
-                uri: user?.tan_pic
-                  ? imageURL.baseURL + user.tan_pic
-                  : "https://media.istockphoto.com/id/1154042526/photo/maski-karnataka-india-december-22-2018-aadhaar-card-which-is-issued-by-government-of-india-as.jpg?s=2048x2048&w=is&k=20&c=pahX9npRpBMDr4YT2z-pRKZX2tGXWAOtJ18tHP-KonE=",
-              }}
-              style={styles.docImage}
-              resizeMode="contain"
-            />
-            <TouchableOpacity style={styles.editIconContainer}>
-              <Ionicons name="pencil" size={24} color="green" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </>
+      </Overlay>
     );
   }
 };
 
-export default EditProfileScreen;
-
 const styles = StyleSheet.create({
-  editIconWrapper: {
-    width: 32.0,
-    height: 32.0,
-    borderRadius: 16.0,
-    backgroundColor: Colors.primaryColor,
-    alignItems: "center",
+  container: {
+    padding: 20,
+    backgroundColor: "#fff",
+    paddingBottom: 50,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 20,
+    color: "#333",
+    textAlign: "center",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 12,
+  },
+  imageContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+
+    flexWrap: "wrap",
+  },
+  imageContainerAvatar: {
+    flexDirection: "row",
     justifyContent: "center",
-    position: "absolute",
-    right: 0,
-    bottom: 0,
-    borderColor: Colors.whiteColor,
-    borderWidth: 1.0,
+    marginBottom: 5,
+    marginTop: 20,
+    flexWrap: "wrap",
   },
-  profilePicStyle: {
-    width: screenWidth / 4.0,
-    height: screenWidth / 4.0,
-    borderRadius: screenWidth / 4.0 / 2.0,
-    borderColor: Colors.whiteColor,
-    borderWidth: 2.0,
-  },
-  textFieldWrapper: {
-    backgroundColor: Colors.whiteColor,
-    ...commonStyles.shadow,
-    borderRadius: Sizes.fixPadding,
-    paddingHorizontal: Sizes.fixPadding * 1.5,
-    paddingVertical:
-      Platform.OS == "ios" ? Sizes.fixPadding - 2.0 : Sizes.fixPadding - 5.0,
-    marginTop: Sizes.fixPadding,
-  },
-  sheetWrapStyle: {
-    backgroundColor: Colors.bodyBackColor,
-    borderTopLeftRadius: Sizes.fixPadding,
-    borderTopRightRadius: Sizes.fixPadding,
-    paddingTop: Sizes.fixPadding + 10.0,
-    paddingHorizontal: Sizes.fixPadding * 2.0,
-  },
-  sheetOptionWrapStyle: {
-    width: 46.0,
-    height: 46.0,
-    borderRadius: 23.0,
-    backgroundColor: "rgba(6, 124, 96, 0.1)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  docContainer: {
-    flex: 1,
+  imageBox: {
+    width: 100,
+    height: 100,
+    borderWidth: 1,
+    borderStyle: "dotted",
+    borderColor: "#aaa",
+
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: Sizes.fixPadding * 2.0,
+    position: "relative",
+    backgroundColor: "#f9f9f9",
   },
-  box: {
-    width: 350, // Width of the box
-    height: 225, // Height to maintain 4:3 aspect ratio (4/3 * 300 = 225)
-    borderColor: Colors.primaryColor,
-    borderWidth: 2,
-    borderStyle: "dashed",
-    position: "relative", // To position the edit icon at the top right
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  docImage: {
+  imageStyle: {
     width: "100%",
     height: "100%",
+    borderRadius: 12,
   },
-  editIconContainer: {
+  editIcon: {
     position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: "white", // Optional: make the icon stand out more
-    borderRadius: 20,
-    padding: 5,
+    top: 5,
+    right: 5,
+    backgroundColor: Colors.primaryColor,
+    borderRadius: 15,
+    padding: 2,
+  },
+  imageLabel: {
+    textAlign: "center",
+    marginTop: 6,
+    color: "#444",
+    fontSize: 14,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullImage: {
+    width: "90%",
+    height: "70%",
+    resizeMode: "contain",
+    borderRadius: 10,
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+  },
+  closeText: {
+    color: "#000",
+    fontWeight: "bold",
+  },
+  bottomSheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+  },
+  sheetOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  sheetOptionText: {
+    fontSize: 16,
+    marginLeft: 12,
+    color: "#333",
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 30,
+    gap: 10,
+  },
+  actionButton: {
+    flex: 1,
+    // marginHorizontal: 10,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  /* delete Dialog Styles */
+  dialogStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderRadius: Sizes.fixPadding - 5.0,
+    width: "85%",
+    padding: 0.0,
+    elevation: 0,
+  },
+
+  dialogYesNoButtonStyle: {
+    flex: 1,
+    ...commonStyles.shadow,
+
+    padding: Sizes.fixPadding,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noButtonStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderTopColor: Colors.extraLightGrayColor,
+    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+  },
+  /*End of delete Dialog Styles */
+  selectorContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    padding: 3,
+  },
+  selectorOption: {
+    flex: 1,
+    padding: 8,
+    alignItems: "center",
+    borderRadius: 8,
+  },
+  selectedOption: {
+    backgroundColor: Colors.primaryColor,
+  },
+  dropdownText: {
+    fontSize: 14,
+    color: "#333",
   },
 });
+
+export default EditProfileScreen;

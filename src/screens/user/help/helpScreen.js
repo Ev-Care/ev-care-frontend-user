@@ -128,7 +128,7 @@ const HelpScreen = ({ navigation }) => {
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}
             multiline
-            numberOfLines={8}
+            numberOfLines={10}
           />
         </View>
       </View>
@@ -144,7 +144,11 @@ const HelpScreen = ({ navigation }) => {
             placeholder="Enter your mobile number here"
             value={mobileNumber}
             onChangeText={(text) => setmobileNumber(text)}
-            style={{ ...Fonts.blackColor16Medium }}
+            style={{
+              ...Fonts.blackColor16Medium,
+              height: 35, 
+              paddingVertical: 0,
+            }}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}
@@ -164,7 +168,11 @@ const HelpScreen = ({ navigation }) => {
             placeholder="Enter your email here"
             value={email}
             onChangeText={(text) => setemail(text)}
-            style={{ ...Fonts.blackColor16Medium }}
+            style={{
+              ...Fonts.blackColor16Medium,
+              height: 35, 
+              paddingVertical: 0,
+            }}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}
@@ -181,10 +189,14 @@ const HelpScreen = ({ navigation }) => {
         <Text style={{ ...Fonts.blackColor16SemiBold }}>Title</Text>
         <View style={styles.textFieldWrapper}>
           <TextInput
-            placeholder="Enter name here"
+            style={{
+              ...Fonts.blackColor16Medium,
+              height: 35, 
+              paddingVertical: 0,
+            }}
+            placeholder="Enter Title here"
             value={name}
             onChangeText={(text) => setname(text)}
-            style={{ ...Fonts.blackColor16Medium }}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}

@@ -29,6 +29,7 @@ import { selectFavoriteStations, selectUser } from "../service/selector";
 import imageURL from "../../../constants/baseURL";
 import { getAllFavoriteStations, postFavoriteStation, unFavoriteStation } from "../service/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import { openHourFormatter } from "../../../utils/globalMethods";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -243,8 +244,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
                 {station?.status === "Inactive" ? "Closed" : "Open"}
               </Text>
               <Text style={styles.statusTime}>
-                • {station?.open_hours_opening_time} -{" "}
-                {station?.open_hours_closing_time}
+              {openHourFormatter(station?.open_hours_opening_time, station?.open_hours_closing_time)} 
               </Text>
               <View style={styles.newBadge}>
                 <Text style={styles.newText}>

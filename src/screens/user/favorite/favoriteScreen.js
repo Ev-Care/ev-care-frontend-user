@@ -33,7 +33,7 @@ import {
   getAllFavoriteStations,
 } from "../service/crudFunction";
 import { selectUser } from "../../auth/services/selector";
-import { openHourFormatter, formatDistance } from "../../../utils/globalMethods";
+import { openHourFormatter, formatDistance, getChargerLabel } from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 const FavoriteScreen = ({ navigation }) => {
@@ -218,8 +218,7 @@ const FavoriteScreen = ({ navigation }) => {
               >
                 <View style={{ ...commonStyles.rowAlignCenter }}>
                   <Text style={{ ...Fonts.blackColor16Medium }}>
-                    {openHourFormatter(data?.item?.open_hours_opening_time, data?.item?.open_hours_closing_time).opening} - {openHourFormatter(data?.item?.open_hours_opening_time, data?.item?.open_hours_closing_time).closing}
-                  </Text>
+                  {openHourFormatter(data?.item?.open_hours_opening_time, data?.item?.open_hours_closing_time)}   </Text>
                 </View>
                 <View
                   style={{
@@ -237,7 +236,7 @@ const FavoriteScreen = ({ navigation }) => {
                       flex: 1,
                     }}
                   >
-                    {data?.item?.chargers?.length} Chargers
+                     {getChargerLabel(data?.item?.chargers?.length ?? 0)}
                   </Text>
                 </View>
               </View>

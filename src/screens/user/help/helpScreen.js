@@ -29,6 +29,14 @@ const HelpScreen = ({ navigation }) => {
   const [mobileNumber, setmobileNumber] = useState("");
   const [message, setmessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [inputHeight, setInputHeight] = useState(160);
+
+  const handleContentSizeChange = (event) => {
+    const newHeight = event.nativeEvent.contentSize.height;
+    const minHeight = 160;
+    const maxHeight = 300;
+    setInputHeight(Math.max(minHeight, Math.min(newHeight, maxHeight)));
+  };
 
   const dispatch = useDispatch();
   return (
@@ -115,20 +123,20 @@ const HelpScreen = ({ navigation }) => {
             placeholder="Write your message here.."
             value={message}
             onChangeText={(text) => setmessage(text)}
+            onContentSizeChange={handleContentSizeChange}
             style={[
               {
                 ...Fonts.blackColor16Medium,
                 paddingTop: Sizes.fixPadding,
                 paddingHorizontal: Sizes.fixPadding,
-                minHeight: 160, // Increased height for larger box
                 textAlignVertical: "top",
+                height: inputHeight,
               },
             ]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}
             multiline
-            numberOfLines={10}
           />
         </View>
       </View>
@@ -146,7 +154,7 @@ const HelpScreen = ({ navigation }) => {
             onChangeText={(text) => setmobileNumber(text)}
             style={{
               ...Fonts.blackColor16Medium,
-              height: 35, 
+              height: 35,
               paddingVertical: 0,
             }}
             placeholderTextColor={Colors.grayColor}
@@ -170,7 +178,7 @@ const HelpScreen = ({ navigation }) => {
             onChangeText={(text) => setemail(text)}
             style={{
               ...Fonts.blackColor16Medium,
-              height: 35, 
+              height: 35,
               paddingVertical: 0,
             }}
             placeholderTextColor={Colors.grayColor}
@@ -191,7 +199,7 @@ const HelpScreen = ({ navigation }) => {
           <TextInput
             style={{
               ...Fonts.blackColor16Medium,
-              height: 35, 
+              height: 35,
               paddingVertical: 0,
             }}
             placeholder="Enter Title here"

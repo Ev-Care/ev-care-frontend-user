@@ -28,7 +28,7 @@ import { useSelector } from "react-redux";
 import { selectStations } from "../service/selector";
 import Key from "../../../constants/key";
 import imageURL from "../../../constants/baseURL";
-import { openHourFormatter ,formatDistance} from "../../../utils/globalMethods";
+import { openHourFormatter ,formatDistance, getChargerLabel} from "../../../utils/globalMethods";
 const width = screenWidth;
 const cardWidth = width / 1.15;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
@@ -422,8 +422,8 @@ function chargingSpots() {
                   >
                     <View style={{ ...commonStyles.rowAlignCenter }}>
                   <Text style={{ ...Fonts.blackColor16Medium }}>
-                  {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).opening} - {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).closing}
-                  </Text>
+                 {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time)} 
+                                 </Text>
                 </View>
                     <View
                       style={{
@@ -440,8 +440,7 @@ function chargingSpots() {
                           ...Fonts.grayColor14Medium,
                           flex: 1,
                         }}
-                      >
-                        {item?.chargers?.length} Chargers
+                      >  {getChargerLabel(item?.chargers?.length ?? 0)}
                       </Text>
                     </View>
                   </View>

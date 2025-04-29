@@ -28,6 +28,7 @@ import imageURL from "../../../constants/baseURL";
 import {
   openHourFormatter,
   formatDistance,
+  getChargerLabel,
 } from "../../../utils/globalMethods";
 import polyline from '@mapbox/polyline';
 
@@ -137,6 +138,8 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   const [showBottomSheet, setshowBottomSheet] = useState(true);
   const [addedStops, setAddedStops] = useState([]);
   const { enrouteStations } = route?.params || [];
+  const [mapLayoutCompleted, setMapLayoutCompleted] = useState(false);
+
   // console.log("enrouteStations", JSON.stringify(enrouteStations[0]));
   const [destinationAddress, setDestinationAddress] = useState(
     route?.params?.destinationAddress || "Destination Address"
@@ -170,6 +173,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       .then(setCoordinates)
       .catch(console.error);
   }, []);
+
  const getRouteBetweenCoordinates = async (origin, destination) => {
   const originStr = `${origin.latitude},${origin.longitude}`;
   const destinationStr = `${destination.latitude},${destination.longitude}`;
@@ -201,9 +205,6 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   }
 };
 
-  
-
-
   const [markerList] = useState(enrouteStations || []);
   const [region, setRegion] = useState({
     latitude: fromDefaultLocation.latitude,
@@ -214,47 +215,60 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
 
   const _map = useRef(null);
   const _scrollView = useRef(null);
-  const mapAnimation = useRef(new Animated.Value(0)).current;
-  const mapIndex = useRef(0);
-
+  // const mapAnimation = useRef(new Animated.Value(0)).current;
+  // const mapIndex = useRef(0);
+  let mapAnimation = new Animated.Value(0);
+  let mapIndex = 0;
   useEffect(() => {
-    if (_map.current) {
-      _map.current.animateToRegion(
+    if (
+      mapLayoutCompleted &&
+      _map.current &&
+      fromDefaultLocation &&
+      toDefaultLocation
+    ) {
+      _map.current.fitToCoordinates(
+        [fromDefaultLocation, toDefaultLocation],
         {
-          latitude: fromDefaultLocation.latitude,
-          longitude: fromDefaultLocation.longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.005,
-        },
-        1000
+          edgePadding: { top: 50, right: 50, bottom: 150, left: 50 },
+          animated: true,
+        }
       );
     }
-  }, []);
+  }, [mapLayoutCompleted]);
+  
 
+
+  
   useEffect(() => {
-    const listener = mapAnimation.addListener(({ value }) => {
+    console.log(" map page rendered");
+    mapAnimation.addListener(({ value }) => {
       let index = Math.floor(value / cardWidth + 0.3);
-      index = Math.max(0, Math.min(index, markerList?.length - 1));
-
-      if (mapIndex.current !== index) {
-        mapIndex.current = index;
-        const { coordinate } = markerList[index];
-
-        _map.current?.animateToRegion(
-          {
-            ...coordinate,
-            latitudeDelta: region.latitudeDelta,
-            longitudeDelta: region.longitudeDelta,
-          },
-          350
-        );
+      if (index >= markerList?.length) {
+        index = markerList?.length - 1;
       }
-    });
+      if (index <= 0) {
+        index = 0;
+      }
 
-    return () => {
-      mapAnimation.removeListener(listener);
-    };
-  }, [mapAnimation, markerList, region]);
+      clearTimeout(regionTimeout);
+
+      const regionTimeout = setTimeout(() => {
+        if (mapIndex !== index) {
+          mapIndex = index;
+          const { coordinates } = markerList[index] ?? {}; 
+          _map.current?.animateToRegion(
+            {
+              ...coordinates,
+              latitudeDelta: region.latitudeDelta,
+              longitudeDelta: region.longitudeDelta,
+            },
+            350
+          );
+        }
+      }, 10);
+    });
+  }, [mapAnimation, markerList]);
+
 
   const interpolation = markerList.map((marker, index) => {
     const inputRange = [
@@ -529,18 +543,18 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
         snapToAlignment="center"
         style={{ paddingVertical: Sizes.fixPadding }}
         contentContainerStyle={{ paddingHorizontal: Sizes.fixPadding }}
-        onScroll={Animated.event(
-          [
-            {
-              nativeEvent: {
-                contentOffset: {
-                  x: mapAnimation,
-                },
-              },
-            },
-          ],
-          { useNativeDriver: true }
-        )}
+          onScroll={Animated.event(
+                   [
+                     {
+                       nativeEvent: {
+                         contentOffset: {
+                           x: mapAnimation,
+                         },
+                       },
+                     },
+                   ],
+    { useNativeDriver: true }
+  )}
       >
         {markerList.map((item, index) => (
           <TouchableOpacity
@@ -588,19 +602,8 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                 >
                   <View style={{ ...commonStyles.rowAlignCenter }}>
                     <Text style={{ ...Fonts.blackColor16Medium }}>
-                      {
-                        openHourFormatter(
-                          item?.open_hours_opening_time,
-                          item?.open_hours_closing_time
-                        ).opening
-                      }{" "}
-                      -{" "}
-                      {
-                        openHourFormatter(
-                          item?.open_hours_opening_time,
-                          item?.open_hours_closing_time
-                        ).closing
-                      }
+                    {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time)} 
+              
                     </Text>
                   </View>
                   <View
@@ -619,7 +622,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                         flex: 1,
                       }}
                     >
-                      {item?.chargers?.length} Chargers
+                      {getChargerLabel(item?.chargers?.length ?? 0)}
                     </Text>
                   </View>
                 </View>
@@ -674,6 +677,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
         ref={_map}
         style={{ flex: 1 }}
         initialRegion={region}
+        onLayout={() => setMapLayoutCompleted(true)}
         provider={PROVIDER_GOOGLE}
         onRegionChangeComplete={setRegion} // Allows zoom update
       >
@@ -710,7 +714,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   {coordinates.length > 0 && (
    <Polyline
    coordinates={coordinates}
-   strokeWidth={4} 
+   strokeWidth={3} 
    strokeColor="rgba(0, 0, 255, 0.5)"
    lineCap="round" 
  />

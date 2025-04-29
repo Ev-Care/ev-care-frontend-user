@@ -42,7 +42,7 @@ import {
 } from "../service/handleRefresh";
 import { updateUserCoordinate } from "../../../redux/store/userSlice";
 import { Overlay } from "@rneui/themed";
-import { openHourFormatter, formatDistance } from "../../../utils/globalMethods";
+import { openHourFormatter, formatDistance, getChargerLabel } from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 
@@ -428,7 +428,7 @@ const UserHome = ({ navigation }) => {
             <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
               {item?.address ?? "Address not available"}
             </Text>
-
+           
             <View
               style={{
                 marginTop: Sizes.fixPadding,
@@ -437,7 +437,7 @@ const UserHome = ({ navigation }) => {
             >
               <View style={{ ...commonStyles.rowAlignCenter }}>
                 <Text style={{ ...Fonts.blackColor16Medium }}>
-                  {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).opening} - {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).closing}
+                  {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time)} 
                 </Text>
               </View>
 
@@ -457,7 +457,7 @@ const UserHome = ({ navigation }) => {
                     flex: 1,
                   }}
                 >
-                  {item?.chargers?.length ?? 0} Chargers
+                {getChargerLabel(item?.chargers?.length ?? 0)}
                 </Text>
               </View>
             </View>

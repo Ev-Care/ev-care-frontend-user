@@ -33,6 +33,15 @@ const HelpScreen = ({ navigation }) => {
   const emailTimer = useRef(null);
   const mobileTimer = useRef(null);
   const descriptionTimer = useRef(null);
+  const [inputHeight, setInputHeight] = useState(160);
+
+  const handleContentSizeChange = (event) => {
+    const newHeight = event.nativeEvent.contentSize.height;
+    const minHeight = 160;
+    const maxHeight = 300;
+    setInputHeight(Math.max(minHeight, Math.min(newHeight, maxHeight)));
+  };
+
   const dispatch = useDispatch();
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -170,13 +179,13 @@ const HelpScreen = ({ navigation }) => {
                 paddingHorizontal: Sizes.fixPadding,
                 minHeight: 160,
                 textAlignVertical: "top",
+                height: inputHeight,
               },
             ]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}
             multiline
-            numberOfLines={8}
           />
         </View>
       </View>

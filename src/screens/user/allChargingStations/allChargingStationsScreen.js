@@ -17,7 +17,7 @@ import { filterStations } from "../../../utils/filter";
 import imageURL from "../../../constants/baseURL";
 import { RefreshControl } from 'react-native';
 import { handleRefreshStationsByLocation } from "../service/handleRefresh";
-import { openHourFormatter ,formatDistance} from "../../../utils/globalMethods";
+import { openHourFormatter ,formatDistance, getChargerLabel} from "../../../utils/globalMethods";
 
 
 
@@ -120,8 +120,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
             >
              <View style={{ ...commonStyles.rowAlignCenter }}>
               <Text style={{ ...Fonts.blackColor16Medium }}>
-               {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).opening} - {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).closing}
-               </Text>
+              {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time)}    </Text>
                </View>
               <View
                 style={{
@@ -139,7 +138,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
                     flex: 1,
                   }}
                 >
-                  {item?.chargers?.length || 0} Chargers
+                  {getChargerLabel(item?.chargers?.length ?? 0)}
                 </Text>
               </View>
             </View>

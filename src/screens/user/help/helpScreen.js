@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Colors,
   Fonts,
@@ -18,12 +19,18 @@ import {
 } from "../../../constants/styles";
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { sendQuery } from "../service/api";
+import { sendQueryAction } from "../service/crudFunction";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 const HelpScreen = ({ navigation }) => {
   const [name, setname] = useState("");
   const [email, setemail] = useState("");
   const [mobileNumber, setmobileNumber] = useState("");
   const [message, setmessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const dispatch = useDispatch();
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -45,14 +52,54 @@ const HelpScreen = ({ navigation }) => {
     </View>
   );
 
+  async function sendQueryActionHandler() {
+    setIsLoading(true);
+    const sendQueryResponse = await dispatch(
+      sendQueryAction({
+        title: name,
+        description: message,
+        email: email,
+        contactNumber: mobileNumber,
+        image: "",
+      })
+    );
+    if (sendQueryAction.fulfilled.match(sendQueryResponse)) {
+      setIsLoading(false);
+      dispatch(
+        showSnackbar({
+          message:
+            "Support ticket is created regarding your query. You will got response withen 24 hours.",
+          type: "success",
+        })
+      );
+      navigation.pop();
+      setemail("");
+      setname("");
+      setmobileNumber("");
+      setmessage("");
+    } else if (getAllFavoriteStations.rejected.match(favResponse)) {
+      setIsLoading(false);
+      dispatch(
+        showSnackbar({
+          message: errorMessage || "Failed to fetch favorite stations.",
+          type: "error",
+        })
+      );
+    }
+  }
+
   function submitButton() {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => {
-          navigation.pop();
+          sendQueryActionHandler();
         }}
-        style={[{ ...styles.submitButtonStyle },{paddingVertical:12 ,marginBottom:50}]}
+        disabled={isLoading}
+        style={[
+          { ...styles.submitButtonStyle },
+          { paddingVertical: 12, marginBottom: 50 },
+        ]}
       >
         <Text style={{ ...Fonts.whiteColor18Medium }}>Submit</Text>
       </TouchableOpacity>
@@ -87,7 +134,6 @@ const HelpScreen = ({ navigation }) => {
       </View>
     );
   }
-  
 
   function mobileNumberInfo() {
     return (
@@ -132,10 +178,10 @@ const HelpScreen = ({ navigation }) => {
   function nameInfo() {
     return (
       <View style={{ margin: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.blackColor16SemiBold }}>Name</Text>
+        <Text style={{ ...Fonts.blackColor16SemiBold }}>Title</Text>
         <View style={styles.textFieldWrapper}>
           <TextInput
-            placeholder="Enter your name here"
+            placeholder="Enter name here"
             value={name}
             onChangeText={(text) => setname(text)}
             style={{ ...Fonts.blackColor16Medium }}
@@ -230,8 +276,8 @@ const styles = StyleSheet.create({
   },
   submitButtonStyle: {
     padding: Sizes.fixPadding,
-    borderRadius:10,
-    marginHorizontal:18,
+    borderRadius: 10,
+    marginHorizontal: 18,
     marginVertical: Sizes.fixPadding * 2.0,
     backgroundColor: Colors.primaryColor,
     alignItems: "center",

@@ -18,7 +18,7 @@ export const updateUserProfileAPI = (data) =>
     data: {
       owner_legal_name: data.owner_legal_name,
       email: data.email,
-      role:data.role,
+      role: data.role,
       avatar: data.avatar,
     },
     accessToken: data.accessToken,
@@ -62,6 +62,20 @@ export const unFavoriteStationAPI = (data) =>
     data: {
       stationId: data.stationId,
       userId: data.userId,
+    },
+    accessToken: data.accessToken,
+  });
+
+export const sendQuery = (data) =>
+  apiPostRequest({
+    apiUrl: `${API_URL}/support/send-query`,
+    content_type: "application/json",
+    data: {
+      title: data.title,
+      email: data.email,
+      description: data?.description,
+      contactNumber: data?.contactNumber,
+      image: data?.image ? data?.image : "",
     },
     accessToken: data.accessToken,
   });

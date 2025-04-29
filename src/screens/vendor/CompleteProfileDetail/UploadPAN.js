@@ -21,7 +21,11 @@ import * as ImagePicker from "expo-image-picker";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 import { useDispatch, useSelector } from "react-redux";
-import { selectAuthError, selectToken, selectUser } from "../../auth/services/selector";
+import {
+  selectAuthError,
+  selectToken,
+  selectUser,
+} from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "./vendorDetailForm";
 import { patchUpdateVendorProfile } from "../../auth/services/crudFunction";
@@ -32,30 +36,33 @@ const UploadPAN = ({ route, navigation }) => {
   const [frontImage, setFrontImage] = useState(null);
   const [frontImageUri, setFrontImageUri] = useState(null);
   const [loading, setLoading] = useState(false); // Loader state
-  const { VendorDetailAtAadharPage ,isCheckBoxClicked} = route?.params || {};
+  const { VendorDetailAtAadharPage, isCheckBoxClicked } = route?.params || {};
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
   const user = useSelector(selectUser);
-  const [imageloading, setImageLoading] = useState(false); 
+  const [imageloading, setImageLoading] = useState(false);
 
   const authErrorMessage = useSelector(selectAuthError);
   // Function to pick an image
 
   const pickImage = async (source, type) => {
     let permissionResult;
-  
+
     if (source === "camera") {
       permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     } else {
-      permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
     }
-  
+
     if (!permissionResult.granted) {
-      dispatch(showSnackbar({ message: 'Permission is required!', type: 'error' }));
+      dispatch(
+        showSnackbar({ message: "Permission is required!", type: "error" })
+      );
       // alert("Permission is required!");
       return;
     }
-  
+
     let result;
     if (source === "camera") {
       result = await ImagePicker.launchCameraAsync({
@@ -68,32 +75,44 @@ const UploadPAN = ({ route, navigation }) => {
         quality: 0.2,
       });
     }
-  
+
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
       const file = await setupImagePicker(imageUri);
       setImageLoading(true);
-  
+
       try {
         const response = await dispatch(
           postSingleFile({ file: file, accessToken: accessToken })
         );
-  
-        if (response?.payload.code === 200 || response?.payload.code === 201) {
+        console.log({ response });
+        if (
+          response?.payload?.code === 200 ||
+          response?.payload?.code === 201
+        ) {
           if (type === "front") {
             setFrontImage(imageUri);
             setFrontImageUri(response?.payload?.data?.filePathUrl);
-            console.log("PAN image uploaded:", response?.payload?.data?.filePathUrl);
+            console.log(
+              "PAN image uploaded:",
+              response?.payload?.data?.filePathUrl
+            );
           } else if (type === "back") {
             // For future-proofing
           }
         } else {
-          dispatch(showSnackbar({ message: authErrorMessage, type: 'error' }));
+          dispatch(showSnackbar({ message: authErrorMessage, type: "error" }));
 
           // Alert.alert("Error", "File Should be less than 5 MB");
         }
       } catch (error) {
-        dispatch(showSnackbar({ message: authErrorMessage || 'Something went wrong while uploading.', type: 'error' }));
+        dispatch(
+          showSnackbar({
+            message:
+              authErrorMessage || "Something went wrong while uploading.",
+            type: "error",
+          })
+        );
 
         // Alert.alert("Error", "Something went wrong while uploading.");
       } finally {
@@ -101,20 +120,29 @@ const UploadPAN = ({ route, navigation }) => {
       }
     }
   };
-  
 
   // Handle Submit
   const handleSubmit = async () => {
-      console.log("handle submit clicked");
+    console.log("handle submit clicked");
     if (!frontImageUri) {
-      dispatch(showSnackbar({ message: 'Please upload the PAN image.', type: 'error' }));
+      dispatch(
+        showSnackbar({ message: "Please upload the PAN image.", type: "error" })
+      );
 
       // Alert.alert("Error", "Please upload the image.");
       return;
     }
-    console.log("Updated Vendor Detail at aadhar page", VendorDetailAtAadharPage);
+    console.log(
+      "Updated Vendor Detail at aadhar page",
+      VendorDetailAtAadharPage
+    );
     if (!VendorDetailAtAadharPage) {
-      dispatch(showSnackbar({ message: 'VendorDetail not available at PAN Page!', type: 'error' }));
+      dispatch(
+        showSnackbar({
+          message: "VendorDetail not available at PAN Page!",
+          type: "error",
+        })
+      );
 
       console.warn("vendorDetail not passed at pan Page!");
       return null;
@@ -125,21 +153,29 @@ const UploadPAN = ({ route, navigation }) => {
     };
     console.log("Updated Vendor Detail at pan page", VendorDetailAtPanPage);
     try {
-  
-      const response = await dispatch(patchUpdateVendorProfile({detail:VendorDetailAtPanPage, user_key:user.user_key, accessToken: accessToken})
+      const response = await dispatch(
+        patchUpdateVendorProfile({
+          detail: VendorDetailAtPanPage,
+          user_key: user.user_key,
+          accessToken: accessToken,
+        })
       ).unwrap();
-      
-      console.log("code = ",response?.payload?.code);
+
+      console.log("code = ", response?.payload?.code);
       if (response?.payload?.code === 200 || response?.payload?.code === 201) {
-      
-          // await AsyncStorage.setItem("user",user?.user_key);
-          // console.log("User data saved successfully:", response.payload.data);
-          dispatch(showSnackbar({ message: 'Your details updated successfully.', type: 'success' }));
+        // await AsyncStorage.setItem("user",user?.user_key);
+        // console.log("User data saved successfully:", response.payload.data);
+        dispatch(
+          showSnackbar({
+            message: "Your details updated successfully.",
+            type: "success",
+          })
+        );
 
         // Alert.alert("Success", "details updated successfully.");
       } else {
         console.error("Error saving user data:", authErrorMessage);
-        dispatch(showSnackbar({ message: authErrorMessage, type: 'error' }));
+        dispatch(showSnackbar({ message: authErrorMessage, type: "error" }));
 
         // Alert.alert("Error", "Failed to update vendor details. Please try again.");
       }
@@ -147,7 +183,14 @@ const UploadPAN = ({ route, navigation }) => {
       // navigation.navigate("PendingApprovalScreen", { VendorDetailAtTanPage });
     } catch (error) {
       console.error("Vendor detail submission failed:", error);
-      dispatch(showSnackbar({ message: authErrorMessage || 'Submission Failed, Please check your details and try again.', type: 'error' }));
+      dispatch(
+        showSnackbar({
+          message:
+            authErrorMessage ||
+            "Submission Failed, Please check your details and try again.",
+          type: "error",
+        })
+      );
 
       // Alert.alert(
       //   "Submission Failed",
@@ -173,11 +216,14 @@ const UploadPAN = ({ route, navigation }) => {
         </View>
 
         {/* Progress Bar */}
-        <CompleteDetailProgressBar completedSteps={isCheckBoxClicked?3:2} totalSteps={isCheckBoxClicked?4:3} />
+        <CompleteDetailProgressBar
+          completedSteps={isCheckBoxClicked ? 3 : 2}
+          totalSteps={isCheckBoxClicked ? 4 : 3}
+        />
 
         {/* Upload Front Side */}
         <View style={styles.uploadBox}>
-          {imageloading? (
+          {imageloading ? (
             <ActivityIndicator size={40} color="black" />
           ) : frontImage ? (
             <Image source={{ uri: frontImage }} style={styles.uploadedImage} />

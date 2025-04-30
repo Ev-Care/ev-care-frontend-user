@@ -8,7 +8,7 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Colors,
   Fonts,
@@ -35,6 +35,7 @@ import {
 import { selectUser } from "../../auth/services/selector";
 import { openHourFormatter, formatDistance, getChargerLabel } from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import { useFocusEffect } from "@react-navigation/native";
 
 const FavoriteScreen = ({ navigation }) => {
   const [showSnackBar, setShowSnackBar] = useState(false);
@@ -46,28 +47,49 @@ const FavoriteScreen = ({ navigation }) => {
   const [listData, setListData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const errorMessage = useSelector(selectStationsError);
-
+  // console.log(listData);
   useEffect(() => {
-    const fetchFavoritesAndFilter = async () => {
-      const favResponse = await dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
-
-      if (getAllFavoriteStations.fulfilled.match(favResponse)) {
-        // dispatch(showSnackbar({ message: 'Favorite stations found.', type: "success" }));
-      } else if (getAllFavoriteStations.rejected.match(favResponse)) {
-        dispatch(showSnackbar({ message: errorMessage || "Failed to fetch favorite stations.", type: "error" }));
-      }
-
-      if (stations && favStations) {
-        const filtered = favStations
-          .map((fav) => stations.find((station) => station.id == fav.station.id))
-          .filter(Boolean);
-
-        setListData(filtered);
-      }
-    };
-
-    fetchFavoritesAndFilter();
+    dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
   }, [user?.user_key, dispatch]);
+  
+  useEffect(() => {
+    if (stations?.length && favStations?.length) {
+      console.log('useeffect in fav called and fav length is ', favStations.length);
+      const filtered = favStations
+        .map((fav) => stations.find((station) => station.id === fav.station.id))
+        .filter(Boolean);
+      setListData(filtered);
+    }
+  }, [favStations, stations]);
+  
+  useFocusEffect(
+    useCallback(() => {
+      const fetchFavorites = async () => {
+        const favResponse = await dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
+  
+        if (getAllFavoriteStations.rejected.match(favResponse)) {
+          dispatch(showSnackbar({
+            message: errorMessage || "Failed to fetch favorite stations.",
+            type: "error"
+          }));
+          return;
+        }
+  
+        // ✅ Get updated favorites from store after dispatch
+        const updatedFavStations = store.getState().favorites.favStations;
+  
+        if (stations && updatedFavStations) {
+          const filtered = updatedFavStations
+            .map((fav) => stations.find((station) => station.id == fav.station.id))
+            .filter(Boolean);
+  
+          setListData(filtered);
+        }
+      };
+  
+      fetchFavorites();
+    }, [user?.user_key, dispatch, stations])
+  );
 
   // console.log("stations in  stations fav screen", stations.length);
   // console.log("stations in fav stations fav screen", favStations.length);
@@ -159,18 +181,27 @@ function noItemsInfo() {
       </View>
     );
 
-    const deleteRow = (rowMap, rowKey) => {
+    const deleteRow = async (rowMap, rowKey) => {
       closeRow(rowMap, rowKey);
       const newData = [...listData];
       const prevIndex = listData.findIndex((item) => item?.key === rowKey);
+    
       if (prevIndex !== -1) {
         newData.splice(prevIndex, 1);
         setShowSnackBar(true);
         setListData(newData);
       }
-      dispatch(unFavoriteStation({ stationId: rowKey, userId: user.id }));
-      dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
+    
+      const unfavResponse = await dispatch(unFavoriteStation({ stationId: rowKey, userId: user.id }));
+    
+      if (unFavoriteStation.fulfilled.match(unfavResponse)) {
+        navigation.pop();
+        navigation.navigate('FavoriteScreen');
+      } else {
+        dispatch(showSnackbar({ message: errorMessage || "Failed to unfavorite station.", type: "error" }));
+      }
     };
+    
 
     const renderItem = (data) => (
       <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>

@@ -24,7 +24,7 @@ const adminSlice = createSlice({
                 state.error = null;
             })
             .addCase(fetchAllPendingStation.fulfilled, (state, action) => {
-                console.log('fulfilled', action.payload.data);
+
                 state.loading = false;
                 state.stations = action.payload.data;
 
@@ -71,8 +71,8 @@ const adminSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload.message;
             });
-        }
-    });
+    }
+});
 
 // export default adminSlice.actions;
 export default adminSlice.reducer;

@@ -394,7 +394,7 @@ const HelpScreen = ({ navigation }) => {
           Fill the form below and our support team will be in touch with you
           shortly. In case of urgency, you can{" "}
           <Text style={{ ...Fonts.grayColor16SemiBold }}>
-            Contact Us on +91233456778
+            Contact Us on +91 9911884595
           </Text>
         </Text>
       </View>

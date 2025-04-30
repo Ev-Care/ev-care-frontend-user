@@ -120,10 +120,11 @@ export const patchUpdateVendorProfile = createAsyncThunk(
       const response = await updateVendorAPI(data);
       console.log("response at crud func page", response);
       if (response?.data?.code === 200 || response?.data?.code === 201) {
-        return response.data;
+        console.log("return response data in thunk", response.data);
+        return response?.data;
       } else {
         return rejectWithValue(
-          response.data.message || "Profile Update Failed"
+          response?.data?.message || "Profile Update Failed"
         );
       }
     } catch (error) {

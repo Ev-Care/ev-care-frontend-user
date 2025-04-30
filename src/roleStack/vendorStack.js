@@ -32,7 +32,7 @@ const Stack = createStackNavigator();
 
 export function VendorStack() {
   const user = useSelector(selectUser); // Get user data
-
+  const status = user?.status;
   const role = user?.role?.toLowerCase();
 
   
@@ -43,12 +43,12 @@ export function VendorStack() {
   const isVendor = role === "vendor";
   const isActive = user?.status === "Active";
   const isCompleted = user?.status === "Completed";
-  const isKYCIncomplete = !user?.pan_no || !user?.tan_no || !user?.adhar_no;
+  const isKYCIncomplete = !user?.pan_no || !user?.adhar_no;
   const isKYCComplete = user?.pan_no && user?.tan_no && user?.adhar_no;
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {user && isVendor && isActive && isKYCIncomplete && (
+      {user && isVendor && !isActive && isKYCIncomplete && (
         <>
           <Stack.Screen name="Instruction" component={Instruction} />
           <Stack.Screen name="UploadAadhar" component={UploadAadhar} />

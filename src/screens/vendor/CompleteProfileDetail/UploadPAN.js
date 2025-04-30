@@ -44,6 +44,7 @@ const UploadPAN = ({ route, navigation }) => {
 
   const authErrorMessage = useSelector(selectAuthError);
   // Function to pick an image
+  console.log('updated user in pan page', user);
 
   const pickImage = async (source, type) => {
     let permissionResult;
@@ -159,12 +160,11 @@ const UploadPAN = ({ route, navigation }) => {
           user_key: user.user_key,
           accessToken: accessToken,
         })
-      ).unwrap();
+      );
 
-      console.log("code = ", response?.payload?.code);
-      if (response?.payload?.code === 200 || response?.payload?.code === 201) {
-        // await AsyncStorage.setItem("user",user?.user_key);
-        // console.log("User data saved successfully:", response.payload.data);
+      if (patchUpdateVendorProfile.fulfilled.match(response)) {
+
+        console.log('response in if', response);
         dispatch(
           showSnackbar({
             message: "Your details updated successfully.",
@@ -172,30 +172,26 @@ const UploadPAN = ({ route, navigation }) => {
           })
         );
 
-        // Alert.alert("Success", "details updated successfully.");
-      } else {
-        console.error("Error saving user data:", authErrorMessage);
-        dispatch(showSnackbar({ message: authErrorMessage, type: "error" }));
-
-        // Alert.alert("Error", "Failed to update vendor details. Please try again.");
+      } else if (patchUpdateVendorProfile.rejected.match(response)) {
+        console.error("Vendor detail submission failed:", error);
+        dispatch(
+          showSnackbar({
+            message:
+              authErrorMessage ||
+              "Submission Failed, Please check your details and try again.",
+            type: "error",
+          }));
       }
 
-      // navigation.navigate("PendingApprovalScreen", { VendorDetailAtTanPage });
+
     } catch (error) {
-      console.error("Vendor detail submission failed:", error);
       dispatch(
         showSnackbar({
           message:
             authErrorMessage ||
             "Submission Failed, Please check your details and try again.",
           type: "error",
-        })
-      );
-
-      // Alert.alert(
-      //   "Submission Failed",
-      //   "Please check your details and try again."
-      // );
+        }));
     } finally {
       setLoading(false);
     }

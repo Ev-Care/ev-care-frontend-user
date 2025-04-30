@@ -9,13 +9,14 @@ import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 const PendingApprovalScreen = (route) => {
 
+
   const dispatch = useDispatch();
   // const { setApproved } = route.params;
   const user = useSelector(selectUser); // Get user data
   const handleContinue = async () => {
     const response = await dispatch(getUserDetailsByKey(user.user_key));
     const updatedUser = response?.payload.data;
-
+    console.log('updated user in pending', updatedUser);
     if (response?.payload?.code === 200 || response?.payload?.code === 201) {
       if (updatedUser.status !== "Active") {
         await dispatch(showSnackbar({ message: 'Please wait for admin approval', type: 'error' }));
@@ -49,9 +50,9 @@ const PendingApprovalScreen = (route) => {
       <TouchableOpacity onPress={() => dispatch(logoutUser())}>
         <Text style={styles.goBackText}>Log out</Text>
       </TouchableOpacity>
-      <TouchableOpacity  >
+      {/* <TouchableOpacity  >
         <Text style={styles.goBackText}>{user.user_key}</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };

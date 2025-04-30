@@ -37,7 +37,6 @@ const AllPendingStations = ({ navigation }) => {
     station?.station_name?.toLowerCase().includes(searchText.toLowerCase())
   );
   const dispatch = useDispatch(selectAdminStations);
-  console.log("pending Station", JSON.stringify(allStationsList, null, 2));
   // Dummy coordinates for the location
   // Called only on first mount
   useEffect(() => {
@@ -58,7 +57,24 @@ const AllPendingStations = ({ navigation }) => {
   const trimText = (text, limit) =>
     text.length > limit ? text.substring(0, limit) + "..." : text;
 
-  const handleRefresh = async () => {};
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true);
+      const response = await dispatch(fetchAllPendingStation());
+      if (fetchAllPendingStation.fulfilled.match(response)) {
+        // Optional: Show success snackbar or log
+        console.log("Pending stations refreshed successfully.");
+      } else {
+        await dispatch(showSnackbar({ message: "Failed to refresh pending stations.", type: 'error' }));
+      }
+    } catch (error) {
+      console.error("Error refreshing stations:", error);
+      await dispatch(showSnackbar({ message: "Something went wrong during refresh.", type: 'error' }));
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
 
   const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
@@ -78,74 +94,74 @@ const AllPendingStations = ({ navigation }) => {
   );
 
   function allStationsInfo() {
-  
+
     return (
- 
-        <ScrollView style={styles.scrollContainer}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={handleRefresh}
-                  colors={['#9Bd35A', '#101942']}  // Android spinner colors
-                  tintColor="#101942"            // iOS spinner color
-                />
-              }
+
+      <ScrollView style={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#9Bd35A', '#101942']}  // Android spinner colors
+            tintColor="#101942"            // iOS spinner color
+          />
+        }
+      >
+
+        {/* Check if stations is defined and not empty */}
+        {filteredStations && filteredStations?.length > 0 ? (
+          filteredStations.map((station) => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate("StationDetailToVerify", { item: station })}
+              key={station.id}
+              style={styles.card}
             >
-      
-              {/* Check if stations is defined and not empty */}
-              {filteredStations && filteredStations?.length > 0 ? (
-                filteredStations.map((station) => (
-                  <TouchableOpacity
-                  onPress={() => navigation.navigate("StationDetailToVerify", { item:station })}
-                    key={station.id}
-                    style={styles.card}
-                  >
-                    {station?.station_images ? (
-                      <Image source={{ uri: imageURL.baseURL + station?.station_images }} style={styles.image} />
-                    ) : (
-                      <View style={[styles.image, { alignItems: "center", justifyContent: "center", backgroundColor: "gray", opacity: 0.1 }]}>
-                        <MaterialIcons
-                          name="ev-station"
-                          size={50}  // or match your image size
-                          color="#a3a3c2"
-                        />
-                      </View>
-                    )}
-      
-                    <View style={styles.infoContainer}>
-                      <View style={styles.headerRow}>
-                        <Text style={styles.stationName}>
-                          {trimText(station?.station_name, 25)}
-                        </Text>
-                       
-                      </View>
-                      <Text style={styles.statusText}>
-                        Status:{" "}
-                        <Text
-                          style={{
-                            color: station?.status !== "Active"
-                              ? Colors.darOrangeColor
-                              : Colors.primaryColor,
-                          }}
-                        >
-                          {station?.status !== "Active" ? "Pending" : "Active"}
-                        </Text>
-                      </Text>
-      
-                      <Text style={styles.text}>
-                        Chargers: {station?.chargers?.length || 0}
-                      </Text>
-                      <Text style={styles.addressText}>{trimText(station?.address, 100)}</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))
+              {station?.station_images ? (
+                <Image source={{ uri: imageURL.baseURL + station?.station_images }} style={styles.image} />
               ) : (
-                // Fallback UI when stations is undefined or empty
-                <Text style={{ textAlign: "center", marginTop: 20 }}>
-                  No stations available.
-                </Text>
+                <View style={[styles.image, { alignItems: "center", justifyContent: "center", backgroundColor: "gray", opacity: 0.1 }]}>
+                  <MaterialIcons
+                    name="ev-station"
+                    size={50}  // or match your image size
+                    color="#a3a3c2"
+                  />
+                </View>
               )}
-            </ScrollView>
+
+              <View style={styles.infoContainer}>
+                <View style={styles.headerRow}>
+                  <Text style={styles.stationName}>
+                    {trimText(station?.station_name, 25)}
+                  </Text>
+
+                </View>
+                <Text style={styles.statusText}>
+                  Status:{" "}
+                  <Text
+                    style={{
+                      color: station?.status !== "Active"
+                        ? Colors.darOrangeColor
+                        : Colors.primaryColor,
+                    }}
+                  >
+                    {station?.status !== "Active" ? "Pending" : "Active"}
+                  </Text>
+                </Text>
+
+                <Text style={styles.text}>
+                  Chargers: {station?.chargers?.length || 0}
+                </Text>
+                <Text style={styles.addressText}>{trimText(station?.address, 100)}</Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        ) : (
+          // Fallback UI when stations is undefined or empty
+          <Text style={{ textAlign: "center", marginTop: 20 }}>
+            No stations available.
+          </Text>
+        )}
+      </ScrollView>
     );
   }
 
@@ -196,61 +212,61 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-   scrollContainer: {
-      padding: 10,
-    },
-    title: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      color: Colors.primary,
-      textAlign: "center",
-    },
-    card: {
-      backgroundColor: Colors.bodyBackColor,
-      ...commonStyles.shadow,
-      borderColor: Colors.extraLightGrayColor,
-      borderRadius: 10,
-      padding: 15,
-      marginBottom: 15,
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    image: {
-      width: 80,
-      height: 100,
-      borderRadius: 8,
-      marginRight: 15,
-    },
-    infoContainer: {
-      flex: 1,
-    },
-    headerRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-    },
-    stationName: {
-      fontSize: 16,
-      fontWeight: "bold",
-      color: Colors.primary,
-      marginBottom: 5,
-    },
-    statusText: {
-      fontSize: 12,
-      color: Colors.primary,
-      marginBottom: 5,
-    },
-    text: {
-      fontSize: 12,
-      color: Colors.primary,
-    },
-    addressText: {
-      fontSize: 10,
-      color: Colors.grayColor,
-    },
-    row: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: 5,
-    },
+  scrollContainer: {
+    padding: 10,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    textAlign: "center",
+  },
+  card: {
+    backgroundColor: Colors.bodyBackColor,
+    ...commonStyles.shadow,
+    borderColor: Colors.extraLightGrayColor,
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  image: {
+    width: 80,
+    height: 100,
+    borderRadius: 8,
+    marginRight: 15,
+  },
+  infoContainer: {
+    flex: 1,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  stationName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: Colors.primary,
+    marginBottom: 5,
+  },
+  statusText: {
+    fontSize: 12,
+    color: Colors.primary,
+    marginBottom: 5,
+  },
+  text: {
+    fontSize: 12,
+    color: Colors.primary,
+  },
+  addressText: {
+    fontSize: 10,
+    color: Colors.grayColor,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 5,
+  },
 });

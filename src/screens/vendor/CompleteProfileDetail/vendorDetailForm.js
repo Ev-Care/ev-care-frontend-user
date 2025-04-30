@@ -55,7 +55,7 @@ const VendorDetailForm = () => {
   const [coordinate, setCoordinate] = useState(null);
   const [aadharNumber, setAadharNumber] = useState("");
   const [panNumber, setPanNumber] = useState("");
-  const [gstNumber, setGstNumber] = useState("");
+  const [gstNumber, setGstNumber] = useState(null);
   const [avatar, setAvatar] = useState(null);
   const [imageloading, setImageLoading] = useState(false);
   const accessToken = useSelector(selectToken); // Get access token from Redux store

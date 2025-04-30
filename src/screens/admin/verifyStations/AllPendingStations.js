@@ -150,8 +150,7 @@ useFocusEffect(
 );
 
  
-  
-  
+
   const openGoogleMaps = (latitude,longitude) => {
     const url = Platform.select({
       ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,

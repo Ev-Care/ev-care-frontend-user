@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import authReducer, { restoreUser } from "./userSlice";
 import vendorReducer from "../../screens/vendor/services/vendorSlice";
 import stationReducer from "../../screens/user/service/stationSlice"; // Import the stationReducer
+import adminReducer from "../../screens/admin/services/adminSlice";
 import { getUserByKey } from "../../screens/auth/services/crudFunction";
 import snackbarReducer, { showSnackbar } from '../snackbar/snackbarSlice'
 
@@ -10,8 +11,10 @@ const store = configureStore({
   reducer: {
     auth: authReducer,
     vendor: vendorReducer,
+    admin: adminReducer,
     station: stationReducer,
     snackbar: snackbarReducer
+    
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
 });

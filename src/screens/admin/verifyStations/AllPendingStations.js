@@ -21,8 +21,10 @@ import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import imageURL from "../../../constants/baseURL";
 import { openHourFormatter,formatDistance } from "../../../utils/globalMethods";
+import { useSelector } from "react-redux";
+import { selectAdminStations } from "../services/selector";
 
-const allStationsList = [
+const allStationsList1 = [
   {
     owner_id: 7,
     station_name: "Tesla EV India",
@@ -123,9 +125,9 @@ const allStationsList = [
 
 const AllPendingStations = ({ navigation }) => {
   const [searchText, setSearchText] = useState("");
-
+  const allStationsList = useSelector(selectAdminStations);
   const filteredStations = allStationsList.filter((station) =>
-    station?. station_name?.toLowerCase().includes(searchText.toLowerCase())
+    station?.station_name?.toLowerCase().includes(searchText.toLowerCase())
   );
   // Dummy coordinates for the location
 

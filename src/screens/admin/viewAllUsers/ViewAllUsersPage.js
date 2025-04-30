@@ -21,6 +21,7 @@ import {
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { color } from "@rneui/base";
+import { RefreshControl } from "react-native";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -101,21 +102,23 @@ const USERS = [
 const ViewAllUserPage = ({navigation}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState(USERS);
-
+  const [refreshing, setRefreshing] = useState(false);
   // Filter users based on search query
   const filteredUsers = users.filter(
     (user) =>
       user?.owner_legal_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user?.mobile_number?.includes(searchQuery)
   );
-
+  const handleRefresh = async () => {};
   return (
     <SafeAreaView style={styles.container}>
       <MyStatusBar/>
 
-      <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
+     {searchBar()}
 
       <FlatList
+       refreshing={refreshing}
+       onRefresh={handleRefresh}
         data={filteredUsers}
         renderItem={({ item }) => <UserInfo user={item} />}
         keyExtractor={(item) => item?.id?.toString()}
@@ -161,9 +164,10 @@ const ViewAllUserPage = ({navigation}) => {
   }
   
 
-  function SearchBar({ value, onChangeText }) {
+  function searchBar() {
     return (
       <View style={{ margin: 20.0 }}>
+        <MyStatusBar/>
         <View style={styles.searchBar}>
           <MaterialIcons
             name="search"
@@ -172,15 +176,15 @@ const ViewAllUserPage = ({navigation}) => {
             style={{ marginRight: 8 }}
           />
           <TextInput
-            placeholder="Search users"
+            placeholder="Search users here ..."
             placeholderTextColor="#888"
             style={{
               flex: 1,
               fontSize: 16,
               color: "#000",
             }}
-            value={value}
-            onChangeText={onChangeText}
+            value={searchQuery}
+            onChangeText={(text) => setSearchQuery(text)}
           />
         </View>
       </View>

@@ -26,6 +26,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectAdminUsers } from "../services/selector";
 import { useFocusEffect } from "@react-navigation/native";
 import imageURL from "../../../constants/baseURL";
+import { RefreshControl } from "react-native";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -40,66 +41,6 @@ const COLORS = {
   divider: "#e1e1ea",
 };
 
-// Sample user data
-const USERS = [
-  {
-    id: 18,
-    user_key: "b2ZB4gFprc",
-    owner_legal_name: "Dummy User",
-    business_name: null,
-    mobile_number: "+916666666666",
-    email: null,
-    otp: "573937",
-    pan_no: null,
-    tan_no: null,
-    adhar_no: null,
-    address: null,
-    avatar: null,
-    adhar_front_pic: null,
-    adhar_back_pic: null,
-    pan_pic: null,
-    tan_pic: null,
-    google_id: null,
-    otp_expiry_date: "2025-04-23T18:41:38.000Z",
-    status: "New",
-    role: "Vendor",
-    login_method: "mobile_otp",
-    created_at: "2025-04-23T18:31:38.000Z",
-    update_at: "2025-04-23T18:31:38.509Z",
-    updated_by: 0,
-    isLoggedIn: true,
-    password: null
-  },
-  {
-    id: 19,
-    user_key: "b2ZB4gFprc",
-    owner_legal_name: "Dummy User 2",
-    business_name: null,
-    mobile_number: "+9166666666669",
-    email: null,
-    otp: "573937",
-    pan_no: null,
-    tan_no: null,
-    adhar_no: null,
-    address: null,
-    avatar: null,
-    adhar_front_pic: null,
-    adhar_back_pic: null,
-    pan_pic: null,
-    tan_pic: null,
-    google_id: null,
-    otp_expiry_date: "2025-04-23T18:41:38.000Z",
-    status: "New",
-    role: "vendor",
-    login_method: "mobile_otp",
-    created_at: "2025-04-23T18:31:38.000Z",
-    update_at: "2025-04-23T18:31:38.509Z",
-    updated_by: 0,
-    isLoggedIn: true,
-    password: null
-  }
-];
-
 
 // User item component - extracted for better code organization
 
@@ -108,6 +49,7 @@ const AllPendingVendors = ({ navigation }) => {
   const users = useSelector(selectAdminUsers);
   const dispatch = useDispatch();
   console.log('users length',users?.length);
+   const [refreshing, setRefreshing] = useState(false);
 
   // Called every time screen comes into focus
   useFocusEffect(
@@ -116,6 +58,10 @@ const AllPendingVendors = ({ navigation }) => {
       dispatch(getAllUsers());
     }, [dispatch])
   );
+  const handleRefresh = async () => {
+
+    
+  };
 
   // Filter users based on search query
   const filteredUsers = users?.filter(
@@ -128,9 +74,11 @@ const AllPendingVendors = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <MyStatusBar />
 
-      <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
+    {searchBar()}
 
       <FlatList
+       refreshing={refreshing}
+       onRefresh={handleRefresh}
         data={filteredUsers}
         renderItem={({ item }) => <UserInfo user={item} />}
         keyExtractor={(item) => item?.id?.toString()}
@@ -177,9 +125,10 @@ const AllPendingVendors = ({ navigation }) => {
   }
 
 
-  function SearchBar({ value, onChangeText }) {
+  function searchBar() {
     return (
       <View style={{ margin: 20.0 }}>
+        <MyStatusBar/>
         <View style={styles.searchBar}>
           <MaterialIcons
             name="search"
@@ -188,15 +137,15 @@ const AllPendingVendors = ({ navigation }) => {
             style={{ marginRight: 8 }}
           />
           <TextInput
-            placeholder="Search users"
+            placeholder="Search vendors here ..."
             placeholderTextColor="#888"
             style={{
               flex: 1,
               fontSize: 16,
               color: "#000",
             }}
-            value={value}
-            onChangeText={onChangeText}
+            value={searchQuery}
+            onChangeText={(text) => setSearchQuery(text)}
           />
         </View>
       </View>
@@ -211,6 +160,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bodyBackColor,
     paddingHorizontal: Sizes.fixPadding * 0.5,
   },
+
   header: {
     flexDirection: "row",
     alignItems: "center",

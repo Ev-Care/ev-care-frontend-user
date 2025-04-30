@@ -92,7 +92,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
         {imageloading === label ? (
           <ActivityIndicator size={40} color="#ccc" />
         ) : localURI ? (
-          <Image source={{ uri: localURI }} style={styles.imageStyle} />
+          <Image source={{ uri: localURI }} style={[styles.imageStyle, { borderRadius: label === "avatar" ? 50 : 12 }]} />
         ) : (
           <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
         )}

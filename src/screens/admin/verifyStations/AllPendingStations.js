@@ -25,109 +25,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectAdminStations } from "../services/selector";
 import { useFocusEffect } from "@react-navigation/native";
 import { fetchAllPendingStation } from "../services/crudFunctions";
+import { RefreshControl } from "react-native";
 
-const allStationsList1 = [
-  {
-    owner_id: 7,
-    station_name: "Tesla EV India",
-    address: "Rajstan india",
-    coordinates: {
-      latitude: 18.4745984,
-      longitude: 73.8197504,
-    },
-    amenities: "restroom,wifi,store, car care,lodging",
-    rate: null,
-    rate_type: null,
-    station_images: null,
-    additional_comment: null,
-    distance_km: 5000, //check it
-    open_hours_opening_time: "00:00:00",
-    open_hours_closing_time: "23:59:59",
-    id: 2,
-    status: "Planned",
-    created_at: "2025-04-21T02:23:19.671Z",
-    update_at: "2025-04-21T02:23:19.671Z",
-    updated_by: 0,
-    chargers: [
-      {
-        charger_type: "AC",
-        max_power_kw: 60,
-        station: {
-          id: 2,
-          owner_id: 7,
-          station_name: "Tesla EV India",
-          address: "Rajstan india",
-          coordinates: {
-            latitude: 18.4745984,
-            longitude: 73.8197504,
-          },
-          amenities: "restroom,wifi,store, car care,lodging",
-          rate: null,
-          rate_type: null,
-          station_images: null,
-          additional_comment: null,
-          open_hours_opening_time: "00:00:00",
-          open_hours_closing_time: "23:59:59",
-          status: "Planned",
-          created_at: "2025-04-21T02:23:19.671Z",
-          update_at: "2025-04-21T02:23:19.671Z",
-          updated_by: 0,
-        },
-        charger_id: 3,
-        status: "Available",
-        created_at: "2025-04-21T02:23:19.760Z",
-        update_at: "2025-04-21T02:23:19.760Z",
-        updated_by: 0,
-        connectors: [
-          {
-            connector_status: "operational",
-            charger: {
-              charger_id: 3,
-              charger_type: "AC",
-              max_power_kw: 60,
-              status: "Available",
-              created_at: "2025-04-21T02:23:19.760Z",
-              update_at: "2025-04-21T02:23:19.760Z",
-              updated_by: 0,
-              station: {
-                id: 2,
-                owner_id: 7,
-                station_name: "Tesla EV India",
-                address: "Rajstan india",
-                coordinates: {
-                  latitude: 18.4745984,
-                  longitude: 73.8197504,
-                },
-                amenities: "restroom,wifi,store, car care,lodging",
-                rate: null,
-                rate_type: null,
-                station_images: null,
-                additional_comment: null,
-                open_hours_opening_time: "00:00:00",
-                open_hours_closing_time: "23:59:59",
-                status: "Planned",
-                created_at: "2025-04-21T02:23:19.671Z",
-                update_at: "2025-04-21T02:23:19.671Z",
-                updated_by: 0,
-              },
-            },
-            connectorType: {
-              connector_type_id: 1,
-              max_power_kw: "60.00",
-              description: "CCS-2",
-            },
-            charger_connector_id: 2,
-          },
-       
-        ],
-      },
-    ],
-  },
-];
+
 
 const AllPendingStations = ({ navigation }) => {
   const [searchText, setSearchText] = useState("");
   const allStationsList = useSelector(selectAdminStations);
+   const [refreshing, setRefreshing] = useState(false);
   const filteredStations = allStationsList.filter((station) =>
     station?.station_name?.toLowerCase().includes(searchText.toLowerCase())
   );
@@ -150,6 +55,11 @@ useFocusEffect(
 );
 
  
+const handleRefresh = async () => {
+
+  
+};
+
 
   const openGoogleMaps = (latitude,longitude) => {
     const url = Platform.select({
@@ -167,6 +77,8 @@ useFocusEffect(
       </View>
     </View>
   );
+ 
+
 
   function allStationsInfo() {
     const renderItem = ({ item }) => (
@@ -256,6 +168,8 @@ useFocusEffect(
 
     return (
       <FlatList
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
         data={filteredStations}
         keyExtractor={(item) => `${item.id}`}
         renderItem={renderItem}
@@ -267,7 +181,7 @@ useFocusEffect(
   function searchBar() {
     return (
       <View style={{ margin: 20.0 }}>
-        <MyStatusBar />
+        <MyStatusBar/>
         <View style={styles.searchBar}>
           <MaterialIcons
             name="search"

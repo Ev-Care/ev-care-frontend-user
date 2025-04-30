@@ -6,6 +6,7 @@ import {
   Image,
   View,
   Platform,
+  ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
 import React, { useRef, useState } from "react";
@@ -34,6 +35,7 @@ const HelpScreen = ({ navigation }) => {
   const mobileTimer = useRef(null);
   const descriptionTimer = useRef(null);
   const [inputHeight, setInputHeight] = useState(160);
+  
 
   const handleContentSizeChange = (event) => {
     const newHeight = event.nativeEvent.contentSize.height;
@@ -110,6 +112,7 @@ const HelpScreen = ({ navigation }) => {
   }
 
   function submitButton() {
+
     const handleSubmit = () => {
       if (!title || title.trim().length < 3) {
         dispatch(
@@ -155,16 +158,24 @@ const HelpScreen = ({ navigation }) => {
 
     return (
       <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={handleSubmit}
-        disabled={isLoading}
-        style={[
-          { ...styles.submitButtonStyle },
-          { paddingVertical: 12, marginBottom: 50 },
-        ]}
-      >
+      activeOpacity={0.8}
+      onPress={handleSubmit}
+      disabled={isLoading}
+      style={[
+        styles.submitButtonStyle,
+        { paddingVertical: 12, marginBottom: 50 },
+      ]}
+    >
+      {isLoading ? (
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+          <Text style={{ ...Fonts.whiteColor18Medium }}>Submitting...</Text>
+        </View>
+      ) : (
         <Text style={{ ...Fonts.whiteColor18Medium }}>Submit</Text>
-      </TouchableOpacity>
+      )}
+    </TouchableOpacity>
+    
     );
   }
 
@@ -254,7 +265,7 @@ const HelpScreen = ({ navigation }) => {
                 }
               }, 500);
             }}
-            style={{ ...Fonts.blackColor16Medium }}
+            style={[styles.input,{ ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}
@@ -303,7 +314,7 @@ const HelpScreen = ({ navigation }) => {
                 }
               }, 500);
             }}
-            style={{ ...Fonts.blackColor16Medium }}
+            style={[styles.input,{ ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}
@@ -358,7 +369,7 @@ const HelpScreen = ({ navigation }) => {
               }, 500);
               setTitleTimer(timer);
             }}
-            style={{ ...Fonts.blackColor16Medium }}
+            style={[styles.input,{ ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}
@@ -441,11 +452,15 @@ const styles = StyleSheet.create({
   textFieldWrapper: {
     backgroundColor: Colors.whiteColor,
     ...commonStyles.shadow,
-    borderRadius: Sizes.fixPadding,
-    paddingHorizontal: Sizes.fixPadding * 1.5,
-    paddingVertical:
-      Platform.OS == "ios" ? Sizes.fixPadding - 2.0 : Sizes.fixPadding - 5.0,
+    borderRadius: 10,
+    padding: 4,
+ 
     marginTop: Sizes.fixPadding,
+  },
+  input: {
+ 
+    padding: 12,
+    fontSize: 12,
   },
   submitButtonStyle: {
     padding: Sizes.fixPadding,

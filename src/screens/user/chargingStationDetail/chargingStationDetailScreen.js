@@ -348,8 +348,8 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
                 Type: {charger?.charger_type || "Unknown Type"}
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
-              <Text style={styles.chargerSpecText}>
-                Power: {charger?.max_power_kw || "Unknown Power"} KW
+              <Text style={[styles.chargerSpecText]}>
+              Power:⚡{charger?.max_power_kw || "Unknown Power"} kW
               </Text>
             </View>
             <View style={styles.connector}>
@@ -363,7 +363,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
                   size={20}
                   color={COLORS.primary}
                 />
-                <Text style={styles.connectorTypeText}>
+                <Text style={[styles.connectorTypeText,{fontWeight:"700" ,fontSize:12}]}>
                   {charger?.connector_type}
                 </Text>
               </View>
@@ -614,6 +614,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.gray,
     marginRight: 8,
+    fontWeight:"700"
   },
   connectorContainer: {
     marginBottom: 16,

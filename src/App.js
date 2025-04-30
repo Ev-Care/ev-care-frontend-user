@@ -39,19 +39,29 @@ function AppNavigator() {
   const user = useSelector(selectUser); // Get user data
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
 
-  useEffect(() => {
-    const initialize = async () => {
-      if (user && user.role) {
-        setUserType(user.role.toLowerCase());
-        const permission = await getLocationPermission();
-        setHasLocationPermission(permission);
-      } else {
-        setUserType(null);
-      }
-    };
+  // useEffect(() => {
+  //   const initialize = async () => {
+  //     if (user && user.role) {
+  //       setUserType(user.role.toLowerCase());
+  //       const permission = await getLocationPermission();
+  //       setHasLocationPermission(permission);
+  //     } else {
+  //       setUserType(null);
+  //     }
+  //   };
 
-    initialize();
-  }, [user]);
+  //   initialize();
+  // }, [user]);
+  
+  useEffect(() => {
+    if (user && user.role) { 
+      // if (true) { 
+        setUserType(user.role.toLowerCase());
+      //  setUserType("admin");
+    } else {
+        setUserType(null);
+    }
+}, [user]);
 
   // Function to handle role-based navigation
   const renderRoleStack = () => {
@@ -93,18 +103,21 @@ function AppNavigator() {
               )}
             </Stack.Screen>
           </>
-        ) : userType && hasLocationPermission ? (
+        ) :  (
           renderRoleStack()
-        ) : (
-          <Stack.Screen name="ErrorPage">
-            {(props) => (
-              <ErrorPage
-                {...props}
-                setHasLocationPermission={setHasLocationPermission}
-              />
-            )}
-          </Stack.Screen>
-        )}
+        ) 
+        // : (
+        //   <Stack.Screen name="ErrorPage">
+        //     {(props) => (
+        //       <ErrorPage
+        //         {...props}
+        //         setHasLocationPermission={setHasLocationPermission}
+        //       />
+        //     )}
+        //   </Stack.Screen>
+        // )
+        
+        }
       </Stack.Navigator>
     </NavigationContainer>
   );

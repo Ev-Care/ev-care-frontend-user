@@ -17,8 +17,8 @@ import { filterStations } from "../../../utils/filter";
 import imageURL from "../../../constants/baseURL";
 import { RefreshControl } from 'react-native';
 import { handleRefreshStationsByLocation } from "../service/handleRefresh";
-import { openHourFormatter ,formatDistance, getChargerLabel} from "../../../utils/globalMethods";
-
+import { openHourFormatter ,formatDistance, getChargerLabel, getLocationPermission} from "../../../utils/globalMethods";
+import * as Location from "expo-location";
 
 
 const AllChargingStationsScreen = ({ navigation }) => {
@@ -52,7 +52,10 @@ const AllChargingStationsScreen = ({ navigation }) => {
         radius: 30000,
         coords: userCoords,
       }
+      //  const { status } = await Location.requestForegroundPermissionsAsync();
+      //  if(status==="granted"){
       await handleRefreshStationsByLocation(dispatch, data, setRefreshing);
+    // }
     }
 
   return (
@@ -73,13 +76,14 @@ const AllChargingStationsScreen = ({ navigation }) => {
   );
 
   function allStationsInfo() {
+    const noItemInfo =()=>{
     if (filteredStations.length === 0) {
       return (
         <View style={[styles.centeredContainer ,{}]}>
           <Text style={styles.noStationsText}>No Charging Stations Found</Text>
         </View>
       );
-    }
+    }}
   
     const renderItem = ({ item }) => (
       <TouchableOpacity
@@ -183,7 +187,8 @@ const AllChargingStationsScreen = ({ navigation }) => {
         keyExtractor={(item) => `${item?.id}`}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: 15 }} 
+        contentContainerStyle={{ paddingTop: 15 }}
+        ListEmptyComponent={noItemInfo} 
       />
     );
   }
@@ -281,7 +286,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.whiteColor,
+    paddingVertical:"80%",
+    // backgroundColor: Colors.whiteColor,
   },
   noStationsText: {
     ...Fonts.blackColor18Medium,

@@ -1,39 +1,44 @@
 //get Access Token from Async Storage
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { approveStationAPI, approveVendorProfileAPI, getAllPendingStationAPI, getAllUsersAPI } from "./api";
+import {
+  approveStationAPI,
+  approveVendorProfileAPI,
+  getAllPendingStationAPI,
+  getAllUsersAPI,
+} from "./api";
 // Async thunk to fetch stations
 export const fetchAllPendingStation = createAsyncThunk(
-    "admin/fetchAllPendingStation",
-    async (_, { rejectWithValue }) => {
-      try {
-        console.log("Fetching all pending stations...");
-  
-        const accessToken = await AsyncStorage.getItem("accessToken");
-  
-        if (!accessToken) {
-          return rejectWithValue("Access token not found.");
-        }
-  
-        const response = await getAllPendingStationAPI({ accessToken });
-  
-        if (response?.data?.code === 200 || response?.data?.code === 201) {
-          return response?.data;
-        } else {
-          return rejectWithValue(
-            response?.data?.message || "Failed to fetch pending stations."
-          );
-        }
-      } catch (error) {
-        console.log("Error in fetchAllPendingStation:", error);
-  
-        const errorMessage =
-          error?.response?.data?.message || error?.message || "Server error";
-  
-        return rejectWithValue(errorMessage);
+  "admin/fetchAllPendingStation",
+  async (_, { rejectWithValue }) => {
+    try {
+      console.log("Fetching all pending stations...");
+
+      const accessToken = await AsyncStorage.getItem("accessToken");
+
+      if (!accessToken) {
+        return rejectWithValue("Access token not found.");
       }
+
+      const response = await getAllPendingStationAPI({ accessToken });
+
+      if (response?.data?.code === 200 || response?.data?.code === 201) {
+        return response?.data;
+      } else {
+        return rejectWithValue(
+          response?.data?.message || "Failed to fetch pending stations."
+        );
+      }
+    } catch (error) {
+      console.log("Error in fetchAllPendingStation:", error);
+
+      const errorMessage =
+        error?.response?.data?.message || error?.message || "Server error";
+
+      return rejectWithValue(errorMessage);
     }
-  );
+  }
+);
 
 export const getAllUsers = createAsyncThunk(
   "admin/getAllUsers",
@@ -99,13 +104,15 @@ export const approveStation = createAsyncThunk(
 );
 export const approveVendorProfile = createAsyncThunk(
   "admin/approveVendorProfile",
-  async (user_key, { rejectWithValue }) => {
+  async (data, { rejectWithValue }) => {
+    console.log("admin/approveVendorProfile");
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
 
       const response = await approveVendorProfileAPI({
-        user_key,
+        user_key: data.user_key,
         accessToken,
+        status: data.status,
       }); // Call the API to fetch stations by location
 
       if (response?.data?.code === 200 || response?.data?.code === 201) {
@@ -128,7 +135,6 @@ export const approveVendorProfile = createAsyncThunk(
     }
   }
 );
-
 
 /*
 //Get vendor details by key

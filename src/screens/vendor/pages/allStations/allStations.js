@@ -10,18 +10,21 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { default as Icon, default as MaterialIcons } from "react-native-vector-icons/MaterialIcons";
+import {
+  default as Icon,
+  default as MaterialIcons,
+} from "react-native-vector-icons/MaterialIcons";
 import { useDispatch, useSelector } from "react-redux";
 import MyStatusBar from "../../../../components/myStatusBar";
-import {
-  Colors,
-  commonStyles
-} from "../../../../constants/styles";
+import { Colors, commonStyles } from "../../../../constants/styles";
 import { selectAuthError, selectUser } from "../../../auth/services/selector";
 import { selectVendorStation } from "../../services/selector";
-import { fetchStations, updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
+import {
+  fetchStations,
+  updateStationsChargersConnectorsStatus,
+} from "../../services/crudFunction";
 import imageURL from "../../../../constants/baseURL";
-import { RefreshControl } from 'react-native';
+import { RefreshControl } from "react-native";
 import { handleRefreshStations } from "../../services/handleRefresh";
 import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
 const COLORS = {
@@ -33,7 +36,6 @@ const COLORS = {
   black: "#000000",
   green: "#00FF00",
 };
-
 
 const trimText = (text, limit) =>
   text.length > limit ? text.substring(0, limit) + "..." : text;
@@ -48,32 +50,49 @@ const AllStations = ({ route }) => {
   // console.log("Stations in AllStations:", stations?.length);
   const updateStationStatus = async (stationData) => {
     try {
-      const response = await dispatch(updateStationsChargersConnectorsStatus(stationData));
+      const response = await dispatch(
+        updateStationsChargersConnectorsStatus(stationData)
+      );
       if (updateStationsChargersConnectorsStatus.fulfilled.match(response)) {
-        await dispatch(showSnackbar({ message: "Station status updated.", type: 'success' }));
-
-      } else if (updateStationsChargersConnectorsStatus.rejected.match(response)) {
-        await dispatch(showSnackbar({ message: errorMessage || "Failed to add station." ,  type: 'error'}));
-
+        await dispatch(
+          showSnackbar({ message: "Station status updated.", type: "success" })
+        );
+      } else if (
+        updateStationsChargersConnectorsStatus.rejected.match(response)
+      ) {
+        await dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to add station.",
+            type: "error",
+          })
+        );
       }
       const stationResponse = await dispatch(fetchStations(user?.id));
       if (fetchStations.fulfilled.match(stationResponse)) {
         // await dispatch(showSnackbar({ message: "Station fetched Successfully." , type: 'success'}));
-
       } else if (fetchStations.rejected.match(stationResponse)) {
-        await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station.", type: 'error' }));
-
+        await dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to fetch station.",
+            type: "error",
+          })
+        );
       }
     } catch (error) {
       console.error("Error updating station status:", error);
-      await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station.", type: 'error' }));
+      await dispatch(
+        showSnackbar({
+          message: errorMessage || "Failed to fetch station.",
+          type: "error",
+        })
+      );
     }
-  }
+  };
 
   const handleRefresh = async () => {
     console.log("Refreshing stations...in all stations");
     await handleRefreshStations(dispatch, user?.id, setRefreshing);
-  }
+  };
 
   return (
     <View style={styles.container}>
@@ -87,32 +106,47 @@ const AllStations = ({ route }) => {
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView style={styles.scrollContainer}
+      <ScrollView
+        style={styles.scrollContainer}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={['#9Bd35A', '#101942']}  // Android spinner colors
-            tintColor="#101942"            // iOS spinner color
+            colors={["#9Bd35A", "#101942"]} // Android spinner colors
+            tintColor="#101942" // iOS spinner color
           />
         }
       >
-
         {/* Check if stations is defined and not empty */}
         {stations && stations?.length > 0 ? (
           stations.map((station) => (
             <TouchableOpacity
-              onPress={() => navigation.navigate("StationManagement", { station })}
+              onPress={() =>
+                navigation.navigate("StationManagement", { station })
+              }
               key={station.id}
               style={styles.card}
             >
               {station?.station_images ? (
-                <Image source={{ uri: imageURL.baseURL + station?.station_images }} style={styles.image} />
+                <Image
+                  source={{ uri: imageURL.baseURL + station?.station_images }}
+                  style={styles.image}
+                />
               ) : (
-                <View style={[styles.image, { alignItems: "center", justifyContent: "center", backgroundColor: "gray", opacity: 0.1 }]}>
+                <View
+                  style={[
+                    styles.image,
+                    {
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: "gray",
+                      opacity: 0.1,
+                    },
+                  ]}
+                >
                   <MaterialIcons
                     name="ev-station"
-                    size={50}  // or match your image size
+                    size={50} // or match your image size
                     color="#a3a3c2"
                   />
                 </View>
@@ -124,11 +158,15 @@ const AllStations = ({ route }) => {
                     {trimText(station?.station_name, 18)}
                   </Text>
                   <Switch
-                    trackColor={{ false: COLORS.secondary, true: COLORS.green }}
+                    trackColor={
+                      station?.status === "Planned"
+                        ? { false: COLORS.darkGray, true: COLORS.green }
+                        : { false: COLORS.secondary, true: COLORS.green }
+                    }
                     thumbColor={COLORS.white}
-                    value={station?.status !== "Inactive"}
+                    value={station?.status === "Active"}
+                    disabled={station?.status === "Planned"}
                     onValueChange={async () => {
-
                       // console.log("Station Status Before toggle:", availability[station.id]);
 
                       //  await toggleStationAvailability(station.id);
@@ -138,37 +176,47 @@ const AllStations = ({ route }) => {
                       // console.log("Station Status after toggle:", availability[station.id]);
 
                       var stationData = {
-
                         station_id: station?.id,
                         statusType: "station",
-                        status: station?.status === "Active" || station?.status === "Planned" ? "Inactive" : "active",
+                        status:
+                          station?.status === "Active" ||
+                          station?.status === "Planned"
+                            ? "Inactive"
+                            : "active",
+                      };
 
-                      }
-
-                      const statusResponse = await updateStationStatus(stationData);
-                      
-
-                    }
-                    }
+                      const statusResponse = await updateStationStatus(
+                        stationData
+                      );
+                    }}
                   />
                 </View>
                 <Text style={styles.statusText}>
                   Status:{" "}
                   <Text
                     style={{
-                      color: station?.status !== "Inactive"
-                        ? COLORS.green
-                        : COLORS.secondary,
+                      color:
+                        station?.status !== "Inactive"
+                          ? station?.status === "Active"
+                            ? COLORS.green
+                            : COLORS.darkGray
+                          : COLORS.secondary,
                     }}
                   >
-                    {station?.status !== "Inactive" ? "Live" : "Offline"}
+                    {station?.status !== "Inactive"
+                      ? station?.status === "Active"
+                        ? "Live"
+                        : "Not Published"
+                      : "Offline"}
                   </Text>
                 </Text>
 
                 <Text style={styles.text}>
                   Chargers: {station?.chargers?.length || 0}
                 </Text>
-                <Text style={styles.addressText}>{trimText(station?.address, 100)}</Text>
+                <Text style={styles.addressText}>
+                  {trimText(station?.address, 100)}
+                </Text>
               </View>
             </TouchableOpacity>
           ))
@@ -204,7 +252,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
     textAlign: "center",
   },

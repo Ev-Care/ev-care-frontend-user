@@ -21,7 +21,10 @@ import HelpScreen from "../screens/user/help/helpScreen";
 import VendorProfile from "../screens/vendor/pages/vendorProfile/vendorProfile";
 import PreviewPage from "../screens/vendor/pages/previewPage/previewPage";
 import { useSelector } from "react-redux";
-import { selectProfileStatus, selectUser } from "../screens/auth/services/selector"; // Ensure correct import
+import {
+  selectProfileStatus,
+  selectUser,
+} from "../screens/auth/services/selector"; // Ensure correct import
 import { selectloader } from "../screens/auth/services/selector"; // Ensure correct import
 import UpdateStation from "../screens/vendor/pages/updateStation/UpdateStation";
 import EditProfileVendor from "../screens/vendor/pages/vendorProfile/EditProfileVendor";
@@ -35,9 +38,8 @@ export function VendorStack() {
 
   const role = user?.role?.toLowerCase();
 
-  
   if (!user) {
-    return null;  
+    return null;
   }
 
   const isVendor = role === "vendor";
@@ -48,7 +50,7 @@ export function VendorStack() {
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {user && isVendor && isActive && isKYCIncomplete && (
+      {user && isVendor && !isActive && isKYCIncomplete && (
         <>
           <Stack.Screen name="Instruction" component={Instruction} />
           <Stack.Screen name="UploadAadhar" component={UploadAadhar} />
@@ -62,25 +64,42 @@ export function VendorStack() {
       )}
 
       {user && isVendor && isCompleted && (
-        <Stack.Screen name="PendingApprovalScreen" component={PendingApprovalScreen} />
+        <Stack.Screen
+          name="PendingApprovalScreen"
+          component={PendingApprovalScreen}
+        />
       )}
 
       {user && isVendor && isActive && isKYCComplete && (
         <>
-          <Stack.Screen name="VendorBottomTabBar" component={VendorBottomTabBar} />
+          <Stack.Screen
+            name="VendorBottomTabBar"
+            component={VendorBottomTabBar}
+          />
           <Stack.Screen name="VendorHome" component={VendorHome} />
           <Stack.Screen name="AllStations" component={AllStations} />
-          <Stack.Screen name="EditProfileVendor" component={EditProfileVendor} />
-          <Stack.Screen name="TermsAndConditionsScreen" component={TermsAndConditionsScreen} />
+          <Stack.Screen
+            name="EditProfileVendor"
+            component={EditProfileVendor}
+          />
+          <Stack.Screen
+            name="TermsAndConditionsScreen"
+            component={TermsAndConditionsScreen}
+          />
           <Stack.Screen name="FaqScreen" component={FaqScreen} />
-          <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
+          <Stack.Screen
+            name="PrivacyPolicyScreen"
+            component={PrivacyPolicyScreen}
+          />
           <Stack.Screen name="HelpScreen" component={HelpScreen} />
           <Stack.Screen name="VendorProfile" component={VendorProfile} />
           <Stack.Screen name="PickLocation" component={PickLocationScreen} />
           <Stack.Screen name="PreviewPage" component={PreviewPage} />
-          <Stack.Screen name="StationManagement" component={StationManagement} />
+          <Stack.Screen
+            name="StationManagement"
+            component={StationManagement}
+          />
           <Stack.Screen name="UpdateStation" component={UpdateStation} />
-         
 
           {/* //comment this line to use the add station screen */}
           {/* <Stack.Screen name="Instruction" component={Instruction} />
@@ -95,4 +114,3 @@ export function VendorStack() {
     </Stack.Navigator>
   );
 }
-

@@ -42,7 +42,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
     user?.adhar_no || "Not found"
   );
   const [panNumber, setPanNumber] = useState(user?.pan_no || "Not found");
-  const [gstNumber, setGstNumber] = useState(user?.gst_no || "Not found");
+  const [gstNumber, setGstNumber] = useState(user?.gst_no || "--");
 
   //   image start
   const [aadhaarFrontImage, setAadhaarFrontImage] = useState(
@@ -70,32 +70,73 @@ const VerifyVendorProfile = ({ route, navigation }) => {
 
   const dispatch = useDispatch();
 
-  const handleReject = () => {
-    dispatch(
-      showSnackbar({
-        message: "Currently this service is under development.",
-        type: "error",
-      })
-    );
+  const handleReject = async () => {
+    console.log("calling reject");
+    setIsLoading(true);
+    try {
+      const rejectResponse = await dispatch(
+        approveVendorProfile({ user_key: user?.user_key, status: "reject" })
+      );
+      console.log({ rejectResponse });
+
+      if (approveVendorProfile.fulfilled.match(rejectResponse)) {
+        const pendingVendorResponse = await dispatch(getAllUsers());
+
+        if (getAllUsers.fulfilled.match(pendingVendorResponse)) {
+          await dispatch(
+            showSnackbar({
+              message: "Vendor profile rejected.",
+              type: "success",
+            })
+          );
+          navigation.goBack();
+        } else if (getAllUsers.rejected.match(pendingVendorResponse)) {
+          dispatch(
+            showSnackbar({
+              message: "Failed to reject vendor.",
+              type: "error",
+            })
+          );
+        }
+      } else if (approveVendorProfile.rejected.match(approvedResponse)) {
+        dispatch(
+          showSnackbar({ message: "Failed to reject vendor.", type: "error" })
+        );
+      }
+    } finally {
+      setIsLoading(false);
+    }
+    // dispatch(
+    //   showSnackbar({
+    //     message: "Currently this service is under development.",
+    //     type: "error",
+    //   })
+    // );
   };
   const handleApprove = async () => {
     setIsLoading(true);
     try {
       const approvedResponse = await dispatch(
-        approveVendorProfile(user?.user_key)
+        approveVendorProfile({ user_key: user?.user_key, status: "approve" })
       );
-  
+
       if (approveVendorProfile.fulfilled.match(approvedResponse)) {
         const pendingVendorResponse = await dispatch(getAllUsers());
-  
+
         if (getAllUsers.fulfilled.match(pendingVendorResponse)) {
           await dispatch(
-            showSnackbar({ message: "Vendor profile approved.", type: "success" })
+            showSnackbar({
+              message: "Vendor profile approved.",
+              type: "success",
+            })
           );
           navigation.goBack();
         } else if (getAllUsers.rejected.match(pendingVendorResponse)) {
           dispatch(
-            showSnackbar({ message: "Failed to approve vendor.", type: "error" })
+            showSnackbar({
+              message: "Failed to approve vendor.",
+              type: "error",
+            })
           );
         }
       } else if (approveVendorProfile.rejected.match(approvedResponse)) {
@@ -107,7 +148,6 @@ const VerifyVendorProfile = ({ route, navigation }) => {
       setIsLoading(false);
     }
   };
-  
 
   const renderTextData = (key, value) => (
     <View
@@ -149,14 +189,14 @@ const VerifyVendorProfile = ({ route, navigation }) => {
           <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
         )}
       </View>
-      <Text style={styles.imageLabel}>{label}</Text>
+      {/* <Text style={styles.imageLabel}>{label}</Text> */}
     </TouchableOpacity>
   );
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Update User Details</Text>
+        <Text style={styles.title}>Verify Vendor Details</Text>
 
         <View style={styles.imageContainerAvatar}>
           {renderImageBox("avatar", avatar, setAvatar)}
@@ -237,25 +277,6 @@ const VerifyVendorProfile = ({ route, navigation }) => {
           >
             Do You Want To Reject?
           </Text>
-          <View
-            style={{
-              alignSelf: "center",
-              width: 80,
-              height: 80,
-              borderRadius: 40,
-              borderWidth: 2,
-              borderColor: Colors.darOrangeColor,
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: Sizes.fixPadding * 1.5,
-            }}
-          >
-            <MaterialCommunityIcons
-              name="question-mark-circle-outline"
-              size={40}
-              color={Colors.darOrangeColor}
-            />
-          </View>
 
           <View
             style={{
@@ -314,25 +335,6 @@ const VerifyVendorProfile = ({ route, navigation }) => {
           >
             Do You Want To Approve?
           </Text>
-          <View
-            style={{
-              alignSelf: "center",
-              width: 80,
-              height: 80,
-              borderRadius: 40,
-              borderWidth: 2,
-              borderColor: Colors.primaryColor,
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: Sizes.fixPadding * 1.5,
-            }}
-          >
-            <MaterialCommunityIcons
-              name="question-mark-circle-outline"
-              size={40}
-              color={Colors.primaryColor}
-            />
-          </View>
 
           <View
             style={{

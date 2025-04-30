@@ -9,9 +9,9 @@ export const Colors = {
   bodyBackColor: "#F2F2F2",
   yellowColor: "#F2C94C",
   extraLightGrayColor: "#e0e0e0",
-  redColor:'#FF0606',
-  orangeColor:'#FF8C00',
-  darOrangeColor:'#FF5722',
+  redColor: "#FF0606",
+  orangeColor: "#FF8C00",
+  darOrangeColor: "#FF5722",
 };
 
 export const FontFamily = {
@@ -85,7 +85,7 @@ export const Fonts = {
     includeFontPadding: false,
   },
 
-  blackColor16Regular:{
+  blackColor16Regular: {
     color: Colors.blackColor,
     fontSize: 12.0,
     fontFamily: FontFamily.Regular,
@@ -126,7 +126,6 @@ export const Fonts = {
     fontFamily: FontFamily.SemiBold,
     includeFontPadding: false,
   },
-  
 
   blackColor20SemiBold: {
     color: Colors.blackColor,
@@ -158,7 +157,7 @@ export const Fonts = {
   grayColor16SemiBold: {
     color: Colors.grayColor,
     fontSize: 12.0,
-    fontWeight: "800", 
+    fontWeight: "800",
     includeFontPadding: false,
   },
 
@@ -246,12 +245,12 @@ export const Fonts = {
     includeFontPadding: false,
   },
 
-  redColor18Medium:{
-    color:Colors.redColor,
+  redColor18Medium: {
+    color: Colors.redColor,
     fontSize: 14.0,
     fontFamily: FontFamily.Medium,
     includeFontPadding: false,
-  }
+  },
 };
 
 export const Sizes = {

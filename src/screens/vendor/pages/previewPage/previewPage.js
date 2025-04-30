@@ -1,6 +1,5 @@
-
 import { Overlay } from "@rneui/themed";
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -9,34 +8,38 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
-} from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useDispatch, useSelector } from 'react-redux';
+  View,
+} from "react-native";
+import MapView, { Marker } from "react-native-maps";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { useDispatch, useSelector } from "react-redux";
+import { Colors, Fonts, Sizes } from "../../../../constants/styles";
 import {
-  Colors,
-  Fonts,
-  Sizes
-} from "../../../../constants/styles";
-import { addStation, fetchStations, updateStation } from '../../services/crudFunction';
-import { selectVendorError, selectVendorLoading, selectVendorStation } from '../../services/selector';
-import { showSnackbar } from '../../../../redux/snackbar/snackbarSlice'
+  addStation,
+  fetchStations,
+  updateStation,
+} from "../../services/crudFunction";
+import {
+  selectVendorError,
+  selectVendorLoading,
+  selectVendorStation,
+} from "../../services/selector";
+import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
 // Define colors at the top for easy customization
 const COLORS = {
-  primary: '#101942',
-  accent: '#FF5722', // Orange
-  lightPurple: '#E6D8F2',
-  white: '#FFFFFF',
-  gray: '#8A94A6',
-  lightGray: '#F5F7FA',
-  red: '#FF3B30',
-  green: '#4CAF50',
-  yellow: '#FFC107',
-  black: '#333333',
+  primary: "#101942",
+  accent: "#FF5722", // Orange
+  lightPurple: "#E6D8F2",
+  white: "#FFFFFF",
+  gray: "#8A94A6",
+  lightGray: "#F5F7FA",
+  red: "#FF3B30",
+  green: "#4CAF50",
+  yellow: "#FFC107",
+  black: "#333333",
 };
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 const PreviewPage = ({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -47,30 +50,34 @@ const PreviewPage = ({ navigation, route }) => {
   const isLoading = useSelector(selectVendorLoading);
   const errorMessage = useSelector(selectVendorError);
   const stations = useSelector(selectVendorStation);
-  const station = stations.find((station) => station.id === stationData.station_id);
+  const station = stations.find(
+    (station) => station.id === stationData.station_id
+  );
 
-
-  console.log('error in preview', errorMessage);
-  console.log('stations in preview', stations);
+  console.log("error in preview", errorMessage);
+  console.log("stations in preview", stations);
   useEffect(() => {
-    console.log('Transformed station data preview:', JSON.stringify(stationData, null, 2));
+    console.log(
+      "Transformed station data preview:",
+      JSON.stringify(stationData, null, 2)
+    );
   }, [stationData]);
 
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",
-    "CHAdeMO": "ev-plug-chademo",
+    CHAdeMO: "ev-plug-chademo",
     "Type-2": "ev-plug-type2",
-    "Wall": "ev-plug-type1",
-    "GBT": "ev-plug-type2",
+    Wall: "ev-plug-type1",
+    GBT: "ev-plug-type2",
   };
 
   const amenityMap = {
-    "Restroom": "toilet",
-    "Cafe": "coffee",
-    "Wifi": "wifi",
-    "Store": "cart",
+    Restroom: "toilet",
+    Cafe: "coffee",
+    Wifi: "wifi",
+    Store: "cart",
     "Car Care": "car",
-    "Lodging": "bed"
+    Lodging: "bed",
   };
 
   useEffect(() => {
@@ -89,55 +96,84 @@ const PreviewPage = ({ navigation, route }) => {
   const handleSubmit = async () => {
     try {
       if (type === "add") {
-
-
         const addStationresponse = await dispatch(addStation(stationData));
         if (addStation.fulfilled.match(addStationresponse)) {
-          const stationResponse = await dispatch(fetchStations(stationData?.owner_id));
+          const stationResponse = await dispatch(
+            fetchStations(stationData?.owner_id)
+          );
           if (fetchStations.fulfilled.match(stationResponse)) {
             // await dispatch(showSnackbar({ message: "Station fetched Successfully.", type:'success' }));
-            await dispatch(showSnackbar({ message: "New station added.", type: 'success' }));
-            if (typeof clearForm === 'function') {
+            await dispatch(
+              showSnackbar({ message: "New station added.", type: "success" })
+            );
+            if (typeof clearForm === "function") {
               clearForm();
             }
-            navigation.pop();
-
+            // navigation.pop();
+            navigation.navigate("VendorBottomTabBar");
           } else if (fetchStations.rejected.match(stationResponse)) {
-            await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station.", type: 'error' }));
-
+            await dispatch(
+              showSnackbar({
+                message: errorMessage || "Failed to fetch station.",
+                type: "error",
+              })
+            );
           }
         } else if (addStation.rejected.match(addStationresponse)) {
-          await dispatch(showSnackbar({ message: errorMessage || "Failed to add station.", type: 'error' }));
-
+          await dispatch(
+            showSnackbar({
+              message: errorMessage || "Failed to add station.",
+              type: "error",
+            })
+          );
         }
-
       } else {
-        const updateStationResponse = await dispatch(updateStation(stationData));
+        const updateStationResponse = await dispatch(
+          updateStation(stationData)
+        );
         if (updateStation.fulfilled.match(updateStationResponse)) {
-          const stationResponse = await dispatch(fetchStations(stationData?.owner_id));
+          const stationResponse = await dispatch(
+            fetchStations(stationData?.owner_id)
+          );
           if (fetchStations.fulfilled.match(stationResponse)) {
-            console.log('station updated');
+            console.log("station updated");
 
-            await dispatch(showSnackbar({ message: "Station updated Successfully.", type: 'success' }));
+            await dispatch(
+              showSnackbar({
+                message: "Station updated Successfully.",
+                type: "success",
+              })
+            );
 
             navigation.pop(2);
             // navigation.navigate("StationManagement", { station })
-
           } else if (fetchStations.rejected.match(stationResponse)) {
-            console.log('station update failed');
-            await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station.", type: 'error' }));
-
+            console.log("station update failed");
+            await dispatch(
+              showSnackbar({
+                message: errorMessage || "Failed to fetch station.",
+                type: "error",
+              })
+            );
           }
-
         } else if (updateStation.rejected.match(updateStationResponse)) {
-          await dispatch(showSnackbar({ message: errorMessage || "Failed to update station.", type: 'error' }));
-
+          await dispatch(
+            showSnackbar({
+              message: errorMessage || "Failed to update station.",
+              type: "error",
+            })
+          );
         }
-
       }
     } catch (error) {
       console.error("Error adding station:", error);
-      await dispatch(showSnackbar({ message: errorMessage || "Something went wrong. Please try again later.", type: 'error' }));
+      await dispatch(
+        showSnackbar({
+          message:
+            errorMessage || "Something went wrong. Please try again later.",
+          type: "error",
+        })
+      );
     }
   };
 
@@ -162,14 +198,13 @@ const PreviewPage = ({ navigation, route }) => {
     return str?.substring(0, threshold) + ".....";
   }
 
-
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Image
           source={{
-            uri: stationImage || 'https://via.placeholder.com/400x200',
+            uri: stationImage || "https://via.placeholder.com/400x200",
           }}
           style={styles.mapBackground}
         />
@@ -177,12 +212,17 @@ const PreviewPage = ({ navigation, route }) => {
           <View style={styles.communityBadge}>
             <Text style={styles.communityText}>Public</Text>
           </View>
-          <Text style={styles.stationName}>{trimName(30, stationData?.station_name)}</Text>
-          <Text style={styles.stationAddress}>{trimName(50, stationData?.address)}</Text>
+          <Text style={styles.stationName}>
+            {trimName(30, stationData?.station_name)}
+          </Text>
+          <Text style={styles.stationAddress}>
+            {trimName(50, stationData?.address)}
+          </Text>
           <View style={styles.statusContainer}>
             <Text style={styles.openHour}>Open Hours</Text>
             <Text style={styles.statusTime}>
-              • {stationData?.open_hours_opening_time} - {stationData?.open_hours_closing_time}
+              • {stationData?.open_hours_opening_time} -{" "}
+              {stationData?.open_hours_closing_time}
             </Text>
             <View style={styles.newBadge}>
               <Text style={styles.newText}>New</Text>
@@ -197,7 +237,9 @@ const PreviewPage = ({ navigation, route }) => {
           style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
           onPress={() => handleTabPress(0)}
         >
-          <Text style={[styles.tabText, activeTab === 0 && styles.activeTabText]}>
+          <Text
+            style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
+          >
             Charger
           </Text>
           {activeTab === 0 && <View style={styles.activeTabIndicator} />}
@@ -206,7 +248,9 @@ const PreviewPage = ({ navigation, route }) => {
           style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
           onPress={() => handleTabPress(1)}
         >
-          <Text style={[styles.tabText, activeTab === 1 && styles.activeTabText]}>
+          <Text
+            style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
+          >
             Details
           </Text>
           {activeTab === 1 && <View style={styles.activeTabIndicator} />}
@@ -246,7 +290,6 @@ const PreviewPage = ({ navigation, route }) => {
     </View>
   );
 
-
   function chargerTab() {
     return (
       <ScrollView style={styles.tabContent}>
@@ -274,7 +317,8 @@ const PreviewPage = ({ navigation, route }) => {
                 <Icon
                   name={
                     charger?.connector_type
-                      ? connectorIcons?.[charger?.connector_type] || "ev-plug-type1"
+                      ? connectorIcons?.[charger?.connector_type] ||
+                        "ev-plug-type1"
                       : "ev-plug-type1"
                   }
                   size={20}
@@ -296,7 +340,13 @@ const PreviewPage = ({ navigation, route }) => {
           color={COLORS.primary}
           style={{ alignSelf: "center" }}
         />
-        <Text style={{ marginTop: Sizes.fixPadding, textAlign: "center", ...Fonts.blackColor16Regular }}>
+        <Text
+          style={{
+            marginTop: Sizes.fixPadding,
+            textAlign: "center",
+            ...Fonts.blackColor16Regular,
+          }}
+        >
           Please wait...
         </Text>
       </Overlay>
@@ -355,14 +405,12 @@ const PreviewPage = ({ navigation, route }) => {
 
         <Text style={styles.sectionTitle}>Address</Text>
         <View style={styles.landmarkContainer}>
-          <Text style={styles.landmarkTitle}>
-            {stationData?.address}
-          </Text>
+          <Text style={styles.landmarkTitle}>{stationData?.address}</Text>
         </View>
 
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
-          {stationData?.amenities?.split(',').map((amenityName, index) => {
+          {stationData?.amenities?.split(",").map((amenityName, index) => {
             const trimmedName = amenityName?.trim();
             const iconName = amenityMap?.[trimmedName] || "help-circle";
 
@@ -377,7 +425,6 @@ const PreviewPage = ({ navigation, route }) => {
       </ScrollView>
     );
   }
-
 };
 
 const styles = StyleSheet.create({
@@ -387,22 +434,22 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 200,
-    position: 'relative',
+    position: "relative",
   },
   mapBackground: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
+    width: "100%",
+    height: "100%",
+    position: "absolute",
     opacity: 1,
   },
   overlay: {
     padding: 16,
-    height: '100%',
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(230, 216, 242, 0.6)', // Light purple with opacity
+    height: "100%",
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(230, 216, 242, 0.6)", // Light purple with opacity
   },
   communityBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: 16,
     right: 16,
     backgroundColor: COLORS.white,
@@ -412,12 +459,12 @@ const styles = StyleSheet.create({
   },
   communityText: {
     color: COLORS.primary,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 12,
   },
   stationName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 4,
   },
@@ -427,12 +474,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   openHour: {
     color: COLORS.primary,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 12,
   },
   statusTime: {
@@ -450,18 +497,18 @@ const styles = StyleSheet.create({
   newText: {
     color: COLORS.white,
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   tabContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: "#E0E0E0",
   },
   tabButton: {
     flex: 1,
     paddingVertical: 16,
-    alignItems: 'center',
-    position: 'relative',
+    alignItems: "center",
+    position: "relative",
   },
   activeTabButton: {
     borderBottomWidth: 1,
@@ -473,10 +520,10 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     color: COLORS.accent,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   activeTabIndicator: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
@@ -491,7 +538,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: 8,
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -500,13 +547,13 @@ const styles = StyleSheet.create({
   },
   chargerTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 8,
   },
   chargerSpecs: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   chargerSpecText: {
@@ -518,24 +565,24 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   connector: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 16,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#E0E0E0",
     borderRadius: 8,
     paddingHorizontal: 16,
     marginBottom: 12,
   },
   connectorTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
   },
   connectorType: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   connectorTypeText: {
     fontSize: 10,
@@ -544,19 +591,19 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: "#E0E0E0",
     marginVertical: 16,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 16,
   },
   mapContainer: {
     height: 200,
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: 16,
   },
   map: {
@@ -571,8 +618,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   amenitiesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: 24,
   },
   amenityItem: {
@@ -581,45 +628,45 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 6,
     backgroundColor: COLORS.lightGray,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 16,
     marginBottom: 10,
   },
 
   seeAllText: {
     color: COLORS.accent,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 
   bottomButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: "#E0E0E0",
   },
   editButton: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   editButtonText: {
     color: COLORS.accent,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   submitButton: {
     flex: 1,
     backgroundColor: COLORS.accent,
     paddingVertical: 12,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   submitButtonText: {
     color: COLORS.white,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 

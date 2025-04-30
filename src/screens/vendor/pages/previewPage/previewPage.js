@@ -89,7 +89,7 @@ const PreviewPage = ({ navigation, route }) => {
   const handleSubmit = async () => {
     try {
       if (type === "add") {
-        
+
 
         const addStationresponse = await dispatch(addStation(stationData));
         if (addStation.fulfilled.match(addStationresponse)) {
@@ -97,7 +97,10 @@ const PreviewPage = ({ navigation, route }) => {
           if (fetchStations.fulfilled.match(stationResponse)) {
             // await dispatch(showSnackbar({ message: "Station fetched Successfully.", type:'success' }));
             await dispatch(showSnackbar({ message: "New station added.", type: 'success' }));
-            navigation.navigate("VendorHome");
+            if (typeof clearForm === 'function') {
+              clearForm();
+            }
+            navigation.pop();
 
           } else if (fetchStations.rejected.match(stationResponse)) {
             await dispatch(showSnackbar({ message: errorMessage || "Failed to fetch station.", type: 'error' }));
@@ -108,8 +111,6 @@ const PreviewPage = ({ navigation, route }) => {
 
         }
 
-
-
       } else {
         const updateStationResponse = await dispatch(updateStation(stationData));
         if (updateStation.fulfilled.match(updateStationResponse)) {
@@ -118,6 +119,7 @@ const PreviewPage = ({ navigation, route }) => {
             console.log('station updated');
 
             await dispatch(showSnackbar({ message: "Station updated Successfully.", type: 'success' }));
+
             navigation.pop(2);
             // navigation.navigate("StationManagement", { station })
 

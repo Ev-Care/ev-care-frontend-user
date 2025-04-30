@@ -8,8 +8,11 @@ import "react-native-gesture-handler";
 import "react-native-get-random-values";
 import React, { useState, useEffect } from "react";
 import { Provider, useSelector } from "react-redux";
-import  store  from "./redux/store/store";
-import { selectUser, selectProfileStatus } from "./screens/auth/services/selector"; // Ensure correct import
+import store from "./redux/store/store";
+import {
+  selectUser,
+  selectProfileStatus,
+} from "./screens/auth/services/selector"; // Ensure correct import
 
 // Screens
 import LoadingScreen from "./screens/loadingScreen";
@@ -24,6 +27,8 @@ import { AdminStack } from "./roleStack/adminStack";
 import { UserStack } from "./roleStack/userStack";
 import { VendorStack } from "./roleStack/vendorStack";
 import Snackbar from "./components/snackbar"; // Ensure correct import
+import { getLocationPermission } from "./utils/globalMethods";
+import ErrorPage from "./screens/errorPage";
 
 LogBox.ignoreAllLogs();
 
@@ -31,18 +36,22 @@ const Stack = createStackNavigator();
 
 function AppNavigator() {
   const [userType, setUserType] = useState(null);
-  const user = useSelector( selectUser); // Get user data
-
+  const user = useSelector(selectUser); // Get user data
+  const [hasLocationPermission, setHasLocationPermission] = useState(false);
 
   useEffect(() => {
-    if (user && user.role) { 
-      // if (true) { 
+    const initialize = async () => {
+      if (user && user.role) {
         setUserType(user.role.toLowerCase());
-      //  setUserType("admin");
-    } else {
+        const permission = await getLocationPermission();
+        setHasLocationPermission(permission);
+      } else {
         setUserType(null);
-    }
-}, [user]);
+      }
+    };
+
+    initialize();
+  }, [user]);
 
   // Function to handle role-based navigation
   const renderRoleStack = () => {
@@ -76,7 +85,7 @@ function AppNavigator() {
             />
             <Stack.Screen name="Loading" component={LoadingScreen} />
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-            <Stack.Screen name="Signin"  component={SigninScreen} />
+            <Stack.Screen name="Signin" component={SigninScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
             <Stack.Screen name="Verification">
               {(props) => (
@@ -84,8 +93,17 @@ function AppNavigator() {
               )}
             </Stack.Screen>
           </>
-        ) : (
+        ) : userType && hasLocationPermission ? (
           renderRoleStack()
+        ) : (
+          <Stack.Screen name="ErrorPage">
+            {(props) => (
+              <ErrorPage
+                {...props}
+                setHasLocationPermission={setHasLocationPermission}
+              />
+            )}
+          </Stack.Screen>
         )}
       </Stack.Navigator>
     </NavigationContainer>

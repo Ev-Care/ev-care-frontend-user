@@ -1,3 +1,5 @@
+import * as Location from "expo-location";
+
 export const formatDistance = (distanceInKm) => {
   if (distanceInKm < 1) {
     const meters = Math.round(distanceInKm * 1000);
@@ -43,4 +45,24 @@ export const formatDistance = (distanceInKm) => {
     return `${opening} - ${closing}`;
   };
   
-  export const getChargerLabel = (count) => `${count} ${count === 1 ? 'Charger' : 'Chargers'}`;
+export const getChargerLabel = (count) => `${count} ${count === 1 ? 'Charger' : 'Chargers'}`;
+
+
+export const getLocationPermission = async () => {
+  console.log(" getLocationPermission called")
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+  
+      if (status !== 'granted') {
+        // Alert.alert("Permission Denied", "Location access is required.");
+        return false;
+      }
+  
+      return true;
+    } catch (error) {
+      console.error("Error checking location permission:", error);
+      // Alert.alert("Error", "Something went wrong while checking location permission.");
+      return false;
+    }
+  };
+  

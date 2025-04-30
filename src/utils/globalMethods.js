@@ -1,5 +1,7 @@
 import * as Location from "expo-location";
+import { Alert, Linking, Platform } from "react-native";
 
+/** Format distance in meters or kilometers */
 export const formatDistance = (distanceInKm) => {
   if (distanceInKm < 1) {
     const meters = Math.round(distanceInKm * 1000);
@@ -10,59 +12,91 @@ export const formatDistance = (distanceInKm) => {
   }
 };
 
+/** Format operating hours */
+export const openHourFormatter = (openingTime, closingTime) => {
+  const is24x7 = openingTime === '00:00:00' && closingTime === '23:59:59';
 
-  export const openHourFormatter = (openingTime, closingTime) => {
-    const is24x7 = openingTime === '00:00:00' && closingTime === '23:59:59';
-  
-    const formatTime = (time) => {
-      // Remove any special characters and trim the string
-      const cleanTime = time.replace(/[^\x00-\x7F]/g, '').trim();
-  
-      // Check if the time is in 12-hour format with AM/PM
-      const is12HourFormat = /(?:AM|PM)$/i.test(cleanTime);
-  
-      if (is12HourFormat) {
-        // Normalize the time string to ensure consistent formatting
-        return cleanTime.toUpperCase();
-      } else {
-        // Assume the time is in 24-hour format (e.g., "14:30" or "14:30:00")
-        const [hourStr, minuteStr] = cleanTime.split(':');
-        let hour = parseInt(hourStr, 10);
-        const minute = parseInt(minuteStr, 10);
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        hour = hour % 12 || 12; // Convert 0 to 12 for 12 AM
-        return `${hour}:${minute.toString().padStart(2, '0')} ${ampm}`;
-      }
-    };
-  
-    if (is24x7) {
-      return '24x7';
+  const formatTime = (time) => {
+    const cleanTime = time.replace(/[^\x00-\x7F]/g, '').trim();
+    const is12HourFormat = /(?:AM|PM)$/i.test(cleanTime);
+
+    if (is12HourFormat) {
+      return cleanTime.toUpperCase();
+    } else {
+      const [hourStr, minuteStr] = cleanTime.split(':');
+      let hour = parseInt(hourStr, 10);
+      const minute = parseInt(minuteStr, 10);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      hour = hour % 12 || 12;
+      return `${hour}:${minute.toString().padStart(2, '0')} ${ampm}`;
     }
-  
-    const opening = formatTime(openingTime);
-    const closing = formatTime(closingTime);
-  
-    return `${opening} - ${closing}`;
   };
-  
+
+  if (is24x7) {
+    return '24x7';
+  }
+
+  const opening = formatTime(openingTime);
+  const closing = formatTime(closingTime);
+
+  return `${opening} - ${closing}`;
+};
+
+/** Charger label */
 export const getChargerLabel = (count) => `${count} ${count === 1 ? 'Charger' : 'Chargers'}`;
 
-
+/** Cross-platform location permission handler */
 export const getLocationPermission = async () => {
-  console.log(" getLocationPermission called")
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-  
-      if (status !== 'granted') {
-        // Alert.alert("Permission Denied", "Location access is required.");
-        return false;
+  try {
+    if (Platform.OS === 'android') {
+      const { PermissionsAndroid } = await import('react-native');
+
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: "Location Permission",
+          message: "EV Care needs access to your location to show nearby charging stations.",
+          buttonNeutral: "Ask Me Later",
+          buttonNegative: "Cancel",
+          buttonPositive: "OK",
+        }
+      );
+
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Location permission granted (Android)');
+        return true;
+      } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+        Alert.alert(
+          "Permission Denied",
+          "You have denied location access permanently. Please enable it manually from settings.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Open Settings", onPress: () => Linking.openSettings() },
+          ]
+        );
+      } else {
+        console.log('Location permission denied (Android)');
       }
-  
-      return true;
-    } catch (error) {
-      console.error("Error checking location permission:", error);
-      // Alert.alert("Error", "Something went wrong while checking location permission.");
-      return false;
+    } else {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        console.log('Location permission granted (iOS)');
+        return true;
+      } else {
+        Alert.alert(
+          "Permission Denied",
+          "Please enable location access from iOS settings to use this feature.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Open Settings", onPress: () => Linking.openSettings() },
+          ]
+        );
+      }
     }
-  };
-  
+
+    return false;
+  } catch (err) {
+    console.warn("Error requesting location permission:", err);
+    return false;
+  }
+};

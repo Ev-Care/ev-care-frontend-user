@@ -16,13 +16,15 @@ import {
   commonStyles,
   screenWidth,
 } from "../../../constants/styles";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import imageURL from "../../../constants/baseURL";
 import { openHourFormatter,formatDistance } from "../../../utils/globalMethods";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectAdminStations } from "../services/selector";
+import { useFocusEffect } from "@react-navigation/native";
+import { fetchAllPendingStation } from "../services/crudFunctions";
 
 const allStationsList1 = [
   {
@@ -129,8 +131,26 @@ const AllPendingStations = ({ navigation }) => {
   const filteredStations = allStationsList.filter((station) =>
     station?.station_name?.toLowerCase().includes(searchText.toLowerCase())
   );
+  const dispatch = useDispatch(selectAdminStations);
+  console.log('pending Station', JSON.stringify(allStationsList, null,2));
   // Dummy coordinates for the location
+// Called only on first mount
+useEffect(() => {
+  console.log('pending station fetched from useEffect');
 
+  dispatch(fetchAllPendingStation());
+}, [dispatch]);
+
+// Called every time screen comes into focus
+useFocusEffect(
+  useCallback(() => {
+    console.log('pending station fetched from useFocusEffect');
+    dispatch(fetchAllPendingStation());
+  }, [dispatch])
+);
+
+ 
+  
   
   const openGoogleMaps = (latitude,longitude) => {
     const url = Platform.select({

@@ -24,6 +24,7 @@ const adminSlice = createSlice({
                 state.error = null;
             })
             .addCase(fetchAllPendingStation.fulfilled, (state, action) => {
+                console.log('fulfilled', action.payload.data);
                 state.loading = false;
                 state.stations = action.payload.data;
 
@@ -38,6 +39,7 @@ const adminSlice = createSlice({
             })
             .addCase(getAllUsers.fulfilled, (state, action) => {
                 state.loading = false;
+                console.log('in users fulfilled.', action.payload.data[0]);
                 state.users = action.payload.data;
 
             })

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+   ActivityIndicator,
   Platform,
   Snackbar,
   TextInput,
@@ -25,9 +26,16 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MapView, { Marker } from "react-native-maps";
 import { Overlay } from "@rneui/themed";
 import imageURL from "../../../constants/baseURL";
-import { approveStation, fetchAllPendingStation } from "../services/crudFunctions";
+import {
+  approveStation,
+  fetchAllPendingStation,
+} from "../services/crudFunctions";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { useDispatch } from "react-redux";
+import {
+  formatDistance,
+  openHourFormatter,
+} from "../../../utils/globalMethods";
 
 // import imageURL from "../../../constants/baseURL";
 const COLORS = {
@@ -45,11 +53,11 @@ const COLORS = {
 
 const { width } = Dimensions.get("window");
 
-
 const StationDetailToVerify = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [showSnackBar, setshowSnackBar] = useState(false);
   const [showRejectDialogue, setshowRejectDialogue] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [showApproveDialogue, setshowApproveDialogue] = useState(false);
   const scrollViewRef = useRef(null);
   const station = route?.params?.item;
@@ -96,20 +104,6 @@ const StationDetailToVerify = ({ route, navigation }) => {
     Linking.openURL(url);
   };
 
-  const openHourFormatter = (openingTime, closingTime) => {
-    const formatTime = (time) => {
-      const [hour, minute] = time.split(':').map(Number);
-      const ampm = hour >= 12 ? 'PM' : 'AM';
-      const adjustedHour = hour % 12 || 12;
-      return `${adjustedHour}:${minute.toString().padStart(2, '0')}${ampm}`;
-    };
-
-    return {
-      opening: formatTime(openingTime),
-      closing: formatTime(closingTime)
-    };
-  };
-
 
   const trimName = (threshold, str) => {
     if (str?.length <= threshold) {
@@ -118,33 +112,57 @@ const StationDetailToVerify = ({ route, navigation }) => {
     return str?.substring(0, threshold) + ".....";
   };
 
-  const handleReject = async() => {
+  const handleReject = async () => {
     console.log("handle Reject Called");
-    await dispatch(showSnackbar({ message: "This service is in under development.", type: 'error' }));
-
+    await dispatch(
+      showSnackbar({
+        message: "This service is in under development.",
+        type: "error",
+      })
+    );
   };
-  const handleApprove = async() => {
-
-    console.log('in approve');
-    const approvedResponse = await dispatch(approveStation(station?.id));
-    console.log('in approve fff');
-    
-    if (approveStation.fulfilled.match(approvedResponse)) {
-      console.log('in approve fulfill');
-
-      const pendingStationResponse = await dispatch(fetchAllPendingStation());
-      console.log('in approve fulfill');
-      if (fetchAllPendingStation.fulfilled.match(pendingStationResponse)) {
-        
-        await dispatch(showSnackbar({ message: "Station approved successfully.", type: 'success' }));
-        navigation.goBack();
-      } else if (fetchAllPendingStation.rejected.match(pendingStationResponse)) {
-        await dispatch(showSnackbar({ message: "Failed to get all pending station.", type: 'error' }));
+  const handleApprove = async () => {
+    console.log("in approve");
+    setIsLoading(true);
+  
+    try {
+      const approvedResponse = await dispatch(approveStation(station?.id));
+      console.log("in approve fff");
+  
+      if (approveStation.fulfilled.match(approvedResponse)) {
+        console.log("in approve fulfill");
+  
+        const pendingStationResponse = await dispatch(fetchAllPendingStation());
+        console.log("in approve fulfill");
+  
+        if (fetchAllPendingStation.fulfilled.match(pendingStationResponse)) {
+          await dispatch(
+            showSnackbar({
+              message: "Station approved successfully.",
+              type: "success",
+            })
+          );
+          navigation.goBack();
+        } else if (
+          fetchAllPendingStation.rejected.match(pendingStationResponse)
+        ) {
+          await dispatch(
+            showSnackbar({
+              message: "Failed to get all pending station.",
+              type: "error",
+            })
+          );
+        }
+      } else if (approveStation.rejected.match(approvedResponse)) {
+        await dispatch(
+          showSnackbar({ message: "Failed to approve station.", type: "error" })
+        );
       }
-    } else if (approveStation.rejected.match(approvedResponse)) {
-      await dispatch(showSnackbar({ message: "Failed to approve station.", type: 'error' }));
+    } finally {
+      setIsLoading(false);
     }
   };
+  
 
   return (
     <View style={styles.container}>
@@ -160,11 +178,10 @@ const StationDetailToVerify = ({ route, navigation }) => {
       {/* reject dialog */}
       {rejectDialogue()}
       {approveDialogue()}
+      { loadingDialog()}
       {/* Snackbar for feedback */}
-
     </View>
   );
-
 
   function header() {
     if (!station) {
@@ -174,8 +191,8 @@ const StationDetailToVerify = ({ route, navigation }) => {
     const imageUrl = station?.station_images
       ? { uri: imageURL.baseURL + station.station_images }
       : {
-        uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      };
+          uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        };
 
     return (
       <View style={styles.header}>
@@ -201,7 +218,9 @@ const StationDetailToVerify = ({ route, navigation }) => {
           <Text style={styles.stationAddress}>
             {trimName(50, station?.address)}
           </Text>
-          <View style={[{ flexDirection: "row", justifyContent: "space-between" }]}>
+          <View
+            style={[{ flexDirection: "row", justifyContent: "space-between" }]}
+          >
             <View style={styles.statusContainer}>
               <Text
                 style={[
@@ -214,16 +233,15 @@ const StationDetailToVerify = ({ route, navigation }) => {
                 {station?.status === "Inactive" ? "Closed" : "Open"}
               </Text>
               <Text style={styles.statusTime}>
-                •{openHourFormatter(station?.open_hours_opening_time, station?.open_hours_closing_time).opening} - {openHourFormatter(station?.open_hours_opening_time, station?.open_hours_closing_time).closing}
-
+                {openHourFormatter(
+                  station?.open_hours_opening_time,
+                  station?.open_hours_closing_time
+                )}
               </Text>
               <View style={styles.newBadge}>
-                <Text style={styles.newText}>
-                  New
-                </Text>
+                <Text style={styles.newText}>New</Text>
               </View>
             </View>
-
           </View>
         </View>
       </View>
@@ -255,10 +273,8 @@ const StationDetailToVerify = ({ route, navigation }) => {
           </Text>
           {activeTab === 1 && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
-
       </View>
-
-    )
+    );
   }
   function SwipeableContent() {
     return (
@@ -274,9 +290,8 @@ const StationDetailToVerify = ({ route, navigation }) => {
         {chargerTab()}
         {/* Details Tab */}
         {detailTab()}
-
       </ScrollView>
-    )
+    );
   }
   function buttons() {
     return (
@@ -285,7 +300,6 @@ const StationDetailToVerify = ({ route, navigation }) => {
           onPress={() => {
             setshowRejectDialogue(true);
           }}
-
           style={styles.rejectButton}
         >
           <Text style={styles.approveButtonText}>Reject</Text>
@@ -299,7 +313,7 @@ const StationDetailToVerify = ({ route, navigation }) => {
           <Text style={styles.approveButtonText}>Approve</Text>
         </TouchableOpacity>
       </View>
-    )
+    );
   }
   function chargerTab() {
     return (
@@ -315,7 +329,7 @@ const StationDetailToVerify = ({ route, navigation }) => {
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
               <Text style={styles.chargerSpecText}>
-                Power: {charger?.max_power_kw || "Unknown Power"} KW
+              Power:⚡ {charger?.max_power_kw || "Unknown Power"} KW
               </Text>
             </View>
             <View style={styles.connector}>
@@ -329,7 +343,7 @@ const StationDetailToVerify = ({ route, navigation }) => {
                   size={20}
                   color={COLORS.primary}
                 />
-                <Text style={styles.connectorTypeText}>
+                <Text style={[styles.connectorTypeText,{fontWeight:"700",fontSize:12}]}>
                   {charger?.connector_type}
                 </Text>
               </View>
@@ -421,7 +435,6 @@ const StationDetailToVerify = ({ route, navigation }) => {
                 borderBottomRightRadius: 4,
                 ...styles.dialogYesNoButtonStyle,
               }}
-
             >
               <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
             </TouchableOpacity>
@@ -461,6 +474,7 @@ const StationDetailToVerify = ({ route, navigation }) => {
               marginBottom: Sizes.fixPadding * 1.5,
             }}
           >
+           
             <MaterialCommunityIcons
               name="question-mark-circle-outline"
               size={40}
@@ -498,7 +512,6 @@ const StationDetailToVerify = ({ route, navigation }) => {
                 ...styles.yesButtonStyle,
                 ...styles.dialogYesNoButtonStyle,
               }}
-
             >
               <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
             </TouchableOpacity>
@@ -567,7 +580,16 @@ const StationDetailToVerify = ({ route, navigation }) => {
       </ScrollView>
     );
   }
-
+    function loadingDialog() {
+      return (
+        <Overlay isVisible={isLoading} overlayStyle={[styles.loaderDialogStyle,{}]}>
+          <ActivityIndicator size={50} color={Colors.primaryColor} style={{ alignSelf: "center" }} />
+          <Text style={{ marginTop: Sizes.fixPadding, textAlign: "center", ...Fonts.blackColor16Regular }}>
+            Please wait...
+          </Text>
+        </Overlay>
+      );
+    }
 };
 
 const styles = StyleSheet.create({
@@ -716,6 +738,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.gray,
     marginRight: 8,
+    fontWeight:"700"
   },
   connectorContainer: {
     marginBottom: 16,
@@ -789,7 +812,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-
   bottomButtons: {
     flexDirection: "row",
     padding: 16,
@@ -848,8 +870,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: Sizes.fixPadding - 5.0,
   },
   /*End of  Dialog Styles */
-
-
 });
 
 export default StationDetailToVerify;

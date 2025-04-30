@@ -22,11 +22,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import imageURL from "../../../constants/baseURL";
-import {
-  openHourFormatter,
-  formatDistance,
-  getChargerLabel,
-} from "../../../utils/globalMethods";
+
 import { useDispatch, useSelector } from "react-redux";
 import { selectAdminStations } from "../services/selector";
 import { useFocusEffect } from "@react-navigation/native";
@@ -119,7 +115,7 @@ const AllPendingStations = ({ navigation }) => {
                     <View style={styles.infoContainer}>
                       <View style={styles.headerRow}>
                         <Text style={styles.stationName}>
-                          {trimText(station?.station_name, 18)}
+                          {trimText(station?.station_name, 25)}
                         </Text>
                        
                       </View>
@@ -128,8 +124,8 @@ const AllPendingStations = ({ navigation }) => {
                         <Text
                           style={{
                             color: station?.status !== "Active"
-                              ? "red"
-                              : Colors.darOrangeColor,
+                              ? Colors.darOrangeColor
+                              : Colors.primaryColor,
                           }}
                         >
                           {station?.status !== "Active" ? "Pending" : "Active"}

@@ -7,19 +7,22 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
-
   Image,
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Checkbox from 'expo-checkbox';
+import Checkbox from "expo-checkbox";
 import { useNavigation } from "@react-navigation/native";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 import { Colors } from "../../../constants/styles";
 import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useDispatch, useSelector } from "react-redux";
-import { selectAuthError, selectToken, selectUser } from "../../auth/services/selector";
+import {
+  selectAuthError,
+  selectToken,
+  selectUser,
+} from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
@@ -70,37 +73,56 @@ const VendorDetailForm = () => {
   const [gstTimer, setGstTimer] = useState(null);
   let vendorDetail = {};
 
-
-  console.log('hi');
+  console.log("hi");
   const handleSubmit = async () => {
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[A-Z0-9]{1}[A-Z0-9]{1}$/;
+    const gstRegex =
+      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[A-Z0-9]{1}[A-Z0-9]{1}$/;
 
     // Check for required fields
-    if (!avatarUri || !businessName || !address || !aadharNumber || !panNumber) {
+    if (
+      !avatarUri ||
+      !businessName ||
+      !address ||
+      !aadharNumber ||
+      !panNumber
+    ) {
       if (isCheckBoxClicked && !gstNumber) {
-        await dispatch(showSnackbar({ message: "Enter GST Number If You Have Or UnCheck The Box", type: "error" }));
+        await dispatch(
+          showSnackbar({
+            message: "Enter GST Number If You Have Or UnCheck The Box",
+            type: "error",
+          })
+        );
       } else {
-        await dispatch(showSnackbar({ message: "All fields are required!", type: "error" }));
+        await dispatch(
+          showSnackbar({ message: "All fields are required!", type: "error" })
+        );
       }
       return;
     }
 
     // Validate Aadhaar number
     if (aadharNumber.length !== 12 || !/^\d+$/.test(aadharNumber)) {
-      await dispatch(showSnackbar({ message: "Invalid Aadhaar number.", type: "error" }));
+      await dispatch(
+        showSnackbar({ message: "Invalid Aadhaar number.", type: "error" })
+      );
       return;
     }
 
     // Validate PAN number
     if (!panRegex.test(panNumber)) {
-      await dispatch(showSnackbar({ message: "Invalid PAN number", type: "error" }));
+      await dispatch(
+        showSnackbar({ message: "Invalid PAN number", type: "error" })
+      );
       return;
     }
 
     // Validate GST number
     if (isCheckBoxClicked && (!gstNumber || !gstRegex.test(gstNumber))) {
-      await dispatch(showSnackbar({ message: "Invalid GST number.", type: "error" }));
+      await dispatch(
+        showSnackbar({ message: "Invalid GST number.", type: "error" })
+      );
       return;
     }
 
@@ -116,7 +138,7 @@ const VendorDetailForm = () => {
       adhar_back_pic: null,
       pan_pic: null,
       gstin_number: gstNumber,
-      gstin_image: null
+      gstin_image: null,
     };
 
     // Navigate based on checkbox selection
@@ -127,13 +149,11 @@ const VendorDetailForm = () => {
     }
   };
 
-
-
   const selectOnMap = () => {
     navigation.push("PickLocation", {
       addressFor: "stationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
-      setCoordinate: (newCoordinate) => setCoordinate(newCoordinate)
+      setCoordinate: (newCoordinate) => setCoordinate(newCoordinate),
     });
   };
 
@@ -143,7 +163,12 @@ const VendorDetailForm = () => {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
-        await dispatch(showSnackbar({ message: "Camera permissions are required to upload an image.", type: 'error' }));
+        await dispatch(
+          showSnackbar({
+            message: "Camera permissions are required to upload an image.",
+            type: "error",
+          })
+        );
 
         // Alert.alert(
         //   "Permission Denied",
@@ -160,7 +185,6 @@ const VendorDetailForm = () => {
       });
 
       if (!result.canceled) {
-
         const selectedImageUri = result.assets[0].uri;
 
         const file = setupImagePicker(selectedImageUri);
@@ -170,7 +194,10 @@ const VendorDetailForm = () => {
           postSingleFile({ file: file, accessToken: accessToken })
         );
 
-        if (response?.payload?.code === 200 || response?.payload?.code === 201) {
+        if (
+          response?.payload?.code === 200 ||
+          response?.payload?.code === 201
+        ) {
           setAvatar(selectedImageUri);
           setAvatarUri(response?.payload?.data?.filePathUrl); // Set the avatar URI to the response path
           console.log("Image URI set successfully:", avatarUri);
@@ -178,7 +205,12 @@ const VendorDetailForm = () => {
         } else {
           // console.error("Image upload failed:", response.data);
           setImageLoading(false);
-          await dispatch(showSnackbar({ message: authErrorMessage || "File Should be less than 5 MB", type: 'error' }));
+          await dispatch(
+            showSnackbar({
+              message: authErrorMessage || "File Should be less than 5 MB",
+              type: "error",
+            })
+          );
 
           // Alert.alert("Error", "File Should be less than 5 MB");
         }
@@ -186,7 +218,12 @@ const VendorDetailForm = () => {
     } catch (error) {
       setImageLoading(false);
       console.error("Error in handleImagePick:", error);
-      await dispatch(showSnackbar({ message: authErrorMessage || "An unexpected error occurred.", type: 'error' }));
+      await dispatch(
+        showSnackbar({
+          message: authErrorMessage || "An unexpected error occurred.",
+          type: "error",
+        })
+      );
 
       // Alert.alert("Error", error.message || "An unexpected error occurred.");
     }
@@ -232,14 +269,18 @@ const VendorDetailForm = () => {
         value={businessName}
         onChangeText={(text) => {
           if (text.length > 100) {
-            dispatch(showSnackbar({ message: 'Business name cannot exceed 50 characters', type: 'error' }));
+            dispatch(
+              showSnackbar({
+                message: "Business name cannot exceed 50 characters",
+                type: "error",
+              })
+            );
             return;
           }
           setBusinessName(text);
         }}
-      // maxLength={50}
+        // maxLength={50}
       />
-
 
       {/* <Text style={styles.label}>Public Contact Number</Text> */}
       {/* <TextInput
@@ -261,10 +302,15 @@ const VendorDetailForm = () => {
         keyboardType="number-pad"
         value={aadharNumber}
         onChangeText={(text) => {
-          const numericText = text.replace(/[^0-9]/g, ''); // Allow only numbers
+          const numericText = text.replace(/[^0-9]/g, ""); // Allow only numbers
 
           if (numericText.length > 12) {
-            dispatch(showSnackbar({ message: 'Aadhaar number cannot exceed 12 digits', type: 'error' }));
+            dispatch(
+              showSnackbar({
+                message: "Aadhaar number cannot exceed 12 digits",
+                type: "error",
+              })
+            );
             return;
           }
 
@@ -276,7 +322,12 @@ const VendorDetailForm = () => {
 
           const timer = setTimeout(() => {
             if (numericText.length !== 12) {
-              dispatch(showSnackbar({ message: 'Aadhaar number must be exactly 12 digits', type: 'error' }));
+              dispatch(
+                showSnackbar({
+                  message: "Aadhaar number must be exactly 12 digits",
+                  type: "error",
+                })
+              );
             }
           }, 500); // After 500ms of no typing
 
@@ -284,9 +335,6 @@ const VendorDetailForm = () => {
         }}
         maxLength={12}
       />
-
-
-
 
       <Text style={styles.label}>PAN Number</Text>
       <TextInput
@@ -296,10 +344,15 @@ const VendorDetailForm = () => {
         value={panNumber}
         onChangeText={(text) => {
           const upperText = text.toUpperCase();
-          const validText = upperText.replace(/[^A-Z0-9]/g, ''); // Only letters and numbers
+          const validText = upperText.replace(/[^A-Z0-9]/g, ""); // Only letters and numbers
 
           if (validText.length > 10) {
-            dispatch(showSnackbar({ message: 'PAN number cannot exceed 10 characters', type: 'error' }));
+            dispatch(
+              showSnackbar({
+                message: "PAN number cannot exceed 10 characters",
+                type: "error",
+              })
+            );
             return; // Don't update if more than 10 characters
           }
 
@@ -313,7 +366,12 @@ const VendorDetailForm = () => {
           const timer = setTimeout(() => {
             const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
             if (!panRegex.test(validText)) {
-              dispatch(showSnackbar({ message: 'Invalid PAN format. Example: ABCDE1234F', type: 'error' }));
+              dispatch(
+                showSnackbar({
+                  message: "Invalid PAN format. Example: ABCDE1234F",
+                  type: "error",
+                })
+              );
             }
           }, 500);
 
@@ -322,53 +380,65 @@ const VendorDetailForm = () => {
         maxLength={10}
       />
 
-
       <View style={styles.checkboxContainer}>
         <Checkbox
           value={isCheckBoxClicked}
           onValueChange={setCheckBoxClicked}
           color={isCheckBoxClicked ? Colors.primaryColor : undefined}
         />
-        <Text style={[styles.checkboxLabel, { color: Colors.primaryColor }]}>Do You Have GST Number ?</Text>
+        <Text style={[styles.checkboxLabel, { color: Colors.primaryColor }]}>
+          Do You Have GST Number ?
+        </Text>
       </View>
 
-      {isCheckBoxClicked && (<>
-        <Text style={styles.label}>GST Number</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter GST number"
-          placeholderTextColor="gray"
-          value={gstNumber}
-          maxLength={15}
-          onChangeText={(text) => {
-            const upperText = text.toUpperCase();
-            const validText = upperText.replace(/[^A-Z0-9]/g, ''); // Only A-Z and 0-9
+      {isCheckBoxClicked && (
+        <>
+          <Text style={styles.label}>GST Number</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter GST number"
+            placeholderTextColor="gray"
+            value={gstNumber}
+            maxLength={15}
+            onChangeText={(text) => {
+              const upperText = text.toUpperCase();
+              const validText = upperText.replace(/[^A-Z0-9]/g, ""); // Only A-Z and 0-9
 
-            setGstNumber(validText); // Update normally
+              setGstNumber(validText); // Update normally
 
-            if (gstTimer) {
-              clearTimeout(gstTimer); // Clear existing timer
-            }
-
-            // Set a new timer: validate after 500ms pause
-            const timer = setTimeout(() => {
-              if (validText.length !== 15) {
-                dispatch(showSnackbar({ message: 'GST number must be exactly 15 characters.', type: 'error' }));
-                return;
+              if (gstTimer) {
+                clearTimeout(gstTimer); // Clear existing timer
               }
 
-              const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
-              if (!gstRegex.test(validText)) {
-                dispatch(showSnackbar({ message: 'Invalid GST Number.', type: 'error' }));
-              }
-            }, 500);
+              // Set a new timer: validate after 500ms pause
+              const timer = setTimeout(() => {
+                if (validText.length !== 15) {
+                  dispatch(
+                    showSnackbar({
+                      message: "GST number must be exactly 15 characters.",
+                      type: "error",
+                    })
+                  );
+                  return;
+                }
 
-            setGstTimer(timer);
-          }}
-        />
+                const gstRegex =
+                  /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
+                if (!gstRegex.test(validText)) {
+                  dispatch(
+                    showSnackbar({
+                      message: "Invalid GST Number.",
+                      type: "error",
+                    })
+                  );
+                }
+              }, 500);
 
-      </>)}
-
+              setGstTimer(timer);
+            }}
+          />
+        </>
+      )}
 
       <Text style={styles.label}>Address</Text>
       <TextInput
@@ -379,12 +449,17 @@ const VendorDetailForm = () => {
         value={address}
         onChangeText={(text) => {
           if (text.length > 100) {
-            dispatch(showSnackbar({ message: 'Address cannot exceed 100 characters', type: 'error' }));
+            dispatch(
+              showSnackbar({
+                message: "Address cannot exceed 100 characters",
+                type: "error",
+              })
+            );
             return;
           }
           setAddress(text);
         }}
-      // maxLength={100}
+        // maxLength={100}
       />
 
       <Text style={styles.label}>OR</Text>
@@ -505,15 +580,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 20,
     marginTop: 10,
   },
   checkboxLabel: {
     marginLeft: 8,
     fontSize: 14,
-
   },
-
 });

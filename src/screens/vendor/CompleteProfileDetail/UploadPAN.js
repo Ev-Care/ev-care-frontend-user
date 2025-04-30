@@ -1,36 +1,29 @@
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
-  StyleSheet,
-  ScrollView,
-  Image,
-  Alert,
+  View
 } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
 import {
   Colors,
-  screenWidth,
-  Fonts,
-  Sizes,
-  commonStyles,
+  Fonts
 } from "../../../constants/styles";
-import { useNavigation } from "@react-navigation/native";
-import * as ImagePicker from "expo-image-picker";
-import { MaterialIcons, Ionicons } from "@expo/vector-icons";
-import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
-import { useDispatch, useSelector } from "react-redux";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import { patchUpdateVendorProfile, postSingleFile } from "../../auth/services/crudFunction";
 import {
   selectAuthError,
   selectToken,
   selectUser,
 } from "../../auth/services/selector";
-import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "./vendorDetailForm";
-import { patchUpdateVendorProfile } from "../../auth/services/crudFunction";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 const UploadPAN = ({ route, navigation }) => {
   const [frontImage, setFrontImage] = useState(null);

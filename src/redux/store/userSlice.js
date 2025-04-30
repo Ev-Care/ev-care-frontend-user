@@ -1,7 +1,17 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createSlice } from "@reduxjs/toolkit";
-import { postSignIn, postSignUp, postSingleFile, postVerifyOtp, patchUpdateVendorProfile, getUserByKey } from "../../screens/auth/services/crudFunction";
-import { patchUpdateUserProfile , getUserDetailsByKey} from "../../screens/user/service/crudFunction";
+import {
+  postSignIn,
+  postSignUp,
+  postSingleFile,
+  postVerifyOtp,
+  patchUpdateVendorProfile,
+  getUserByKey,
+} from "../../screens/auth/services/crudFunction";
+import {
+  patchUpdateUserProfile,
+  getUserDetailsByKey,
+} from "../../screens/user/service/crudFunction";
 
 const initialState = {
   user: null,
@@ -9,7 +19,6 @@ const initialState = {
   error: null,
   accessToken: null,
   userCoordinate: null,
-
 };
 
 const authSlice = createSlice({
@@ -42,7 +51,6 @@ const authSlice = createSlice({
     updateUserCoordinate: (state, action) => {
       state.userCoordinate = action.payload; // Update userCoordinate with the payload
     },
-    
   },
   extraReducers: (builder) => {
     builder
@@ -53,7 +61,6 @@ const authSlice = createSlice({
       })
       .addCase(postSignIn.fulfilled, (state, action) => {
         state.loading = false;
-        
       })
       .addCase(postSignIn.rejected, (state, action) => {
         state.loading = false;
@@ -70,17 +77,15 @@ const authSlice = createSlice({
         console.log("inside slice");
         if (action.payload?.data?.user?.status !== "New") {
           state.user = extractUser(action.payload.data.user); // Extract user data from the response
-          
         }
         // state.user = extractUser(action.payload.data.user); // Extract user data from the response
         state.accessToken = action.payload.data.access_token;
         console.log("token saved successfully - ", state.accessToken);
         console.log("user saved successfully - ", state.user);
-      }
-      )
+      })
       .addCase(postVerifyOtp.rejected, (state, action) => {
         state.loading = false;
-        console.log("error in slice",action.payload);
+        console.log("error in slice", action.payload);
         state.error = action.payload.message;
       })
 
@@ -123,7 +128,7 @@ const authSlice = createSlice({
         // console.log("User profile updated successfully:", action.payload);
         // state.user = action.payload; // Assuming the API returns the updated user data
         state.user = extractUser(action.payload.data); // Extract user data from the response
-        // console.log("User data after update in slice:", state.user);
+        console.log("User data after update in slice:", state.user);
       })
       .addCase(patchUpdateVendorProfile.rejected, (state, action) => {
         state.loading = false;
@@ -135,7 +140,10 @@ const authSlice = createSlice({
       })
       .addCase(patchUpdateUserProfile.fulfilled, (state, action) => {
         state.loading = false;
-        console.log("User profile updated successfully in slice:", action.payload.data);
+        console.log(
+          "User profile updated successfully in slice:",
+          action.payload.data
+        );
         state.user = extractUser(action.payload.data); // Extract user data from the response
       })
       .addCase(patchUpdateUserProfile.rejected, (state, action) => {
@@ -156,21 +164,20 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload || "Failed to fetch user details";
       })
-      .addCase(getUserByKey.pending ,(state)=>{
+      .addCase(getUserByKey.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getUserByKey.fulfilled, (state, action) => {
-          // console.log("User details fetched successfully:", action.payload.data);
-     
+        // console.log("User details fetched successfully:", action.payload.data);
+
         state.loading = false;
-        state.user = extractUser(action.payload.data); 
-       })
+        state.user = extractUser(action.payload.data);
+      })
       .addCase(getUserByKey.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to fetch user details";
       });
-
   },
 });
 
@@ -203,5 +210,11 @@ const extractUser = (data) => ({
   password: data.password,
 });
 
-export const { setAuthLoaderFalse, logoutUser, restoreUser, signUpUser, updateUserCoordinate } = authSlice.actions;
+export const {
+  setAuthLoaderFalse,
+  logoutUser,
+  restoreUser,
+  signUpUser,
+  updateUserCoordinate,
+} = authSlice.actions;
 export default authSlice.reducer;

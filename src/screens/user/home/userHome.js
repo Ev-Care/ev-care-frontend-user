@@ -387,7 +387,7 @@ const UserHome = ({ navigation }) => {
         </View>
 
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Recently Viewed</Text>
+          <Text style={styles.sectionTitle}>Near by stations</Text>
           {recentStationsInfo()}
         </View>
         <View style={{ height: 20 }} />

@@ -160,7 +160,7 @@ const UploadPAN = ({ route, navigation }) => {
           accessToken: accessToken,
         })
       ).unwrap();
-
+      console.log(response.payload, "response");
       console.log("code = ", response?.payload?.code);
       if (response?.payload?.code === 200 || response?.payload?.code === 201) {
         // await AsyncStorage.setItem("user",user?.user_key);

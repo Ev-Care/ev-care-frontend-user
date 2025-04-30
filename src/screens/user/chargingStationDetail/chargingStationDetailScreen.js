@@ -439,7 +439,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
             return (
               <View key={trimmedName} style={styles.amenityItem}>
                 <Icon name={iconName} size={24} color={COLORS.primary} />
-                <Text style={styles.connectorTypeText}>{trimmedName}</Text>
+                <Text style={styles.AminitiesTypeText}>{trimmedName}</Text>
               </View>
             );
           })}
@@ -641,6 +641,10 @@ const styles = StyleSheet.create({
   connectorTypeText: {
     fontSize: 10,
   marginLeft:10,
+    color: COLORS.gray,
+  },
+  AminitiesTypeText: {
+    fontSize: 10,
     color: COLORS.gray,
   },
   divider: {

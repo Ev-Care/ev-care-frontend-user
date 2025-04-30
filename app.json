@@ -9,13 +9,10 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#101942"
+      "image": null,
+      "backgroundColor": "#fff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "bundleIdentifier": "com.render.evcare",
       "buildNumber": "1.0.0",
@@ -52,7 +49,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "47bb854e-4ca3-4aa1-a1ce-9d97a5e404d8"
+        "projectId": "2d151f10-407f-4fad-8211-02405adf5246"
       }
     },
     "plugins": [

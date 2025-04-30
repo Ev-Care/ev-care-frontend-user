@@ -25,6 +25,9 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MapView, { Marker } from "react-native-maps";
 import { Overlay } from "@rneui/themed";
 import imageURL from "../../../constants/baseURL";
+import { approveStation, fetchAllPendingStation } from "../services/crudFunctions";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import { useDispatch } from "react-redux";
 
 // import imageURL from "../../../constants/baseURL";
 const COLORS = {
@@ -47,10 +50,10 @@ const StationDetailToVerify = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [showSnackBar, setshowSnackBar] = useState(false);
   const [showRejectDialogue, setshowRejectDialogue] = useState(false);
-   const [showApproveDialogue, setshowApproveDialogue] = useState(false);
+  const [showApproveDialogue, setshowApproveDialogue] = useState(false);
   const scrollViewRef = useRef(null);
   const station = route?.params?.item;
-  
+  const dispatch = useDispatch();
   if (!station) {
     return <Text>Loading...</Text>; // Handle when station is not available
   }
@@ -62,15 +65,15 @@ const StationDetailToVerify = ({ route, navigation }) => {
     Wall: "ev-plug-type1",
     GBT: "ev-plug-type2",
   };
-  
-//   const amenityMap = {
-//     Restroom: "toilet",
-//     Cafe: "coffee",
-//     Wifi: "wifi",
-//     Store: "cart",
-//     "Car Care": "car",
-//     Lodging: "bed",
-//   };
+
+  //   const amenityMap = {
+  //     Restroom: "toilet",
+  //     Cafe: "coffee",
+  //     Wifi: "wifi",
+  //     Store: "cart",
+  //     "Car Care": "car",
+  //     Lodging: "bed",
+  //   };
 
   const handleTabPress = (index) => {
     setActiveTab(index);
@@ -100,13 +103,13 @@ const StationDetailToVerify = ({ route, navigation }) => {
       const adjustedHour = hour % 12 || 12;
       return `${adjustedHour}:${minute.toString().padStart(2, '0')}${ampm}`;
     };
-  
+
     return {
       opening: formatTime(openingTime),
       closing: formatTime(closingTime)
     };
   };
-  
+
 
   const trimName = (threshold, str) => {
     if (str?.length <= threshold) {
@@ -115,29 +118,50 @@ const StationDetailToVerify = ({ route, navigation }) => {
     return str?.substring(0, threshold) + ".....";
   };
 
-  const handleReject = () => {
+  const handleReject = async() => {
     console.log("handle Reject Called");
+    await dispatch(showSnackbar({ message: "This service is in under development.", type: 'error' }));
+
   };
-  const handleApprove = () => {
-    console.log("handle Approve Called");
+  const handleApprove = async() => {
+
+    console.log('in approve');
+    const approvedResponse = await dispatch(approveStation(station?.id));
+    console.log('in approve fff');
+    
+    if (approveStation.fulfilled.match(approvedResponse)) {
+      console.log('in approve fulfill');
+
+      const pendingStationResponse = await dispatch(fetchAllPendingStation());
+      console.log('in approve fulfill');
+      if (fetchAllPendingStation.fulfilled.match(pendingStationResponse)) {
+        
+        await dispatch(showSnackbar({ message: "Station approved successfully.", type: 'success' }));
+        navigation.goBack();
+      } else if (fetchAllPendingStation.rejected.match(pendingStationResponse)) {
+        await dispatch(showSnackbar({ message: "Failed to get all pending station.", type: 'error' }));
+      }
+    } else if (approveStation.rejected.match(approvedResponse)) {
+      await dispatch(showSnackbar({ message: "Failed to approve station.", type: 'error' }));
+    }
   };
 
   return (
     <View style={styles.container}>
       {/* Header*/}
-     {header()}
+      {header()}
       {/* Tab Navigation */}
-    {navigationTab()}
+      {navigationTab()}
       {/* Swipeable Content */}
-     {SwipeableContent()}
+      {SwipeableContent()}
 
       {/* Bottom Buttons */}
-     {buttons()}
+      {buttons()}
       {/* reject dialog */}
       {rejectDialogue()}
       {approveDialogue()}
       {/* Snackbar for feedback */}
-     
+
     </View>
   );
 
@@ -146,17 +170,17 @@ const StationDetailToVerify = ({ route, navigation }) => {
     if (!station) {
       return <Text>Loading...</Text>; // Or show a fallback UI
     }
-  
+
     const imageUrl = station?.station_images
       ? { uri: imageURL.baseURL + station.station_images }
       : {
-          uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        };
-  
+        uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      };
+
     return (
       <View style={styles.header}>
         <Image source={imageUrl} style={styles.mapBackground} />
-  
+
         <View style={styles.overlay}>
           <View style={styles.communityBadgeAndBack}>
             <MaterialIcons
@@ -191,93 +215,93 @@ const StationDetailToVerify = ({ route, navigation }) => {
               </Text>
               <Text style={styles.statusTime}>
                 •{openHourFormatter(station?.open_hours_opening_time, station?.open_hours_closing_time).opening} - {openHourFormatter(station?.open_hours_opening_time, station?.open_hours_closing_time).closing}
-              
+
               </Text>
               <View style={styles.newBadge}>
                 <Text style={styles.newText}>
-                 New
+                  New
                 </Text>
               </View>
             </View>
-            
+
           </View>
         </View>
       </View>
     );
   }
-  
-function navigationTab(){
-  return(
-    <View style={styles.tabContainer}>
-    <TouchableOpacity
-      style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
-      onPress={() => handleTabPress(0)}
-    >
-      <Text
-        style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
-      >
-        Charger
-      </Text>
-      {activeTab === 0 && <View style={styles.activeTabIndicator} />}
-    </TouchableOpacity>
-    <TouchableOpacity
-      style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
-      onPress={() => handleTabPress(1)}
-    >
-      <Text
-        style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
-      >
-        Details
-      </Text>
-      {activeTab === 1 && <View style={styles.activeTabIndicator} />}
-    </TouchableOpacity>
-  
-  </View>
 
-  )
-}
-function SwipeableContent() {
+  function navigationTab() {
+    return (
+      <View style={styles.tabContainer}>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 0 && styles.activeTabButton]}
+          onPress={() => handleTabPress(0)}
+        >
+          <Text
+            style={[styles.tabText, activeTab === 0 && styles.activeTabText]}
+          >
+            Charger
+          </Text>
+          {activeTab === 0 && <View style={styles.activeTabIndicator} />}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 1 && styles.activeTabButton]}
+          onPress={() => handleTabPress(1)}
+        >
+          <Text
+            style={[styles.tabText, activeTab === 1 && styles.activeTabText]}
+          >
+            Details
+          </Text>
+          {activeTab === 1 && <View style={styles.activeTabIndicator} />}
+        </TouchableOpacity>
+
+      </View>
+
+    )
+  }
+  function SwipeableContent() {
     return (
       <ScrollView
-      ref={scrollViewRef}
-      horizontal
-      pagingEnabled
-      showsHorizontalScrollIndicator={false}
-      onScroll={handleScroll}
-      scrollEventThrottle={16}
-    >
-      {/* Charger Tab */}
-      {chargerTab()}
-      {/* Details Tab */}
-      {detailTab()}
-        
-    </ScrollView>
+        ref={scrollViewRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
+        {/* Charger Tab */}
+        {chargerTab()}
+        {/* Details Tab */}
+        {detailTab()}
+
+      </ScrollView>
     )
- }
-function buttons(){
-  return(
-    <View style={styles.bottomButtons}>
-         <TouchableOpacity
-       onPress={() => {
-        setshowRejectDialogue(true);
-      }}
-    
-     style={styles.rejectButton}
-   >
-     <Text style={styles.approveButtonText}>Reject</Text>
-   </TouchableOpacity>
-    <TouchableOpacity
-     onPress={() => {
-      setshowApproveDialogue(true);
-    }}
-      style={styles.approveButton}
-    >
-      <Text style={styles.approveButtonText}>Approve</Text>
-    </TouchableOpacity>
-  </View>
-  )
-}
-function chargerTab() {
+  }
+  function buttons() {
+    return (
+      <View style={styles.bottomButtons}>
+        <TouchableOpacity
+          onPress={() => {
+            setshowRejectDialogue(true);
+          }}
+
+          style={styles.rejectButton}
+        >
+          <Text style={styles.approveButtonText}>Reject</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            setshowApproveDialogue(true);
+          }}
+          style={styles.approveButton}
+        >
+          <Text style={styles.approveButtonText}>Approve</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+  function chargerTab() {
     return (
       <ScrollView style={styles.tabContent}>
         {station?.chargers?.map((charger, index) => (
@@ -328,221 +352,221 @@ function chargerTab() {
       </ScrollView>
     );
   }
-function rejectDialogue() {
-  return (
-    <Overlay
-      isVisible={showRejectDialogue}
-      onBackdropPress={() => setshowRejectDialogue(false)}
-      overlayStyle={styles.dialogStyle}
-    >
-      <View>
-        <Text
-          style={{
-            ...Fonts.blackColor18Medium,
-            textAlign: "center",
-            marginHorizontal: Sizes.fixPadding * 2.0,
-            marginVertical: Sizes.fixPadding * 2.0,
-          }}
-        >
-          Do You Want To Reject?
-        </Text>
-        <View
-          style={{
-            alignSelf: "center",
-            width: 80,
-            height: 80,
-            borderRadius: 40,
-            borderWidth: 2,
-            borderColor: Colors.darOrangeColor,
-            justifyContent: "center",
-            alignItems: "center",
-            marginBottom: Sizes.fixPadding * 1.5,
-          }}
-        >
-          <MaterialCommunityIcons
-            name="trash-can-outline"
-            size={40}
-            color={Colors.darOrangeColor}
-          />
-        </View>
-
-        <View
-          style={{
-            ...commonStyles.rowAlignCenter,
-            marginTop: Sizes.fixPadding,
-          }}
-        >
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => {
-              setshowRejectDialogue(false);
-            }}
+  function rejectDialogue() {
+    return (
+      <Overlay
+        isVisible={showRejectDialogue}
+        onBackdropPress={() => setshowRejectDialogue(false)}
+        overlayStyle={styles.dialogStyle}
+      >
+        <View>
+          <Text
             style={{
-              ...styles.noButtonStyle,
-              ...styles.dialogYesNoButtonStyle,
+              ...Fonts.blackColor18Medium,
+              textAlign: "center",
+              marginHorizontal: Sizes.fixPadding * 2.0,
+              marginVertical: Sizes.fixPadding * 2.0,
             }}
           >
-            <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => {
-              handleReject();
-              setshowRejectDialogue(false);
-              // handle delete logic here
-            }}
+            Do You Want To Reject?
+          </Text>
+          <View
             style={{
-              backgroundColor: Colors.darOrangeColor,
-              borderBottomRightRadius: 4,
-              ...styles.dialogYesNoButtonStyle,
-            }}
-            
-          >
-            <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Overlay>
-  );
-}
-function approveDialogue() {
-  return (
-    <Overlay
-      isVisible={showApproveDialogue}
-      onBackdropPress={() => setshowApproveDialogue(false)}
-      overlayStyle={styles.dialogStyle}
-    >
-      <View>
-        <Text
-          style={{
-            ...Fonts.blackColor18Medium,
-            textAlign: "center",
-            marginHorizontal: Sizes.fixPadding * 2.0,
-            marginVertical: Sizes.fixPadding * 2.0,
-          }}
-        >
-          Do You Want To Approve?
-        </Text>
-        <View
-          style={{
-            alignSelf: "center",
-            width: 80,
-            height: 80,
-            borderRadius: 40,
-            borderWidth: 2,
-            borderColor: Colors.primaryColor,
-            justifyContent: "center",
-            alignItems: "center",
-            marginBottom: Sizes.fixPadding * 1.5,
-          }}
-        >
-          <MaterialCommunityIcons
-            name="question-mark-circle-outline"
-            size={40}
-            color={Colors.primaryColor}
-          />
-        </View>
-
-        <View
-          style={{
-            ...commonStyles.rowAlignCenter,
-            marginTop: Sizes.fixPadding,
-          }}
-        >
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => {
-              setshowApproveDialogue(false);
-            }}
-            style={{
-              ...styles.noButtonStyle,
-              ...styles.dialogYesNoButtonStyle,
+              alignSelf: "center",
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              borderWidth: 2,
+              borderColor: Colors.darOrangeColor,
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: Sizes.fixPadding * 1.5,
             }}
           >
-            <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
-          </TouchableOpacity>
+            <MaterialCommunityIcons
+              name="trash-can-outline"
+              size={40}
+              color={Colors.darOrangeColor}
+            />
+          </View>
 
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => {
-              handleApprove();
-              setshowApproveDialogue(false);
-              // handle delete logic here
-            }}
+          <View
             style={{
-              ...styles.yesButtonStyle,
-              ...styles.dialogYesNoButtonStyle,
+              ...commonStyles.rowAlignCenter,
+              marginTop: Sizes.fixPadding,
             }}
-            
           >
-            <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setshowRejectDialogue(false);
+              }}
+              style={{
+                ...styles.noButtonStyle,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+            >
+              <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                handleReject();
+                setshowRejectDialogue(false);
+                // handle delete logic here
+              }}
+              style={{
+                backgroundColor: Colors.darOrangeColor,
+                borderBottomRightRadius: 4,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+
+            >
+              <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </Overlay>
-  );
-}
-function detailTab() {
-  return (
-    <ScrollView style={styles.tabContent}>
-      <Text style={styles.sectionTitle}>Location Details</Text>
-      <View style={styles.mapContainer}>
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: station?.coordinates?.latitude,
-            longitude: station?.coordinates?.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
-        >
-          <Marker
-            coordinate={{
+      </Overlay>
+    );
+  }
+  function approveDialogue() {
+    return (
+      <Overlay
+        isVisible={showApproveDialogue}
+        onBackdropPress={() => setshowApproveDialogue(false)}
+        overlayStyle={styles.dialogStyle}
+      >
+        <View>
+          <Text
+            style={{
+              ...Fonts.blackColor18Medium,
+              textAlign: "center",
+              marginHorizontal: Sizes.fixPadding * 2.0,
+              marginVertical: Sizes.fixPadding * 2.0,
+            }}
+          >
+            Do You Want To Approve?
+          </Text>
+          <View
+            style={{
+              alignSelf: "center",
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              borderWidth: 2,
+              borderColor: Colors.primaryColor,
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: Sizes.fixPadding * 1.5,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="question-mark-circle-outline"
+              size={40}
+              color={Colors.primaryColor}
+            />
+          </View>
+
+          <View
+            style={{
+              ...commonStyles.rowAlignCenter,
+              marginTop: Sizes.fixPadding,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setshowApproveDialogue(false);
+              }}
+              style={{
+                ...styles.noButtonStyle,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+            >
+              <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                handleApprove();
+                setshowApproveDialogue(false);
+                // handle delete logic here
+              }}
+              style={{
+                ...styles.yesButtonStyle,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+
+            >
+              <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Overlay>
+    );
+  }
+  function detailTab() {
+    return (
+      <ScrollView style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Location Details</Text>
+        <View style={styles.mapContainer}>
+          <MapView
+            style={styles.map}
+            initialRegion={{
               latitude: station?.coordinates?.latitude,
               longitude: station?.coordinates?.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
             }}
-            title={station?.station_name}
-            description={station?.address}
-          />
-        </MapView>
-      </View>
-      <Text style={styles.sectionTitle}>Address</Text>
-      <View style={styles.landmarkContainer}>
-        <Text style={styles.landmarkTitle}>{station?.address}</Text>
-      </View>
+          >
+            <Marker
+              coordinate={{
+                latitude: station?.coordinates?.latitude,
+                longitude: station?.coordinates?.longitude,
+              }}
+              title={station?.station_name}
+              description={station?.address}
+            />
+          </MapView>
+        </View>
+        <Text style={styles.sectionTitle}>Address</Text>
+        <View style={styles.landmarkContainer}>
+          <Text style={styles.landmarkTitle}>{station?.address}</Text>
+        </View>
 
-      <Text style={styles.sectionTitle}>Amenities</Text>
-      <View style={styles.amenitiesContainer}>
-        {station?.amenities?.split(",").map((amenityName, index) => {
-          const trimmedName = amenityName.trim();
-          let iconName = "help-circle"; // default fallback
+        <Text style={styles.sectionTitle}>Amenities</Text>
+        <View style={styles.amenitiesContainer}>
+          {station?.amenities?.split(",").map((amenityName, index) => {
+            const trimmedName = amenityName.trim();
+            let iconName = "help-circle"; // default fallback
 
-          if (trimmedName === "Restroom") {
-            iconName = "toilet";
-          } else if (trimmedName === "Cafe") {
-            iconName = "coffee";
-          } else if (trimmedName === "Wifi") {
-            iconName = "wifi";
-          } else if (trimmedName === "Store") {
-            iconName = "cart";
-          } else if (trimmedName === "Car Care") {
-            iconName = "car";
-          } else if (trimmedName === "Lodging") {
-            iconName = "bed";
-          }
+            if (trimmedName === "Restroom") {
+              iconName = "toilet";
+            } else if (trimmedName === "Cafe") {
+              iconName = "coffee";
+            } else if (trimmedName === "Wifi") {
+              iconName = "wifi";
+            } else if (trimmedName === "Store") {
+              iconName = "cart";
+            } else if (trimmedName === "Car Care") {
+              iconName = "car";
+            } else if (trimmedName === "Lodging") {
+              iconName = "bed";
+            }
 
-          return (
-            <View key={trimmedName} style={styles.amenityItem}>
-              <Icon name={iconName} size={24} color={COLORS.primary} />
-              <Text style={styles.connectorTypeText}>{trimmedName}</Text>
-            </View>
-          );
-        })}
-      </View>
-    </ScrollView>
-  );
-}
+            return (
+              <View key={trimmedName} style={styles.amenityItem}>
+                <Icon name={iconName} size={24} color={COLORS.primary} />
+                <Text style={styles.connectorTypeText}>{trimmedName}</Text>
+              </View>
+            );
+          })}
+        </View>
+      </ScrollView>
+    );
+  }
 
 };
 
@@ -764,8 +788,8 @@ const styles = StyleSheet.create({
     marginRight: 16,
     marginBottom: 10,
   },
- 
- 
+
+
   bottomButtons: {
     flexDirection: "row",
     padding: 16,
@@ -796,34 +820,34 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
- /*  Dialog Styles */
- dialogStyle: {
-  backgroundColor: Colors.whiteColor,
-  borderRadius: Sizes.fixPadding - 5.0,
-  width: "85%",
-  padding: 0.0,
-  elevation: 0,
-},
+  /*  Dialog Styles */
+  dialogStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderRadius: Sizes.fixPadding - 5.0,
+    width: "85%",
+    padding: 0.0,
+    elevation: 0,
+  },
 
-dialogYesNoButtonStyle: {
-  flex: 1,
-  ...commonStyles.shadow,
+  dialogYesNoButtonStyle: {
+    flex: 1,
+    ...commonStyles.shadow,
 
-  padding: Sizes.fixPadding,
-  alignItems: "center",
-  justifyContent: "center",
-},
-noButtonStyle: {
-  backgroundColor: Colors.whiteColor,
-  borderTopColor: Colors.extraLightGrayColor,
-  borderBottomLeftRadius: Sizes.fixPadding - 5.0,
-},
-yesButtonStyle: {
-  borderTopColor: Colors.primaryColor,
-  backgroundColor: Colors.primaryColor,
-  borderBottomRightRadius: Sizes.fixPadding - 5.0,
-},
-/*End of  Dialog Styles */
+    padding: Sizes.fixPadding,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noButtonStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderTopColor: Colors.extraLightGrayColor,
+    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+  },
+  yesButtonStyle: {
+    borderTopColor: Colors.primaryColor,
+    backgroundColor: Colors.primaryColor,
+    borderBottomRightRadius: Sizes.fixPadding - 5.0,
+  },
+  /*End of  Dialog Styles */
 
 
 });

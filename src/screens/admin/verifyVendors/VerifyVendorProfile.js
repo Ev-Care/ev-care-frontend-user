@@ -61,7 +61,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
   const dispatch = useDispatch();
 
   const handleReject = () => {
-    console.log("handle Reject Called");
+    dispatch(showSnackbar({ message: "Currently this service is under development.", type: 'error' }));
   };
   const handleApprove = async () => {
     const approvedResponse = await dispatch(approveVendorProfile(user?.user_key));
@@ -72,7 +72,6 @@ const VerifyVendorProfile = ({ route, navigation }) => {
         navigation.goBack();
       } else if (getAllUsers.rejected.match(pendingVendorResponse)) {
         dispatch(showSnackbar({ message: "Failed to approve vendor.", type: 'error' }));
-
       }
     } else if (approveVendorProfile.rejected.match(approvedResponse)) {
       dispatch(showSnackbar({ message: "Failed to approve vendor.", type: 'error' }));

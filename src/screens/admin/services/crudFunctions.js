@@ -1,7 +1,7 @@
 //get Access Token from Async Storage
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { approveVendorProfileAPI, getAllPendingStationAPI, getAllUsersAPI } from "./api";
+import { approveStationAPI, approveVendorProfileAPI, getAllPendingStationAPI, getAllUsersAPI } from "./api";
 // Async thunk to fetch stations
 export const fetchAllPendingStation = createAsyncThunk(
     "admin/fetchAllPendingStation",
@@ -68,12 +68,12 @@ export const getAllUsers = createAsyncThunk(
 
 export const approveStation = createAsyncThunk(
   "admin/approveStation",
-  async (data, { rejectWithValue }) => {
+  async (station_id, { rejectWithValue }) => {
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
 
       const response = await approveStationAPI({
-        ...data,
+        station_id,
         accessToken,
       }); // Call the API to fetch stations by location
 

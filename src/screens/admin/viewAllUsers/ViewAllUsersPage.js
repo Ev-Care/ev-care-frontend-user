@@ -96,7 +96,6 @@ const USERS = [
   }
 ];
 
-
 // User item component - extracted for better code organization
 
 const ViewAllUserPage = ({navigation}) => {

@@ -189,9 +189,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.bodyBackColor,
   },
-  scrollContainer: {
-    padding: 10,
-  },
+
   appBar: {
     flexDirection: "row",
     alignItems: "center",
@@ -200,6 +198,9 @@ const styles = StyleSheet.create({
     padding: 15,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0eb",
+  },
+  scrollContainer: {
+    padding: 10,
   },
   title: {
     fontSize: 18,

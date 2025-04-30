@@ -126,6 +126,7 @@ export const Fonts = {
     fontFamily: FontFamily.SemiBold,
     includeFontPadding: false,
   },
+  
 
   blackColor20SemiBold: {
     color: Colors.blackColor,
@@ -152,6 +153,12 @@ export const Fonts = {
     color: Colors.grayColor,
     fontSize: 12.0,
     fontFamily: FontFamily.Regular,
+    includeFontPadding: false,
+  },
+  grayColor16SemiBold: {
+    color: Colors.grayColor,
+    fontSize: 12.0,
+    fontWeight: "800", 
     includeFontPadding: false,
   },
 

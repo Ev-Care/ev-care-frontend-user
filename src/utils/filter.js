@@ -1,15 +1,13 @@
 export const filterStations = (stations, filters) => {
   const { connectionTypes, powerRating, selectedDistanceIndex } = filters;
 
-  // Define power rating ranges based on powerRating.id
-  const powerRangeMap = {
+   const powerRangeMap = {
     "1": { min: 0, max: 10 },
     "2": { min: 10, max: 20 },
     "3": { min: 20, max: 40 },
     "4": { min: 50, max: Infinity },
   };
 
-  // Define distance ranges based on selectedDistanceIndex
   const distanceRangeMap = {
     1: { min: 0, max: 5 },
     2: { min: 0, max: 10 },
@@ -23,7 +21,6 @@ export const filterStations = (stations, filters) => {
     const hasPowerFilter = powerRating != null;
     const hasConnectionFilter = connectionTypes != null;
 
-    // Apply distance filter
     if (hasDistanceFilter) {
       const { min, max } = distanceRangeMap[selectedDistanceIndex];
       if (station.distance_km < min || station.distance_km > max) {
@@ -31,8 +28,7 @@ export const filterStations = (stations, filters) => {
       }
     }
 
-    // Apply charger-related filters
-    const matchingCharger = station.chargers.find(charger => {
+     const matchingCharger = station.chargers.find(charger => {
       const matchConnection = hasConnectionFilter
         ? charger.connector_type === connectionTypes.connectionType
         : true;
@@ -47,6 +43,6 @@ export const filterStations = (stations, filters) => {
       return matchConnection && matchPower;
     });
 
-    return !!matchingCharger; // Station matches if at least one charger matches
+    return !!matchingCharger; 
   });
 };

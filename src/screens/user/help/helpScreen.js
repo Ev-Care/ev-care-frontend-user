@@ -65,7 +65,7 @@ const HelpScreen = ({ navigation }) => {
   );
 
   async function sendQueryActionHandler() {
-    console.log('in query');
+    console.log("in query");
     setIsLoading(true);
     const data = {
       title: title,
@@ -73,7 +73,7 @@ const HelpScreen = ({ navigation }) => {
       email: email,
       contactNumber: mobileNumber,
       image: "",
-    }
+    };
     const sendQueryResponse = await dispatch(
       sendQueryAction({
         title: title,
@@ -83,7 +83,7 @@ const HelpScreen = ({ navigation }) => {
         image: "",
       })
     );
-    console.log('data - ', data);
+    console.log("data - ", data);
     if (sendQueryAction.fulfilled.match(sendQueryResponse)) {
       setIsLoading(false);
       dispatch(
@@ -112,24 +112,41 @@ const HelpScreen = ({ navigation }) => {
   function submitButton() {
     const handleSubmit = () => {
       if (!title || title.trim().length < 3) {
-        dispatch(showSnackbar({ message: "Title must be at least 3 characters", type: "error" }));
+        dispatch(
+          showSnackbar({
+            message: "Title must be at least 3 characters",
+            type: "error",
+          })
+        );
         return;
       }
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        dispatch(showSnackbar({ message: "Invalid email format", type: "error" }));
+        dispatch(
+          showSnackbar({ message: "Invalid email format", type: "error" })
+        );
         return;
       }
 
       const phoneRegex = /^[0-9]{10}$/;
       if (!phoneRegex.test(mobileNumber)) {
-        dispatch(showSnackbar({ message: "Mobile number must be exactly 10 digits", type: "error" }));
+        dispatch(
+          showSnackbar({
+            message: "Mobile number must be exactly 10 digits",
+            type: "error",
+          })
+        );
         return;
       }
 
       if (!description || description.trim().length < 10) {
-        dispatch(showSnackbar({ message: "Description must be at least 10 characters", type: "error" }));
+        dispatch(
+          showSnackbar({
+            message: "Description must be at least 10 characters",
+            type: "error",
+          })
+        );
         return;
       }
 
@@ -162,13 +179,24 @@ const HelpScreen = ({ navigation }) => {
             onChangeText={(text) => {
               setDescription(text);
 
-              if (descriptionTimer.current) clearTimeout(descriptionTimer.current);
+              if (descriptionTimer.current)
+                clearTimeout(descriptionTimer.current);
 
               descriptionTimer.current = setTimeout(() => {
                 if (!text.trim()) {
-                  dispatch(showSnackbar({ message: "Description cannot be empty", type: "error" }));
+                  dispatch(
+                    showSnackbar({
+                      message: "Description cannot be empty",
+                      type: "error",
+                    })
+                  );
                 } else if (text.trim().length < 10) {
-                  dispatch(showSnackbar({ message: "Description must be at least 10 characters", type: "error" }));
+                  dispatch(
+                    showSnackbar({
+                      message: "Description must be at least 10 characters",
+                      type: "error",
+                    })
+                  );
                 }
               }, 600);
             }}
@@ -210,9 +238,19 @@ const HelpScreen = ({ navigation }) => {
               // Delay validation
               mobileTimer.current = setTimeout(() => {
                 if (!cleanedText) {
-                  dispatch(showSnackbar({ message: "Mobile number is required", type: "error" }));
+                  dispatch(
+                    showSnackbar({
+                      message: "Mobile number is required",
+                      type: "error",
+                    })
+                  );
                 } else if (cleanedText.length !== 10) {
-                  dispatch(showSnackbar({ message: "Mobile number must be exactly 10 digits", type: "error" }));
+                  dispatch(
+                    showSnackbar({
+                      message: "Mobile number must be exactly 10 digits",
+                      type: "error",
+                    })
+                  );
                 }
               }, 500);
             }}
@@ -249,9 +287,19 @@ const HelpScreen = ({ navigation }) => {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
                 if (!text.trim()) {
-                  dispatch(showSnackbar({ message: "Email is required", type: "error" }));
+                  dispatch(
+                    showSnackbar({
+                      message: "Email is required",
+                      type: "error",
+                    })
+                  );
                 } else if (!emailRegex.test(text.trim())) {
-                  dispatch(showSnackbar({ message: "Invalid email format", type: "error" }));
+                  dispatch(
+                    showSnackbar({
+                      message: "Invalid email format",
+                      type: "error",
+                    })
+                  );
                 }
               }, 500);
             }}
@@ -279,12 +327,20 @@ const HelpScreen = ({ navigation }) => {
 
               // Live feedback validations
               if (trimmedText.length > 100) {
-                dispatch(showSnackbar({ message: "Title cannot exceed 100 characters", type: "error" }));
+                dispatch(
+                  showSnackbar({
+                    message: "Title cannot exceed 100 characters",
+                    type: "error",
+                  })
+                );
                 return;
               }
 
               // Optional: restrict invalid characters
-              const validText = trimmedText.replace(/[^a-zA-Z0-9 .,'!?\-]/g, "");
+              const validText = trimmedText.replace(
+                /[^a-zA-Z0-9 .,'!?\-]/g,
+                ""
+              );
 
               setTitle(validText);
 
@@ -292,7 +348,12 @@ const HelpScreen = ({ navigation }) => {
               clearTimeout(titleTimer);
               const timer = setTimeout(() => {
                 if (validText.length < 3) {
-                  dispatch(showSnackbar({ message: "Title must be at least 3 characters", type: "error" }));
+                  dispatch(
+                    showSnackbar({
+                      message: "Title must be at least 3 characters",
+                      type: "error",
+                    })
+                  );
                 }
               }, 500);
               setTitleTimer(timer);
@@ -318,13 +379,12 @@ const HelpScreen = ({ navigation }) => {
         <Text style={{ ...Fonts.blackColor18SemiBold }}>
           Talk to our support team
         </Text>
-        <Text
-          style={{
-            ...Fonts.grayColor16Regular,
-          }}
-        >
-          Fill below form and our support team will be in touch with you
-          shortly.
+        <Text style={{ ...Fonts.grayColor16Regular }}>
+          Fill the form below and our support team will be in touch with you
+          shortly. In case of urgency, you can{" "}
+          <Text style={{ ...Fonts.grayColor16SemiBold }}>
+            Contact Us on +91233456778
+          </Text>
         </Text>
       </View>
     );

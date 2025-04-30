@@ -46,7 +46,7 @@ export function VendorStack() {
   const isActive = user?.status === "Active";
   const isCompleted = user?.status === "Completed";
   const isKYCIncomplete = !user?.pan_no || !user?.adhar_no;
-  const isKYCComplete = user?.pan_no && user?.tan_no && user?.adhar_no;
+  const isKYCComplete = user?.pan_no && user?.adhar_no;
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>

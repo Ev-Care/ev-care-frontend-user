@@ -150,7 +150,7 @@ const UserHome = ({ navigation }) => {
 
   const handleRefresh = async () => {
     try {
-      setRefreshing(true);
+      // setRefreshing(true);
       // 1. Get location permission
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
@@ -466,12 +466,11 @@ const UserHome = ({ navigation }) => {
             <View
               style={{
                 marginTop: Sizes.fixPadding,
-               ...commonStyles.rowSpaceBetween,
-               
+                ...commonStyles.rowSpaceBetween,
               }}
             >
               {/* Left Section */}
-              <View style={{    ...commonStyles.rowAlignCenter }}>
+              <View style={{ ...commonStyles.rowAlignCenter }}>
                 <Text style={{ ...Fonts.blackColor16Medium }}>
                   {openHourFormatter(
                     item?.open_hours_opening_time,
@@ -481,7 +480,7 @@ const UserHome = ({ navigation }) => {
               </View>
 
               {/* Right Section */}
-              <View style={{  ...commonStyles.rowAlignCenter }}>
+              <View style={{ ...commonStyles.rowAlignCenter }}>
                 <View style={styles.primaryColorDot} />
                 <Text
                   numberOfLines={1}

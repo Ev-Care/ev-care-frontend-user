@@ -59,9 +59,24 @@ const AllPendingVendors = ({ navigation }) => {
     }, [dispatch])
   );
   const handleRefresh = async () => {
-
-    
+    try {
+      setRefreshing(true); // start refreshing UI
+      const response = await dispatch(getAllUsers());
+  
+      if (getAllUsers.fulfilled.match(response)) {
+        console.log('vendors refreshed');
+        // Optional: show a success snackbar
+        // dispatch(showSnackbar({ message: "Vendors refreshed.", type: "success" }));
+      } else {
+        dispatch(showSnackbar({ message: "Failed to refresh vendors.", type: "error" }));
+      }
+    } catch (error) {
+      dispatch(showSnackbar({ message: "Something went wrong.", type: "error" }));
+    } finally {
+      setRefreshing(false); // end refreshing UI
+    }
   };
+  
 
   // Filter users based on search query
   const filteredUsers = users?.filter(

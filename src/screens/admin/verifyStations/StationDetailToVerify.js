@@ -24,6 +24,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MapView, { Marker } from "react-native-maps";
 import { Overlay } from "@rneui/themed";
+import imageURL from "../../../constants/baseURL";
 
 // import imageURL from "../../../constants/baseURL";
 const COLORS = {
@@ -277,50 +278,56 @@ function buttons(){
   )
 }
 function chargerTab() {
-  return (
-    <ScrollView style={styles.tabContent}>
-      {station?.chargers?.map((charger, index) => (
-        <View key={charger.charger_id} style={styles.chargerCard}>
-          <Text style={styles.chargerTitle}>
-            {charger?.name || `Charger ${index + 1}`}
-          </Text>
-          <View style={styles.chargerSpecs}>
-            <Text style={styles.chargerSpecText}>
-              Type: {charger?.charger_type || "Unknown Type"}
+    return (
+      <ScrollView style={styles.tabContent}>
+        {station?.chargers?.map((charger, index) => (
+          <View key={charger.charger_id} style={styles.chargerCard}>
+            <Text style={styles.chargerTitle}>
+              {charger?.name || `Charger ${index + 1}`}
             </Text>
-            <Text style={styles.chargerSpecText}>|</Text>
-            <Text style={styles.chargerSpecText}>
-              Power: {charger?.max_power_kw || "Unknown Power"} KW
-            </Text>
-          </View>
-
-          {/* Map over connectors */}
-          <View style={styles.connectorContainer}>
-            {charger?.connectors?.map((connector, connectorIndex) => (
-              <View key={connectorIndex} style={styles.connector}>
-                <Text style={styles.connectorTitle}>
-                  { connector?.connectorType?.description || `Cherger ${connectorIndex + 1}`}
+            <View style={styles.chargerSpecs}>
+              <Text style={styles.chargerSpecText}>
+                Type: {charger?.charger_type || "Unknown Type"}
+              </Text>
+              <Text style={styles.chargerSpecText}>|</Text>
+              <Text style={styles.chargerSpecText}>
+                Power: {charger?.max_power_kw || "Unknown Power"} KW
+              </Text>
+            </View>
+            <View style={styles.connector}>
+              <View style={[{ flexDirection: "row", alignItems: "center" }]}>
+                <Icon
+                  name={
+                    charger?.connector_type
+                      ? connectorIcons[charger?.connector_type]
+                      : "ev-plug-type1"
+                  }
+                  size={20}
+                  color={COLORS.primary}
+                />
+                <Text style={styles.connectorTypeText}>
+                  {charger?.connector_type}
                 </Text>
-                <View style={styles.connectorType}>
-                  <Icon
-                    name={
-                      connector?.connectorType?.description
-                        ? connectorIcons[connector?.connectorType?.description]
-                        : "ev-plug-type1"
-                    }
-                    size={20}
-                    color={COLORS.primary}
-                  />
-                 
-                </View>
               </View>
-            ))}
+              <Text
+                style={[
+                  styles.connectorTypeText,
+                  {
+                    color:
+                      charger?.status === "Available"
+                        ? "green"
+                        : Colors.darOrangeColor,
+                  },
+                ]}
+              >
+                {charger?.status}
+              </Text>
+            </View>
           </View>
-        </View>
-      ))}
-    </ScrollView>
-  );
-}
+        ))}
+      </ScrollView>
+    );
+  }
 function rejectDialogue() {
   return (
     <Overlay

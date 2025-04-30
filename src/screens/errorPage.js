@@ -1,11 +1,11 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet,Alert } from "react-native";
+import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { getLocationPermission } from "../utils/globalMethods";
 
-const ErrorPage = ({setHasLocationPermission}) => {
+const ErrorPage = ({ setHasLocationPermission }) => {
   const navigation = useNavigation();
- 
+
   return (
     <View style={styles.container}>
       <Image
@@ -14,22 +14,27 @@ const ErrorPage = ({setHasLocationPermission}) => {
       />
       <Text style={styles.title}>Unable to  fetch Your{"\n"}Location</Text>
       <Text style={styles.subtitle}>
-      We are unable to fetch your location. Kindly grant us permission to access it.
-      If you have denied it previously, please go to your phone settings and enable location access.
-   </Text>
+        We are unable to fetch your location. Kindly grant us permission to access it.
+        If you have denied it previously, please go to your phone settings and enable location access.
+      </Text>
 
 
       <TouchableOpacity
         style={styles.button}
-         onPress={async () => {
+        onPress={async () => {
+          console.log('clicked');
+          if (Platform.OS === 'android') {
+            console.log('android');
             const granted = await getLocationPermission();
             if (granted) {
-            setHasLocationPermission(true);
+              setHasLocationPermission(true);
             } else {
-                Alert.alert("Error", "Something went wrong while checking location permission.",);
+              // Already handled in getLocationPermission (including alert)
             }
-          }}
-          
+          } else {
+            Alert.alert("Unsupported", "Location permission handling is only set up for Android.");
+          }
+        }}
       >
         <Text style={styles.buttonText}>Enable Location</Text>
       </TouchableOpacity>

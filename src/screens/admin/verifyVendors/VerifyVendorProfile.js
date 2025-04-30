@@ -36,11 +36,11 @@ const VerifyVendorProfile = ({ route, navigation }) => {
   const [gstNumber, setGstNumber] = useState(user?.gst_no || 'Not found');
 
 //   image start
-  const [aadhaarFrontImage, setAadhaarFrontImage] = useState(user?.adhar_front_pic);
-  const [aadhaarBackImage, setAadhaarBackImage] = useState(user?.adhar_back_pic);
-  const [panImage, setPanImage] = useState(user?.pan_pic);
-  const [gstImage, setGstImage] = useState(user?.gst_pic);
-  const [avatar, setAvatar] = useState(user?.owner_legal_name);
+  const [aadhaarFrontImage, setAadhaarFrontImage] = useState(imageURL.baseURL+ user?.adhar_front_pic);
+  const [aadhaarBackImage, setAadhaarBackImage] = useState(imageURL.baseURL+ user?.adhar_back_pic);
+  const [panImage, setPanImage] = useState(imageURL.baseURL+ user?.pan_pic);
+  const [gstImage, setGstImage] = useState(imageURL.baseURL+ user?.gst_pic);
+  const [avatar, setAvatar] = useState(imageURL.baseURL+ user?.avatar);
 
 
   const [modalVisible, setModalVisible] = useState(false);

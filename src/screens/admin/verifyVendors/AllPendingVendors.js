@@ -1,5 +1,5 @@
 // ViewAllUserPage.js
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -17,10 +17,15 @@ import {
   commonStyles,
   Sizes,
   Fonts,
-} from "../../../constants/styles";import MyStatusBar from "../../../components/myStatusBar";
+} from "../../../constants/styles"; import MyStatusBar from "../../../components/myStatusBar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { color } from "@rneui/base";
+import { getAllUsers } from "../services/crudFunctions";
+import { useDispatch, useSelector } from "react-redux";
+import { selectAdminUsers } from "../services/selector";
+import { useFocusEffect } from "@react-navigation/native";
+import imageURL from "../../../constants/baseURL";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -98,12 +103,22 @@ const USERS = [
 
 // User item component - extracted for better code organization
 
-const AllPendingVendors = ({navigation}) => {
+const AllPendingVendors = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState(USERS);
+  const users = useSelector(selectAdminUsers);
+  const dispatch = useDispatch();
+  console.log('users length',users?.length);
+
+  // Called every time screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      console.log('pending users fetched from useFocusEffect');
+      dispatch(getAllUsers());
+    }, [dispatch])
+  );
 
   // Filter users based on search query
-  const filteredUsers = users.filter(
+  const filteredUsers = users?.filter(
     (user) =>
       user?.owner_legal_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user?.mobile_number?.includes(searchQuery)
@@ -111,7 +126,7 @@ const AllPendingVendors = ({navigation}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <MyStatusBar/>
+      <MyStatusBar />
 
       <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
 
@@ -134,33 +149,33 @@ const AllPendingVendors = ({navigation}) => {
 
   function UserInfo({ user }) {
     return (
-      <TouchableOpacity onPress={() => navigation.navigate("VerifyVendorProfile",{user})} style={styles.userItem}>
-     {user?.avatar ? (
-          <Image source={{ uri: user?.avatar }} style={styles.avatar} />
+      <TouchableOpacity onPress={() => navigation.navigate("VerifyVendorProfile", { user })} style={styles.userItem}>
+        {user?.avatar ? (
+          <Image source={{ uri: imageURL.baseURL + user?.avatar }} style={styles.avatar} />
         ) : (
           <Icon name="account-circle" size={50} color="#ccc" style={styles.avatar} />
         )}
-  
+
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{user?.owner_legal_name || "N/A"}</Text>
           <Text style={styles.userMobile}>{user?.mobile_number || "N/A"}</Text>
         </View>
-  
+
         <View style={[styles.roleBadge]}>
           <Text
             style={[
-              styles.roleText,{
-              color:  "red" ,
-            }
+              styles.roleText, {
+                color: "red",
+              }
             ]}
           >
-            {user?.status==="New" ? "Pending" : user?.status}
+            {user?.status === "New" ? "Pending" : user?.status}
           </Text>
         </View>
       </TouchableOpacity>
     );
   }
-  
+
 
   function SearchBar({ value, onChangeText }) {
     return (
@@ -194,7 +209,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.bodyBackColor,
-    paddingHorizontal: Sizes.fixPadding*0.5,
+    paddingHorizontal: Sizes.fixPadding * 0.5,
   },
   header: {
     flexDirection: "row",
@@ -262,7 +277,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.extraLightGrayColor,
     borderWidth: 0.1,
     borderTopWidth: 1.0,
-   
+
   },
   avatar: {
     width: 50,

@@ -14,16 +14,19 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons, Entypo, Ionicons } from '@expo/vector-icons';
 import {
-    Colors,
-    Sizes,
-    Fonts,
-    commonStyles,
-    screenWidth,
-  } from "../../../constants/styles";
+  Colors,
+  Sizes,
+  Fonts,
+  commonStyles,
+  screenWidth,
+} from "../../../constants/styles";
 import RNModal from 'react-native-modal';
 import { Overlay } from "@rneui/themed";
 import imageURL from "../../../constants/baseURL";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useDispatch } from 'react-redux';
+import { approveVendorProfile, getAllUsers } from '../services/crudFunctions';
+import { showSnackbar } from '../../../redux/snackbar/snackbarSlice';
 
 const VerifyVendorProfile = ({ route, navigation }) => {
   const { user } = route?.params; // Get the user data from route params
@@ -35,12 +38,12 @@ const VerifyVendorProfile = ({ route, navigation }) => {
   const [panNumber, setPanNumber] = useState(user?.pan_no || 'Not found');
   const [gstNumber, setGstNumber] = useState(user?.gst_no || 'Not found');
 
-//   image start
-  const [aadhaarFrontImage, setAadhaarFrontImage] = useState(imageURL.baseURL+ user?.adhar_front_pic);
-  const [aadhaarBackImage, setAadhaarBackImage] = useState(imageURL.baseURL+ user?.adhar_back_pic);
-  const [panImage, setPanImage] = useState(imageURL.baseURL+ user?.pan_pic);
-  const [gstImage, setGstImage] = useState(imageURL.baseURL+ user?.gst_pic);
-  const [avatar, setAvatar] = useState(imageURL.baseURL+ user?.avatar);
+  //   image start
+  const [aadhaarFrontImage, setAadhaarFrontImage] = useState(imageURL.baseURL + user?.adhar_front_pic);
+  const [aadhaarBackImage, setAadhaarBackImage] = useState(imageURL.baseURL + user?.adhar_back_pic);
+  const [panImage, setPanImage] = useState(imageURL.baseURL + user?.pan_pic);
+  const [gstImage, setGstImage] = useState(imageURL.baseURL + user?.gst_pic);
+  const [avatar, setAvatar] = useState(imageURL.baseURL + user?.avatar);
 
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -48,19 +51,32 @@ const VerifyVendorProfile = ({ route, navigation }) => {
 
   const [showRejectDialogue, setshowRejectDialogue] = useState(false);
   const [showApproveDialogue, setshowApproveDialogue] = useState(false);
- const [imageloading, setImageLoading] = useState("");
+  const [imageloading, setImageLoading] = useState("");
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
     setModalVisible(true);
   };
 
+  const dispatch = useDispatch();
 
   const handleReject = () => {
     console.log("handle Reject Called");
   };
-  const handleApprove = () => {
-    console.log("handle Approve Called");
+  const handleApprove = async () => {
+    const approvedResponse = await dispatch(approveVendorProfile(user?.user_key));
+    if (approveVendorProfile.fulfilled.match(approvedResponse)) {
+      const pendingVendorResponse = await dispatch(getAllUsers());
+      if (getAllUsers.fulfilled.match(pendingVendorResponse)) {
+        await dispatch(showSnackbar({ message: "Vendor profile approved.", type: 'success' }));
+        navigation.goBack();
+      } else if (getAllUsers.rejected.match(pendingVendorResponse)) {
+        dispatch(showSnackbar({ message: "Failed to approve vendor.", type: 'error' }));
+
+      }
+    } else if (approveVendorProfile.rejected.match(approvedResponse)) {
+      dispatch(showSnackbar({ message: "Failed to approve vendor.", type: 'error' }));
+    }
   };
 
   const renderTextData = (key, value) => (
@@ -69,242 +85,242 @@ const VerifyVendorProfile = ({ route, navigation }) => {
       <Text style={{ fontSize: 14, textAlign: "right" }}>{value}</Text>
     </View>
   );
-  
+
 
   const renderImageBox = (label, localURI) => (
     <TouchableOpacity onPress={() => showFullImage(localURI)} style={{ alignItems: 'center', marginBottom: 20 }}>
       <View style={[styles.imageBox, { borderRadius: label === "avatar" ? 50 : 12 }]}>
-        {imageloading===label ? (
+        {imageloading === label ? (
           <ActivityIndicator size={40} color="#ccc" />
         ) : localURI ? (
           <Image source={{ uri: localURI }} style={styles.imageStyle} />
         ) : (
           <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
         )}
-  
-      
+
+
       </View>
       <Text style={styles.imageLabel}>{label}</Text>
     </TouchableOpacity>
   );
-  
+
 
   return (
 
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Update User Details</Text>
- 
-   <View style={styles.imageContainerAvatar}>
-      {renderImageBox('avatar', avatar, setAvatar)}     
-    </View>
-    {renderTextData('Full Name', name)}
-    {renderTextData('Mobile Number', mobNumber)}
-    {renderTextData('Email', email, setEmail, 'Enter your email')}
-    {renderTextData('Business Name', businessName)}
-    {renderTextData('Aadhar Number', aadharNumber)}
-    {renderTextData('PAN Number', panNumber)}
-    {renderTextData('GST Number', gstNumber)}    
-    <View style={styles.imageContainer}>
-      {renderImageBox('Aadhaar front', aadhaarFrontImage)}
-      {renderImageBox('Aadhaar Back', aadhaarBackImage)}
-      {renderImageBox('PAN', panImage)}
-      {renderImageBox('GST', gstImage)}   
-    </View>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Update User Details</Text>
+
+        <View style={styles.imageContainerAvatar}>
+          {renderImageBox('avatar', avatar, setAvatar)}
+        </View>
+        {renderTextData('Full Name', name)}
+        {renderTextData('Mobile Number', mobNumber)}
+        {renderTextData('Email', email, setEmail, 'Enter your email')}
+        {renderTextData('Business Name', businessName)}
+        {renderTextData('Aadhar Number', aadharNumber)}
+        {renderTextData('PAN Number', panNumber)}
+        {renderTextData('GST Number', gstNumber)}
+        <View style={styles.imageContainer}>
+          {renderImageBox('Aadhaar front', aadhaarFrontImage)}
+          {renderImageBox('Aadhaar Back', aadhaarBackImage)}
+          {renderImageBox('PAN', panImage)}
+          {renderImageBox('GST', gstImage)}
+        </View>
 
 
-      <View style={styles.buttonRow}>
+        <View style={styles.buttonRow}>
 
-        <TouchableOpacity   onPress={() => {
+          <TouchableOpacity onPress={() => {
             setshowRejectDialogue(true);
-          }} style={[styles.actionButton, { backgroundColor: Colors.darOrangeColor  }]}>
-          <Text style={styles.buttonText}>Reject</Text>
-        </TouchableOpacity>
-        <TouchableOpacity  onPress={() => {
+          }} style={[styles.actionButton, { backgroundColor: Colors.darOrangeColor }]}>
+            <Text style={styles.buttonText}>Reject</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {
             setshowApproveDialogue(true);
-          }}  style={[styles.actionButton, { backgroundColor: Colors.primaryColor }]}>
-          <Text style={styles.buttonText}>Approve</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Full Image Modal */}
-      <Modal visible={modalVisible} transparent={true}>
-        <View style={styles.modalContainer}>
-          <Image source={{ uri: selectedImage }} style={styles.fullImage} />
-          <TouchableOpacity
-            style={styles.modalCloseButton}
-            onPress={() => setModalVisible(false)}
-          >
-            <Text style={styles.closeText}>Close</Text>
+          }} style={[styles.actionButton, { backgroundColor: Colors.primaryColor }]}>
+            <Text style={styles.buttonText}>Approve</Text>
           </TouchableOpacity>
         </View>
-      </Modal>
-      { rejectDialogue()}
-      {approveDialogue()}
-    </ScrollView>
+
+        {/* Full Image Modal */}
+        <Modal visible={modalVisible} transparent={true}>
+          <View style={styles.modalContainer}>
+            <Image source={{ uri: selectedImage }} style={styles.fullImage} />
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.closeText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+        {rejectDialogue()}
+        {approveDialogue()}
+      </ScrollView>
     </View>
   );
 
-    function rejectDialogue() {
-      return (
-        <Overlay
-          isVisible={showRejectDialogue}
-          onBackdropPress={() => setshowRejectDialogue(false)}
-          overlayStyle={styles.dialogStyle}
-        >
-          <View>
-            <Text
-              style={{
-                ...Fonts.blackColor18Medium,
-                textAlign: "center",
-                marginHorizontal: Sizes.fixPadding * 2.0,
-                marginVertical: Sizes.fixPadding * 2.0,
-              }}
-            >
-              Do You Want To Reject?
-            </Text>
-            <View
-              style={{
-                alignSelf: "center",
-                width: 80,
-                height: 80,
-                borderRadius: 40,
-                borderWidth: 2,
-                borderColor: Colors.darOrangeColor,
-                justifyContent: "center",
-                alignItems: "center",
-                marginBottom: Sizes.fixPadding * 1.5,
-              }}
-            >
-              <MaterialCommunityIcons
-                name="question-mark-circle-outline"
-                size={40}
-                color={Colors.darOrangeColor}
-              />
-            </View>
-  
-            <View
-              style={{
-                ...commonStyles.rowAlignCenter,
-                marginTop: Sizes.fixPadding,
-              }}
-            >
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => {
-                  setshowRejectDialogue(false);
-                }}
-                style={{
-                  ...styles.noButtonStyle,
-                  ...styles.dialogYesNoButtonStyle,
-                }}
-              >
-                <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
-              </TouchableOpacity>
-  
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => {
-                  handleReject();
-                  setshowRejectDialogue(false);
-                  // handle delete logic here
-                }}
-                style={{
-                  backgroundColor: Colors.darOrangeColor,
-                  borderBottomRightRadius: 4,
-                  ...styles.dialogYesNoButtonStyle,
-                }}
-                
-              >
-                <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
-              </TouchableOpacity>
-            </View>
+  function rejectDialogue() {
+    return (
+      <Overlay
+        isVisible={showRejectDialogue}
+        onBackdropPress={() => setshowRejectDialogue(false)}
+        overlayStyle={styles.dialogStyle}
+      >
+        <View>
+          <Text
+            style={{
+              ...Fonts.blackColor18Medium,
+              textAlign: "center",
+              marginHorizontal: Sizes.fixPadding * 2.0,
+              marginVertical: Sizes.fixPadding * 2.0,
+            }}
+          >
+            Do You Want To Reject?
+          </Text>
+          <View
+            style={{
+              alignSelf: "center",
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              borderWidth: 2,
+              borderColor: Colors.darOrangeColor,
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: Sizes.fixPadding * 1.5,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="question-mark-circle-outline"
+              size={40}
+              color={Colors.darOrangeColor}
+            />
           </View>
-        </Overlay>
-      );
-    }
-    function approveDialogue() {
-      return (
-        <Overlay
-          isVisible={showApproveDialogue}
-          onBackdropPress={() => setshowApproveDialogue(false)}
-          overlayStyle={styles.dialogStyle}
-        >
-          <View>
-            <Text
+
+          <View
+            style={{
+              ...commonStyles.rowAlignCenter,
+              marginTop: Sizes.fixPadding,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setshowRejectDialogue(false);
+              }}
               style={{
-                ...Fonts.blackColor18Medium,
-                textAlign: "center",
-                marginHorizontal: Sizes.fixPadding * 2.0,
-                marginVertical: Sizes.fixPadding * 2.0,
+                ...styles.noButtonStyle,
+                ...styles.dialogYesNoButtonStyle,
               }}
             >
-              Do You Want To Approve?
-            </Text>
-            <View
-              style={{
-                alignSelf: "center",
-                width: 80,
-                height: 80,
-                borderRadius: 40,
-                borderWidth: 2,
-                borderColor: Colors.primaryColor,
-                justifyContent: "center",
-                alignItems: "center",
-                marginBottom: Sizes.fixPadding * 1.5,
+              <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                handleReject();
+                setshowRejectDialogue(false);
+                // handle delete logic here
               }}
-            >
-              <MaterialCommunityIcons
-                name="question-mark-circle-outline"
-                size={40}
-                color={Colors.primaryColor}
-              />
-            </View>
-    
-            <View
               style={{
-                ...commonStyles.rowAlignCenter,
-                marginTop: Sizes.fixPadding,
+                backgroundColor: Colors.darOrangeColor,
+                borderBottomRightRadius: 4,
+                ...styles.dialogYesNoButtonStyle,
               }}
+
             >
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => {
-                  setshowApproveDialogue(false);
-                }}
-                style={{
-                  ...styles.noButtonStyle,
-                  ...styles.dialogYesNoButtonStyle,
-                }}
-              >
-                <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
-              </TouchableOpacity>
-    
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => {
-                  handleApprove();
-                  setshowApproveDialogue(false);
-                  // handle delete logic here
-                }}
-                style={{
-                  ...styles.yesButtonStyle,
-                  ...styles.dialogYesNoButtonStyle,
-                }}
-                
-              >
-                <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
-              </TouchableOpacity>
-            </View>
+              <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
+            </TouchableOpacity>
           </View>
-        </Overlay>
-      );
-    }
+        </View>
+      </Overlay>
+    );
+  }
+  function approveDialogue() {
+    return (
+      <Overlay
+        isVisible={showApproveDialogue}
+        onBackdropPress={() => setshowApproveDialogue(false)}
+        overlayStyle={styles.dialogStyle}
+      >
+        <View>
+          <Text
+            style={{
+              ...Fonts.blackColor18Medium,
+              textAlign: "center",
+              marginHorizontal: Sizes.fixPadding * 2.0,
+              marginVertical: Sizes.fixPadding * 2.0,
+            }}
+          >
+            Do You Want To Approve?
+          </Text>
+          <View
+            style={{
+              alignSelf: "center",
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              borderWidth: 2,
+              borderColor: Colors.primaryColor,
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: Sizes.fixPadding * 1.5,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="question-mark-circle-outline"
+              size={40}
+              color={Colors.primaryColor}
+            />
+          </View>
+
+          <View
+            style={{
+              ...commonStyles.rowAlignCenter,
+              marginTop: Sizes.fixPadding,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setshowApproveDialogue(false);
+              }}
+              style={{
+                ...styles.noButtonStyle,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+            >
+              <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                handleApprove();
+                setshowApproveDialogue(false);
+                // handle delete logic here
+              }}
+              style={{
+                ...styles.yesButtonStyle,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+
+            >
+              <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Overlay>
+    );
+  }
 };
 
 const styles = StyleSheet.create({
   container: {
-   
+
     padding: 20,
     backgroundColor: '#fff',
     paddingBottom: 50,
@@ -327,7 +343,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 20,
-    
+
     flexWrap: 'wrap',
   },
   imageContainerAvatar: {
@@ -343,8 +359,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderStyle: 'dotted',
     borderColor: '#aaa',
-   
-   
+
+
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -396,7 +412,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 30,
-    gap:10
+    gap: 10
   },
   actionButton: {
     flex: 1,
@@ -410,34 +426,34 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-   /*  Dialog Styles */
-    dialogStyle: {
-      backgroundColor: Colors.whiteColor,
-      borderRadius: Sizes.fixPadding - 5.0,
-      width: "85%",
-      padding: 0.0,
-      elevation: 0,
-    },
-  
-    dialogYesNoButtonStyle: {
-      flex: 1,
-      ...commonStyles.shadow,
-  
-      padding: Sizes.fixPadding,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    noButtonStyle: {
-      backgroundColor: Colors.whiteColor,
-      borderTopColor: Colors.extraLightGrayColor,
-      borderBottomLeftRadius: Sizes.fixPadding - 5.0,
-    },
-    yesButtonStyle: {
-        borderTopColor: Colors.primaryColor,
-        backgroundColor: Colors.primaryColor,
-        borderBottomRightRadius: Sizes.fixPadding - 5.0,
-      },
-    /*End of  Dialog Styles */
+  /*  Dialog Styles */
+  dialogStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderRadius: Sizes.fixPadding - 5.0,
+    width: "85%",
+    padding: 0.0,
+    elevation: 0,
+  },
+
+  dialogYesNoButtonStyle: {
+    flex: 1,
+    ...commonStyles.shadow,
+
+    padding: Sizes.fixPadding,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noButtonStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderTopColor: Colors.extraLightGrayColor,
+    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+  },
+  yesButtonStyle: {
+    borderTopColor: Colors.primaryColor,
+    backgroundColor: Colors.primaryColor,
+    borderBottomRightRadius: Sizes.fixPadding - 5.0,
+  },
+  /*End of  Dialog Styles */
 });
 
 export default VerifyVendorProfile;

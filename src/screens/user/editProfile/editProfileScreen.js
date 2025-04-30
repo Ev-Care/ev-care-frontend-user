@@ -403,25 +403,7 @@ const EditProfileScreen = ({ route, navigation }) => {
           >
             Do You Want To Update?
           </Text>
-          <View
-            style={{
-              alignSelf: "center",
-              width: 80,
-              height: 80,
-              borderRadius: 40,
-              borderWidth: 2,
-              borderColor: Colors.primaryColor,
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: Sizes.fixPadding * 1.5,
-            }}
-          >
-            <MaterialCommunityIcons
-              name="pencil-outline"
-              size={40}
-              color={Colors.primaryColor}
-            />
-          </View>
+          
 
           <View
             style={{

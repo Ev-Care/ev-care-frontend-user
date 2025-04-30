@@ -33,7 +33,12 @@ import {
   fetchStationsByLocation,
   getAllFavoriteStations,
 } from "../service/crudFunction";
-import { selectStations, selectStationsError, selectStationsLoading, selectUserLoading } from "../service/selector";
+import {
+  selectStations,
+  selectStationsError,
+  selectStationsLoading,
+  selectUserLoading,
+} from "../service/selector";
 import { RefreshControl } from "react-native";
 import imageURL from "../../../constants/baseURL";
 import {
@@ -42,9 +47,12 @@ import {
 } from "../service/handleRefresh";
 import { updateUserCoordinate } from "../../../redux/store/userSlice";
 import { Overlay } from "@rneui/themed";
-import { openHourFormatter, formatDistance, getChargerLabel } from "../../../utils/globalMethods";
+import {
+  openHourFormatter,
+  formatDistance,
+  getChargerLabel,
+} from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-
 
 const COLORS = {
   primary: "#101942",
@@ -67,7 +75,7 @@ const UserHome = ({ navigation }) => {
   const isLoading = useSelector(selectStationsLoading || selectUserLoading);
   const stations = useSelector(selectStations);
 
-  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const [currentLocation, setCurrentLocation] = useState(null);
   const getGreeting = () => {
@@ -82,52 +90,63 @@ const UserHome = ({ navigation }) => {
 
   useEffect(() => {
     let subscription = null;
-  
+
     const startLocationUpdates = async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
-          dispatch(showSnackbar({ message: 'Permission to access location was denied.', type: "error" }));
+          dispatch(
+            showSnackbar({
+              message: "Permission to access location was denied.",
+              type: "error",
+            })
+          );
           return;
         }
-  
+
         subscription = await Location.watchPositionAsync(
           {
             accuracy: Location.Accuracy.High,
             timeInterval: 5000, // minimum time (ms) between updates
             distanceInterval: 50, // minimum distance (m) between updates
           },
-          async (loc) => {   // <-- important: make this function async
+          async (loc) => {
+            // <-- important: make this function async
             const coords = loc.coords;
             setCurrentLocation(coords);
             console.log({ currentLocation });
-  
+
             dispatch(updateUserCoordinate(coords)); // Update user coordinates
-  
+
             // 1. Fetch stations
-            const locationResponse = await dispatch(fetchStationsByLocation({ radius, coords }));
+            const locationResponse = await dispatch(
+              fetchStationsByLocation({ radius, coords })
+            );
             if (fetchStationsByLocation.fulfilled.match(locationResponse)) {
               // dispatch(showSnackbar({ message: 'Charging stations found.', type: "success" }));
-             
-            } else if (fetchStationsByLocation.rejected.match(locationResponse)) {
-              dispatch(showSnackbar({ message: errorMessage || "Failed to fetch stations.", type: "error" }));
+            } else if (
+              fetchStationsByLocation.rejected.match(locationResponse)
+            ) {
+              dispatch(
+                showSnackbar({
+                  message: errorMessage || "Failed to fetch stations.",
+                  type: "error",
+                })
+              );
             }
-  
-           
           }
         );
       } catch (err) {
         console.error("Error watching location:", err);
       }
     };
-  
+
     startLocationUpdates();
-  
+
     return () => {
       if (subscription) subscription.remove();
     };
   }, [refreshing]);
-  
 
   const handleRefresh = async () => {
     try {
@@ -135,11 +154,18 @@ const UserHome = ({ navigation }) => {
       // 1. Get location permission
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        dispatch(showSnackbar({ message: 'Permission to access location was denied.', type: "error" }))
+        dispatch(
+          showSnackbar({
+            message: "Permission to access location was denied.",
+            type: "error",
+          })
+        );
         return;
       }
       // 2. Get current location
-      const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
       const coords = location.coords;
       setCurrentLocation(coords);
 
@@ -147,17 +173,25 @@ const UserHome = ({ navigation }) => {
       dispatch(updateUserCoordinate(coords));
 
       // 4. Fetch stations based on new location
-      const locationResponse = await dispatch(fetchStationsByLocation({ radius, coords }));
+      const locationResponse = await dispatch(
+        fetchStationsByLocation({ radius, coords })
+      );
 
       if (fetchStationsByLocation.fulfilled.match(locationResponse)) {
         // dispatch(showSnackbar({ message: 'Charging stations found.', type: "success" }));
       } else if (fetchStationsByLocation.rejected.match(locationResponse)) {
-        dispatch(showSnackbar({ message: errorMessage || "Failed to fetch stations.", type: "error" }));
+        dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to fetch stations.",
+            type: "error",
+          })
+        );
       }
-     
     } catch (error) {
       console.error("Error during refresh:", error);
-      dispatch(showSnackbar({ message: "Error refreshing data.", type: "error" }));
+      dispatch(
+        showSnackbar({ message: "Error refreshing data.", type: "error" })
+      );
     } finally {
       setRefreshing(false);
     }
@@ -299,7 +333,6 @@ const UserHome = ({ navigation }) => {
                     {stations?.length > 0
                       ? `${formatDistance(stations[0]?.distance_km)}`
                       : "N/A"}
-                    
                   </Text>
                   <Text style={styles.featureText}>(From here)</Text>
                 </View>
@@ -429,41 +462,40 @@ const UserHome = ({ navigation }) => {
             <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
               {item?.address ?? "Address not available"}
             </Text>
-           
+
             <View
               style={{
                 marginTop: Sizes.fixPadding,
-                ...commonStyles.rowAlignCenter,
+               ...commonStyles.rowSpaceBetween,
+               
               }}
             >
-              <View style={{ ...commonStyles.rowAlignCenter }}>
+              {/* Left Section */}
+              <View style={{    ...commonStyles.rowAlignCenter }}>
                 <Text style={{ ...Fonts.blackColor16Medium }}>
-                  {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time)} 
+                  {openHourFormatter(
+                    item?.open_hours_opening_time,
+                    item?.open_hours_closing_time
+                  )}
                 </Text>
               </View>
 
-              <View
-                style={{
-                  marginLeft: Sizes.fixPadding * 2.0,
-                  ...commonStyles.rowAlignCenter,
-                  flex: 1,
-                }}
-              >
+              {/* Right Section */}
+              <View style={{  ...commonStyles.rowAlignCenter }}>
                 <View style={styles.primaryColorDot} />
                 <Text
                   numberOfLines={1}
                   style={{
                     marginLeft: Sizes.fixPadding,
                     ...Fonts.grayColor14Medium,
-                    flex: 1,
+                    maxWidth: 150, // optional: limit text to prevent overflow
                   }}
                 >
-                {getChargerLabel(item?.chargers?.length ?? 0)}
+                  {getChargerLabel(item?.chargers?.length ?? 0)}
                 </Text>
               </View>
             </View>
           </View>
-
           <View
             style={{
               ...commonStyles.rowAlignCenter,

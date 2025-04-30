@@ -13,7 +13,7 @@ import {
 import { BottomSheet } from "@rneui/themed";
 import React, { useState, createRef, useEffect, useRef } from "react";
 import MyStatusBar from "../../../components/myStatusBar";
-import MapView, { Marker, PROVIDER_GOOGLE,Polyline } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE, Polyline } from "react-native-maps";
 import {
   Colors,
   screenWidth,
@@ -30,7 +30,7 @@ import {
   formatDistance,
   getChargerLabel,
 } from "../../../utils/globalMethods";
-import polyline from '@mapbox/polyline';
+import polyline from "@mapbox/polyline";
 
 const width = screenWidth;
 const cardWidth = width / 1.15;
@@ -168,42 +168,42 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       latitude: toDefaultLocation?.latitude,
       longitude: toDefaultLocation?.longitude,
     };
-  
+
     getRouteBetweenCoordinates(source, destination)
       .then(setCoordinates)
       .catch(console.error);
   }, []);
 
- const getRouteBetweenCoordinates = async (origin, destination) => {
-  const originStr = `${origin.latitude},${origin.longitude}`;
-  const destinationStr = `${destination.latitude},${destination.longitude}`;
-  const apiKey = Key.apiKey; // Replace with your actual key
+  const getRouteBetweenCoordinates = async (origin, destination) => {
+    const originStr = `${origin.latitude},${origin.longitude}`;
+    const destinationStr = `${destination.latitude},${destination.longitude}`;
+    const apiKey = Key.apiKey; // Replace with your actual key
 
-  const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${originStr}&destination=${destinationStr}&key=${apiKey}&mode=driving&overview=full&steps=true`;
+    const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${originStr}&destination=${destinationStr}&key=${apiKey}&mode=driving&overview=full&steps=true`;
 
-  const response = await fetch(url);
-  const data = await response.json();
+    const response = await fetch(url);
+    const data = await response.json();
 
-  if (data.routes.length) {
-    // Get polyline points from the steps
-    let allPoints = [];
-    
-    // Loop through each step to collect polyline points
-    data.routes[0].legs.forEach((leg) => {
-      leg.steps.forEach((step) => {
-        if (step.polyline) {
-          const decodedPoints = polyline.decode(step.polyline.points);
-          allPoints = [...allPoints, ...decodedPoints];
-        }
+    if (data.routes.length) {
+      // Get polyline points from the steps
+      let allPoints = [];
+
+      // Loop through each step to collect polyline points
+      data.routes[0].legs.forEach((leg) => {
+        leg.steps.forEach((step) => {
+          if (step.polyline) {
+            const decodedPoints = polyline.decode(step.polyline.points);
+            allPoints = [...allPoints, ...decodedPoints];
+          }
+        });
       });
-    });
 
-    // Convert the decoded points to { latitude, longitude } format
-    return allPoints.map(([lat, lng]) => ({ latitude: lat, longitude: lng }));
-  } else {
-    throw new Error('No route found');
-  }
-};
+      // Convert the decoded points to { latitude, longitude } format
+      return allPoints.map(([lat, lng]) => ({ latitude: lat, longitude: lng }));
+    } else {
+      throw new Error("No route found");
+    }
+  };
 
   const [markerList] = useState(enrouteStations || []);
   const [region, setRegion] = useState({
@@ -226,19 +226,13 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       fromDefaultLocation &&
       toDefaultLocation
     ) {
-      _map.current.fitToCoordinates(
-        [fromDefaultLocation, toDefaultLocation],
-        {
-          edgePadding: { top: 50, right: 50, bottom: 150, left: 50 },
-          animated: true,
-        }
-      );
+      _map.current.fitToCoordinates([fromDefaultLocation, toDefaultLocation], {
+        edgePadding: { top: 50, right: 50, bottom: 150, left: 50 },
+        animated: true,
+      });
     }
   }, [mapLayoutCompleted]);
-  
 
-
-  
   useEffect(() => {
     console.log(" map page rendered");
     mapAnimation.addListener(({ value }) => {
@@ -255,7 +249,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       const regionTimeout = setTimeout(() => {
         if (mapIndex !== index) {
           mapIndex = index;
-          const { coordinates } = markerList[index] ?? {}; 
+          const { coordinates } = markerList[index] ?? {};
           _map.current?.animateToRegion(
             {
               ...coordinates,
@@ -268,7 +262,6 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       }, 10);
     });
   }, [mapAnimation, markerList]);
-
 
   const interpolation = markerList.map((marker, index) => {
     const inputRange = [
@@ -543,18 +536,18 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
         snapToAlignment="center"
         style={{ paddingVertical: Sizes.fixPadding }}
         contentContainerStyle={{ paddingHorizontal: Sizes.fixPadding }}
-          onScroll={Animated.event(
-                   [
-                     {
-                       nativeEvent: {
-                         contentOffset: {
-                           x: mapAnimation,
-                         },
-                       },
-                     },
-                   ],
-    { useNativeDriver: true }
-  )}
+        onScroll={Animated.event(
+          [
+            {
+              nativeEvent: {
+                contentOffset: {
+                  x: mapAnimation,
+                },
+              },
+            },
+          ],
+          { useNativeDriver: true }
+        )}
       >
         {markerList.map((item, index) => (
           <TouchableOpacity
@@ -594,39 +587,39 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                 <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
                   {item.address}
                 </Text>
+
                 <View
                   style={{
                     marginTop: Sizes.fixPadding,
-                    ...commonStyles.rowAlignCenter,
+                    ...commonStyles.rowSpaceBetween,
                   }}
                 >
+                  {/* Left Section */}
                   <View style={{ ...commonStyles.rowAlignCenter }}>
                     <Text style={{ ...Fonts.blackColor16Medium }}>
-                    {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time)} 
-              
+                      {openHourFormatter(
+                        item?.open_hours_opening_time,
+                        item?.open_hours_closing_time
+                      )}
                     </Text>
                   </View>
-                  <View
-                    style={{
-                      marginLeft: Sizes.fixPadding * 2.0,
-                      ...commonStyles.rowAlignCenter,
-                      flex: 1,
-                    }}
-                  >
+
+                  {/* Right Section */}
+                  <View style={{ ...commonStyles.rowAlignCenter }}>
                     <View style={styles.primaryColorDot} />
                     <Text
                       numberOfLines={1}
                       style={{
                         marginLeft: Sizes.fixPadding,
                         ...Fonts.grayColor14Medium,
-                        flex: 1,
+                        maxWidth: 150, // optional: limit text to prevent overflow
                       }}
                     >
                       {getChargerLabel(item?.chargers?.length ?? 0)}
                     </Text>
                   </View>
                 </View>
-              </View>
+            </View>
               <View
                 style={{
                   ...commonStyles.rowAlignCenter,
@@ -711,15 +704,14 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
           mode="DRIVING"
           optimizeWaypoints={true}
         /> */}
-  {coordinates.length > 0 && (
-   <Polyline
-   coordinates={coordinates}
-   strokeWidth={3} 
-   strokeColor="rgba(0, 0, 255, 0.5)"
-   lineCap="round" 
- />
- 
-  )}
+        {coordinates.length > 0 && (
+          <Polyline
+            coordinates={coordinates}
+            strokeWidth={3}
+            strokeColor="rgba(0, 0, 255, 0.5)"
+            lineCap="round"
+          />
+        )}
         <Marker coordinate={fromDefaultLocation}>
           <Image
             source={require("../../../../assets/images/userMarker.png")}

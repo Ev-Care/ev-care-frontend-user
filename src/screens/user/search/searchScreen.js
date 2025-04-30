@@ -414,36 +414,40 @@ function chargingSpots() {
                   <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
                     {item?.address}
                   </Text>
-                  <View
-                    style={{
-                      marginTop: Sizes.fixPadding,
-                      ...commonStyles.rowAlignCenter,
-                    }}
-                  >
-                    <View style={{ ...commonStyles.rowAlignCenter }}>
-                  <Text style={{ ...Fonts.blackColor16Medium }}>
-                 {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time)} 
-                                 </Text>
-                </View>
-                    <View
-                      style={{
-                        marginLeft: Sizes.fixPadding * 2.0,
-                        ...commonStyles.rowAlignCenter,
-                        flex: 1,
-                      }}
-                    >
-                      <View style={styles.primaryColorDot} />
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginLeft: Sizes.fixPadding,
-                          ...Fonts.grayColor14Medium,
-                          flex: 1,
-                        }}
-                      >  {getChargerLabel(item?.chargers?.length ?? 0)}
-                      </Text>
-                    </View>
-                  </View>
+
+
+                   <View
+                              style={{
+                                marginTop: Sizes.fixPadding,
+                               ...commonStyles.rowSpaceBetween,
+                               
+                              }}
+                            >
+                              {/* Left Section */}
+                              <View style={{    ...commonStyles.rowAlignCenter }}>
+                                <Text style={{ ...Fonts.blackColor16Medium }}>
+                                  {openHourFormatter(
+                                    item?.open_hours_opening_time,
+                                    item?.open_hours_closing_time
+                                  )}
+                                </Text>
+                              </View>
+                
+                              {/* Right Section */}
+                              <View style={{  ...commonStyles.rowAlignCenter }}>
+                                <View style={styles.primaryColorDot} />
+                                <Text
+                                  numberOfLines={1}
+                                  style={{
+                                    marginLeft: Sizes.fixPadding,
+                                    ...Fonts.grayColor14Medium,
+                                    maxWidth: 150, // optional: limit text to prevent overflow
+                                  }}
+                                >
+                                  {getChargerLabel(item?.chargers?.length ?? 0)}
+                                </Text>
+                              </View>
+                            </View>
                 </View>
                 <View
                   style={{

@@ -25,7 +25,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
   const stations = useSelector(selectStations);
   const [refreshing, setRefreshing] = useState(false);
   const userCoords = useSelector(selectUserCoordinate);
-    const isLoading = useSelector(selectStationsLoading);
+  const isLoading = useSelector(selectStationsLoading);
   const dispatch = useDispatch();
   
   const openGoogleMaps = (latitude, longitude) => {

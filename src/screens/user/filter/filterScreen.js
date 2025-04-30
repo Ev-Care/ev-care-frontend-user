@@ -19,7 +19,7 @@ const connectionTypesList = [
   {
     id: "1",
     connectionTypeIcon:"ev-plug-ccs2",
-    connectionType: "CSS-2",
+    connectionType: "CCS-2",
     selected: false,
   },
   {
@@ -48,27 +48,27 @@ const connectionTypesList = [
   },
 ];
 
-const distanceList = ["<5 km", "<10 km", "<20 km", "<30 km", ">30 km"];
+const distanceList = ["> 0 Km","<5 km", "<10 km", "<20 km", "<30 km", ">30 km",];
 
 const powerRatingList = [
   {
     id: "1",
-    speed: "Standard (<3.7 kW)",
+    speed: "Standard (<10 kW)",
     selected: false,
   },
   {
     id: "2",
-    speed: "Semi fast (3.7 - 20 kW)",
+    speed: "Semi fast (10 - 20 kW)",
     selected: false,
   },
   {
     id: "3",
-    speed: "Fast (20 - 43 kW)",
+    speed: "Fast (20 - 40 kW)",
     selected: false,
   },
   {
     id: "4",
-    speed: "Ultra fast (>43 kW)",
+    speed: "Ultra fast (>50 kW)",
     selected: false,
   },
 ];
@@ -82,20 +82,34 @@ const FilterScreen = ({ navigation,route }) => {
   const handleSubmit = () => {
     const selectedFilters = {
       selectedDistanceIndex,
-      connectionTypes: connectionTypes.filter(item => item.selected),
-      powerRating: powerRating.filter(item => item.selected)
+      connectionTypes: connectionTypes.find(item => item.selected),  
+      powerRating: powerRating.find(item => item.selected) 
     };
   
-    // Add optional chaining here to avoid potential errors if `route.params` is undefined
-    route.params?.onApplyFilter(selectedFilters);
-    navigation.dispatch(StackActions.pop(1));
+    // console.log("selected filters", selectedFilters);
+  
+    // Check if `connectionTypes` or `powerRating` have a valid selected item before applying
+    if (selectedFilters) {
+      // Add optional chaining here to avoid potential errors if `route.params` is undefined
+      route.params?.onApplyFilter(selectedFilters);
+      navigation.dispatch(StackActions.pop(1));
+    } else {
+      console.log("Please select a valid filter.");
+    }
   };
+  
   
   const handleCancel = () => {
     setconnectionTypes(connectionTypesList.map(item => ({ ...item, selected: false })));
     setPowerRating(powerRatingList.map(item => ({ ...item, selected: false })));
     setselectedDistanceIndex(0);
-    navigation.goBack();
+    const selectedFilters = {
+      selectedDistanceIndex,
+      connectionTypes: connectionTypes.find(item => item.selected), 
+      powerRating: powerRating.find(item => item.selected) 
+    };
+    route.params?.onApplyFilter(selectedFilters);
+    navigation.dispatch(StackActions.pop(1));
   };
   
   

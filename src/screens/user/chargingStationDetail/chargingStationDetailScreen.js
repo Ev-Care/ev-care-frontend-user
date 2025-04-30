@@ -106,10 +106,10 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
 
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",
-    CHAdeMO: "ev-plug-chademo",
+    "CHAdeMO": "ev-plug-chademo",
     "Type-2": "ev-plug-type2",
-    Wall: "ev-plug-type1",
-    GBT: "ev-plug-type2",
+    "Wall": "ev-plug-type1",
+    "GBT:" : "ev-plug-type2",
   };
 
   const amenityMap = {

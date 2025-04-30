@@ -22,7 +22,12 @@ import MyStatusBar from "../../../components/myStatusBar";
 import { SwipeListView } from "react-native-swipe-list-view";
 import { Snackbar } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
-import { selectFavoriteStations, selectStations, selectStationsError, selectStationsLoading } from "../service/selector";
+import {
+  selectFavoriteStations,
+  selectStations,
+  selectStationsError,
+  selectStationsLoading,
+} from "../service/selector";
 import imageURL from "../../../constants/baseURL";
 import {
   default as Icon,
@@ -33,7 +38,11 @@ import {
   getAllFavoriteStations,
 } from "../service/crudFunction";
 import { selectUser } from "../../auth/services/selector";
-import { openHourFormatter, formatDistance, getChargerLabel } from "../../../utils/globalMethods";
+import {
+  openHourFormatter,
+  formatDistance,
+  getChargerLabel,
+} from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -51,42 +60,51 @@ const FavoriteScreen = ({ navigation }) => {
   useEffect(() => {
     dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
   }, [user?.user_key, dispatch]);
-  
+
   useEffect(() => {
     if (stations?.length && favStations?.length) {
-      console.log('useeffect in fav called and fav length is ', favStations.length);
+      console.log(
+        "useeffect in fav called and fav length is ",
+        favStations.length
+      );
       const filtered = favStations
         .map((fav) => stations.find((station) => station.id === fav.station.id))
         .filter(Boolean);
       setListData(filtered);
     }
   }, [favStations, stations]);
-  
+
   useFocusEffect(
     useCallback(() => {
       const fetchFavorites = async () => {
-        const favResponse = await dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
-  
+        const favResponse = await dispatch(
+          getAllFavoriteStations({ user_key: user?.user_key })
+        );
+
         if (getAllFavoriteStations.rejected.match(favResponse)) {
-          dispatch(showSnackbar({
-            message: errorMessage || "Failed to fetch favorite stations.",
-            type: "error"
-          }));
+          dispatch(
+            showSnackbar({
+              message: errorMessage || "Failed to fetch favorite stations.",
+              type: "error",
+            })
+          );
           return;
         }
-  
+
         // ✅ Get updated favorites from store after dispatch
         const updatedFavStations = store.getState().favorites.favStations;
-  
+
         if (stations && updatedFavStations) {
           const filtered = updatedFavStations
-            .map((fav) => stations.find((station) => station.id == fav.station.id))
+            .map((fav) =>
+              stations.find((station) => station.id == fav.station.id)
+            )
             .filter(Boolean);
-  
+
           setListData(filtered);
         }
       };
-  
+
       fetchFavorites();
     }, [user?.user_key, dispatch, stations])
   );
@@ -96,13 +114,19 @@ const FavoriteScreen = ({ navigation }) => {
   //   console.log("stations in listData fav screen", listData.length);
 
   const handleRefresh = async () => {
-
-    const favResponse = await dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
+    const favResponse = await dispatch(
+      getAllFavoriteStations({ user_key: user?.user_key })
+    );
 
     if (getAllFavoriteStations.fulfilled.match(favResponse)) {
       // dispatch(showSnackbar({ message: 'Favorite stations found.', type: "success" }));
     } else if (getAllFavoriteStations.rejected.match(favResponse)) {
-      dispatch(showSnackbar({ message: errorMessage || "Failed to fetch favorite stations.", type: "error" }));
+      dispatch(
+        showSnackbar({
+          message: errorMessage || "Failed to fetch favorite stations.",
+          type: "error",
+        })
+      );
     }
     if (stations && favStations) {
       const filtered = favStations
@@ -125,10 +149,12 @@ const FavoriteScreen = ({ navigation }) => {
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
       {isLoading ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={Colors.primaryColor} />
-          n  </View>
-         ) : (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size="large" color={Colors.primaryColor} />n{" "}
+        </View>
+      ) : (
         <View style={{ flex: 1 }}>
           {header()}
           {favoriteItems()}
@@ -138,13 +164,10 @@ const FavoriteScreen = ({ navigation }) => {
     </View>
   );
 
- 
-
   function favoriteItems() {
-    
-function noItemsInfo() {
+    function noItemsInfo() {
       return (
-        <View style={[styles.noItemsInfoWrapStyle,{ paddingVertical:"60%",}]}>
+        <View style={[styles.noItemsInfoWrapStyle, { paddingVertical: "60%" }]}>
           <Image
             source={require("../../../../assets/images/icons/heart_broken.png")}
             style={{ width: 100.0, height: 100.0, resizeMode: "contain" }}
@@ -159,7 +182,7 @@ function noItemsInfo() {
           </Text>
         </View>
       );
-}
+    }
     const closeRow = (rowMap, rowKey) => {
       if (rowMap?.[rowKey]) {
         rowMap[rowKey].closeRow();
@@ -168,7 +191,6 @@ function noItemsInfo() {
 
     const renderHiddenItem = (data, rowMap) => (
       <View style={{ alignItems: "center", flex: 1 }}>
-
         <TouchableOpacity
           activeOpacity={0.8}
           style={{ ...styles.backDeleteContinerStyle }}
@@ -185,23 +207,29 @@ function noItemsInfo() {
       closeRow(rowMap, rowKey);
       const newData = [...listData];
       const prevIndex = listData.findIndex((item) => item?.key === rowKey);
-    
+
       if (prevIndex !== -1) {
         newData.splice(prevIndex, 1);
         setShowSnackBar(true);
         setListData(newData);
       }
-    
-      const unfavResponse = await dispatch(unFavoriteStation({ stationId: rowKey, userId: user.id }));
-    
+
+      const unfavResponse = await dispatch(
+        unFavoriteStation({ stationId: rowKey, userId: user.id })
+      );
+
       if (unFavoriteStation.fulfilled.match(unfavResponse)) {
         navigation.pop();
-        navigation.navigate('FavoriteScreen');
+        navigation.navigate("FavoriteScreen");
       } else {
-        dispatch(showSnackbar({ message: errorMessage || "Failed to unfavorite station.", type: "error" }));
+        dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to unfavorite station.",
+            type: "error",
+          })
+        );
       }
     };
-    
 
     const renderItem = (data) => (
       <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -217,8 +245,8 @@ function noItemsInfo() {
               data?.item?.station_images
                 ? { uri: imageURL.baseURL + data.item.station_images }
                 : {
-                  uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                }
+                    uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                  }
             }
             style={styles.enrouteChargingStationImage}
           />
@@ -244,39 +272,37 @@ function noItemsInfo() {
                 {data?.item?.address}
               </Text>
 
+              <View
+                style={{
+                  marginTop: Sizes.fixPadding,
+                  ...commonStyles.rowSpaceBetween,
+                }}
+              >
+                {/* Left Section */}
+                <View style={{ ...commonStyles.rowAlignCenter }}>
+                  <Text style={{ ...Fonts.blackColor16Medium }}>
+                    {openHourFormatter(
+                      data?.item?.open_hours_opening_time,
+                      data?.item?.open_hours_closing_time
+                    )}
+                  </Text>
+                </View>
 
-                <View
-                           style={{
-                             marginTop: Sizes.fixPadding,
-                            ...commonStyles.rowSpaceBetween,
-                            
-                           }}
-                         >
-                           {/* Left Section */}
-                           <View style={{    ...commonStyles.rowAlignCenter }}>
-                             <Text style={{ ...Fonts.blackColor16Medium }}>
-                               {openHourFormatter(
-                                 data?.item?.open_hours_opening_time,
-                                 data?.item?.open_hours_closing_time
-                               )}
-                             </Text>
-                           </View>
-             
-                           {/* Right Section */}
-                           <View style={{  ...commonStyles.rowAlignCenter }}>
-                             <View style={styles.primaryColorDot} />
-                             <Text
-                               numberOfLines={1}
-                               style={{
-                                 marginLeft: Sizes.fixPadding,
-                                 ...Fonts.grayColor14Medium,
-                                 maxWidth: 150, // optional: limit text to prevent overflow
-                               }}
-                              >
-                               {getChargerLabel( data?.item?.chargers?.length ?? 0)}
-                             </Text>
-                           </View>
-                         </View>
+                {/* Right Section */}
+                <View style={{ ...commonStyles.rowAlignCenter }}>
+                  <View style={styles.primaryColorDot} />
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      marginLeft: Sizes.fixPadding,
+                      ...Fonts.grayColor14Medium,
+                      maxWidth: 150, // optional: limit text to prevent overflow
+                    }}
+                  >
+                    {getChargerLabel(data?.item?.chargers?.length ?? 0)}
+                  </Text>
+                </View>
+              </View>
             </View>
             <View
               style={{
@@ -317,19 +343,19 @@ function noItemsInfo() {
     return (
       <View style={{ flex: 1 }}>
         <View style={{ flex: 1 }}>
-      <SwipeListView
-        refreshing={refreshing}
-        onRefresh={handleRefresh}
-        data={listData}
-        renderItem={renderItem}
-        renderHiddenItem={renderHiddenItem}
-        rightOpenValue={-66}
-        useNativeDriver={false}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: Sizes.fixPadding - 5.0 }}
-        ListEmptyComponent={noItemsInfo} // for no fav stations
-      />
-    </View>
+          <SwipeListView
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            data={listData}
+            renderItem={renderItem}
+            renderHiddenItem={renderHiddenItem}
+            rightOpenValue={-66}
+            useNativeDriver={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingTop: Sizes.fixPadding - 5.0 }}
+            ListEmptyComponent={noItemsInfo} // for no fav stations
+          />
+        </View>
       </View>
     );
   }
@@ -369,8 +395,8 @@ const styles = StyleSheet.create({
     margin: Sizes.fixPadding * 2.0,
     flex: 1,
     alignItems: "center",
-  absolute:"true",
- 
+    absolute: "true",
+
     justifyContent: "center",
   },
 
@@ -382,7 +408,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0eb",
-    elevation: 5
+    elevation: 5,
   },
   deleteIconWrapper: {
     width: 46.0,

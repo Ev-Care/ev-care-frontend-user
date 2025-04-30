@@ -392,7 +392,7 @@ const UserHome = ({ navigation }) => {
         </View>
         <View style={{ height: 20 }} />
       </Animated.ScrollView>
-      {loadingDialog()}
+      {/* {loadingDialog()} */}
     </SafeAreaView>
   );
 
@@ -404,15 +404,6 @@ const UserHome = ({ navigation }) => {
           color={Colors.primaryColor}
           style={{ alignSelf: "center" }}
         />
-        <Text
-          style={{
-            marginTop: Sizes.fixPadding,
-            textAlign: "center",
-            ...Fonts.blackColor16Regular,
-          }}
-        >
-          Please wait...
-        </Text>
       </Overlay>
     );
   }

@@ -102,6 +102,8 @@ export const approveStation = createAsyncThunk(
     }
   }
 );
+
+
 export const approveVendorProfile = createAsyncThunk(
   "admin/approveVendorProfile",
   async (data, { rejectWithValue }) => {
@@ -136,88 +138,36 @@ export const approveVendorProfile = createAsyncThunk(
   }
 );
 
-/*
-//Get vendor details by key
-export const getUserDetailsByKey = createAsyncThunk(
-  "auth/getUserDetailsByKey",
-  async (user_key, { rejectWithValue }) => {
+
+export const createUser = createAsyncThunk(
+  "admin/createUser",
+  async (data, { rejectWithValue }) => {
+    
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
 
-      const response = await getUserByKeyAPI({ user_key, accessToken });
+      const response = await createUserAPI({
+        data,
+        accessToken
+      }); // Call the API to create user station
 
-      if (response.data.code === 200 || response.data.code === 201) {
-        return response.data;
+      if (response?.data?.code === 200 || response?.data?.code === 201) {
+        return response?.data;
       } else {
         return rejectWithValue(
-          response.data.message || "Failed to fetch user details"
+          response?.message || response?.data?.message || "Failed to create new user."
         );
       }
     } catch (error) {
-      console.log("Error in getUserDetailsByKey:", error);
+      console.log("Error in createUser:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
         error?.response?.data?.message || // API sent error message
         error?.message || // JS error message
-        "Failed to fetch user details"; // fallback message
+        "Server error"; // fallback message
 
       return rejectWithValue(errorMessage);
     }
   }
 );
-
-export const patchUpdateUserProfile = createAsyncThunk(
-  "userSlice/profileUpdate",
-  async (data, { rejectWithValue }) => {
-    try {
-      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
-      // console.log("data:",  {...data, accessToken}); // Log the access token for debugging
-      const response = await updateUserProfileAPI({ ...data, accessToken }); // Call the API to fetch stations by location
-      if (response.data.code === 200 || response.data.code === 201) {
-        return response.data;
-      } else {
-        return rejectWithValue(
-          response.data.message || "Failed to update user details"
-        );
-      }
-    } catch (error) {
-      console.log("Error in patchUpdateUserProfile:", error);
-
-      // Always extract message properly even in catch
-      const errorMessage =
-        error?.response?.data?.message || // API sent error message
-        error?.message || // JS error message
-        "Failed to update user details"; // fallback message
-
-      return rejectWithValue(errorMessage);
-    }
-  }
-);
-
-export const sendQueryAction = createAsyncThunk(
-  "support/send-query",
-  async (data, { rejectWithValue }) => {
-    try {
-      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
-      const response = await sendQuery({ ...data, accessToken }); // Call the API to fetch stations by location
-      if (response.data.code === 200 || response.data.code === 201) {
-        return response.data;
-      } else {
-        return rejectWithValue(response.data.message || "Send query failed!!");
-      }
-    } catch (error) {
-      console.log("Error in sendQueryAction:", error);
-
-      // Always extract message properly even in catch
-      const errorMessage =
-        error?.response?.data?.message || // API sent error message
-        error?.message || // JS error message
-        "could not send query to admin"; // fallback message
-
-      return rejectWithValue(errorMessage);
-    }
-  }
-);
-
-*/

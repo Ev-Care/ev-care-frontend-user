@@ -1,32 +1,26 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import { Overlay } from "@rneui/themed";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Image,
   ActivityIndicator,
-  StyleSheet,
-  Alert,
+  Image,
   Modal,
   ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
+import { useDispatch } from "react-redux";
+import imageURL from "../../../constants/baseURL";
 import {
   Colors,
-  Sizes,
   Fonts,
-  commonStyles,
-  screenWidth,
+  Sizes,
+  commonStyles
 } from "../../../constants/styles";
-import RNModal from "react-native-modal";
-import { Overlay } from "@rneui/themed";
-import imageURL from "../../../constants/baseURL";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { useDispatch } from "react-redux";
-import { approveVendorProfile, getAllUsers } from "../services/crudFunctions";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import { approveVendorProfile, getAllUsers } from "../services/crudFunctions";
 
 const VerifyVendorProfile = ({ route, navigation }) => {
   const { user } = route?.params; // Get the user data from route params

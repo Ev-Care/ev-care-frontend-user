@@ -4,8 +4,12 @@ import { approveStation, approveVendorProfile, fetchAllPendingStation, getAllUse
 
 
 const initialState = {
-    users: [],
-    stations: [],
+    allUsers: [],
+    allStations: [],
+    pendingStations: [],
+    pendingUsers: [],
+    rejectedStations: [],
+    rejectedUsers: [],
     loading: false,
     error: null,
 

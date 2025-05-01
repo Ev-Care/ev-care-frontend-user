@@ -24,19 +24,19 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import imageURL from "../../../constants/baseURL";
 
 import { useDispatch, useSelector } from "react-redux";
-import { selectAdminStations } from "../services/selector";
+import { selectPendingStations } from "../services/selector";
 import { useFocusEffect } from "@react-navigation/native";
 import { fetchAllPendingStation } from "../services/crudFunctions";
 import { RefreshControl } from "react-native";
 
 const AllPendingStations = ({ navigation }) => {
   const [searchText, setSearchText] = useState("");
-  const allStationsList = useSelector(selectAdminStations);
+  const allStationsList = useSelector(selectPendingStations);
   const [refreshing, setRefreshing] = useState(false);
   const filteredStations = allStationsList.filter((station) =>
     station?.station_name?.toLowerCase().includes(searchText.toLowerCase())
   );
-  const dispatch = useDispatch(selectAdminStations);
+  const dispatch = useDispatch();
   // Dummy coordinates for the location
   // Called only on first mount
   useEffect(() => {

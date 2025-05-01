@@ -1,7 +1,9 @@
 // Selector to get stations from the state
-export const selectAdminStations = (state) => state.admin.stations;
-export const selectAdminUsers = (state) => state.admin.users;
-export const selectUserCoordinate = (state) => state.admin.userCoordinate;
+export const selectPendingStations = (state) => state.admin.pendingStations;
+export const selectPendingUsers = (state) => state.admin.pendingUsers;
+export const selectAllUsers = (state) => state.admin.allUsers;
 export const selectAdminLoading = (state) => state.admin.loading;
 export const selectAdminError = (state) => state.admin.error;
 export const selectUserLoading = (state) => state.auth.loading;
+export const selectRejectedStations = (state) => state.admin.rejectedStations;
+export const selectRejectedUsers = (state) => state.admin.rejectedUsers;

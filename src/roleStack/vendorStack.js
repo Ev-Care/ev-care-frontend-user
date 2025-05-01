@@ -101,14 +101,6 @@ export function VendorStack() {
           />
           <Stack.Screen name="UpdateStation" component={UpdateStation} />
 
-          {/* //comment this line to use the add station screen */}
-          {/* <Stack.Screen name="Instruction" component={Instruction} />
-          <Stack.Screen name="UploadAadhar" component={UploadAadhar} />
-          <Stack.Screen name="UploadPAN" component={UploadPAN} />
-          <Stack.Screen name="UploadTAN" component={UploadTAN} />
-          <Stack.Screen name="VendorDetailForm" component={VendorDetailForm} />
-          
-          <Stack.Screen name="VendorAccountDetailsForm" component={VendorAccountDetailsForm} /> */}
         </>
       )}
     </Stack.Navigator>

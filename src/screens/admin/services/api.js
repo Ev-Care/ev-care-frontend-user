@@ -32,3 +32,11 @@ export const approveVendorProfileAPI = (data) =>
     accessToken: data.accessToken,
     data: { status: data.status },
   });
+
+export const createUserAPI = (data) =>
+  apiPostRequest({
+    apiUrl: `${API_URL}/users/create-user`,
+    content_type: "application/json",
+    accessToken: data.accessToken,
+    data: data,
+  });

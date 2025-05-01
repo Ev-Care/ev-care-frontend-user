@@ -14,7 +14,7 @@ import VerifyVendorProfile from "../screens/admin/verifyVendors/VerifyVendorProf
 import CreateUser from "../screens/admin/createUser/CreateUser";
 import ViewAllIssuesPage from "../screens/admin/supportIssues/AllSupportIssues";
 
-
+import AddStations from "../screens/vendor/pages/addStations/addStations";
 const Stack = createStackNavigator();
 
 export function AdminStack() {
@@ -33,6 +33,7 @@ export function AdminStack() {
       <Stack.Screen name="VerifyVendorProfile" component={VerifyVendorProfile} />
       <Stack.Screen name="CreateUser" component={CreateUser} />
       <Stack.Screen name="ViewAllIssuesPage" component={ViewAllIssuesPage} />
+      <Stack.Screen name="CreateStation" component={AddStations} />
 
 
      

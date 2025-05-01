@@ -23,7 +23,7 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { color } from "@rneui/base";
 import { getAllUsers } from "../services/crudFunctions";
 import { useDispatch, useSelector } from "react-redux";
-import { selectAdminUsers } from "../services/selector";
+import {  selectPendingUsers } from "../services/selector";
 import { useFocusEffect } from "@react-navigation/native";
 import imageURL from "../../../constants/baseURL";
 import { RefreshControl } from "react-native";
@@ -46,7 +46,7 @@ const COLORS = {
 
 const AllPendingVendors = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const users = useSelector(selectAdminUsers);
+  const users = useSelector(selectPendingUsers);
   const dispatch = useDispatch();
   console.log('users length',users?.length);
    const [refreshing, setRefreshing] = useState(false);

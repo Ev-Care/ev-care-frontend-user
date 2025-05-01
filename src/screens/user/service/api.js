@@ -20,6 +20,7 @@ export const updateUserProfileAPI = (data) =>
       email: data.email,
       role: data.role,
       avatar: data.avatar,
+      business_name: data?.business_name || null
     },
     accessToken: data.accessToken,
   });

@@ -27,6 +27,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { useSelector, useDispatch } from "react-redux";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { patchUpdateUserProfile } from "../../user/service/crudFunction";
+import { default as Icon } from "react-native-vector-icons/MaterialIcons";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
 import {
   selectAuthError,
@@ -227,7 +228,7 @@ const EditAdminProfile = ({ route, navigation }) => {
           {label}
         </Text>
         <TextInput
-          style={[styles.input, { backgroundColor: "#e0e0eb" }]}
+          style={[styles.input, { backgroundColor: Colors.bodyBackColor }]}
           value={value}
           onChangeText={setter}
           placeholder={placeholder}
@@ -288,8 +289,15 @@ const EditAdminProfile = ({ route, navigation }) => {
       
   return (
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
+       <View style={styles.appBar}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Icon name="arrow-back" size={24} color={Colors.primary} />
+              </TouchableOpacity>
+              <Text style={[styles.title,{fontSize:16}]}>Verify Vendor Profile</Text>
+              <View style={{ width: 24 }} />
+            </View>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Edit Profile</Text>
+        
         <View style={styles.imageContainerAvatar}>
           {renderImageBox("avatar", setAvatarURI, avatarURI)}
         </View>
@@ -480,13 +488,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingBottom: 50,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#333",
-    textAlign: "center",
-  },
+
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -518,6 +520,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     // backgroundColor: 'rgba(67, 92, 128, 0.43)', // Optional: semi-transparent overlay
     zIndex: 999,
+  },
+  appBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: Colors.bodyBackColor,
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0eb",
+    elevation: 5,
   },
 
   imageBox: {

@@ -391,8 +391,8 @@ const VerifyVendorProfile = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: Colors.bodyBackColor,
-   
+    // backgroundColor: Colors.bodyBackColor,
+    backgroundColor: "#fff",
     paddingBottom: 50,
   },  
   loaderContainer: {

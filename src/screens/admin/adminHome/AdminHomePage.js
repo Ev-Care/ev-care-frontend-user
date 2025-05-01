@@ -22,6 +22,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import MyStatusBar from '../../../components/myStatusBar';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../auth/services/selector';
 
 // Define root colors at the top
 const COLORS = {
@@ -40,6 +42,8 @@ const COLORS = {
 const { width } = Dimensions.get('window');
 
 const AdminHome = ({navigation}) => {
+
+  const user = useSelector(selectUser);
   // Dummy data for today's metrics
   const todayData = {
     users: {
@@ -161,7 +165,7 @@ const AdminHome = ({navigation}) => {
                 style={styles.profileImage}
               />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Alok Singh</Text>
+            <Text style={styles.headerTitle}>{user?.name || "Guest"}</Text>
           </View>
           <View style={styles.headerRight}>
             <TouchableOpacity style={styles.notificationButton}>

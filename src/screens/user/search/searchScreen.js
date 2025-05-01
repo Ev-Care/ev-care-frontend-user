@@ -56,6 +56,50 @@ const ChargingStationMap = () => {
   let mapAnimation = new Animated.Value(0);
   let mapIndex = 0;
 
+
+  const customMapStyle = [
+    {
+      featureType: "poi",
+      elementType: "all",
+      stylers: [{ visibility: "off" }],
+    },
+    {
+      featureType: "poi.government",
+      elementType: "all",
+      stylers: [{ visibility: "on" }],
+    },
+    {
+      featureType: "poi.medical",
+      elementType: "all",
+      stylers: [{ visibility: "on" }],
+    },
+    {
+      featureType: "poi.park",
+      elementType: "all",
+      stylers: [{ visibility: "on" }],
+    },
+    {
+      featureType: "poi.sports_complex",
+      elementType: "all",
+      stylers: [{ visibility: "on" }],
+    },
+    {
+      featureType: "poi.airport",
+      elementType: "all",
+      stylers: [{ visibility: "on" }],
+    },
+    {
+      featureType: "poi.train_station",
+      elementType: "all",
+      stylers: [{ visibility: "on" }],
+    },
+    {
+      featureType: "transit.station",
+      elementType: "all",
+      stylers: [{ visibility: "on" }],
+    },
+  ];
+
   const _scrollView = useRef(null);
   useEffect(() => {
     getUserLocation("autoCall");
@@ -309,6 +353,7 @@ const ChargingStationMap = () => {
         initialRegion={region}
         showsUserLocation={false}
         showsMyLocationButton={false}
+        customMapStyle={customMapStyle}
         onPress={() => setSuggestions([])}
       >
         {selectedLocation && <Marker coordinate={selectedLocation} />}

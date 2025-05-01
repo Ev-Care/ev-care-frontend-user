@@ -13,7 +13,9 @@ import UpdateUser from "../screens/admin/viewAllUsers/UpdateUser";
 import VerifyVendorProfile from "../screens/admin/verifyVendors/VerifyVendorProfile";
 import CreateUser from "../screens/admin/createUser/CreateUser";
 import ViewAllIssuesPage from "../screens/admin/supportIssues/AllSupportIssues";
-
+import EditAdminProfile from "../screens/admin/adminProfile/EditProfileAdmin";
+import PrivacyPolicyScreen from "../screens/user/privacyPolicy/privacyPolicyScreen";
+import TermsAndConditionsScreen from "../screens/user/termsAndConditions/termsAndConditionsScreen";
 
 const Stack = createStackNavigator();
 
@@ -33,7 +35,9 @@ export function AdminStack() {
       <Stack.Screen name="VerifyVendorProfile" component={VerifyVendorProfile} />
       <Stack.Screen name="CreateUser" component={CreateUser} />
       <Stack.Screen name="ViewAllIssuesPage" component={ViewAllIssuesPage} />
-
+      <Stack.Screen name="EditAdminProfile" component={EditAdminProfile} />
+      <Stack.Screen name="TermsAndConditionsScreen" component={TermsAndConditionsScreen} />
+      <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
 
      
     </Stack.Navigator>

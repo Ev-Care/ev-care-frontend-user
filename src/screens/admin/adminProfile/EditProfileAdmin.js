@@ -34,7 +34,7 @@ import {
   selectUser,
 } from "../../auth/services/selector";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-const EditProfileScreen = ({ route, navigation }) => {
+const EditAdminProfile = ({ route, navigation }) => {
   const user = useSelector(selectUser);
   const accessToken = useSelector(selectToken);
   const dispatch = useDispatch();
@@ -50,7 +50,7 @@ const EditProfileScreen = ({ route, navigation }) => {
     user?.adhar_no || "Not found"
   );
   const [panNumber, setPanNumber] = useState(user?.pan_no || "Not found");
-  const [gstNumber, setGstNumber] = useState(user?.gstin_number || "Not found");
+  const [gstNumber, setGstNumber] = useState(user?.gstin_number);
   //   image start
   // const [aadhaarFrontImage, setAadhaarFrontImage] = useState(null);
   // const [aadhaarBackImage, setAadhaarBackImage] = useState(null);
@@ -73,8 +73,8 @@ const EditProfileScreen = ({ route, navigation }) => {
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [currentImageSetter, setCurrentImageSetter] = useState(null);
   const [currentImageLabel, setCurrentImageLabel] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [showDialogue, setshowDialogue] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [imageloading, setImageLoading] = useState("");
   const errorMessage = useSelector(selectAuthError);
   const showFullImage = (uri) => {
@@ -116,10 +116,8 @@ const EditProfileScreen = ({ route, navigation }) => {
   
       console.log("Response from update profile:", response.payload);
   
-      // Optional navigation
-      // navigation.pop();
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); 
     }
   };
   
@@ -222,70 +220,72 @@ const EditProfileScreen = ({ route, navigation }) => {
     </View>
   );
 
-  const renderNonEditableInput = (label, value, setter, placeholder) => (
-    <View style={{ marginBottom: 12 }}>
-      <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
-        {label}
-      </Text>
-      <TextInput
-        style={[styles.input, { backgroundColor: "#e0e0eb" }]}
-        value={value}
-        onChangeText={setter}
-        placeholder={placeholder}
-        editable={false}
-      />
-    </View>
-  );
+  const renderNonEditableInput = (label, value, setter, placeholder) =>
+    value ? (
+      <View style={{ marginBottom: 12 }}>
+        <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+          {label}
+        </Text>
+        <TextInput
+          style={[styles.input, { backgroundColor: "#e0e0eb" }]}
+          value={value}
+          onChangeText={setter}
+          placeholder={placeholder}
+          editable={false}
+        />
+      </View>
+    ) : null;
 
     const renderImageBox = (label, setter, apiRespUri) => {
-         if (!apiRespUri && label !== "avatar") return null;
-       
-         return (
-           <TouchableOpacity
-             onPress={() => {
-               if (apiRespUri) {
-                 showFullImage(imageURL.baseURL + apiRespUri);
-               }
-             }}
-             style={{ alignItems: "center", marginBottom: 20 }}
-           >
-             <View
-               style={[
-                 styles.imageBox,
-                 { borderRadius: label === "avatar" ? 50 : 12 },
-               ]}
-             >
-               {imageloading === label ? (
-                 <ActivityIndicator size={40} color="#ccc" />
-               ) : apiRespUri ? (
-                 <Image
-                   source={{ uri: imageURL.baseURL + apiRespUri }}
-                   style={[
-                     styles.imageStyle,
-                     { borderRadius: label === "avatar" ? 50 : 12 },
-                   ]}
-                 />
-               ) : (
-                 <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
-               )}
-       
-               {label === "avatar" && (
-                 <TouchableOpacity
-                   style={styles.editIcon}
-                   onPress={() => {
-                     setCurrentImageSetter(() => setter);
-                     setCurrentImageLabel(label);
-                     setBottomSheetVisible(true);
-                   }}
-                 >
-                   <MaterialIcons name="edit" size={20} color="white" />
-                 </TouchableOpacity>
-               )}
-             </View>
-             {label !== "avatar" && <Text style={styles.imageLabel}>{label}</Text>}
-           </TouchableOpacity>
-         );
-       };
+        if (!apiRespUri && label !== "avatar") return null;
+      
+        return (
+          <TouchableOpacity
+            onPress={() => {
+              if (apiRespUri) {
+                showFullImage(imageURL.baseURL + apiRespUri);
+              }
+            }}
+            style={{ alignItems: "center", marginBottom: 20 }}
+          >
+            <View
+              style={[
+                styles.imageBox,
+                { borderRadius: label === "avatar" ? 50 : 12 },
+              ]}
+            >
+              {imageloading === label ? (
+                <ActivityIndicator size={40} color="#ccc" />
+              ) : apiRespUri ? (
+                <Image
+                  source={{ uri: imageURL.baseURL + apiRespUri }}
+                  style={[
+                    styles.imageStyle,
+                    { borderRadius: label === "avatar" ? 50 : 12 },
+                  ]}
+                />
+              ) : (
+                <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
+              )}
+      
+              {label === "avatar" && (
+                <TouchableOpacity
+                  style={styles.editIcon}
+                  onPress={() => {
+                    setCurrentImageSetter(() => setter);
+                    setCurrentImageLabel(label);
+                    setBottomSheetVisible(true);
+                  }}
+                >
+                  <MaterialIcons name="edit" size={20} color="white" />
+                </TouchableOpacity>
+              )}
+            </View>
+            {label !== "avatar" && <Text style={styles.imageLabel}>{label}</Text>}
+          </TouchableOpacity>
+        );
+      };
+      
   return (
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -494,17 +494,6 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 12,
   },
-  loaderContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "center",
-    alignItems: "center",
-    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
-    zIndex: 999,
-  },
   imageContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -519,12 +508,25 @@ const styles = StyleSheet.create({
     marginTop: 20,
     flexWrap: "wrap",
   },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: 'rgba(67, 92, 128, 0.43)', // Optional: semi-transparent overlay
+    zIndex: 999,
+  },
+
   imageBox: {
     width: 100,
     height: 100,
     borderWidth: 1,
     borderStyle: "dotted",
     borderColor: "#aaa",
+
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
@@ -651,4 +653,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EditProfileScreen;
+export default EditAdminProfile;

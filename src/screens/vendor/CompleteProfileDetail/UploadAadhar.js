@@ -19,6 +19,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectAuthError, selectToken } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import NetInfo from "@react-native-community/netinfo";
+
+
 const UploadAadhar = ({ route, navigation }) => {
   // const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
@@ -32,7 +35,7 @@ const UploadAadhar = ({ route, navigation }) => {
   const accessToken = useSelector(selectToken); // Get access token from Redux store
   const authErrorMessage = useSelector(selectAuthError);
   // Function to pick an image
-  const pickImage = async (source, type) => {
+  const pickImage = async(source, type) => {
     let permissionResult;
   
     if (source === "camera") {
@@ -61,8 +64,18 @@ const UploadAadhar = ({ route, navigation }) => {
   
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
+      await new Promise((resolve) => setTimeout(resolve, 200));
       const file = await setupImagePicker(imageUri);
   
+      
+      // Check for internet connectivity before sending request
+      const netState = await NetInfo.fetch();
+      if (!netState.isConnected) {
+        dispatch(showSnackbar({ message: "No internet connection.", type: "error" }));
+        return;
+      }
+    
+
       // 👉 Show loader BEFORE dispatch
       if (type === "front") {
         setFrontImageLoading(true);
@@ -86,6 +99,7 @@ const UploadAadhar = ({ route, navigation }) => {
             console.log("back Image URI set successfully:", response?.payload?.data?.filePathUrl);
           }
         } else {
+          
           dispatch(showSnackbar({ message: authErrorMessage || 'File Should be less than 5 MB', type: 'error' }));
 
           // Alert.alert("Error", "File Should be less than 5 MB");
@@ -107,7 +121,7 @@ const UploadAadhar = ({ route, navigation }) => {
   
 
   // Handle Submit
-  const handleSubmit = () => {
+  const handleSubmit = async() => {
     if (!frontImageUri && !backImageUri) {
       dispatch(showSnackbar({ message: 'Please upload both front and back images.', type: 'error' }));
       // Alert.alert("Error", "Please upload both front and back images.");
@@ -131,6 +145,14 @@ const UploadAadhar = ({ route, navigation }) => {
       console.warn("vendorDetail not passed at aadhar Page!");
       return null;
     }
+
+    // Check for internet connectivity before sending request
+        const netState = await NetInfo.fetch();
+        if (!netState.isConnected) {
+          dispatch(showSnackbar({ message: "No internet connection.", type: "error" }));
+          return;
+        }
+      
     let VendorDetailAtAadharPage = {
       ...vendorDetail,
       adhar_front_pic: frontImageUri,

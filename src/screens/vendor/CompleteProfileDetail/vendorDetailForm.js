@@ -186,7 +186,7 @@ const VendorDetailForm = () => {
 
       if (!result.canceled) {
         const selectedImageUri = result.assets[0].uri;
-
+        await new Promise((resolve) => setTimeout(resolve, 200));
         const file = setupImagePicker(selectedImageUri);
 
         setImageLoading(true);

@@ -37,7 +37,8 @@ const VerificationScreen = ({ navigation, route }) => {
   const token = useSelector(selectToken);
   const error = useSelector(selectAuthError); // Get error from Redux store
   const [userKey, setUserKey] = useState(null);
-  
+  const [navigateToRegister, setNavigateToRegister] = useState(false);
+
   const [timerStarted, setTimerStarted] = useState(false);
   const { handleSignIn } = route?.params;
 
@@ -64,9 +65,9 @@ const VerificationScreen = ({ navigation, route }) => {
       console.log("OTP verified successfully:", response.payload);
       const extractedUserKey = response.payload?.data?.user?.user_key;
       setUserKey(extractedUserKey);
-      console.log("user key after verify", extractedUserKey);
-      
-    } else if (postVerifyOtp.rejected.match(response)) {
+      setNavigateToRegister(true); // set flag for useEffect
+    }
+     else if (postVerifyOtp.rejected.match(response)) {
       console.error("OTP verification failed:", response.payload);
       dispatch(showSnackbar({ message: response.payload || "OTP verification failed.", type: "error" }));
     }
@@ -76,37 +77,28 @@ const VerificationScreen = ({ navigation, route }) => {
 
   // useEffect to handle user and token updates
   useEffect(() => {
-    console.log("User and token updated in useEffect above:");
-
-    // condition for user when user is new 
-    if (!user && token && userKey) {
-      console.log("register case ", userKey)
-      navigation.push("Register", { userKey });
+    if (navigateToRegister && token && userKey && !user) {
+      console.log("Navigating to register...");
       dispatch(showSnackbar({ message: "OTP verified successfully", type: "success" }));
+      navigation.push("Register", { userKey });
+      setNavigateToRegister(false); // reset
       return;
     }
-    // condition for user when user is already exist and details completed 
+  
     if (user && token) {
-      console.log("User and token updated in useEffect:", user, token);
-
-        try {
-          // Save user data and token to AsyncStorage
-          AsyncStorage.setItem("user", user.user_key);
-          AsyncStorage.setItem("accessToken", token);
-
-          console.log("Access token stored in AsyncStorage:", token);
-
-          // Show success snackbar
-          dispatch(showSnackbar({ message: "OTP verified successfully", type: "success" }));
-        } catch (error) {
-          dispatch(showSnackbar({ message: "User data not saved in device", type: "error" }));
-        }
-      
+      console.log("Existing user, logging in...");
+      try {
+        AsyncStorage.setItem("user", user.user_key);
+        AsyncStorage.setItem("accessToken", token);
+        dispatch(showSnackbar({ message: "OTP verified successfully", type: "success" }));
+      } catch (error) {
+        dispatch(showSnackbar({ message: "User data not saved in device", type: "error" }));
+      }1
     } else if (error) {
       dispatch(showSnackbar({ message: "Incorrect OTP entered. Please try again.", type: "error" }));
     }
-  }, [user, token, error, navigation, dispatch]);
-
+  }, [user, token, error, navigateToRegister, userKey, navigation, dispatch]);
+  
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>

@@ -97,7 +97,7 @@ export const postSingleFile = createAsyncThunk(
       if (response.data.code === 200 || response.data.code === 201) {
         return response.data;
       } else {
-        return rejectWithValue(response.data.message || "File Upload failed.");
+        return rejectWithValue(response?.data?.message || response?.message || "File Upload failed.");
       }
     } catch (error) {
       console.log("Error in postSingleFile:", error);
@@ -124,7 +124,7 @@ export const patchUpdateVendorProfile = createAsyncThunk(
         return response?.data;
       } else {
         return rejectWithValue(
-          response?.data?.message || "Profile Update Failed"
+          response?.data?.message || response?.message || "Profile Update Failed"
         );
       }
     } catch (error) {
@@ -151,7 +151,7 @@ export const getUserByKey = createAsyncThunk(
         return response.data;
       } else {
         return rejectWithValue(
-          response.data.message || "Failed to get user details."
+          response?.data?.message || response?.message|| "Failed to get user details."
         );
       }
     } catch (error) {

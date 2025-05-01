@@ -25,6 +25,9 @@ import { selectAuthError, selectToken } from "../../auth/services/selector";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "./vendorDetailForm";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import NetInfo from "@react-native-community/netinfo";
+
+
 const UploadGst = ({ route, navigation }) => {
   // const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
@@ -34,6 +37,7 @@ const UploadGst = ({ route, navigation }) => {
   const dispatch = useDispatch(); // Get the dispatch function
   const accessToken = useSelector(selectToken); // Get access token from Redux store
   const authErrorMessage = useSelector(selectAuthError);
+  
   // Function to pick an image
 
   const pickImage = async (source, type) => {
@@ -65,8 +69,17 @@ const UploadGst = ({ route, navigation }) => {
 
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
+      await new Promise((resolve) => setTimeout(resolve, 200));
       const file = await setupImagePicker(imageUri);
       setLoading(true);
+
+      // Check for internet connectivity before sending request
+          const netState = await NetInfo.fetch();
+          if (!netState.isConnected) {
+            dispatch(showSnackbar({ message: "No internet connection.", type: "error" }));
+            return;
+          }
+        
 
       try {
         const response = await dispatch(

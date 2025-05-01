@@ -534,11 +534,12 @@ const AddStations = () => {
   function amenitiesSection() {
     return (
       <View style={styles.section}>
-        <Text style={styles.questionText}>
+        {/* <Text style={styles.questionText}>
           What amenities are available at your station?
-        </Text>
+        </Text> */}
         <Text style={styles.sectionLabel}>
-          Amenities <Text style={styles.optional}>(Optional)</Text>
+          Amenities 
+        <Text style={styles.optional}>(Optional)</Text>
         </Text>
         <View style={styles.amenitiesContainer}>
           {amenities.map((amenity) => (
@@ -578,9 +579,9 @@ const AddStations = () => {
   function openHoursSection() {
     return (
       <View style={styles.section}>
-        <Text style={styles.questionText}>
+        {/* <Text style={styles.questionText}>
           What are your station's operating hours?
-        </Text>
+        </Text> */}
         <Text style={styles.sectionLabel}>Open Hours</Text>
         <View style={styles.hoursContainer}>
           <TouchableOpacity
@@ -660,9 +661,9 @@ const AddStations = () => {
   function stationNameSection() {
     return (
       <View style={styles.section}>
-        <Text style={styles.questionText}>
+        {/* <Text style={styles.questionText}>
           What is the name of your charging station?
-        </Text>
+        </Text> */}
         <Text style={styles.sectionLabel}>Station Name</Text>
         <TextInput
           style={styles.input}
@@ -677,9 +678,9 @@ const AddStations = () => {
   function uploadPhotoSection() {
     return (
       <View style={styles.section}>
-        <Text style={styles.questionText}>
+        {/* <Text style={styles.questionText}>
           Can you upload a clear photo of the station or charger?
-        </Text>
+        </Text> */}
         <Text style={styles.sectionLabel}>
           Upload Photo <Text style={styles.optional}>(Required)</Text>
         </Text>
@@ -705,22 +706,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
   },
+
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-  },
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      // backgroundColor: Colors.bodyBackColor,
+      padding: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: "#e0e0eb",
+    },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: 16,
+    // fontWeight: "bold",
     color: PRIMARY_COLOR,
   },
   card: {
     backgroundColor: "white",
     borderRadius: 12,
     margin: 16,
-    padding: 20,
+    paddingVertical: 20,
+    paddingHorizontal:20,
     paddingBottom: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

@@ -74,7 +74,7 @@ const UserHome = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const isLoading = useSelector(selectStationsLoading || selectUserLoading);
   const stations = useSelector(selectStations);
-  const [isDistanceLoading, setIsDistanceLoading] = useState(true);
+ 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -90,8 +90,9 @@ const UserHome = ({ navigation }) => {
 
   useEffect(() => {
     let subscription = null;
-
+   
     const startLocationUpdates = async () => {
+      
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
@@ -117,7 +118,7 @@ const UserHome = ({ navigation }) => {
             console.log({ currentLocation });
 
             dispatch(updateUserCoordinate(coords)); // Update user coordinates
-
+          
             // 1. Fetch stations
             const locationResponse = await dispatch(
               fetchStationsByLocation({ radius, coords })
@@ -139,6 +140,7 @@ const UserHome = ({ navigation }) => {
       } catch (err) {
         console.error("Error watching location:", err);
       }
+     
     };
 
     startLocationUpdates();
@@ -329,11 +331,12 @@ const UserHome = ({ navigation }) => {
                     size={14}
                     color={COLORS.white}
                   />
+                 {!stations?.length>0 ? ( <DottedLoader/>):(
                   <Text style={styles.featureText}>
-                    {stations?.length > 0
-                      ? `${formatDistance(stations[0]?.distance_km)}`
-                      : "N/A"}
-                  </Text>
+                   
+                   {formatDistance(stations[0]?.distance_km)}
+                   
+                  </Text>)}
                   <Text style={styles.featureText}>(From here)</Text>
                 </View>
               </TouchableOpacity>
@@ -483,9 +486,7 @@ const UserHome = ({ navigation }) => {
               marginTop: Sizes.fixPadding,
             }}
           >
-             {isDistanceLoading ? (
-              <DottedLoader />
-            ) : (
+           
               <Text
                 numberOfLines={1}
                 style={{
@@ -496,7 +497,7 @@ const UserHome = ({ navigation }) => {
               >
                 {formatDistance(item?.distance_km)}
               </Text>
-            )}
+           
 
             <TouchableOpacity
               onPress={() =>

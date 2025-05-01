@@ -28,6 +28,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { postSingleFile } from "../../../auth/services/crudFunction";
 import { patchUpdateUserProfile } from "../../../user/service/crudFunction";
 import { setupImagePicker } from "../../../vendor/CompleteProfileDetail/vendorDetailForm";
+import { default as Icon } from "react-native-vector-icons/MaterialIcons";
 import {
   selectAuthError,
   selectToken,
@@ -94,11 +95,11 @@ const EditProfileScreen = ({ route, navigation }) => {
         role: user?.role,
         user_key: user?.user_key,
       };
-  
+
       console.log("Updated Data:", updatedData);
-  
+
       const response = await dispatch(patchUpdateUserProfile(updatedData));
-  
+
       if (patchUpdateUserProfile.fulfilled.match(response)) {
         await dispatch(
           showSnackbar({
@@ -114,14 +115,12 @@ const EditProfileScreen = ({ route, navigation }) => {
           })
         );
       }
-  
+
       console.log("Response from update profile:", response.payload);
-  
     } finally {
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   };
-  
 
   const openGallery = async (setter, label) => {
     try {
@@ -228,7 +227,7 @@ const EditProfileScreen = ({ route, navigation }) => {
           {label}
         </Text>
         <TextInput
-          style={[styles.input, { backgroundColor: "#e0e0eb" }]}
+          style={[styles.input, { backgroundColor: "#E0E0E0" }]}
           value={value}
           onChangeText={setter}
           placeholder={placeholder}
@@ -237,59 +236,65 @@ const EditProfileScreen = ({ route, navigation }) => {
       </View>
     ) : null;
 
-    const renderImageBox = (label, setter, apiRespUri) => {
-         if (!apiRespUri && label !== "avatar") return null;
-       
-         return (
-           <TouchableOpacity
-             onPress={() => {
-               if (apiRespUri) {
-                 showFullImage(imageURL.baseURL + apiRespUri);
-               }
-             }}
-             style={{ alignItems: "center", marginBottom: 20 }}
-           >
-             <View
-               style={[
-                 styles.imageBox,
-                 { borderRadius: label === "avatar" ? 50 : 12 },
-               ]}
-             >
-               {imageloading === label ? (
-                 <ActivityIndicator size={40} color="#ccc" />
-               ) : apiRespUri ? (
-                 <Image
-                   source={{ uri: imageURL.baseURL + apiRespUri }}
-                   style={[
-                     styles.imageStyle,
-                     { borderRadius: label === "avatar" ? 50 : 12 },
-                   ]}
-                 />
-               ) : (
-                 <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
-               )}
-       
-               {label === "avatar" && (
-                 <TouchableOpacity
-                   style={styles.editIcon}
-                   onPress={() => {
-                     setCurrentImageSetter(() => setter);
-                     setCurrentImageLabel(label);
-                     setBottomSheetVisible(true);
-                   }}
-                 >
-                   <MaterialIcons name="edit" size={20} color="white" />
-                 </TouchableOpacity>
-               )}
-             </View>
-             {label !== "avatar" && <Text style={styles.imageLabel}>{label}</Text>}
-           </TouchableOpacity>
-         );
-       };
+  const renderImageBox = (label, setter, apiRespUri) => {
+    if (!apiRespUri && label !== "avatar") return null;
+
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          if (apiRespUri) {
+            showFullImage(imageURL.baseURL + apiRespUri);
+          }
+        }}
+        style={{ alignItems: "center", marginBottom: 20 }}
+      >
+        <View
+          style={[
+            styles.imageBox,
+            { borderRadius: label === "avatar" ? 50 : 12 },
+          ]}
+        >
+          {imageloading === label ? (
+            <ActivityIndicator size={40} color="#ccc" />
+          ) : apiRespUri ? (
+            <Image
+              source={{ uri: imageURL.baseURL + apiRespUri }}
+              style={[
+                styles.imageStyle,
+                { borderRadius: label === "avatar" ? 50 : 12 },
+              ]}
+            />
+          ) : (
+            <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
+          )}
+
+          {label === "avatar" && (
+            <TouchableOpacity
+              style={styles.editIcon}
+              onPress={() => {
+                setCurrentImageSetter(() => setter);
+                setCurrentImageLabel(label);
+                setBottomSheetVisible(true);
+              }}
+            >
+              <MaterialIcons name="edit" size={20} color="white" />
+            </TouchableOpacity>
+          )}
+        </View>
+        {label !== "avatar" && <Text style={styles.imageLabel}>{label}</Text>}
+      </TouchableOpacity>
+    );
+  };
   return (
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
+      <View style={styles.appBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Icon name="arrow-back" size={24} color={Colors.primary} />
+        </TouchableOpacity>
+        <Text style={[styles.title, { fontSize: 16 }]}>Edit Profile</Text>
+        <View style={{ width: 24 }} />
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Edit Profile</Text>
         <View style={styles.imageContainerAvatar}>
           {renderImageBox("avatar", setAvatarURI, avatarURI)}
         </View>
@@ -477,15 +482,20 @@ const EditProfileScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: "#fff",
+    // backgroundColor: "#fff",
+    // flex:1,
+    backgroundColor: Colors.bodyBackColor,
     paddingBottom: 50,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#333",
-    textAlign: "center",
+  appBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: Colors.bodyBackColor,
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0eb",
+    elevation: 5,
   },
   input: {
     borderWidth: 1,

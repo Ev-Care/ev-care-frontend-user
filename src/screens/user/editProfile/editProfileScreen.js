@@ -23,6 +23,7 @@ import {
 import RNModal from "react-native-modal";
 import { Overlay } from "@rneui/themed";
 import imageURL from "../../../constants/baseURL";
+import { default as Icon } from "react-native-vector-icons/MaterialIcons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useSelector, useDispatch } from "react-redux";
 import { postSingleFile } from "../../auth/services/crudFunction";
@@ -228,7 +229,7 @@ const EditProfileScreen = ({ route, navigation }) => {
         {label}
       </Text>
       <TextInput
-        style={[styles.input, { backgroundColor: "#e0e0eb" }]}
+        style={[styles.input, { backgroundColor: "#E0E0E0" }]}
         value={value}
         onChangeText={setter}
         placeholder={placeholder}
@@ -288,8 +289,15 @@ const EditProfileScreen = ({ route, navigation }) => {
        };
   return (
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
+       <View style={styles.appBar}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                      <Icon name="arrow-back" size={24} color={Colors.primary} />
+                    </TouchableOpacity>
+                    <Text style={[styles.title,{fontSize:16}]}>Edit Profile</Text>
+                    <View style={{ width: 24 }} />
+                  </View>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Edit Profile</Text>
+       
         <View style={styles.imageContainerAvatar}>
           {renderImageBox("avatar", setAvatarURI, avatarURI)}
         </View>
@@ -477,15 +485,20 @@ const EditProfileScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: "#fff",
+    // backgroundColor: "#fff",
+    flex:1,
+    backgroundColor: Colors.bodyBackColor,
     paddingBottom: 50,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#333",
-    textAlign: "center",
+  appBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: Colors.bodyBackColor,
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0eb",
+    elevation: 5,
   },
   input: {
     borderWidth: 1,

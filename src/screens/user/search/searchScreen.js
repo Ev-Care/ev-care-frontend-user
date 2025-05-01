@@ -33,7 +33,7 @@ import {
   formatDistance,
   getChargerLabel,
 } from "../../../utils/globalMethods";
-import DottedLoader from "../../../utils/lottieLoader/loaderView";
+
 const width = screenWidth;
 const cardWidth = width / 1.15;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
@@ -50,7 +50,7 @@ const ChargingStationMap = () => {
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   });
-  const [isDistanceLoading, setIsDistanceLoading] = useState(true);
+
   const [search, setSearch] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -516,9 +516,7 @@ const ChargingStationMap = () => {
                     marginTop: Sizes.fixPadding,
                   }}
                 >
-                  {isDistanceLoading ? (
-                    <DottedLoader />
-                  ) : (
+               
                     <Text
                       numberOfLines={1}
                       style={{
@@ -529,7 +527,7 @@ const ChargingStationMap = () => {
                     >
                       {formatDistance(item?.distance_km)}
                     </Text>
-                  )}
+              
                   <TouchableOpacity
                     onPress={() =>
                       openGoogleMaps(

@@ -95,14 +95,11 @@ const StationManagement = ({ navigation, route }) => {
     scrollViewRef.current.scrollTo({ x: index * width, animated: true });
   };
 
-
   useEffect(() => {
     if (!station) {
       console.log("Station no longer exists. Navigating back.");
       navigation.goBack(); // Navigate back if the station is undefined
     }
-   
-
   }, [station]);
 
   const handleScroll = (event) => {
@@ -162,17 +159,16 @@ const StationManagement = ({ navigation, route }) => {
   };
 
   const handleToggle = async (charger, station) => {
-   
     setChargerStatusMap((prev) => ({
       ...prev,
       [charger.charger_id]: charger?.status !== "Available", // Toggle to the opposite status
     }));
-  
+
     setIsLoading(true);
-  
+
     try {
       const newStatus = charger?.status === "Available" ? "inactive" : "active";
-  
+
       await dispatch(
         updateStationsChargersConnectorsStatus({
           statusType: "charger",
@@ -181,16 +177,12 @@ const StationManagement = ({ navigation, route }) => {
           charger_id: charger?.charger_id,
         })
       );
-  
-    
-
     } catch (error) {
       console.error("Error updating status:", error);
     } finally {
       setIsLoading(false);
     }
   };
-  
 
   function trimName(threshold, str) {
     if (str?.length <= threshold) {
@@ -367,7 +359,7 @@ const StationManagement = ({ navigation, route }) => {
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
               <Text style={styles.chargerSpecText}>
-                Power: {charger?.max_power_kw} kW
+              Power:⚡{charger?.max_power_kw} kW
               </Text>
             </View>
 
@@ -382,8 +374,13 @@ const StationManagement = ({ navigation, route }) => {
                   size={20}
                   color={COLORS.primary}
                 />
-                <Text style={styles.connectorTypeText}>
-                  {" " + charger?.connector_type}
+                <Text
+                  style={[
+                    styles.connectorTypeText,
+                    { fontWeight: "700", fontSize: 12 },
+                  ]}
+                >
+                  {charger?.connector_type}
                 </Text>
               </View>
               <Text
@@ -675,6 +672,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.gray,
     marginRight: 8,
+    fontWeight: "700",
   },
   connectorContainer: {
     marginBottom: 16,

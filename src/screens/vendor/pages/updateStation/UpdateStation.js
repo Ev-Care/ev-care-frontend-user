@@ -235,6 +235,7 @@ const UpdateStation = ({ navigation, route }) => {
 
     return (
       <TouchableOpacity
+      activeOpacity={1}
         style={styles.card}
         onPress={() => handleVisibility("locationdetail")}
       >
@@ -265,6 +266,7 @@ const UpdateStation = ({ navigation, route }) => {
   function additionalDetail() {
     return (
       <TouchableOpacity
+      activeOpacity={1}
         style={styles.card}
         onPress={() => handleVisibility("additionaldetail")}
       >
@@ -289,6 +291,7 @@ const UpdateStation = ({ navigation, route }) => {
     console.log("charger details", chargerForms[index]);
     return (
       <TouchableOpacity
+       activeOpacity={1}
         style={styles.card}
         onPress={() => handleVisibility(index)}
       >
@@ -438,7 +441,21 @@ const UpdateStation = ({ navigation, route }) => {
             console.log("isSelected", isSelected);
 
             return (
-              <View
+              <TouchableOpacity
+              onPress={() => {
+                setChargerForms((prev) =>
+                  prev.map((charger, index) =>
+                    index === chargerIndex
+                      ? { ...charger, connector_type: connector?.type }
+                      : charger
+                  )
+                );
+                setSelectedConnectors((prev) => ({
+                  ...prev,
+                  [chargerIndex]: connector?.type,
+                }))
+              }
+              }
                 key={`connector-${connector?.id}`}
                 style={styles?.connectorsItem}
               >
@@ -461,20 +478,7 @@ const UpdateStation = ({ navigation, route }) => {
                     justifyContent: "center",
                     marginTop: 6,
                   }}
-                  onPress={() => {
-                    setChargerForms((prev) =>
-                      prev.map((charger, index) =>
-                        index === chargerIndex
-                          ? { ...charger, connector_type: connector?.type }
-                          : charger
-                      )
-                    );
-                    setSelectedConnectors((prev) => ({
-                      ...prev,
-                      [chargerIndex]: connector?.type,
-                    }))
-                  }
-                  }
+                
                 >
                   {isSelected && (
                     <View
@@ -490,7 +494,7 @@ const UpdateStation = ({ navigation, route }) => {
 
                 {/* Count Buttons (if needed) */}
                 {/* Add your inc/dec logic here */}
-              </View>
+              </TouchableOpacity>
             );
           })}
         </View>

@@ -228,7 +228,7 @@ const EditAdminProfile = ({ route, navigation }) => {
           {label}
         </Text>
         <TextInput
-          style={[styles.input, { backgroundColor: Colors.bodyBackColor }]}
+          style={[styles.input, { backgroundColor: "#E0E0E0" }]}
           value={value}
           onChangeText={setter}
           placeholder={placeholder}
@@ -293,7 +293,7 @@ const EditAdminProfile = ({ route, navigation }) => {
               <TouchableOpacity onPress={() => navigation.goBack()}>
                 <Icon name="arrow-back" size={24} color={Colors.primary} />
               </TouchableOpacity>
-              <Text style={[styles.title,{fontSize:16}]}>Verify Vendor Profile</Text>
+              <Text style={[styles.title,{fontSize:16}]}>Edit Profile</Text>
               <View style={{ width: 24 }} />
             </View>
       <ScrollView contentContainerStyle={styles.container}>

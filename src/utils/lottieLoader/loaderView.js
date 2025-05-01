@@ -7,9 +7,9 @@ const DottedLoader = () => {
   return (
     <View
       style={{
-        // width: 60,
-        height: 40,
-        flex: 1,
+        width: 60,
+        height: 30,
+        // flex: 1,
         alignSelf: "center",
         position: "relative",
         overflow: "hidden",

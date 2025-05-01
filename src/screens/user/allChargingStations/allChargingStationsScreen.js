@@ -37,14 +37,14 @@ import {
   getLocationPermission,
 } from "../../../utils/globalMethods";
 import * as Location from "expo-location";
-import DottedLoader from "../../../utils/lottieLoader/loaderView";
+
 
 const AllChargingStationsScreen = ({ navigation }) => {
   const stations = useSelector(selectStations);
   const [refreshing, setRefreshing] = useState(false);
   const userCoords = useSelector(selectUserCoordinate);
   const isLoading = useSelector(selectStationsLoading);
-  const [isDistanceLoading, setIsDistanceLoading] = useState(true);
+ 
   const dispatch = useDispatch();
 
   const openGoogleMaps = (latitude, longitude) => {
@@ -175,9 +175,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
             }}
           >
             
-            {isDistanceLoading ? (
-              <DottedLoader />
-            ) : (
+           
               <Text
                 numberOfLines={1}
                 style={{
@@ -188,7 +186,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
               >
                 {formatDistance(item?.distance_km)}
               </Text>
-            )}
+       
 
             <TouchableOpacity
               onPress={() =>

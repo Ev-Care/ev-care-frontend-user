@@ -125,7 +125,7 @@ const AllStations = ({ route }) => {
           <Icon name="arrow-back" size={24} color={COLORS.primary} />
         </TouchableOpacity>
         <Text style={styles.title}>All Charging Stations</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: 20 }} />
       </View>
 
       <ScrollView
@@ -279,8 +279,8 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   title: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 16,
+    // fontWeight: "bold",
     color: COLORS.primary,
     textAlign: "center",
   },
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   stationName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 5,

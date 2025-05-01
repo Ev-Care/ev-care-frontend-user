@@ -31,7 +31,7 @@ import {
   getChargerLabel,
 } from "../../../utils/globalMethods";
 import polyline from "@mapbox/polyline";
-
+import DottedLoader from "../../../utils/lottieLoader/loaderView";
 const width = screenWidth;
 const cardWidth = width / 1.15;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
@@ -139,7 +139,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   const [addedStops, setAddedStops] = useState([]);
   const { enrouteStations } = route?.params || [];
   const [mapLayoutCompleted, setMapLayoutCompleted] = useState(false);
-
+  const [isDistanceLoading, setIsDistanceLoading] = useState(true);
   // console.log("enrouteStations", JSON.stringify(enrouteStations[0]));
   const [destinationAddress, setDestinationAddress] = useState(
     route?.params?.destinationAddress || "Destination Address"
@@ -625,16 +625,20 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                   marginTop: Sizes.fixPadding,
                 }}
               >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    ...Fonts.blackColor16Medium,
-                    flex: 1,
-                    marginRight: Sizes.fixPadding - 5.0,
-                  }}
-                >
-                  {formatDistance(item?.distanceKm)}
-                </Text>
+                {isDistanceLoading ? (
+                  <DottedLoader />
+                ) : (
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      ...Fonts.blackColor16Medium,
+                      flex: 1,
+                      marginRight: Sizes.fixPadding - 5.0,
+                    }}
+                  >
+                    {formatDistance(item?.distance_km)}
+                  </Text>
+                )}
                 <TouchableOpacity
                   activeOpacity={0.8}
                   onPress={() => toggleStop(item)}

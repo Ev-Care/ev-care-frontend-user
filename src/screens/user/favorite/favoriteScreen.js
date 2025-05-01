@@ -45,7 +45,7 @@ import {
 } from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { useFocusEffect } from "@react-navigation/native";
-
+import DottedLoader from "../../../utils/lottieLoader/loaderView";
 const FavoriteScreen = ({ navigation }) => {
   const [showSnackBar, setShowSnackBar] = useState(false);
   const stations = useSelector(selectStations);
@@ -56,6 +56,7 @@ const FavoriteScreen = ({ navigation }) => {
   const [listData, setListData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const errorMessage = useSelector(selectStationsError);
+  const [isDistanceLoading, setIsDistanceLoading] = useState(true);
   // console.log(listData);
   useEffect(() => {
     dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
@@ -306,6 +307,9 @@ const FavoriteScreen = ({ navigation }) => {
                 marginTop: Sizes.fixPadding,
               }}
             >
+                {isDistanceLoading ? (
+              <DottedLoader />
+            ) : (
               <Text
                 numberOfLines={1}
                 style={{
@@ -316,6 +320,7 @@ const FavoriteScreen = ({ navigation }) => {
               >
                 {formatDistance(data?.item?.distance_km)}
               </Text>
+            )}
               <TouchableOpacity
                 onPress={() =>
                   openGoogleMaps(

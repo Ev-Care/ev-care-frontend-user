@@ -145,6 +145,7 @@ const AdminHome = ({navigation}) => {
         navigation?.navigate('AllPendingStations');
       }
       else if(id === 5){
+        
         console.log('navigating to Add Stations');
       }
     else{

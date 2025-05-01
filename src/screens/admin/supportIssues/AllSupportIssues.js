@@ -137,7 +137,7 @@ const ViewAllIssuesPage = ({ navigation }) => {
   function UserInfo({ user }) {
     return (
       <TouchableOpacity
-        // onPress={() => navigation.navigate("UpdateUser", { user })}
+        onPress={() => navigation.navigate("SupportIssuesDetail", { user })}
         style={styles.userItem}
       >
            <View style={[{ flexDirection: "row", alignItems: "center" ,justifyContent: "space-between",marginBottom:5}]}>

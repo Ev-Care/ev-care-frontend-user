@@ -100,3 +100,8 @@ export const getLocationPermission = async () => {
     return false;
   }
 };
+
+
+export const TimeDelay = (seconds) => {
+  return new Promise(resolve => setTimeout(resolve, seconds));
+};

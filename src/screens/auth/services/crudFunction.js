@@ -43,7 +43,7 @@ export const postVerifyOtp = createAsyncThunk(
       } else {
         // Fail case: return error message
         return rejectWithValue(
-          response.data.message || "OTP verification failed"
+          response?.message || response?.data?.message || "OTP verification failed"
         );
       }
     } catch (error) {

@@ -24,6 +24,8 @@ import {
   selectUser,
 } from "../../auth/services/selector";
 import { setupImagePicker } from "./vendorDetailForm";
+import NetInfo from "@react-native-community/netinfo";
+
 
 const UploadPAN = ({ route, navigation }) => {
   const [frontImage, setFrontImage] = useState(null);
@@ -38,6 +40,7 @@ const UploadPAN = ({ route, navigation }) => {
   const authErrorMessage = useSelector(selectAuthError);
   // Function to pick an image
   console.log('updated user in pan page', user);
+  console.log('authErrorMessage in pan page', authErrorMessage);
 
   const pickImage = async (source, type) => {
     let permissionResult;
@@ -72,6 +75,7 @@ const UploadPAN = ({ route, navigation }) => {
 
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
+      await new Promise((resolve) => setTimeout(resolve, 200));
       const file = await setupImagePicker(imageUri);
       setImageLoading(true);
 
@@ -79,7 +83,7 @@ const UploadPAN = ({ route, navigation }) => {
         const response = await dispatch(
           postSingleFile({ file: file, accessToken: accessToken })
         );
-        console.log({ response });
+       
         if (
           response?.payload?.code === 200 ||
           response?.payload?.code === 201
@@ -103,8 +107,8 @@ const UploadPAN = ({ route, navigation }) => {
         dispatch(
           showSnackbar({
             message:
-              authErrorMessage || "Something went wrong while uploading.",
-            type: "error",
+            error?.message || authErrorMessage || "Something went wrong while uploading.",
+            type: 'error',
           })
         );
 
@@ -115,21 +119,20 @@ const UploadPAN = ({ route, navigation }) => {
     }
   };
 
-  // Handle Submit
   const handleSubmit = async () => {
     console.log("handle submit clicked");
+  
     if (!frontImageUri) {
-      dispatch(
-        showSnackbar({ message: "Please upload the PAN image.", type: "error" })
-      );
-
-      // Alert.alert("Error", "Please upload the image.");
+      dispatch(showSnackbar({ message: "Please upload the PAN image.", type: "error" }));
       return;
     }
-    console.log(
-      "Updated Vendor Detail at aadhar page",
-      VendorDetailAtAadharPage
-    );
+  
+    const netState = await NetInfo.fetch();
+    if (!netState.isConnected) {
+      dispatch(showSnackbar({ message: "No internet connection.", type: "error" }));
+      return;
+    }
+  
     if (!VendorDetailAtAadharPage) {
       dispatch(
         showSnackbar({
@@ -137,15 +140,15 @@ const UploadPAN = ({ route, navigation }) => {
           type: "error",
         })
       );
-
       console.warn("vendorDetail not passed at pan Page!");
       return null;
     }
+  
     const VendorDetailAtPanPage = {
       ...VendorDetailAtAadharPage,
       pan_pic: frontImageUri,
     };
-    console.log("Updated Vendor Detail at pan page", VendorDetailAtPanPage);
+  
     try {
       const response = await dispatch(
         patchUpdateVendorProfile({
@@ -154,42 +157,34 @@ const UploadPAN = ({ route, navigation }) => {
           accessToken: accessToken,
         })
       );
-
+  
       if (patchUpdateVendorProfile.fulfilled.match(response)) {
-
-        console.log('response in if', response);
+        
         dispatch(
           showSnackbar({
             message: "Your details updated successfully.",
             type: "success",
           })
         );
-
       } else if (patchUpdateVendorProfile.rejected.match(response)) {
-        console.error("Vendor detail submission failed:", error);
-        dispatch(
-          showSnackbar({
-            message:
-              authErrorMessage ||
-              "Submission Failed, Please check your details and try again.",
-            type: "error",
-          }));
+        console.error("Vendor detail submission failed:", response.payload);
+        const errorMessage =
+          response?.payload|| "Submission failed. Please try again.";
+        dispatch(showSnackbar({ message: errorMessage, type: "error" }));
       }
-
-
     } catch (error) {
+      console.error("Error submitting vendor detail:", error);
       dispatch(
         showSnackbar({
-          message:
-            authErrorMessage ||
-            "Submission Failed, Please check your details and try again.",
+          message: error?.message || "Submission failed. Please try again.",
           type: "error",
-        }));
+        })
+      );
     } finally {
       setLoading(false);
     }
   };
-
+  
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>

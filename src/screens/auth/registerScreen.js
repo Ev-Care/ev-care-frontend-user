@@ -161,7 +161,7 @@ const RegisterScreen = ({ navigation, route }) => {
           placeholder="Email address"
           placeholderTextColor={Colors.grayColor}
           value={email}
-          onChangeText={(text) => setemail(text)}
+          onChangeText={(text) => setemail(text.toLowerCase())}
           style={{ ...Fonts.blackColor16Medium }}
           cursorColor={Colors.primaryColor}
           selectionColor={Colors.primaryColor}

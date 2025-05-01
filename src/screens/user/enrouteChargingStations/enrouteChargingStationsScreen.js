@@ -560,9 +560,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
               source={
                 item?.station_images
                   ? { uri: imageURL.baseURL + item?.station_images }
-                  : {
-                      uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                    }
+                  : require("../../../../assets/images/nullStation.png")
               }
               style={styles.enrouteChargingStationImage}
             />
@@ -619,7 +617,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                     </Text>
                   </View>
                 </View>
-            </View>
+              </View>
               <View
                 style={{
                   ...commonStyles.rowAlignCenter,

@@ -9,6 +9,7 @@ import {
   Dimensions,
   Platform,
   Snackbar,
+  ActivityIndicator,
   TextInput,
   Linking,
 } from "react-native";
@@ -27,7 +28,11 @@ import { addToFavorite } from "../service/stationSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { selectFavoriteStations, selectUser } from "../service/selector";
 import imageURL from "../../../constants/baseURL";
-import { getAllFavoriteStations, postFavoriteStation, unFavoriteStation } from "../service/crudFunction";
+import {
+  getAllFavoriteStations,
+  postFavoriteStation,
+  unFavoriteStation,
+} from "../service/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { openHourFormatter } from "../../../utils/globalMethods";
 // Define colors at the top for easy customization
@@ -76,6 +81,7 @@ const reviews = [
 const ChargingStationDetailScreen = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const favStations = useSelector(selectFavoriteStations);
+    const [isLoading, setIsLoading] = useState(false);
   // const [showSnackBar, setshowSnackBar] = useState(false);
   const scrollViewRef = useRef(null);
   const dispatch = useDispatch();
@@ -92,24 +98,24 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     if (favStations && station) {
-      const isFavorite = favStations.some((favStation) => favStation.stationId === station.id);
+      const isFavorite = favStations.some(
+        (favStation) => favStation.stationId === station.id
+      );
       setInFavorite(isFavorite);
       console.log("stationdetail useEffect called.", inFavorite);
     }
   }, [favStations, station]);
 
-
   useEffect(() => {
-    console.log("inFavorite changed to", inFavorite)
+    console.log("inFavorite changed to", inFavorite);
   }, [inFavorite]);
-
 
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",
-    "CHAdeMO": "ev-plug-chademo",
+    CHAdeMO: "ev-plug-chademo",
     "Type-2": "ev-plug-type2",
-    "Wall": "ev-plug-type1",
-    "GBT:" : "ev-plug-type2",
+    Wall: "ev-plug-type1",
+    "GBT:": "ev-plug-type2",
   };
 
   const amenityMap = {
@@ -142,35 +148,63 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     Linking.openURL(url);
   };
 
-
-  const handleAddToFavorite = async(station) => {
-
-    if (station && !inFavorite) {
-      const postFavresponse = await dispatch(postFavoriteStation({ stationId: station.id, userId: user.id }));
-      console.log("station favorited ");
-     
-      await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
-      if (postFavoriteStation.fulfilled.match(postFavresponse)) {
-        await dispatch(showSnackbar({ message: 'Station added to favorite.', type: "success" }));
-        setInFavorite(true);
-      } else if (postFavoriteStation.rejected.match(postFavresponse)) {
-        await dispatch(showSnackbar({ message: errorMessage || "Failed to favorite station", type: "error" }));
+  const handleAddToFavorite = async (station) => {
+    setIsLoading(true);
+    try {
+      if (station && !inFavorite) {
+        const postFavresponse = await dispatch(
+          postFavoriteStation({ stationId: station.id, userId: user.id })
+        );
+        console.log("station favorited ");
+  
+        await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
+  
+        if (postFavoriteStation.fulfilled.match(postFavresponse)) {
+          await dispatch(
+            showSnackbar({
+              message: "Station added to favorite.",
+              type: "success",
+            })
+          );
+          setInFavorite(true);
+        } else if (postFavoriteStation.rejected.match(postFavresponse)) {
+          await dispatch(
+            showSnackbar({
+              message: errorMessage || "Failed to favorite station",
+              type: "error",
+            })
+          );
+        }
+      } else {
+        const unFavResponse = await dispatch(
+          unFavoriteStation({ stationId: station.id, userId: user.id })
+        );
+        console.log("station unfavorited ");
+  
+        await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
+  
+        if (unFavoriteStation.fulfilled.match(unFavResponse)) {
+          await dispatch(
+            showSnackbar({
+              message: "Station removed from favorite.",
+              type: "success",
+            })
+          );
+          setInFavorite(false);
+        } else if (unFavoriteStation.rejected.match(unFavResponse)) {
+          await dispatch(
+            showSnackbar({
+              message: errorMessage || "Failed to unfavorite station",
+              type: "error",
+            })
+          );
+        }
       }
-
-    } else {
-      const unFavResponse = await dispatch(unFavoriteStation({ stationId: station.id, userId: user.id }));
-      console.log("station unfavorited ");
-      
-      await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
-      if (unFavoriteStation.fulfilled.match(unFavResponse)) {
-        await dispatch(showSnackbar({ message: 'Station removed from favorite.', type: "success" }));
-        setInFavorite(false);
-      } else if (postFavoriteStation.rejected.match(unFavResponse)) {
-        await dispatch(showSnackbar({ message: errorMessage || "Failed unfavorite station", type: "error" }));
-      }
-      // navigation.navigate("FavoriteScreen");
+    } finally {
+      setIsLoading(false);
     }
   };
+  
 
   const trimName = (threshold, str) => {
     if (str?.length <= threshold) {
@@ -190,7 +224,11 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
 
       {/* Bottom Buttons */}
       {buttons()}
-
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </View>
   );
 
@@ -201,9 +239,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
 
     const imageUrl = station?.station_images
       ? { uri: imageURL.baseURL + station.station_images }
-      : {
-        uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      };
+      : require("../../../../assets/images/nullStation.png");
 
     return (
       <View style={styles.header}>
@@ -244,15 +280,18 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
                 {station?.status === "Inactive" ? "Closed" : "Open"}
               </Text>
               <Text style={styles.statusTime}>
-              {openHourFormatter(station?.open_hours_opening_time, station?.open_hours_closing_time)} 
+                {openHourFormatter(
+                  station?.open_hours_opening_time,
+                  station?.open_hours_closing_time
+                )}
               </Text>
               <View style={styles.newBadge}>
                 <Text style={styles.newText}>
                   {station.status === "Active"
                     ? "VERIFIED"
                     : station.status === "Planned"
-                      ? "PENDING"
-                      : ""}
+                    ? "PENDING"
+                    : ""}
                 </Text>
               </View>
             </View>
@@ -295,7 +334,6 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
           </Text>
           {activeTab === 1 && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
-
       </View>
     );
   }
@@ -313,7 +351,6 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         {chargerTab()}
         {/* Details Tab */}
         {detailTab()}
-
       </ScrollView>
     );
   }
@@ -331,7 +368,6 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         >
           <Text style={styles.directionButtonText}>Get Direction</Text>
         </TouchableOpacity>
-
       </View>
     );
   }
@@ -349,7 +385,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
               <Text style={[styles.chargerSpecText]}>
-              Power:⚡{charger?.max_power_kw || "Unknown Power"} kW
+                Power:⚡{charger?.max_power_kw || "Unknown Power"} kW
               </Text>
             </View>
             <View style={styles.connector}>
@@ -363,7 +399,12 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
                   size={20}
                   color={COLORS.primary}
                 />
-                <Text style={[styles.connectorTypeText,{fontWeight:"700" ,fontSize:12}]}>
+                <Text
+                  style={[
+                    styles.connectorTypeText,
+                    { fontWeight: "700", fontSize: 12 },
+                  ]}
+                >
                   {charger?.connector_type}
                 </Text>
               </View>
@@ -448,10 +489,6 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     );
   }
 
-
-
-
-
   function snackBarInfo() {
     return (
       <Snackbar
@@ -466,6 +503,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
       </Snackbar>
     );
   }
+
 };
 
 const styles = StyleSheet.create({
@@ -487,7 +525,7 @@ const styles = StyleSheet.create({
     padding: 16,
     height: "100%",
     justifyContent: "flex-end",
-    backgroundColor: "rgba(230, 216, 242, 0.44)", // Light purple with opacity
+    backgroundColor: "rgba(230, 216, 242, 0.28)", // Light purple with opacity
   },
   communityBadgeAndBack: {
     position: "absolute",
@@ -501,6 +539,17 @@ const styles = StyleSheet.create({
     // backgroundColor:"cyan",
     width: "100%",
     marginLeft: 18,
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    zIndex: 999,
   },
   communityBadge: {
     position: "absolute",
@@ -614,7 +663,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.gray,
     marginRight: 8,
-    fontWeight:"700"
+    fontWeight: "700",
   },
   connectorContainer: {
     marginBottom: 16,
@@ -641,7 +690,7 @@ const styles = StyleSheet.create({
   },
   connectorTypeText: {
     fontSize: 10,
-  marginLeft:10,
+    marginLeft: 10,
     color: COLORS.gray,
   },
   AminitiesTypeText: {
@@ -682,7 +731,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   amenityItem: {
-    padding:6,
+    padding: 6,
     minWidth: 60,
     minHeight: 60,
     borderRadius: 8,
@@ -715,7 +764,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
   },
-
 });
 
 export default ChargingStationDetailScreen;

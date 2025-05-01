@@ -148,19 +148,16 @@ const FavoriteScreen = ({ navigation }) => {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
-      {isLoading ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" color={Colors.primaryColor} />n{" "}
-        </View>
-      ) : (
-        <View style={{ flex: 1 }}>
-          {header()}
-          {favoriteItems()}
+
+      {header()}
+      {favoriteItems()}
+
+      {snackBar()}
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
         </View>
       )}
-      {snackBar()}
     </View>
   );
 
@@ -243,10 +240,8 @@ const FavoriteScreen = ({ navigation }) => {
           <Image
             source={
               data?.item?.station_images
-                ? { uri: imageURL.baseURL + data.item.station_images }
-                : {
-                    uri: "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?q=80&w=2057&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                  }
+                ? { uri: imageURL.baseURL + data?.item?.station_images }
+                : require("../../../../assets/images/nullStation.png")
             }
             style={styles.enrouteChargingStationImage}
           />
@@ -399,7 +394,17 @@ const styles = StyleSheet.create({
 
     justifyContent: "center",
   },
-
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    zIndex: 999,
+  },
   appBar: {
     flexDirection: "row",
     alignItems: "center",

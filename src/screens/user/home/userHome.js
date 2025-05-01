@@ -396,17 +396,6 @@ const UserHome = ({ navigation }) => {
     </SafeAreaView>
   );
 
-  function loadingDialog() {
-    return (
-      <Overlay isVisible={isLoading} overlayStyle={styles.dialogStyle}>
-        <ActivityIndicator
-          size={50}
-          color={Colors.primaryColor}
-          style={{ alignSelf: "center" }}
-        />
-      </Overlay>
-    );
-  }
   function recentStationsInfo() {
     if (!stations || stations.length === 0) {
       return (
@@ -429,7 +418,7 @@ const UserHome = ({ navigation }) => {
           source={
             item?.station_images
               ? { uri: imageURL.baseURL + item?.station_images }
-              : require("../../../../assets/images/chargingStations/charging_station3.png")
+              : require("../../../../assets/images/nullStation.png")
           }
           style={styles.enrouteChargingStationImage}
         />

@@ -28,7 +28,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { patchUpdateUserProfile } from "../../user/service/crudFunction";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
-import { selectAuthError, selectToken, selectUser } from "../../auth/services/selector";
+import {
+  selectAuthError,
+  selectToken,
+  selectUser,
+} from "../../auth/services/selector";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 const EditProfileScreen = ({ route, navigation }) => {
   const user = useSelector(selectUser);
@@ -69,9 +73,10 @@ const EditProfileScreen = ({ route, navigation }) => {
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [currentImageSetter, setCurrentImageSetter] = useState(null);
   const [currentImageLabel, setCurrentImageLabel] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [showDialogue, setshowDialogue] = useState(false);
   const [imageloading, setImageLoading] = useState("");
-  const  errorMessage = useSelector(selectAuthError);
+  const errorMessage = useSelector(selectAuthError);
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
@@ -79,31 +84,45 @@ const EditProfileScreen = ({ route, navigation }) => {
   };
 
   const handleSubmit = async () => {
-    var updatedData = {
-      owner_legal_name: name,
-      email: email,
-      avatar: avatarURI,
-      business_name: businessName,
-      role:user?.role,
-      user_key: user?.user_key,
-    };
-    console.log("Updated Data:", updatedData);
-    const response = await dispatch(patchUpdateUserProfile(updatedData));
+    setIsLoading(true);
+    try {
+      const updatedData = {
+        owner_legal_name: name,
+        email: email,
+        avatar: avatarURI,
+        role: user?.role,
+        user_key: user?.user_key,
+      };
+  
+      console.log("Updated Data:", updatedData);
+  
+      const response = await dispatch(patchUpdateUserProfile(updatedData));
+  
       if (patchUpdateUserProfile.fulfilled.match(response)) {
-          await dispatch(showSnackbar({ message: "Profile Updated Successfully.", type: 'success' }));
-    
-        } else if (patchUpdateUserProfile.rejected.match(response)) {
-          await dispatch(showSnackbar({ message: errorMessage || "Failed to Update" ,  type: 'error'}));
-    
+        await dispatch(
+          showSnackbar({
+            message: "Profile Updated Successfully.",
+            type: "success",
+          })
+        );
+      } else if (patchUpdateUserProfile.rejected.match(response)) {
+        await dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to Update",
+            type: "error",
+          })
+        );
+      }
+  
+      console.log("Response from update profile:", response.payload);
+  
+      // Optional navigation
+      // navigation.pop();
+    } finally {
+      setIsLoading(false);
     }
-    console.log("Response from update profile:", response.payload);
-
-    // Alert.alert(
-    //   "Profile Updated",
-    //   "Your profile has been updated successfully."
-    // );
-    // navigation.pop();
   };
+  
 
   const openGallery = async (setter, label) => {
     try {
@@ -202,6 +221,7 @@ const EditProfileScreen = ({ route, navigation }) => {
       />
     </View>
   );
+
   const renderNonEditableInput = (label, value, setter, placeholder) => (
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
@@ -216,52 +236,55 @@ const EditProfileScreen = ({ route, navigation }) => {
       />
     </View>
   );
-  const renderImageBox = (label, setter, apiRespUri) => (
-    <TouchableOpacity
-      onPress={() => {
-        if (apiRespUri) {
-          showFullImage(imageURL.baseURL + apiRespUri);
-        }
-      }}
-      style={{ alignItems: "center", marginBottom: 20 }}
-    >
-      {" "}
-      <View
-        style={[
-          styles.imageBox,
-          { borderRadius: label === "avatar" ? 50 : 12 },
-        ]}
-      >
-        {imageloading === label ? (
-          <ActivityIndicator size={40} color="#ccc" />
-        ) : apiRespUri ? (
-          <Image
-            source={{ uri: imageURL.baseURL + apiRespUri }}
-            style={[
-              styles.imageStyle,
-              { borderRadius: label === "avatar" ? 50 : 12 },
-            ]}
-          />
-        ) : (
-          <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
-        )}
 
-        {label === "avatar" && (
-          <TouchableOpacity
-            style={styles.editIcon}
-            onPress={() => {
-              setCurrentImageSetter(() => setter);
-              setCurrentImageLabel(label);
-              setBottomSheetVisible(true);
-            }}
-          >
-            <MaterialIcons name="edit" size={20} color="white" />
-          </TouchableOpacity>
-        )}
-      </View>
-      <Text style={styles.imageLabel}>{label}</Text>
-    </TouchableOpacity>
-  );
+  const renderImageBox = (label, setter, apiRespUri) =>
+    apiRespUri ? (
+      <TouchableOpacity
+        onPress={() => {
+          if (apiRespUri) {
+            showFullImage(imageURL.baseURL + apiRespUri);
+          }
+        }}
+        style={{ alignItems: "center", marginBottom: 20 }}
+      >
+        {" "}
+        <View
+          style={[
+            styles.imageBox,
+            { borderRadius: label === "avatar" ? 50 : 12 },
+          ]}
+        >
+          {imageloading === label ? (
+            <ActivityIndicator size={40} color="#ccc" />
+          ) : apiRespUri ? (
+            <Image
+              source={{ uri: imageURL.baseURL + apiRespUri }}
+              style={[
+                styles.imageStyle,
+                { borderRadius: label === "avatar" ? 50 : 12 },
+              ]}
+            />
+          ) : (
+            <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
+          )}
+
+          {label === "avatar" && (
+            <TouchableOpacity
+              style={styles.editIcon}
+              onPress={() => {
+                setCurrentImageSetter(() => setter);
+                setCurrentImageLabel(label);
+                setBottomSheetVisible(true);
+              }}
+            >
+              <MaterialIcons name="edit" size={20} color="white" />
+            </TouchableOpacity>
+          )}
+        </View>
+        {label !== "avatar" && <Text style={styles.imageLabel}>{label}</Text>}
+      </TouchableOpacity>
+    ) : null;
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -382,6 +405,11 @@ const EditProfileScreen = ({ route, navigation }) => {
         </RNModal>
         {UpdateOverlay()}
       </ScrollView>
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </View>
   );
 
@@ -403,7 +431,6 @@ const EditProfileScreen = ({ route, navigation }) => {
           >
             Do You Want To Update?
           </Text>
-          
 
           <View
             style={{
@@ -465,6 +492,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     fontSize: 12,
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    zIndex: 999,
   },
   imageContainer: {
     flexDirection: "row",

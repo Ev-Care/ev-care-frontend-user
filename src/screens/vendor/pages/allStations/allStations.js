@@ -8,6 +8,7 @@ import {
   Switch,
   Text,
   TouchableOpacity,
+  ActivityIndicator,
   View,
 } from "react-native";
 import {
@@ -46,13 +47,28 @@ const AllStations = ({ route }) => {
   const dispatch = useDispatch();
   const [refreshing, setRefreshing] = useState(false);
   const stations = useSelector(selectVendorStation);
+  const [isLoading, setIsLoading] = useState(false);
   const errorMessage = useSelector(selectAuthError);
   // console.log("Stations in AllStations:", stations?.length);
+  const [stationStatusMap, setStationStatusMap] = useState({});
+
+
+
+
   const updateStationStatus = async (stationData) => {
+    setIsLoading(true);
+  
+    // Optimistically toggle the status
+    setStationStatusMap((prev) => ({
+      ...prev,
+      [stationData.station_id]: stationData.status === "active",
+    }));
+  
     try {
       const response = await dispatch(
         updateStationsChargersConnectorsStatus(stationData)
       );
+  
       if (updateStationsChargersConnectorsStatus.fulfilled.match(response)) {
         await dispatch(
           showSnackbar({ message: "Station status updated.", type: "success" })
@@ -62,18 +78,21 @@ const AllStations = ({ route }) => {
       ) {
         await dispatch(
           showSnackbar({
-            message: errorMessage || "Failed to add station.",
+            message: errorMessage || "Failed to update station status.",
             type: "error",
           })
         );
       }
+  
+      // Fetch updated stations after the status change
       const stationResponse = await dispatch(fetchStations(user?.id));
       if (fetchStations.fulfilled.match(stationResponse)) {
-        // await dispatch(showSnackbar({ message: "Station fetched Successfully." , type: 'success'}));
+        // Optionally show a success message for fetching stations
+        // await dispatch(showSnackbar({ message: "Stations fetched successfully.", type: "success" }));
       } else if (fetchStations.rejected.match(stationResponse)) {
         await dispatch(
           showSnackbar({
-            message: errorMessage || "Failed to fetch station.",
+            message: errorMessage || "Failed to fetch stations.",
             type: "error",
           })
         );
@@ -82,12 +101,15 @@ const AllStations = ({ route }) => {
       console.error("Error updating station status:", error);
       await dispatch(
         showSnackbar({
-          message: errorMessage || "Failed to fetch station.",
+          message: errorMessage || "Failed to update station status.",
           type: "error",
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
+  
 
   const handleRefresh = async () => {
     console.log("Refreshing stations...in all stations");
@@ -121,6 +143,7 @@ const AllStations = ({ route }) => {
         {stations && stations?.length > 0 ? (
           stations.map((station) => (
             <TouchableOpacity
+            activeOpacity={0.8}
               onPress={() =>
                 navigation.navigate("StationManagement", { station })
               }
@@ -164,30 +187,20 @@ const AllStations = ({ route }) => {
                         : { false: COLORS.secondary, true: COLORS.green }
                     }
                     thumbColor={COLORS.white}
-                    value={station?.status === "Active"}
+                    value={
+                      stationStatusMap[station?.id] ??
+                      station?.status === "Active"
+                    }
                     disabled={station?.status === "Planned"}
                     onValueChange={async () => {
-                      // console.log("Station Status Before toggle:", availability[station.id]);
-
-                      //  await toggleStationAvailability(station.id);
-
-                      // Retrieve the updated station data
-                      // const updatedStation = stations.find((s) => s.id === station.id);
-                      // console.log("Station Status after toggle:", availability[station.id]);
-
-                      var stationData = {
+                      const newStatus =
+                        station?.status === "Active" ? "inactive" : "active";
+                      const stationData = {
                         station_id: station?.id,
                         statusType: "station",
-                        status:
-                          station?.status === "Active" ||
-                          station?.status === "Planned"
-                            ? "Inactive"
-                            : "active",
+                        status: newStatus,
                       };
-
-                      const statusResponse = await updateStationStatus(
-                        stationData
-                      );
+                      await updateStationStatus(stationData); // Update the station status on server
                     }}
                   />
                 </View>
@@ -227,6 +240,11 @@ const AllStations = ({ route }) => {
           </Text>
         )}
       </ScrollView>
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
       {/* <VendorBottomTabBar/> */}
     </View>
   );
@@ -246,6 +264,16 @@ const styles = StyleSheet.create({
     padding: 15,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0eb",
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
   },
   scrollContainer: {
     padding: 10,

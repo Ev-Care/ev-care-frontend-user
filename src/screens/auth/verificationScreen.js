@@ -9,7 +9,7 @@ import {
   Platform,
   Alert,
 } from "react-native";
-import React, { useEffect, useState,useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Colors,
   screenWidth,
@@ -24,7 +24,12 @@ import OTPTextView from "react-native-otp-textinput";
 import { useDispatch, useSelector } from "react-redux";
 import { postVerifyOtp } from "./services/crudFunction";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { selectUser, selectToken, selectAuthloader, selectAuthError } from "./services/selector";
+import {
+  selectUser,
+  selectToken,
+  selectAuthloader,
+  selectAuthError,
+} from "./services/selector";
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 import { setAuthLoaderFalse } from "../../redux/store/userSlice";
 import Timer from "../../components/Timer";
@@ -42,63 +47,87 @@ const VerificationScreen = ({ navigation, route }) => {
   const [timerStarted, setTimerStarted] = useState(false);
   const { handleSignIn } = route?.params;
 
-
   const handleStartTimer = () => {
-     handleSignIn();
-     setTimerStarted(true);
+    handleSignIn();
+    setTimerStarted(true);
   };
- 
 
   console.log("isLoading in VerificationScreen:", isLoading); // Debugging line
 
   const verifyOtp = async () => {
     if (otpInput.length !== 6) {
-      dispatch(showSnackbar({ message: "Invalid OTP, Please enter a 6-digit OTP.", type: "error" }));
+      dispatch(
+        showSnackbar({
+          message: "Invalid OTP, Please enter a 6-digit OTP.",
+          type: "error",
+        })
+      );
       return;
     }
-  
+
     // dispatch(setAuthLoaderTrue()); // Optional: You can set loading true manually before API call
-    
-    const response = await dispatch(postVerifyOtp({ otp: otpInput, mobileNumber: route.params?.phoneNumber }));
-  
+
+    const response = await dispatch(
+      postVerifyOtp({ otp: otpInput, mobileNumber: route.params?.phoneNumber })
+    );
+
     if (postVerifyOtp.fulfilled.match(response)) {
       console.log("OTP verified successfully:", response.payload);
       const extractedUserKey = response.payload?.data?.user?.user_key;
       setUserKey(extractedUserKey);
       setNavigateToRegister(true); // set flag for useEffect
-    }
-     else if (postVerifyOtp.rejected.match(response)) {
+    } else if (postVerifyOtp.rejected.match(response)) {
       console.error("OTP verification failed:", response.payload);
-      dispatch(showSnackbar({ message: response.payload || "OTP verification failed.", type: "error" }));
+      dispatch(
+        showSnackbar({
+          message: response.payload || "OTP verification failed.",
+          type: "error",
+        })
+      );
     }
-   
   };
-  
 
   // useEffect to handle user and token updates
   useEffect(() => {
     if (navigateToRegister && token && userKey && !user) {
       console.log("Navigating to register...");
-      dispatch(showSnackbar({ message: "OTP verified successfully", type: "success" }));
+      dispatch(
+        showSnackbar({ message: "OTP verified successfully", type: "success" })
+      );
       navigation.push("Register", { userKey });
       setNavigateToRegister(false); // reset
       return;
     }
-  
+
     if (user && token) {
       console.log("Existing user, logging in...");
       try {
         AsyncStorage.setItem("user", user.user_key);
         AsyncStorage.setItem("accessToken", token);
-        dispatch(showSnackbar({ message: "OTP verified successfully", type: "success" }));
+        dispatch(
+          showSnackbar({
+            message: "OTP verified successfully",
+            type: "success",
+          })
+        );
       } catch (error) {
-        dispatch(showSnackbar({ message: "User data not saved in device", type: "error" }));
-      }1
+        dispatch(
+          showSnackbar({
+            message: "User data not saved in device",
+            type: "error",
+          })
+        );
+      }
+      1;
     } else if (error) {
-      dispatch(showSnackbar({ message: "Incorrect OTP entered. Please try again.", type: "error" }));
+      dispatch(
+        showSnackbar({
+          message: "Incorrect OTP entered. Please try again.",
+          type: "error",
+        })
+      );
     }
   }, [user, token, error, navigateToRegister, userKey, navigation, dispatch]);
-  
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -115,49 +144,34 @@ const VerificationScreen = ({ navigation, route }) => {
           {resendText()}
         </ScrollView>
       </View>
-      {loadingDialog()}
+     
     </View>
   );
 
   function resendText() {
-    return (
-      timerStarted ? (
-        <Timer 
-        startTimer={timerStarted} 
-        setTimerStarted={setTimerStarted}
-        
-        />
-      ) : (
-        <Text
-          onPress={handleStartTimer}
-          style={{
-            ...Fonts.grayColor18SemiBold,
-            textAlign: "center",
-            marginHorizontal: Sizes.fixPadding * 2.0,
-          }}
-        >
-          Resend
-        </Text>
-      )
-    );
-  }
-  
-
-  function loadingDialog() {
-    return (
-      <Overlay isVisible={isLoading} overlayStyle={styles.dialogStyle}>
-        <ActivityIndicator size={50} color={Colors.primaryColor} />
-        <Text style={{ marginTop: Sizes.fixPadding, textAlign: "center", ...Fonts.blackColor16Regular }}>
-          Please wait...
-        </Text>
-      </Overlay>
+    return timerStarted ? (
+      <Timer startTimer={timerStarted} setTimerStarted={setTimerStarted} />
+    ) : (
+      <Text
+        onPress={handleStartTimer}
+        style={{
+          ...Fonts.grayColor18SemiBold,
+          textAlign: "center",
+          marginHorizontal: Sizes.fixPadding * 2.0,
+        }}
+      >
+        Resend
+      </Text>
     );
   }
 
   function otpFields() {
     return (
       <OTPTextView
-        containerStyle={{ margin: Sizes.fixPadding * 2.0, marginTop: Sizes.fixPadding * 5.0 }}
+        containerStyle={{
+          margin: Sizes.fixPadding * 2.0,
+          marginTop: Sizes.fixPadding * 5.0,
+        }}
         handleTextChange={setOtpInput}
         inputCount={6}
         keyboardType="numeric"
@@ -173,9 +187,24 @@ const VerificationScreen = ({ navigation, route }) => {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={verifyOtp}
-        style={{ ...commonStyles.button, borderRadius: Sizes.fixPadding - 5.0, margin: Sizes.fixPadding * 2.0 }}
+        style={{
+          ...commonStyles.button,
+          borderRadius: Sizes.fixPadding - 5.0,
+          margin: Sizes.fixPadding * 2.0,
+        }}
       >
-        <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>
+        {isLoading ? (
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <ActivityIndicator
+              size="small"
+              color="#fff"
+              style={{ marginRight: 8 }}
+            />
+            <Text style={{ ...Fonts.whiteColor18Medium }}>Please Wait...</Text>
+          </View>
+        ) : (
+          <Text style={{ ...Fonts.whiteColor18Medium }}>Continue</Text>
+        )}
       </TouchableOpacity>
     );
   }
@@ -188,10 +217,23 @@ const VerificationScreen = ({ navigation, route }) => {
         resizeMode="stretch"
       >
         <View style={styles.topImageOverlay}>
-          <MaterialIcons name="arrow-back" color={Colors.whiteColor} size={26} onPress={() => navigation.pop()} />
+          <MaterialIcons
+            name="arrow-back"
+            color={Colors.whiteColor}
+            size={26}
+            onPress={() => navigation.pop()}
+          />
           <View>
-            <Text style={{ ...Fonts.whiteColor22SemiBold }}>OTP Verification</Text>
-            <Text numberOfLines={1} style={{ ...Fonts.whiteColor16Regular, marginTop: Sizes.fixPadding }}>
+            <Text style={{ ...Fonts.whiteColor22SemiBold }}>
+              OTP Verification
+            </Text>
+            <Text
+              numberOfLines={1}
+              style={{
+                ...Fonts.whiteColor16Regular,
+                marginTop: Sizes.fixPadding,
+              }}
+            >
               See your phone for the verification code
             </Text>
           </View>

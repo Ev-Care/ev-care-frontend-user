@@ -270,7 +270,7 @@ const PreviewPage = ({ navigation, route }) => {
         {chargerTab?.()}
         {/* Details Tab */}
         {detailTab?.()}
-        {loadingDialog?.()}
+      
       </ScrollView>
 
       {/* Bottom Buttons */}
@@ -287,6 +287,11 @@ const PreviewPage = ({ navigation, route }) => {
           <Text style={styles.submitButtonText}>Submit</Text>
         </TouchableOpacity>
       </View>
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </View>
   );
 
@@ -332,26 +337,7 @@ const PreviewPage = ({ navigation, route }) => {
     );
   }
 
-  function loadingDialog() {
-    return (
-      <Overlay isVisible={isLoading} overlayStyle={styles.dialogStyle}>
-        <ActivityIndicator
-          size={50}
-          color={COLORS.primary}
-          style={{ alignSelf: "center" }}
-        />
-        <Text
-          style={{
-            marginTop: Sizes.fixPadding,
-            textAlign: "center",
-            ...Fonts.blackColor16Regular,
-          }}
-        >
-          Please wait...
-        </Text>
-      </Overlay>
-    );
-  }
+
 
   // This will be used to show the error dialog in future
   function errorDialog() {
@@ -447,6 +433,17 @@ const styles = StyleSheet.create({
     height: "100%",
     justifyContent: "flex-end",
     backgroundColor: "rgba(230, 216, 242, 0.6)", // Light purple with opacity
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    zIndex: 999,
   },
   communityBadge: {
     position: "absolute",

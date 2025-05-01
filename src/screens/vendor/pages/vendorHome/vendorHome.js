@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Image,
   Switch,
+  ActivityIndicator,
   TextInput,
   Alert,
 } from "react-native";
@@ -28,10 +29,17 @@ import MyStatusBar from "../../../../components/myStatusBar";
 import { useNavigation } from "@react-navigation/native";
 import { selectUser } from "../../../auth/services/selector";
 import { useSelector, useDispatch } from "react-redux";
-import { selectStation, selectVendorError, selectVendorStation } from "../../services/selector";
-import { fetchStations, updateAllStationStatus } from "../../services/crudFunction";
+import {
+  selectStation,
+  selectVendorError,
+  selectVendorStation,
+} from "../../services/selector";
+import {
+  fetchStations,
+  updateAllStationStatus,
+} from "../../services/crudFunction";
 import { selectStations } from "../../../user/service/selector";
-import { RefreshControl } from 'react-native';
+import { RefreshControl } from "react-native";
 import { handleRefreshStations } from "../../services/handleRefresh";
 import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
 // Colors
@@ -53,15 +61,17 @@ const VendorHome = () => {
   const dispatch = useDispatch();
   const [refreshing, setRefreshing] = useState(false);
   const errorMessage = useSelector(selectVendorError);
-
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     if (stations && stations.length > 0) {
-      const anyActiveStation = stations.some(station => station.status === "Active");
-     
+      const anyActiveStation = stations.some(
+        (station) => station.status === "Active"
+      );
+
       setIsLive(anyActiveStation);
       console.log("useEffect called");
       console.log("anyActiveStation called", anyActiveStation);
-    } 
+    }
   }, [stations]);
 
   useEffect(() => {
@@ -75,16 +85,14 @@ const VendorHome = () => {
         const response = await dispatch(fetchStations(user?.id));
         if (fetchStations.fulfilled.match(response)) {
           // await dispatch(showSnackbar({ message: "Station fetched Successfully." }));
-
         } else if (fetchStations.rejected.match(response)) {
-          await dispatch(showSnackbar({ message: errorMessage || "Station not found." }));
-
+          await dispatch(
+            showSnackbar({ message: errorMessage || "Station not found." })
+          );
         }
       } else {
-
         console.log("User ID is not available");
         // console.log(useSelector(selectStation));
-
       }
     };
 
@@ -95,10 +103,7 @@ const VendorHome = () => {
     };
   }, [dispatch]);
 
-
   // Get current time to display appropriate greeting
-
-
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -107,9 +112,58 @@ const VendorHome = () => {
     return "Good Evening";
   };
 
+  const toggleStation = async () => {
+    // Optimistically update the local state first for a smooth effect
+    setIsLive((prev) => !prev);
+    setIsLoading(true);
 
+    try {
+     
+      const newStatus = isLive ? "inactive" : "active";
 
+      const statusResponse = await dispatch(
+        updateAllStationStatus({
+          statusType: "station",
+          status: newStatus,
+        })
+      );
 
+      // Handle the response from the server
+      if (updateAllStationStatus.fulfilled.match(statusResponse)) {
+        await dispatch(
+          showSnackbar({ message: "Station status updated successfully." })
+        );
+      } else if (updateAllStationStatus.rejected.match(statusResponse)) {
+        await dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to update station status.",
+          })
+        );
+      }
+
+      // Fetch the updated stations after updating the status
+      const stationResponse = await dispatch(fetchStations(user?.id));
+      if (fetchStations.fulfilled.match(stationResponse)) {
+        // Handle success response (optional)
+      } else if (fetchStations.rejected.match(stationResponse)) {
+        await dispatch(
+          showSnackbar({ message: errorMessage || "Failed to fetch stations." })
+        );
+      }
+    } catch (error) {
+      console.error("Error updating station status:", error);
+      // Revert state if error occurs
+      setIsLive((prev) => !prev);
+      await dispatch(
+        showSnackbar({
+          message: errorMessage || "Failed to update station status.",
+          type: "error",
+        })
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const feature = [
     {
@@ -128,31 +182,33 @@ const VendorHome = () => {
     return fullName.trim().split(" ")[0];
   }
   const handleRefresh = async () => {
-    await handleRefreshStations(dispatch, user?.id, setRefreshing, errorMessage);
+    await handleRefreshStations(
+      dispatch,
+      user?.id,
+      setRefreshing,
+      errorMessage
+    );
   };
-
-
-
 
   return (
     <SafeAreaView style={styles.container}>
       <MyStatusBar />
-      <ScrollView showsVerticalScrollIndicator={false}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={['#9Bd35A', '#101942']}  // Android spinner colors
-            tintColor="#101942"            // iOS spinner color
+            colors={["#9Bd35A", "#101942"]} // Android spinner colors
+            tintColor="#101942" // iOS spinner color
           />
         }
-
       >
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.greetingContainer}>
             <Text style={styles.greeting}>
-              Hi {getFirstName(user?.business_name)} {" "}!
+              Hi {getFirstName(user?.business_name)} !
             </Text>
             <Text style={styles.subGreeting}>{getGreeting()}</Text>
           </View>
@@ -208,7 +264,11 @@ const VendorHome = () => {
 
   function manageStationCard() {
     return (
-      <TouchableOpacity onPress={() => navigation.navigate("AllStations")} style={[styles.featureCard, { backgroundColor: COLORS.primary }]}>
+      <TouchableOpacity
+      activeOpacity={0.8}
+        onPress={() => navigation.navigate("AllStations")}
+        style={[styles.featureCard, { backgroundColor: COLORS.primary }]}
+      >
         <View style={styles.featureCardHeader}>
           <Text style={[styles.noOfStations, { color: COLORS.white }]}>
             {stations?.length} Stations
@@ -239,24 +299,7 @@ const VendorHome = () => {
           </Text>
           <Switch
             value={isLive}
-            onValueChange={async () => {
-              const statusResponse = await dispatch(updateAllStationStatus({ statusType: "station", status: isLive ? "inactive" : "active" }));
-              if(updateAllStationStatus.fulfilled.match(statusResponse)){
-                await dispatch(showSnackbar({message: "Station status updated Successfully."}));
-       
-               }else if(updateAllStationStatus.rejected.match(statusResponse)){
-                 await dispatch(showSnackbar({message: errorMessage || "Failed to update stations status"}));
-       
-               }
-              const stationResponse = await dispatch(fetchStations(user?.id));
-              if(fetchStations.fulfilled.match(stationResponse)){
-                // await dispatch(showSnackbar({message: "Station fetched Successfully."}));
-       
-               }else if(fetchStations.rejected.match(stationResponse)){
-                 await dispatch(showSnackbar({message: errorMessage || "Failed to fetch station."}));
-       
-               }
-            }}
+            onValueChange={toggleStation} 
             trackColor={{ false: COLORS.secondary, true: COLORS.green }}
             thumbColor={COLORS.white}
           />
@@ -288,7 +331,8 @@ const VendorHome = () => {
           Current Bookings
         </Text>
         <Text style={{ fontSize: 10, color: COLORS.white, marginTop: 5 }}>
-          View, modify, and track all your station booking requests with ease and accuracy
+          View, modify, and track all your station booking requests with ease
+          and accuracy
         </Text>
       </View>
     );
@@ -325,7 +369,11 @@ const VendorHome = () => {
   }
   function helpNSupportCard() {
     return (
-      <TouchableOpacity onPress={() => navigation.navigate("HelpScreen")} style={[styles.featureCard, { backgroundColor: COLORS.white }]}>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => navigation.navigate("HelpScreen")}
+        style={[styles.featureCard, { backgroundColor: COLORS.white }]}
+      >
         <View style={styles.featureCardHeader}>
           <Text style={[styles.noOfStations, { color: COLORS.black }]}>
             24x7 Support
@@ -347,7 +395,8 @@ const VendorHome = () => {
           Help & Support
         </Text>
         <Text style={{ fontSize: 10, color: COLORS.darkGray, marginTop: 5 }}>
-          Get 24 x 7 assistance for all your queries with our dedicated support team, ensuring seamless station management.
+          Get 24 x 7 assistance for all your queries with our dedicated support
+          team, ensuring seamless station management.
         </Text>
       </TouchableOpacity>
     );

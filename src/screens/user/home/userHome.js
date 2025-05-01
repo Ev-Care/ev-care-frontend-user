@@ -409,6 +409,7 @@ const UserHome = ({ navigation }) => {
 
     const renderItem = ({ item }) => (
       <TouchableOpacity
+        activeOpacity={0.7}
         onPress={() => {
           navigation.push("ChargingStationDetail", { item });
         }}

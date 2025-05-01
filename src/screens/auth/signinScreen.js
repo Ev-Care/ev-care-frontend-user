@@ -27,9 +27,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectloader } from "./services/selector";
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 const SigninScreen = ({ navigation }) => {
+  // 
   const [backClickCount, setBackClickCount] = useState(0);
   const [phoneNumber, setPhoneNumber] = useState("");
-  const isLoading = useSelector(selectloader);
+  const isLoading =useSelector(selectloader);
   const dispatch = useDispatch();
 
 
@@ -100,20 +101,10 @@ const SigninScreen = ({ navigation }) => {
         </ScrollView>
       </View>
       {exitInfo()}
-      {loadingDialog()}
+      
     </View>
   );
 
-  function loadingDialog() {
-    return (
-      <Overlay isVisible={isLoading} overlayStyle={styles.dialogStyle}>
-        <ActivityIndicator size={50} color={Colors.primaryColor} style={{ alignSelf: "center" }} />
-        <Text style={{ marginTop: Sizes.fixPadding, textAlign: "center", ...Fonts.blackColor16Regular }}>
-          Please wait...
-        </Text>
-      </Overlay>
-    );
-  }
 
   function continueButton() {
     return (
@@ -122,7 +113,14 @@ const SigninScreen = ({ navigation }) => {
         onPress={handleSignIn}
         style={{ ...commonStyles.button, borderRadius: Sizes.fixPadding - 5.0, margin: Sizes.fixPadding * 2.0 }}
       >
-        <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>
+      {isLoading ? (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+              <Text style={{ ...Fonts.whiteColor18Medium }}>Please Wait...</Text>
+            </View>
+          ) : (
+            <Text style={{ ...Fonts.whiteColor18Medium }}>Continue</Text>
+          )}
       </TouchableOpacity>
     );
   }
@@ -185,6 +183,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
   topImageOverlay: {
     backgroundColor: "rgba(0, 0, 0, 0.8)",
     width: "100%",

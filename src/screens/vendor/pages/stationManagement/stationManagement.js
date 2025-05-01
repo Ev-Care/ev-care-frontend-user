@@ -9,6 +9,7 @@ import {
   Dimensions,
   Switch,
   Platform,
+  ActivityIndicator,
   FlatList,
   Alert,
 } from "react-native";
@@ -25,8 +26,16 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import MapView, { Marker } from "react-native-maps";
 import { Overlay } from "@rneui/themed";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteStation, fetchStations, updateStationsChargersConnectorsStatus } from "../../services/crudFunction";
-import { selectStation, selectVendorError, selectVendorStation } from "../../services/selector";
+import {
+  deleteStation,
+  fetchStations,
+  updateStationsChargersConnectorsStatus,
+} from "../../services/crudFunction";
+import {
+  selectStation,
+  selectVendorError,
+  selectVendorStation,
+} from "../../services/selector";
 import imageURL from "../../../../constants/baseURL";
 import { getAllStationsAPI } from "../../services/api";
 import { selectUser } from "../../../auth/services/selector";
@@ -69,23 +78,31 @@ const StationManagement = ({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState(0);
   const scrollViewRef = useRef(null);
   const stationId = route?.params?.station?.id;
-  const station = useSelector(selectVendorStation).find((s) => s.id === stationId);
+  const station = useSelector(selectVendorStation).find(
+    (s) => s.id === stationId
+  );
   const errorMessage = useSelector(selectVendorError);
   const [showDeleteDialogue, setshowDeleteDialogue] = useState(false);
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const [isChargerAvailable, setIsChargerAvailable] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [chargerStatusMap, setChargerStatusMap] = useState({});
+
   // console.log("StationManagement", JSON.stringify(station, null, 2));
   const handleTabPress = (index) => {
     setActiveTab(index);
     scrollViewRef.current.scrollTo({ x: index * width, animated: true });
   };
 
+
   useEffect(() => {
     if (!station) {
       console.log("Station no longer exists. Navigating back.");
       navigation.goBack(); // Navigate back if the station is undefined
     }
+   
+
   }, [station]);
 
   const handleScroll = (event) => {
@@ -95,58 +112,86 @@ const StationManagement = ({ navigation, route }) => {
       setActiveTab(index);
     }
   };
-  
-  const handleDelete = async () => {
-    console.log("handleDelete Called");
-    try {
 
-      //Deleting station from server
+  const handleDelete = async () => {
+    setIsLoading(true);
+    console.log("handleDelete Called");
+
+    try {
       const deleteResponse = await dispatch(deleteStation(stationId));
       if (deleteStation.fulfilled.match(deleteResponse)) {
         navigation.pop();
-        // Feting new updated station from server.
+
         const stationResponse = await dispatch(fetchStations(user?.id));
         if (fetchStations.fulfilled.match(stationResponse)) {
-          console.log('station updated');
-
-          await dispatch(showSnackbar({ message: "Station deleted successfully.", type: 'success' }));
-          // navigation.navigate("AllStations");
-         
-
+          console.log("station updated");
+          await dispatch(
+            showSnackbar({
+              message: "Station deleted successfully.",
+              type: "success",
+            })
+          );
         } else if (fetchStations.rejected.match(stationResponse)) {
-          console.log('Failed to delete station.');
-          await dispatch(showSnackbar({ message: errorMessage || "Failed to delete station.", type: 'error' }));
-
+          console.log("Failed to fetch updated stations.");
+          await dispatch(
+            showSnackbar({
+              message: errorMessage || "Failed to update station list.",
+              type: "error",
+            })
+          );
         }
-
       } else if (deleteStation.rejected.match(deleteResponse)) {
-        await dispatch(showSnackbar({ message: errorMessage || "Failed to delete station.", type: 'error' }));
-
+        await dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to delete station.",
+            type: "error",
+          })
+        );
       }
-
-
-      
     } catch (error) {
       console.error("Error deleting station:", error);
-      await dispatch(showSnackbar({ message: errorMessage || "Failed to delete station.", type: 'error' }));
+      await dispatch(
+        showSnackbar({
+          message: errorMessage || "An error occurred while deleting.",
+          type: "error",
+        })
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const renderStars = (rating) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <Icon
-          key={i}
-          name={i <= rating ? "star" : "star-outline"}
-          size={16}
-          color={COLORS.yellow}
-          style={{ marginRight: 2 }}
-        />
+  const handleToggle = async (charger, station) => {
+   
+    setChargerStatusMap((prev) => ({
+      ...prev,
+      [charger.charger_id]: charger?.status !== "Available", // Toggle to the opposite status
+    }));
+  
+    setIsLoading(true);
+  
+    try {
+      const newStatus = charger?.status === "Available" ? "inactive" : "active";
+  
+      await dispatch(
+        updateStationsChargersConnectorsStatus({
+          statusType: "charger",
+          status: newStatus,
+          station_id: station?.id,
+          charger_id: charger?.charger_id,
+        })
       );
+  
+    
+
+    } catch (error) {
+      console.error("Error updating status:", error);
+    } finally {
+      setIsLoading(false);
     }
-    return <View style={{ flexDirection: "row" }}>{stars}</View>;
   };
+  
+
   function trimName(threshold, str) {
     if (str?.length <= threshold) {
       return str;
@@ -163,8 +208,8 @@ const StationManagement = ({ navigation, route }) => {
             station?.station_images
               ? { uri: imageURL.baseURL + station?.station_images }
               : {
-                uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-              }
+                  uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                }
           }
           style={styles.mapBackground}
         />
@@ -199,10 +244,10 @@ const StationManagement = ({ navigation, route }) => {
                     station?.status === "Active"
                       ? "green"
                       : station?.status === "Inactive"
-                        ? "#FF5722"
-                        : station?.status === "Planned"
-                          ? "blue"
-                          : "black", // fallback color
+                      ? "#FF5722"
+                      : station?.status === "Planned"
+                      ? "blue"
+                      : "black", // fallback color
                 },
               ]}
             >
@@ -213,15 +258,17 @@ const StationManagement = ({ navigation, route }) => {
               • {station?.open_hours_opening_time} -{" "}
               {station?.open_hours_closing_time}
             </Text>
-            {station?.status !== "Inactive" && (<View style={styles.newBadge}>
-              <Text style={styles.newText}>
-                {station?.status === "Active"
-                  ? "VERIFIED"
-                  : station?.status === "Planned"
+            {station?.status !== "Inactive" && (
+              <View style={styles.newBadge}>
+                <Text style={styles.newText}>
+                  {station?.status === "Active"
+                    ? "VERIFIED"
+                    : station?.status === "Planned"
                     ? "PENDING"
                     : ""}
-              </Text>
-            </View>)}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
       </View>
@@ -286,6 +333,11 @@ const StationManagement = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
       {deleteDialogue()}
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </View>
   );
   function chargerTab(station) {
@@ -299,18 +351,11 @@ const StationManagement = ({ navigation, route }) => {
                 {"Charger " + (index + 1)}
               </Text>
               <Switch
-                value={charger?.status === "Available"}
-                onValueChange={() =>
-                  dispatch(
-                    updateStationsChargersConnectorsStatus({
-                      statusType: "charger",
-                      status:
-                        charger?.status === "Available" ? "inactive" : "active",
-                      station_id: station?.id,
-                      charger_id: charger?.charger_id,
-                    })
-                  )
+                value={
+                  chargerStatusMap[charger.charger_id] ??
+                  charger?.status === "Available"
                 }
+                onValueChange={() => handleToggle(charger, station)}
                 trackColor={{ false: "#FF8C00", true: COLORS.primary }}
                 thumbColor="#ffffff"
               />
@@ -338,7 +383,7 @@ const StationManagement = ({ navigation, route }) => {
                   color={COLORS.primary}
                 />
                 <Text style={styles.connectorTypeText}>
-                  {' '+charger?.connector_type}
+                  {" " + charger?.connector_type}
                 </Text>
               </View>
               <Text
@@ -398,11 +443,9 @@ const StationManagement = ({ navigation, route }) => {
 
             return (
               <View key={index} style={styles.amenityItem}>
-
                 <Icon name={iconName} size={24} color={COLORS.primary} />
 
                 <Text style={styles.amenitiesTypeText}>{trimmedName} </Text>
-
               </View>
             );
           })}
@@ -663,7 +706,7 @@ const styles = StyleSheet.create({
   },
   connectorTypeText: {
     fontSize: 10,
-    marginLeft:10,
+    marginLeft: 10,
     color: COLORS.gray,
   },
   amenitiesTypeText: {
@@ -786,6 +829,17 @@ const styles = StyleSheet.create({
     marginHorizontal: Sizes.fixPadding * 2.0,
     textAlign: "center",
     ...Fonts.blackColor18Medium,
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: 'rgba(67, 92, 128, 0.43)', // Optional: semi-transparent overlay
+    zIndex: 999,
   },
 });
 

@@ -92,7 +92,7 @@ const AddStations = () => {
   const handleImagePick = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      alert("Sorry, we need camera roll permissions to make this work!");
+      alert("Sorry, we need gallery access permissions to make this work!");
       return;
     }
 
@@ -278,6 +278,7 @@ const AddStations = () => {
   function locationDetail() {
     return (
       <TouchableOpacity
+      activeOpacity={1}
         style={styles?.card}
         onPress={() => handleVisibility("locationdetail")}
       >
@@ -309,6 +310,7 @@ const AddStations = () => {
   function additionalDetail() {
     return (
       <TouchableOpacity
+        activeOpacity={1}
         style={styles?.card}
         onPress={() => handleVisibility("additionaldetail")}
       >
@@ -330,6 +332,7 @@ const AddStations = () => {
       <TouchableOpacity
         style={styles?.card}
         onPress={() => handleVisibility(index)}
+        activeOpacity={1}
       >
         <View style={styles?.chagerTitle}>
           <Text style={styles?.sectionTitle}>Charger Details {index + 1}</Text>
@@ -468,9 +471,22 @@ const AddStations = () => {
               selectedConnectors[chargerIndex] === connector?.id;
 
             return (
-              <View
+              <TouchableOpacity
                 key={`connector-${connector?.id}`}
                 style={styles?.connectorsItem}
+                onPress={() => {
+                  setChargerForms((prev) =>
+                    prev.map((charger, index) =>
+                      index === chargerIndex
+                        ? { ...charger, connector_type: connector?.type }
+                        : charger
+                    )
+                  );
+                  setSelectedConnectors((prev) => ({
+                    ...prev,
+                    [chargerIndex]: connector?.id,
+                  }));
+                }}
               >
                 <View
                   style={{ alignItems: "center", flexDirection: "row", gap: 4 }}
@@ -480,7 +496,7 @@ const AddStations = () => {
                 </View>
 
                 {/* Radio Button */}
-                <TouchableOpacity
+                <View
                   style={{
                     height: 20,
                     width: 20,
@@ -491,19 +507,7 @@ const AddStations = () => {
                     justifyContent: "center",
                     marginTop: 6,
                   }}
-                  onPress={() => {
-                    setChargerForms((prev) =>
-                      prev.map((charger, index) =>
-                        index === chargerIndex
-                          ? { ...charger, connector_type: connector?.type }
-                          : charger
-                      )
-                    );
-                    setSelectedConnectors((prev) => ({
-                      ...prev,
-                      [chargerIndex]: connector?.id,
-                    }));
-                  }}
+                 
                 >
                   {isSelected && (
                     <View
@@ -515,11 +519,11 @@ const AddStations = () => {
                       }}
                     />
                   )}
-                </TouchableOpacity>
+                </View>
 
                 {/* Count Buttons (if needed) */}
                 {/* Add your inc/dec logic here */}
-              </View>
+              </TouchableOpacity>
             );
           })}
         </View>

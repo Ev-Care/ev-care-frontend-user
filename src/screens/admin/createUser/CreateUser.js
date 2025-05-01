@@ -21,7 +21,7 @@ import {
     screenWidth,
   } from "../../../constants/styles";
 import RNModal from 'react-native-modal';
-
+import { default as Icon } from "react-native-vector-icons/MaterialIcons";
 import imageURL from "../../../constants/baseURL";
 import { color } from '@rneui/base';
 
@@ -134,9 +134,15 @@ const CreateUser = ({ route, navigation }) => {
   return (
 
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
+        <View style={styles.appBar}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Icon name="arrow-back" size={24} color={Colors.primary} />
+              </TouchableOpacity>
+              <Text style={[styles.title,{fontSize:16}]}>Create a New User</Text>
+              <View style={{ width: 24 }} />
+            </View>
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Create a New User</Text>
-    
+   
     <View style={styles.imageContainerAvatar}>
       {renderImageBox('avatar', avatar, setAvatar )}     
     </View>
@@ -249,12 +255,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingBottom: 50,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333',
-    textAlign: 'center',
+  appBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: Colors.bodyBackColor,
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0eb",
+    elevation: 5,
   },
   input: {
     borderWidth: 1,

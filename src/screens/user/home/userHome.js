@@ -53,7 +53,7 @@ import {
   getChargerLabel,
 } from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-
+import DottedLoader from "../../../utils/lottieLoader/loaderView";
 const COLORS = {
   primary: "#101942",
   secondary: "#FF8C00",
@@ -74,7 +74,7 @@ const UserHome = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const isLoading = useSelector(selectStationsLoading || selectUserLoading);
   const stations = useSelector(selectStations);
-
+  const [isDistanceLoading, setIsDistanceLoading] = useState(true);
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -483,16 +483,20 @@ const UserHome = ({ navigation }) => {
               marginTop: Sizes.fixPadding,
             }}
           >
-            <Text
-              numberOfLines={1}
-              style={{
-                ...Fonts.blackColor16Medium,
-                flex: 1,
-                marginRight: Sizes.fixPadding - 5.0,
-              }}
-            >
-              {formatDistance(item?.distance_km)}
-            </Text>
+             {isDistanceLoading ? (
+              <DottedLoader />
+            ) : (
+              <Text
+                numberOfLines={1}
+                style={{
+                  ...Fonts.blackColor16Medium,
+                  flex: 1,
+                  marginRight: Sizes.fixPadding - 5.0,
+                }}
+              >
+                {formatDistance(item?.distance_km)}
+              </Text>
+            )}
 
             <TouchableOpacity
               onPress={() =>

@@ -15,6 +15,11 @@ import CreateUser from "../screens/admin/createUser/CreateUser";
 import ViewAllIssuesPage from "../screens/admin/supportIssues/AllSupportIssues";
 
 import AddStations from "../screens/vendor/pages/addStations/addStations";
+import EditAdminProfile from "../screens/admin/adminProfile/EditProfileAdmin";
+import PrivacyPolicyScreen from "../screens/user/privacyPolicy/privacyPolicyScreen";
+import TermsAndConditionsScreen from "../screens/user/termsAndConditions/termsAndConditionsScreen";
+import SupportIssuesDetail from "../screens/admin/supportIssues/SupportIssuesDetail";
+
 const Stack = createStackNavigator();
 
 export function AdminStack() {
@@ -36,6 +41,10 @@ export function AdminStack() {
       <Stack.Screen name="CreateStation" component={AddStations} />
 
 
+      <Stack.Screen name="EditAdminProfile" component={EditAdminProfile} />
+      <Stack.Screen name="TermsAndConditionsScreen" component={TermsAndConditionsScreen} />
+      <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
+      <Stack.Screen name="SupportIssuesDetail" component={SupportIssuesDetail} />
      
     </Stack.Navigator>
   );

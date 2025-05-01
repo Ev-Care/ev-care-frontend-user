@@ -21,6 +21,7 @@ import {
 } from "../../../constants/styles";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { approveVendorProfile, getAllUsers } from "../services/crudFunctions";
+import { default as Icon } from "react-native-vector-icons/MaterialIcons";
 
 const VerifyVendorProfile = ({ route, navigation }) => {
   const { user } = route?.params; // Get the user data from route params
@@ -189,15 +190,21 @@ const VerifyVendorProfile = ({ route, navigation }) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
+          <View style={styles.appBar}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Icon name="arrow-back" size={24} color={Colors.primary} />
+              </TouchableOpacity>
+              <Text style={[styles.title,{fontSize:16}]}>Verify Vendor Profile</Text>
+              <View style={{ width: 24 }} />
+            </View>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Verify Vendor Details</Text>
-
+     
         <View style={styles.imageContainerAvatar}>
           {renderImageBox("avatar", avatar, setAvatar)}
         </View>
         {renderTextData("Full Name", name)}
         {renderTextData("Mobile Number", mobNumber)}
-        {renderTextData("Email", email, setEmail, "Enter your email")}
+        {renderTextData("Email", email)}
         {renderTextData("Business Name", businessName)}
         {renderTextData("Aadhar Number", aadharNumber)}
         {renderTextData("PAN Number", panNumber)}
@@ -249,7 +256,11 @@ const VerifyVendorProfile = ({ route, navigation }) => {
         {rejectDialogue()}
         {approveDialogue()}
       </ScrollView>
-      {loadingDialog()}
+        {isLoading && (
+             <View style={styles.loaderContainer}>
+               <ActivityIndicator size="large" color={Colors.primaryColor} />
+             </View>
+           )}
     </View>
   );
 
@@ -368,51 +379,39 @@ const VerifyVendorProfile = ({ route, navigation }) => {
       </Overlay>
     );
   }
-  function loadingDialog() {
-    return (
-      <Overlay
-        isVisible={isLoading}
-        overlayStyle={[styles.loaderDialogStyle, {}]}
-      >
-        <ActivityIndicator
-          size={50}
-          color={Colors.primaryColor}
-          style={{ alignSelf: "center" }}
-        />
-        <Text
-          style={{
-            marginTop: Sizes.fixPadding,
-            textAlign: "center",
-            ...Fonts.blackColor16Regular,
-          }}
-        >
-          Please wait...
-        </Text>
-      </Overlay>
-    );
-  }
+
 };
 
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    // backgroundColor: Colors.bodyBackColor,
     backgroundColor: "#fff",
     paddingBottom: 50,
+  },  
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#333",
-    textAlign: "center",
+
+  appBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: Colors.bodyBackColor,
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0eb",
+    elevation: 5,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    padding: 12,
-    fontSize: 12,
-  },
+
+
   imageContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -444,14 +443,7 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 12,
   },
-  editIcon: {
-    position: "absolute",
-    top: 5,
-    right: 5,
-    backgroundColor: Colors.primaryColor,
-    borderRadius: 15,
-    padding: 2,
-  },
+
   imageLabel: {
     textAlign: "center",
     marginTop: 6,

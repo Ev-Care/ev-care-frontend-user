@@ -237,54 +237,55 @@ const EditProfileScreen = ({ route, navigation }) => {
       </View>
     ) : null;
 
-  const renderImageBox = (label, setter, apiRespUri) =>
-    apiRespUri ? (
-      <TouchableOpacity
-        onPress={() => {
-          if (apiRespUri) {
-            showFullImage(imageURL.baseURL + apiRespUri);
-          }
-        }}
-        style={{ alignItems: "center", marginBottom: 20 }}
-      >
-        {" "}
-        <View
-          style={[
-            styles.imageBox,
-            { borderRadius: label === "avatar" ? 50 : 12 },
-          ]}
-        >
-          {imageloading === label ? (
-            <ActivityIndicator size={40} color="#ccc" />
-          ) : apiRespUri ? (
-            <Image
-              source={{ uri: imageURL.baseURL + apiRespUri }}
-              style={[
-                styles.imageStyle,
-                { borderRadius: label === "avatar" ? 50 : 12 },
-              ]}
-            />
-          ) : (
-            <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
-          )}
-
-          {label === "avatar" && (
-            <TouchableOpacity
-              style={styles.editIcon}
-              onPress={() => {
-                setCurrentImageSetter(() => setter);
-                setCurrentImageLabel(label);
-                setBottomSheetVisible(true);
-              }}
-            >
-              <MaterialIcons name="edit" size={20} color="white" />
-            </TouchableOpacity>
-          )}
-        </View>
-        {label !== "avatar" && <Text style={styles.imageLabel}>{label}</Text>}
-      </TouchableOpacity>
-    ) : null;
-
+    const renderImageBox = (label, setter, apiRespUri) => {
+         if (!apiRespUri && label !== "avatar") return null;
+       
+         return (
+           <TouchableOpacity
+             onPress={() => {
+               if (apiRespUri) {
+                 showFullImage(imageURL.baseURL + apiRespUri);
+               }
+             }}
+             style={{ alignItems: "center", marginBottom: 20 }}
+           >
+             <View
+               style={[
+                 styles.imageBox,
+                 { borderRadius: label === "avatar" ? 50 : 12 },
+               ]}
+             >
+               {imageloading === label ? (
+                 <ActivityIndicator size={40} color="#ccc" />
+               ) : apiRespUri ? (
+                 <Image
+                   source={{ uri: imageURL.baseURL + apiRespUri }}
+                   style={[
+                     styles.imageStyle,
+                     { borderRadius: label === "avatar" ? 50 : 12 },
+                   ]}
+                 />
+               ) : (
+                 <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
+               )}
+       
+               {label === "avatar" && (
+                 <TouchableOpacity
+                   style={styles.editIcon}
+                   onPress={() => {
+                     setCurrentImageSetter(() => setter);
+                     setCurrentImageLabel(label);
+                     setBottomSheetVisible(true);
+                   }}
+                 >
+                   <MaterialIcons name="edit" size={20} color="white" />
+                 </TouchableOpacity>
+               )}
+             </View>
+             {label !== "avatar" && <Text style={styles.imageLabel}>{label}</Text>}
+           </TouchableOpacity>
+         );
+       };
   return (
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
       <ScrollView contentContainerStyle={styles.container}>

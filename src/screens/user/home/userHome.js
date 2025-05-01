@@ -429,7 +429,7 @@ const UserHome = ({ navigation }) => {
           source={
             item?.station_images
               ? { uri: imageURL.baseURL + item?.station_images }
-              : require("../../../../assets/images/chargingStations/charging_station3.png")
+              : require("../../../../assets/images/nullStation.png")
           }
           style={styles.enrouteChargingStationImage}
         />

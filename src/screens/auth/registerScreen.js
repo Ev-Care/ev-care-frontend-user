@@ -63,6 +63,8 @@ const RegisterScreen = ({ navigation, route }) => {
       console.log("Error during registration");
       dispatch(showSnackbar({ message: error || "Registration Failed", type: "error" }));
 
+    }finally{
+      setLoading(false);
     }
 
   };
@@ -196,10 +198,13 @@ const RegisterScreen = ({ navigation, route }) => {
         disabled={loading}
       >
         {loading ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>
-        )}
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+              <Text style={{ ...Fonts.whiteColor18Medium }}>Please Wait...</Text>
+            </View>
+          ) : (
+            <Text style={{ ...Fonts.whiteColor18Medium }}>Continue</Text>
+          )}
       </TouchableOpacity>
     );
   }

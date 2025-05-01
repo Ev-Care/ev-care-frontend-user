@@ -189,7 +189,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
           <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
         )}
       </View>
-      {/* <Text style={styles.imageLabel}>{label}</Text> */}
+      <Text style={styles.imageLabel}>{label}</Text>
     </TouchableOpacity>
   );
 

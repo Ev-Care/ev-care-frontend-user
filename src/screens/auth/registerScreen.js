@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  Linking,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -52,21 +53,20 @@ const RegisterScreen = ({ navigation, route }) => {
       email: email,
       owner_legal_name: fullName,
       role: role,
-      user_key: userKey // Use user_key from Redux state
+      user_key: userKey, // Use user_key from Redux state
     };
 
     console.log("Post signup called");
     try {
       const response = await dispatch(postSignUp(userData));
-
     } catch (error) {
       console.log("Error during registration");
-      dispatch(showSnackbar({ message: error || "Registration Failed", type: "error" }));
-
-    }finally{
+      dispatch(
+        showSnackbar({ message: error || "Registration Failed", type: "error" })
+      );
+    } finally {
       setLoading(false);
     }
-
   };
 
   // useEffect to handle user and token updates
@@ -79,18 +79,30 @@ const RegisterScreen = ({ navigation, route }) => {
         AsyncStorage.setItem("user", user.user_key);
         AsyncStorage.setItem("accessToken", token);
 
-        console.log("Access token stored in AsyncStorage:", AsyncStorage.getItem("token"));
+        console.log(
+          "Access token stored in AsyncStorage:",
+          AsyncStorage.getItem("token")
+        );
 
-        dispatch(showSnackbar({ message: error || "Registration Successfull", type: "success" }));
+        dispatch(
+          showSnackbar({
+            message: error || "Registration Successfull",
+            type: "success",
+          })
+        );
 
         navigation.navigate("userHome"); // Navigate to the home screen
       } catch (error) {
         console.error("Error saving user data:", error);
-        dispatch(showSnackbar({ message: "Error in saving user data", type: "error" }));
+        dispatch(
+          showSnackbar({ message: "Error in saving user data", type: "error" })
+        );
       }
     } else if (error) {
       console.error("Error during registration:", error);
-      dispatch(showSnackbar({ message: error || "Registration Failed", type: "error" }));
+      dispatch(
+        showSnackbar({ message: error || "Registration Failed", type: "error" })
+      );
     }
   }, [user, token, error, navigation]);
 
@@ -116,7 +128,13 @@ const RegisterScreen = ({ navigation, route }) => {
 
   function selectRole() {
     return (
-      <View style={{ flexDirection: "row", justifyContent: "space-around", margin: Sizes.fixPadding * 2 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-around",
+          margin: Sizes.fixPadding * 2,
+        }}
+      >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <RadioButton
             value="User"
@@ -143,22 +161,34 @@ const RegisterScreen = ({ navigation, route }) => {
         <Text style={{ textAlign: "center", ...Fonts.grayColor16Medium }}>
           By continuing, you agree to our
         </Text>
-        <Text
-          style={{
-            textAlign: "center",
-            ...Fonts.grayColor18SemiBold,
-            marginTop: Sizes.fixPadding - 5.0,
-          }}
+        <TouchableOpacity
+          onPress={() =>
+            Linking.openURL("http://89.116.34.17:3000/terms-and-conditions")
+          }
         >
-          Terms & Conditions
-        </Text>
+          <Text
+            style={{
+              textAlign: "center",
+              ...Fonts.grayColor18SemiBold,
+              color:"blue",
+              marginTop: Sizes.fixPadding - 5.0,
+            }}
+          >
+            Terms & Conditions
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   function emailInfo() {
     return (
-      <View style={{ ...styles.textFieldWrapper, marginBottom: Sizes.fixPadding * 2.0 }}>
+      <View
+        style={{
+          ...styles.textFieldWrapper,
+          marginBottom: Sizes.fixPadding * 2.0,
+        }}
+      >
         <TextInput
           placeholder="Email address"
           placeholderTextColor={Colors.grayColor}
@@ -194,17 +224,25 @@ const RegisterScreen = ({ navigation, route }) => {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handleSignUp}
-        style={{ ...commonStyles.button, borderRadius: Sizes.fixPadding - 5.0, margin: Sizes.fixPadding * 2.0 }}
+        style={{
+          ...commonStyles.button,
+          borderRadius: Sizes.fixPadding - 5.0,
+          margin: Sizes.fixPadding * 2.0,
+        }}
         disabled={loading}
       >
         {loading ? (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-              <Text style={{ ...Fonts.whiteColor18Medium }}>Please Wait...</Text>
-            </View>
-          ) : (
-            <Text style={{ ...Fonts.whiteColor18Medium }}>Continue</Text>
-          )}
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <ActivityIndicator
+              size="small"
+              color="#fff"
+              style={{ marginRight: 8 }}
+            />
+            <Text style={{ ...Fonts.whiteColor18Medium }}>Please Wait...</Text>
+          </View>
+        ) : (
+          <Text style={{ ...Fonts.whiteColor18Medium }}>Continue</Text>
+        )}
       </TouchableOpacity>
     );
   }
@@ -225,7 +263,12 @@ const RegisterScreen = ({ navigation, route }) => {
           />
           <View>
             <Text style={{ ...Fonts.whiteColor22SemiBold }}>Register</Text>
-            <Text style={{ ...Fonts.whiteColor16Regular, marginTop: Sizes.fixPadding }}>
+            <Text
+              style={{
+                ...Fonts.whiteColor16Regular,
+                marginTop: Sizes.fixPadding,
+              }}
+            >
               Create your account
             </Text>
           </View>
@@ -250,7 +293,8 @@ const styles = StyleSheet.create({
     ...commonStyles.shadow,
     borderRadius: Sizes.fixPadding - 5.0,
     paddingHorizontal: Sizes.fixPadding * 1.5,
-    paddingVertical: Platform.OS === "ios" ? Sizes.fixPadding + 3.0 : Sizes.fixPadding,
+    paddingVertical:
+      Platform.OS === "ios" ? Sizes.fixPadding + 3.0 : Sizes.fixPadding,
     marginHorizontal: Sizes.fixPadding * 2.0,
     borderColor: Colors.extraLightGrayColor,
     borderWidth: 1.0,

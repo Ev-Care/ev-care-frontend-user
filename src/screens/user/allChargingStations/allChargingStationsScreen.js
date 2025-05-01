@@ -102,6 +102,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
 
     const renderItem = ({ item }) => (
       <TouchableOpacity
+       activeOpacity={0.8}
         onPress={() => {
           navigation.navigate("ChargingStationDetail", { item });
         }}

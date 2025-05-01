@@ -61,17 +61,14 @@ const AllChargingStationsScreen = ({ navigation }) => {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
-      <View style={{ flex: 1 }}>
-       {isLoading ? (
-               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-               <ActivityIndicator size="large" color = {Colors.primaryColor} />
-             </View>
-             
-             ) : ( <>
+    
              {header()}
         {allStationsInfo()}
-        </>)}
-      </View>
+        {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </View>
   );
 
@@ -261,6 +258,17 @@ const styles = StyleSheet.create({
     marginHorizontal: Sizes.fixPadding * 2.0,
     marginBottom: Sizes.fixPadding * 1.0,
    
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    zIndex: 999,
   },
   enrouteChargingStationImage: {
     width: screenWidth / 3.2,

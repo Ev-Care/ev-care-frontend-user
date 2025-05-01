@@ -9,6 +9,7 @@ import {
   Dimensions,
   Platform,
   Snackbar,
+  ActivityIndicator,
   TextInput,
   Linking,
 } from "react-native";
@@ -80,6 +81,7 @@ const reviews = [
 const ChargingStationDetailScreen = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const favStations = useSelector(selectFavoriteStations);
+    const [isLoading, setIsLoading] = useState(false);
   // const [showSnackBar, setshowSnackBar] = useState(false);
   const scrollViewRef = useRef(null);
   const dispatch = useDispatch();
@@ -147,55 +149,62 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
   };
 
   const handleAddToFavorite = async (station) => {
-    if (station && !inFavorite) {
-      const postFavresponse = await dispatch(
-        postFavoriteStation({ stationId: station.id, userId: user.id })
-      );
-      console.log("station favorited ");
-
-      await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
-      if (postFavoriteStation.fulfilled.match(postFavresponse)) {
-        await dispatch(
-          showSnackbar({
-            message: "Station added to favorite.",
-            type: "success",
-          })
+    setIsLoading(true);
+    try {
+      if (station && !inFavorite) {
+        const postFavresponse = await dispatch(
+          postFavoriteStation({ stationId: station.id, userId: user.id })
         );
-        setInFavorite(true);
-      } else if (postFavoriteStation.rejected.match(postFavresponse)) {
-        await dispatch(
-          showSnackbar({
-            message: errorMessage || "Failed to favorite station",
-            type: "error",
-          })
+        console.log("station favorited ");
+  
+        await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
+  
+        if (postFavoriteStation.fulfilled.match(postFavresponse)) {
+          await dispatch(
+            showSnackbar({
+              message: "Station added to favorite.",
+              type: "success",
+            })
+          );
+          setInFavorite(true);
+        } else if (postFavoriteStation.rejected.match(postFavresponse)) {
+          await dispatch(
+            showSnackbar({
+              message: errorMessage || "Failed to favorite station",
+              type: "error",
+            })
+          );
+        }
+      } else {
+        const unFavResponse = await dispatch(
+          unFavoriteStation({ stationId: station.id, userId: user.id })
         );
+        console.log("station unfavorited ");
+  
+        await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
+  
+        if (unFavoriteStation.fulfilled.match(unFavResponse)) {
+          await dispatch(
+            showSnackbar({
+              message: "Station removed from favorite.",
+              type: "success",
+            })
+          );
+          setInFavorite(false);
+        } else if (unFavoriteStation.rejected.match(unFavResponse)) {
+          await dispatch(
+            showSnackbar({
+              message: errorMessage || "Failed to unfavorite station",
+              type: "error",
+            })
+          );
+        }
       }
-    } else {
-      const unFavResponse = await dispatch(
-        unFavoriteStation({ stationId: station.id, userId: user.id })
-      );
-      console.log("station unfavorited ");
-
-      await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
-      if (unFavoriteStation.fulfilled.match(unFavResponse)) {
-        await dispatch(
-          showSnackbar({
-            message: "Station removed from favorite.",
-            type: "success",
-          })
-        );
-        setInFavorite(false);
-      } else if (postFavoriteStation.rejected.match(unFavResponse)) {
-        await dispatch(
-          showSnackbar({
-            message: errorMessage || "Failed unfavorite station",
-            type: "error",
-          })
-        );
-      }
-      // navigation.navigate("FavoriteScreen");
+    } finally {
+      setIsLoading(false);
     }
   };
+  
 
   const trimName = (threshold, str) => {
     if (str?.length <= threshold) {
@@ -215,6 +224,11 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
 
       {/* Bottom Buttons */}
       {buttons()}
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </View>
   );
 
@@ -489,6 +503,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
       </Snackbar>
     );
   }
+
 };
 
 const styles = StyleSheet.create({
@@ -524,6 +539,17 @@ const styles = StyleSheet.create({
     // backgroundColor:"cyan",
     width: "100%",
     marginLeft: 18,
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    zIndex: 999,
   },
   communityBadge: {
     position: "absolute",

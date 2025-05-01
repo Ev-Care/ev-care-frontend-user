@@ -396,17 +396,6 @@ const UserHome = ({ navigation }) => {
     </SafeAreaView>
   );
 
-  function loadingDialog() {
-    return (
-      <Overlay isVisible={isLoading} overlayStyle={styles.dialogStyle}>
-        <ActivityIndicator
-          size={50}
-          color={Colors.primaryColor}
-          style={{ alignSelf: "center" }}
-        />
-      </Overlay>
-    );
-  }
   function recentStationsInfo() {
     if (!stations || stations.length === 0) {
       return (

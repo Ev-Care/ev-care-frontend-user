@@ -44,6 +44,7 @@ const AddStations = () => {
   const navigation = useNavigation();
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [openHours, setOpenHours] = useState("24 Hours");
+  const [accessType, setAccessType] = useState("public");
   const [photo, setPhoto] = useState(null);
   const [address, setAddress] = useState("");
   const [openTime, setOpenTime] = useState("");
@@ -321,6 +322,7 @@ const AddStations = () => {
             {amenitiesSection?.()}
             {openHoursSection?.()}
             {uploadPhotoSection?.()}
+            {accessTypeSection?.()}
           </>
         )}
       </TouchableOpacity>
@@ -657,7 +659,50 @@ const AddStations = () => {
       </View>
     );
   }
-
+  function accessTypeSection() {
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>Access Type</Text>
+        <View style={styles.hoursContainer}>
+          <TouchableOpacity
+            style={[
+              styles.hoursButton,
+              accessType === "public" && styles.selectedButton,
+            ]}
+            onPress={() => {
+              setAccessType("public");
+            
+            }}
+          >
+            <Text
+              style={[
+                styles.buttonText,
+                accessType === "public" && styles.selectedButtonText,
+              ]}
+            >
+              Public
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.hoursButton,
+              accessType === "private" && styles.selectedButton,
+            ]}
+            onPress={() => setAccessType("private")}
+          >
+            <Text
+              style={[
+                styles.buttonText,
+                accessType === "private" && styles.selectedButtonText,
+              ]}
+            >
+              Private
+            </Text>
+          </TouchableOpacity>
+        </View> 
+      </View>
+    );
+  }
   function stationNameSection() {
     return (
       <View style={styles.section}>

@@ -9,10 +9,9 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#101942"
+      "backgroundColor": "#000000" 
     },
+    
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -37,10 +36,7 @@
       ],
       "package": "com.render.evcare",
       "versionCode": 1,
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
+   
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyAEqA9xxuXpegQ98gpVjkOis3xYMAzPNQI"
@@ -61,7 +57,8 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow EV Care to use your location."
         }
-      ]
+      ],
+      ["expo-splash-screen"]
     ]
   }
 }

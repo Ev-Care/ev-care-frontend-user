@@ -29,7 +29,7 @@ import { VendorStack } from "./roleStack/vendorStack";
 import Snackbar from "./components/snackbar"; // Ensure correct import
 import { getLocationPermission } from "./utils/globalMethods";
 import ErrorPage from "./screens/errorPage";
-
+import * as SplashScreen from 'expo-splash-screen';
 LogBox.ignoreAllLogs();
 
 const Stack = createStackNavigator();
@@ -38,7 +38,24 @@ function AppNavigator() {
   const [userType, setUserType] = useState(null);
   const user = useSelector(selectUser); // Get user data
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
+  
+  SplashScreen.preventAutoHideAsync(); // prevent native splash from auto hiding
 
+  useEffect(() => {
+    const prepare = async () => {
+      try {
+        await SplashScreen.preventAutoHideAsync(); // ✅ Move this inside
+        await someLoadingFunction(); // Any loading, auth, etc.
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        await SplashScreen.hideAsync(); // ✅ Hide after work is done
+      }
+    };
+  
+    prepare();
+  }, []);
+  
   // useEffect(() => {
   //   const initialize = async () => {
   //     if (user && user.role) {

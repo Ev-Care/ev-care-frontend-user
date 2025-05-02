@@ -73,6 +73,7 @@ const UpdateStation = ({ navigation, route }) => {
   const [selectedField, setSelectedField] = useState(null);
   const [stationName, setStationName] = useState(station?.station_name || "");
   const [chargerType, setchargerType] = useState("");
+   const [accessType, setAccessType] = useState("public");
   const [powerRating, setPowerRating] = useState("");
   const [chargerForms, setChargerForms] = useState(station?.chargers || [{}]);
   const [selectedForm, setSelectedForm] = useState(null);
@@ -282,6 +283,7 @@ const UpdateStation = ({ navigation, route }) => {
 
             {/* Upload Photo Section */}
             {uploadPhotoSection()}
+            {accessTypeSection()}
           </>
         )}
       </TouchableOpacity>
@@ -547,9 +549,7 @@ const UpdateStation = ({ navigation, route }) => {
   }
 
   function openHoursSection() {
-    {
-      /* Open Hours Section */
-    }
+   
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>Open Hours</Text>
@@ -649,6 +649,50 @@ const UpdateStation = ({ navigation, route }) => {
       </View>
     );
   }
+   function accessTypeSection() {
+      return (
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Access Type</Text>
+          <View style={styles.hoursContainer}>
+            <TouchableOpacity
+              style={[
+                styles.hoursButton,
+                accessType === "public" && styles.selectedButton,
+              ]}
+              onPress={() => {
+                setAccessType("public");
+              
+              }}
+            >
+              <Text
+                style={[
+                  styles.buttonText,
+                  accessType === "public" && styles.selectedButtonText,
+                ]}
+              >
+                Public
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.hoursButton,
+                accessType === "private" && styles.selectedButton,
+              ]}
+              onPress={() => setAccessType("private")}
+            >
+              <Text
+                style={[
+                  styles.buttonText,
+                  accessType === "private" && styles.selectedButtonText,
+                ]}
+              >
+                Private
+              </Text>
+            </TouchableOpacity>
+          </View> 
+        </View>
+      );
+    }
 
   function stationNameSection() {
     return (

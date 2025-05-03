@@ -45,14 +45,6 @@ const AllPendingStations = ({ navigation }) => {
     dispatch(fetchAllPendingStation());
   }, [dispatch]);
 
-  // Called every time screen comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      console.log("pending station fetched from useFocusEffect");
-      dispatch(fetchAllPendingStation());
-    }, [dispatch])
-  );
-
 
   const trimText = (text, limit) =>
     text.length > limit ? text.substring(0, limit) + "..." : text;

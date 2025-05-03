@@ -24,6 +24,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MapView, { Marker } from "react-native-maps";
 import { Overlay } from "@rneui/themed";
+import imageURL from "../../../constants/baseURL";
 // import imageURL from "../../../constants/baseURL";
 const COLORS = {
   primary: "#101942",

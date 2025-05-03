@@ -10,6 +10,12 @@ export const getAllPendingStationAPI = (data) =>
     content_type: "application/json",
     accessToken: data.accessToken,
   });
+export const getAllStationsAPI = (data) =>
+  apiGetRequest({
+    apiUrl: `${API_URL}/charging-stations`,
+    content_type: "application/json",
+    accessToken: data.accessToken,
+  });
 
 export const getAllPendingUsersAPI = (data) =>
   apiGetRequest({

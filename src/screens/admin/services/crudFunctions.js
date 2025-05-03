@@ -6,6 +6,7 @@ import {
   approveVendorProfileAPI,
   getAllPendingStationAPI,
   getAllPendingUsersAPI,
+  getAllStationsAPI,
 } from "./api";
 // Async thunk to fetch stations
 export const fetchAllPendingStation = createAsyncThunk(
@@ -31,6 +32,37 @@ export const fetchAllPendingStation = createAsyncThunk(
       }
     } catch (error) {
       console.log("Error in fetchAllPendingStation:", error);
+
+      const errorMessage =
+        error?.response?.data?.message || error?.message || "Server error";
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+export const fetchAllStations = createAsyncThunk(
+  "admin/fetchAllStations",
+  async (_, { rejectWithValue }) => {
+    try {
+      console.log("Fetching all pending stations...");
+
+      const accessToken = await AsyncStorage.getItem("accessToken");
+
+      if (!accessToken) {
+        return rejectWithValue("Access token not found.");
+      }
+
+      const response = await getAllStationsAPI({ accessToken });
+
+      if (response?.data?.code === 200 || response?.data?.code === 201) {
+        return response?.data;
+      } else {
+        return rejectWithValue(
+          response?.message || response?.data?.message || "Failed to fetch pending stations."
+        );
+      }
+    } catch (error) {
+      console.log("Error in fetchAllStations:", error);
 
       const errorMessage =
         error?.response?.data?.message || error?.message || "Server error";

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { approveStation, approveVendorProfile, fetchAllPendingStation, getAllPendingUsers } from "./crudFunctions";
+import { approveStation, approveVendorProfile, fetchAllPendingStation, fetchAllStations, getAllPendingUsers } from "./crudFunctions";
 
 
 
@@ -72,6 +72,19 @@ const adminSlice = createSlice({
 
             })
             .addCase(approveVendorProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload.message;
+            })
+            .addCase(fetchAllStations.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchAllStations.fulfilled, (state, action) => {
+                state.loading = false;
+                state.allStations = action.payload.data.chargingStations;
+
+            })
+            .addCase(fetchAllStations.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload.message;
             });

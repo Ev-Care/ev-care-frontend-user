@@ -16,13 +16,17 @@ import {
   commonStyles,
   screenWidth,
 } from "../../../constants/styles";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import imageURL from "../../../constants/baseURL";
-import { openHourFormatter,formatDistance } from "../../../utils/globalMethods";
+import { openHourFormatter, formatDistance } from "../../../utils/globalMethods";
+import { useDispatch, useSelector } from "react-redux";
+import { selectAllStations } from "../services/selector";
+import { fetchAllStations } from "../services/crudFunctions";
+import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 
-const allStationsList = [
+const allStationsList1 = [
   {
     owner_id: 7,
     station_name: "Tesla EV India",
@@ -36,7 +40,7 @@ const allStationsList = [
     rate_type: null,
     station_images: null,
     additional_comment: null,
-    distance_km:5000, //check it
+    distance_km: 5000, //check it
     open_hours_opening_time: "00:00:00",
     open_hours_closing_time: "23:59:59",
     id: 2,
@@ -113,7 +117,7 @@ const allStationsList = [
               description: "CCS-2",
             },
             charger_connector_id: 2,
-          },  
+          },
         ],
       },
     ],
@@ -122,15 +126,45 @@ const allStationsList = [
 
 const ViewAllStationsPage = ({ navigation }) => {
   const [searchText, setSearchText] = useState("");
-
+  const allStationsList = useSelector(selectAllStations);
+  const dispatch = useDispatch();
   const filteredStations = allStationsList.filter((station) =>
-    station?. station_name?.toLowerCase().includes(searchText.toLowerCase())
+    station?.station_name?.toLowerCase().includes(searchText.toLowerCase())
   );
+  const [refreshing, setRefreshing] = useState(false);
+  const trimText = (text, limit) =>
+    text.length > limit ? text.substring(0, limit) + "..." : text;
+  console.log('stations legth', allStationsList.length);
   // Dummy coordinates for the location
-  
- 
-  
-  const openGoogleMaps = (latitude,longitude) => {
+
+  useEffect(() => {
+    dispatch(fetchAllStations());
+    console.log('useEffect called');
+    console.log('fetch all stations called');
+
+  }, []);
+
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true);
+      const response = await dispatch(fetchAllStations());
+      if (fetchAllStations.fulfilled.match(response)) {
+        // Optional: Show success snackbar or log
+        console.log("Pending stations refreshed successfully.");
+      } else {
+        await dispatch(showSnackbar({ message: "Failed to refresh pending stations.", type: 'error' }));
+      }
+    } catch (error) {
+      console.error("Error refreshing stations:", error);
+      await dispatch(showSnackbar({ message: "Something went wrong during refresh.", type: 'error' }));
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+
+
+  const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
       ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
       android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
@@ -148,98 +182,74 @@ const ViewAllStationsPage = ({ navigation }) => {
   );
 
   function allStationsInfo() {
-    const renderItem = ({ item }) => (
-      <TouchableOpacity
-        onPress={() => navigation.navigate("StationDetailPage", { item })}
-        style={styles.enrouteChargingStationWrapStyle}
-      >
-        <Image
-          source={
-            item?.station_images
-              ? { uri: imageURL.baseURL + item?.station_images }
-              : require("../../../../assets/images/chargingStations/charging_station3.png")
-          }
-          style={styles.enrouteChargingStationImage}
-        />
-        <View style={styles.enrouteStationOpenCloseWrapper}>
-          <Text style={{ ...Fonts.whiteColor18Regular }}>Pending</Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <View style={{ margin: Sizes.fixPadding }}>
-            <Text numberOfLines={1} style={{ ...Fonts.blackColor18SemiBold }}>
-              {item.station_name}
-            </Text>
-            <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
-              {item?.address}
-            </Text>
-            <View
-              style={{
-                marginTop: Sizes.fixPadding,
-                ...commonStyles.rowAlignCenter,
-              }}
-            >
-              <View style={{ ...commonStyles.rowAlignCenter }}>
-                <Text style={{ ...Fonts.blackColor16Medium }}>
-                {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).opening} - {openHourFormatter(item?.open_hours_opening_time, item?.open_hours_closing_time).closing}
-                </Text>
-              </View>
-              <View
-                style={{
-                  marginLeft: Sizes.fixPadding * 2.0,
-                  ...commonStyles.rowAlignCenter,
-                  flex: 1,
-                }}
-              >
-                <View style={styles.primaryColorDot} />
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    marginLeft: Sizes.fixPadding,
-                    ...Fonts.grayColor14Medium,
-                    flex: 1,
-                  }}
-                >
-                   {item?.chargers?.length ?? 0} Chargers
-                </Text>
-              </View>
-            </View>
-          </View>
-          <View
-            style={{
-              ...commonStyles.rowAlignCenter,
-              paddingLeft: Sizes.fixPadding,
-              marginTop: Sizes.fixPadding,
-            }}
-          >
-            <Text
-              numberOfLines={1}
-              style={{
-                ...Fonts.blackColor16Medium,
-                flex: 1,
-                marginRight: Sizes.fixPadding - 5.0,
-              }}
-            > 
-            {formatDistance(item?.distance_km)}
-        
-            </Text>
-            <TouchableOpacity
-              onPress={()=>openGoogleMaps( item.coordinates.latitude, item.coordinates.longitude)}
-              style={styles.getDirectionButton}
-            >
-              <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
 
     return (
-      <FlatList
-        data={filteredStations}
-        keyExtractor={(item) => `${item.id}`}
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-      />
+
+      <ScrollView style={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#9Bd35A', '#101942']}  // Android spinner colors
+            tintColor="#101942"            // iOS spinner color
+          />
+        }
+      >
+
+        {/* Check if stations is defined and not empty */}
+        {filteredStations && filteredStations?.length > 0 ? (
+          filteredStations.map((station) => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate("StationDetailPage", { item: station })}
+              key={station.id}
+              style={styles.card}
+            >
+              {station?.station_images ? (
+                <Image source={{ uri: imageURL.baseURL + station?.station_images }} style={styles.image} />
+              ) : (
+                <View style={[styles.image, { alignItems: "center", justifyContent: "center", backgroundColor: "gray", opacity: 0.1 }]}>
+                  <MaterialIcons
+                    name="ev-station"
+                    size={50}  // or match your image size
+                    color="#a3a3c2"
+                  />
+                </View>
+              )}
+
+              <View style={styles.infoContainer}>
+                <View style={styles.headerRow}>
+                  <Text style={styles.stationName}>
+                    {trimText(station?.station_name, 25)}
+                  </Text>
+
+                </View>
+                <Text style={styles.statusText}>
+                  Status:{" "}
+                  <Text
+                    style={{
+                      color: station?.status !== "Active"
+                        ? Colors.darOrangeColor
+                        : Colors.primaryColor,
+                    }}
+                  >
+                    {station?.status !== "Active" ? "Pending" : "Active"}
+                  </Text>
+                </Text>
+
+                <Text style={styles.text}>
+                  Chargers: {station?.chargers?.length || 0}
+                </Text>
+                <Text style={styles.addressText}>{trimText(station?.address, 100)}</Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        ) : (
+          // Fallback UI when stations is undefined or empty
+          <Text style={{ textAlign: "center", marginTop: 20 }}>
+            No stations available.
+          </Text>
+        )}
+      </ScrollView>
     );
   }
 
@@ -326,4 +336,61 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  scrollContainer: {
+      padding: 10,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: Colors.primary,
+      textAlign: "center",
+    },
+    card: {
+      backgroundColor: Colors.bodyBackColor,
+      ...commonStyles.shadow,
+      borderColor: Colors.extraLightGrayColor,
+      borderRadius: 10,
+      padding: 15,
+      marginBottom: 15,
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    image: {
+      width: 80,
+      height: 100,
+      borderRadius: 8,
+      marginRight: 15,
+    },
+    infoContainer: {
+      flex: 1,
+    },
+    headerRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    stationName: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: Colors.primary,
+      marginBottom: 5,
+    },
+    statusText: {
+      fontSize: 12,
+      color: Colors.primary,
+      marginBottom: 5,
+    },
+    text: {
+      fontSize: 12,
+      color: Colors.primary,
+    },
+    addressText: {
+      fontSize: 10,
+      color: Colors.grayColor,
+    },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 5,
+    },
 });

@@ -19,10 +19,15 @@ import {
   screenWidth,
 } from "../../../constants/styles";
 import MyStatusBar from "../../../components/myStatusBar";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import {
+  default as Icon,
+  default as MaterialIcons,
+} from "react-native-vector-icons/MaterialIcons";
+
 import { sendQuery } from "../service/api";
 import { sendQueryAction } from "../service/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import { Overlay } from "@rneui/themed";
 
 const HelpScreen = ({ navigation }) => {
   const [title, setTitle] = useState("");
@@ -35,7 +40,16 @@ const HelpScreen = ({ navigation }) => {
   const mobileTimer = useRef(null);
   const descriptionTimer = useRef(null);
   const [inputHeight, setInputHeight] = useState(160);
-  
+  const [showEmergencyDialog, setshowEmergencyDialog] = useState(false);
+  const [emergencyQuery, setEmergencyQuery] = useState("");
+  const [charCount, setCharCount] = useState(120);
+  const handleEmergencyQueryChange = (text) => {
+    if (text.length <= 100) {
+      setEmergencyQuery(text);
+      setCharCount(100 - text.length);
+    }
+  };
+
 
   const handleContentSizeChange = (event) => {
     const newHeight = event.nativeEvent.contentSize.height;
@@ -61,6 +75,12 @@ const HelpScreen = ({ navigation }) => {
           {mobileNumberInfo()}
           {descriptionInfo()}
           {submitButton()}
+          {emergencyDialog()}
+          {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
         </ScrollView>
       </View>
     </View>
@@ -112,7 +132,6 @@ const HelpScreen = ({ navigation }) => {
   }
 
   function submitButton() {
-
     const handleSubmit = () => {
       if (!title || title.trim().length < 3) {
         dispatch(
@@ -158,24 +177,17 @@ const HelpScreen = ({ navigation }) => {
 
     return (
       <TouchableOpacity
-      activeOpacity={0.8}
-      onPress={handleSubmit}
-      disabled={isLoading}
-      style={[
-        styles.submitButtonStyle,
-        { paddingVertical: 12, marginBottom: 50 },
-      ]}
-    >
-      {isLoading ? (
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-          <Text style={{ ...Fonts.whiteColor18Medium }}>Submitting...</Text>
-        </View>
-      ) : (
-        <Text style={{ ...Fonts.whiteColor18Medium }}>Submit</Text>
-      )}
-    </TouchableOpacity>
-    
+        activeOpacity={0.8}
+        onPress={handleSubmit}
+        disabled={isLoading}
+        style={[
+          styles.submitButtonStyle,
+          { paddingVertical: 12, marginBottom: 50 },
+        ]}
+      >
+          <Text style={{ ...Fonts.whiteColor18Medium }}>Submit</Text>
+      
+      </TouchableOpacity>
     );
   }
 
@@ -265,7 +277,7 @@ const HelpScreen = ({ navigation }) => {
                 }
               }, 500);
             }}
-            style={[styles.input,{ ...Fonts.blackColor16Medium }]}
+            style={[styles.input, { ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}
@@ -314,7 +326,7 @@ const HelpScreen = ({ navigation }) => {
                 }
               }, 500);
             }}
-            style={[styles.input,{ ...Fonts.blackColor16Medium }]}
+            style={[styles.input, { ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}
@@ -369,7 +381,7 @@ const HelpScreen = ({ navigation }) => {
               }, 500);
               setTitleTimer(timer);
             }}
-            style={[styles.input,{ ...Fonts.blackColor16Medium }]}
+            style={[styles.input, { ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
             selectionColor={Colors.primaryColor}
@@ -392,9 +404,16 @@ const HelpScreen = ({ navigation }) => {
         </Text>
         <Text style={{ ...Fonts.grayColor16Regular }}>
           Fill the form below and our support team will be in touch with you
-          shortly. In case of urgency, you can{" "}
-          <Text style={{ ...Fonts.grayColor16SemiBold }}>
-            Contact Us on +91 9911884595
+          shortly. Or In case of Emergency,{" "}
+          <Text
+            onPress={() => setshowEmergencyDialog(true)}
+            style={{
+              ...Fonts.grayColor16SemiBold,
+              color: "blue",
+              textDecorationLine: "underline",
+            }}
+          >
+            Click Here
           </Text>
         </Text>
       </View>
@@ -412,30 +431,107 @@ const HelpScreen = ({ navigation }) => {
 
   function header() {
     return (
-      <View
-        style={{
-          ...commonStyles.rowAlignCenter,
-          margin: Sizes.fixPadding * 2.0,
-        }}
+     <View style={styles.appBar}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Icon name="arrow-back" size={24} color={Colors.primary} />
+            </TouchableOpacity>
+   <Text style={styles.title}>Help & Support</Text>
+   <View style={{ width: 20 }} />
+   </View>
+    
+    );
+  }
+  function emergencyDialog() {
+    return (
+      <Overlay
+        isVisible={showEmergencyDialog}
+        onBackdropPress={() => setshowEmergencyDialog(false)}
+        overlayStyle={styles.dialogStyle}
       >
-        <MaterialIcons
-          name="arrow-back"
-          color={Colors.blackColor}
-          size={26}
-          onPress={() => {
-            navigation.pop();
-          }}
-        />
-        <Text
-          style={{
-            ...Fonts.blackColor20SemiBold,
-            flex: 1,
-            marginLeft: Sizes.fixPadding * 2.0,
-          }}
-        >
-          Help
-        </Text>
-      </View>
+        <View style={{ paddingTop: 10 }}>
+          <Text
+            style={{
+              ...Fonts.blackColor18Medium,
+              textAlign: "center",
+              color: Colors.primaryColor,
+              marginHorizontal: Sizes.fixPadding * 2.0,
+            }}
+          >
+            Write Query In Short
+          </Text>
+          <Text
+            style={{
+              color: charCount > 30 ? "green" : "red",
+              fontSize: 10,
+              textAlign: "center",
+              fontFamily: "YourFontFamily-Regular",
+            }}
+          >
+            {charCount} characters left
+          </Text>{" "}
+          <View
+            style={{
+              padding: 5,
+              margin: 10,
+              borderWidth: 1,
+              borderColor: "#ccc",
+              borderRadius: 4,
+            }}
+          >
+            <TextInput
+              placeholder="Describle Your Query Here.."
+              value={emergencyQuery}
+              onChangeText={handleEmergencyQueryChange}
+              style={[
+                {
+                  ...Fonts.blackColor16Medium,
+                  paddingTop: Sizes.fixPadding,
+                  paddingHorizontal: Sizes.fixPadding,
+                  minHeight: 100,
+                  textAlignVertical: "top",
+                  height: 100,
+                },
+              ]}
+              placeholderTextColor={Colors.grayColor}
+              cursorColor={Colors.primaryColor}
+              selectionColor={Colors.primaryColor}
+              multiline
+            />
+          </View>
+          <View
+            style={{
+              ...commonStyles.rowAlignCenter,
+              marginTop: Sizes.fixPadding,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setshowEmergencyDialog(false);
+                setEmergencyQuery("")
+              }}
+              style={{
+                ...styles.noButtonStyle,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+            >
+              <Text style={{ ...Fonts.blackColor16Medium }}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setshowEmergencyDialog(false);
+              }}
+              style={{
+                ...styles.yesButtonStyle,
+                ...styles.dialogYesNoButtonStyle,
+              }}
+            >
+              <Text style={{ ...Fonts.whiteColor16Medium }}>Submit</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Overlay>
     );
   }
 };
@@ -449,18 +545,36 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
     marginVertical: Sizes.fixPadding,
   },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+     zIndex: 999,
+  },
   textFieldWrapper: {
     backgroundColor: Colors.whiteColor,
     ...commonStyles.shadow,
     borderRadius: 10,
     padding: 4,
- 
+
     marginTop: Sizes.fixPadding,
   },
   input: {
- 
     padding: 12,
     fontSize: 12,
+  },
+  appBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: Colors.bodyBackColor,
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0eb",
   },
   submitButtonStyle: {
     padding: Sizes.fixPadding,
@@ -470,5 +584,37 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryColor,
     alignItems: "center",
     justifyContent: "center",
+  },
+  dialogStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderRadius: Sizes.fixPadding - 5.0,
+    width: "85%",
+    padding: 0.0,
+    elevation: 0,
+  },
+  overlayImageStyle: {
+    marginTop: Sizes.fixPadding * 1.5,
+    width: 70.0,
+    height: 60.0,
+    resizeMode: "contain",
+    alignSelf: "center",
+  },
+  dialogYesNoButtonStyle: {
+    flex: 1,
+    ...commonStyles.shadow,
+    borderTopWidth: Platform.OS == "ios" ? 0 : 1.0,
+    padding: Sizes.fixPadding,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noButtonStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderTopColor: Colors.extraLightGrayColor,
+    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+  },
+  yesButtonStyle: {
+    borderTopColor: Colors.primaryColor,
+    backgroundColor: Colors.primaryColor,
+    borderBottomRightRadius: Sizes.fixPadding - 5.0,
   },
 });

@@ -240,7 +240,7 @@ const ChargingStationMap = () => {
         if (mapRef.current && currentLocation && selectedCoord) {
           mapRef.current.fitToCoordinates(
             [
-              currentLocation, // user's current location
+              // currentLocation, // user's current location
               selectedCoord,
               stations[0].coordinates,
             ],

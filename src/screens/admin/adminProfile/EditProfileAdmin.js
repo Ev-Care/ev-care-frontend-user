@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    gap:20,
     marginTop: 20,
 
     flexWrap: "wrap",

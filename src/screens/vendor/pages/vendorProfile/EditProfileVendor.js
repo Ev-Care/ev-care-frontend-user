@@ -53,11 +53,7 @@ const EditProfileScreen = ({ route, navigation }) => {
   const [panNumber, setPanNumber] = useState(user?.pan_no || "Not found");
   const [gstNumber, setGstNumber] = useState(user?.gstin_number);
   //   image start
-  // const [aadhaarFrontImage, setAadhaarFrontImage] = useState(null);
-  // const [aadhaarBackImage, setAadhaarBackImage] = useState(null);
-  // const [panImage, setPanImage] = useState(null);
-  // const [gstImage, setGstImage] = useState(null);
-  // const [avatar, setAvatar] = useState(null);
+
   //   image uri
   const [aadhaarFrontImageURI, setAadhaarFrontImageURI] = useState(
     user?.adhar_front_pic
@@ -506,7 +502,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    gap:20,
     marginTop: 20,
 
     flexWrap: "wrap",
@@ -661,6 +657,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#333",
   },
+  
 });
 
 export default EditProfileScreen;

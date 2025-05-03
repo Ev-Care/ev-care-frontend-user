@@ -334,7 +334,7 @@ const EnRouteScreen = () => {
         style={[commonStyles.button, styles.submitButton]}
         onPress={handleSubmit}
       >
-        <Text style={Fonts.whiteColor18Medium}>Start Journey</Text>
+        <Text style={Fonts.whiteColor18Medium}>View Stations On Route</Text>
       </TouchableOpacity>
     </View>
   );

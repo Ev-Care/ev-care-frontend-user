@@ -118,7 +118,7 @@ export const patchUpdateVendorProfile = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const response = await updateVendorAPI(data);
-      console.log("response at crud func page", response);
+      // console.log("response at crud func page", response);
       if (response?.data?.code === 200 || response?.data?.code === 201) {
         console.log("return response data in thunk", response.data);
         return response?.data;

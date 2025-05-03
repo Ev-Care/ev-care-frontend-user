@@ -31,7 +31,7 @@ import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setfullName] = useState("");
   const [email, setemail] = useState("");
-  const [role, setRole] = useState("User");
+  const [role, setRole] = useState("user");
   const [loading, setLoading] = useState(false); // Loader state
   const dispatch = useDispatch();
   const user = useSelector(selectUser); // Get user data from Redux store
@@ -39,7 +39,7 @@ const RegisterScreen = ({ navigation, route }) => {
   const error = useSelector(selectAuthError); // Get error from Redux store
   const userKey = route?.params?.userKey;
 
-  console.log("user key in register : ", userKey);
+  // console.log("user key in register : ", userKey);
 
   const handleSignUp = async () => {
     if (!fullName.trim() || !email.trim()) {
@@ -138,16 +138,16 @@ const RegisterScreen = ({ navigation, route }) => {
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <RadioButton
             value="User"
-            status={role === "User" ? "checked" : "unchecked"}
-            onPress={() => setRole("User")}
+            status={role === "user" ? "checked" : "unchecked"}
+            onPress={() => setRole("user")}
           />
           <Text>User</Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <RadioButton
             value="Vendor"
-            status={role === "Vendor" ? "checked" : "unchecked"}
-            onPress={() => setRole("Vendor")}
+            status={role === "vendor" ? "checked" : "unchecked"}
+            onPress={() => setRole("vendor")}
           />
           <Text>Vendor</Text>
         </View>

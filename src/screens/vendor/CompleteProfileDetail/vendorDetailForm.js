@@ -97,11 +97,10 @@ const VendorDetailForm = () => {
 
   const handleSubmit = async () => {
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    const gstRegex =
-      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[A-Z0-9]{1}[A-Z0-9]{1}$/;
-
+    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[A-Z0-9]{1}[A-Z0-9]{1}$/;
+  
     // Validate required fields
-    if (!businessName || !panNumber || !panImageURI || !address) {
+    if (!avatarURI || !businessName || !panNumber || !panImageURI || !address) {
       try {
         await dispatch(
           showSnackbar({
@@ -109,24 +108,21 @@ const VendorDetailForm = () => {
             type: "error",
           })
         );
-        return; // Add return to stop execution if validation fails
+        return;
       } catch (error) {
         Alert.alert("Oops! You must have missed a required field.");
         return;
       }
     }
-
+  
     // Validate Aadhaar number for individuals
-    if (
-      businessType === "individual" &&
-      (aadharNumber.length !== 12 || !/^\d+$/.test(aadharNumber))
-    ) {
+    if (businessType === "individual" && (aadharNumber.length !== 12 || !/^\d+$/.test(aadharNumber))) {
       await dispatch(
         showSnackbar({ message: "Invalid Aadhaar number.", type: "error" })
       );
       return;
     }
-
+  
     // Validate PAN number
     if (!panRegex.test(panNumber)) {
       await dispatch(
@@ -134,36 +130,52 @@ const VendorDetailForm = () => {
       );
       return;
     }
-
+  
     // Validate GST number if applicable
-    if (
-      (isCheckBoxClicked || businessType === "organization") &&
-      (!gstNumber || !gstRegex.test(gstNumber))
-    ) {
+    if ((isCheckBoxClicked || businessType === "organization") && (!gstNumber || !gstRegex.test(gstNumber))) {
       await dispatch(
         showSnackbar({ message: "Invalid GST number.", type: "error" })
       );
       return;
     }
-
-    // Prepare vendor detail object
-    const vendorDetail = {
+  
+    // Prepare base vendor detail object
+    let vendorDetail = {
       business_name: businessName,
       pan_no: panNumber,
-      tan_no: gstNumber,
-      adhar_no: aadharNumber,
       address: address,
       avatar: avatarURI,
-      adhar_front_pic: aadhaarFrontImageURI,
-      adhar_back_pic: aadhaarBackImageURI,
       pan_pic: panImageURI,
-      gstin_number: gstNumber,
-      gstin_image: gstImageURI,
     };
-
+  
+    // Add conditional fields
+    if (businessType === "individual") {
+      vendorDetail = {
+        ...vendorDetail,
+        adhar_no: aadharNumber,
+        adhar_front_pic: aadhaarFrontImageURI,
+        adhar_back_pic: aadhaarBackImageURI,
+      };
+      
+      if (isCheckBoxClicked) {
+        vendorDetail = {
+          ...vendorDetail,
+          gstin_number: gstNumber,
+          gstin_image: gstImageURI,
+        };
+      }
+    } 
+    else if (businessType === "organization") {
+      vendorDetail = {
+        ...vendorDetail,
+        gstin_number: gstNumber,
+        gstin_image: gstImageURI,
+      };
+    }
+  
     try {
-      setIsLoading(true); // Set loading state before API call
-
+      setIsLoading(true);
+  
       const response = await dispatch(
         patchUpdateVendorProfile({
           detail: vendorDetail,
@@ -171,7 +183,7 @@ const VendorDetailForm = () => {
           accessToken: accessToken,
         })
       );
-
+  
       if (patchUpdateVendorProfile.fulfilled.match(response)) {
         dispatch(
           showSnackbar({
@@ -180,9 +192,7 @@ const VendorDetailForm = () => {
           })
         );
       } else if (patchUpdateVendorProfile.rejected.match(response)) {
-        console.error("Vendor detail submission failed:", response.payload);
-        const errorMessage =
-          response?.payload?.message || "Submission failed. Please try again.";
+        const errorMessage = response?.payload?.message || "Submission failed. Please try again.";
         dispatch(showSnackbar({ message: errorMessage, type: "error" }));
       }
     } catch (error) {
@@ -339,8 +349,8 @@ const VendorDetailForm = () => {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.avatarSection}>
           <Text style={styles.sectionLabel}>
-            Upload Your Photo
-            <Text style={styles.optional}>(Optional)</Text>
+            Upload Your Photo  <Text style={styles.label}>*</Text>
+            {/* <Text style={styles.optional}>(Optional)</Text> */}
           </Text>
           <Text style={styles.photoDescription}>
             It will Appear As Your Profile Page.
@@ -352,7 +362,10 @@ const VendorDetailForm = () => {
         {businessNameSection?.()}
         {businessTypeSection?.()}
         {aadharSection?.()}
-        <Text style={styles.label}>PAN Number</Text>
+        <Text style={styles.sectionLabel}>
+          Pan Number  <Text style={styles.label}>*</Text>
+            {/* <Text style={styles.optional}>(Optional)</Text> */}
+          </Text>
         <TextInput
           style={styles.input}
           placeholder="Enter PAN number"
@@ -389,7 +402,7 @@ const VendorDetailForm = () => {
                   })
                 );
               }
-            }, 500);
+            }, 3000);
 
             setPanTimer(timer);
           }}
@@ -464,7 +477,10 @@ const VendorDetailForm = () => {
   function businessNameSection() {
     return (
       <>
-        <Text style={styles.label}>Owner Legal Name</Text>
+        <Text style={styles.sectionLabel}>
+            Owner Legal Name  <Text style={styles.label}>*</Text>
+            {/* <Text style={styles.optional}>(Optional)</Text> */}
+          </Text>
         <TextInput
           style={styles.input}
           placeholder="Enter Your Legal Name"
@@ -489,7 +505,10 @@ const VendorDetailForm = () => {
   function businessTypeSection() {
     return (
       <View style={[styles.section, { marginBottom: 12 }]}>
-        <Text style={styles.label}>Business Type</Text>
+        <Text style={styles.sectionLabel}>
+            Register As  <Text style={styles.label}>*</Text>
+            {/* <Text style={styles.optional}>(Optional)</Text> */}
+          </Text>
         <View style={styles.TypeContainer}>
           <TouchableOpacity
             style={[
@@ -539,8 +558,10 @@ const VendorDetailForm = () => {
       <>
         {businessType === "individual" && (
           <>
-            <Text style={styles.label}>Aadhaar Number</Text>
-
+             <Text style={styles.sectionLabel}>
+           Aadhaar Number  <Text style={styles.label}>*</Text>
+            {/* <Text style={styles.optional}>(Optional)</Text> */}
+          </Text>
             <TextInput
               style={styles.input}
               placeholder="Enter Aadhaar number"
@@ -575,7 +596,7 @@ const VendorDetailForm = () => {
                       })
                     );
                   }
-                }, 500); // After 500ms of no typing
+                }, 3000); // After 500ms of no typing
 
                 setAadharTimer(timer);
               }}
@@ -606,7 +627,10 @@ const VendorDetailForm = () => {
 
         {(isCheckBoxClicked || businessType === "organization") && (
           <>
-            <Text style={styles.label}>GST Number</Text>
+           <Text style={styles.sectionLabel}>
+            Gst Number  <Text style={styles.label}>*</Text>
+            {/* <Text style={styles.optional}>(Optional)</Text> */}
+          </Text>
             <TextInput
               style={styles.input}
               placeholder="Enter GST number"
@@ -645,7 +669,7 @@ const VendorDetailForm = () => {
                       })
                     );
                   }
-                }, 500);
+                }, 3000);
 
                 setGstTimer(timer);
               }}
@@ -658,7 +682,10 @@ const VendorDetailForm = () => {
   function addressSection() {
     return (
       <>
-        <Text style={styles.label}>Address</Text>
+        <Text style={styles.sectionLabel}>
+            Address  <Text style={styles.label}>*</Text>
+            {/* <Text style={styles.optional}>(Optional)</Text> */}
+          </Text>
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder="Home/Street/Locality, City, State, Pincode"
@@ -690,13 +717,25 @@ const VendorDetailForm = () => {
   function docImageSection() {
     return (
       <>
-        <Text style={styles.label}>Upload these Documents</Text>
+        <Text style={styles.sectionLabel}>
+            Upload These Documents  <Text style={styles.label}>*</Text>
+            {/* <Text style={styles.optional}>(Optional)</Text> */}
+          </Text>
         <View style={styles.imageContainer}>
-         
-        {businessType === "individual" && <>
-   {renderImageBox("Aadhaar front", setAadhaarFrontImageURI, aadhaarFrontImageURI)}
-  {renderImageBox("Aadhaar Back", setAadhaarBackImageURI, aadhaarBackImageURI)}
-       </>}
+          {businessType === "individual" && (
+            <>
+              {renderImageBox(
+                "Aadhaar front",
+                setAadhaarFrontImageURI,
+                aadhaarFrontImageURI
+              )}
+              {renderImageBox(
+                "Aadhaar Back",
+                setAadhaarBackImageURI,
+                aadhaarBackImageURI
+              )}
+            </>
+          )}
           {renderImageBox("PAN", setPanImageURI, panImageURI)}
 
           {(isCheckBoxClicked || businessType === "organization") &&
@@ -839,7 +878,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     flexDirection: "row",
     // justifyContent: "space-between",
-    gap:20,
+    gap: 20,
     marginTop: 20,
     flexWrap: "wrap",
   },

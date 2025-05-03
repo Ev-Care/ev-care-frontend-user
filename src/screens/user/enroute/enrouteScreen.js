@@ -174,7 +174,7 @@ const EnRouteScreen = () => {
       fromLng: sourceCoordinate.longitude,
       toLat: destinationCoordinate.latitude,
       toLng: destinationCoordinate.longitude,
-      maxDistance: 10,
+      maxDistance: 50,
     };
 
     const response = await dispatch(getEnrouteStations(enRoutedata));
@@ -335,6 +335,7 @@ const EnRouteScreen = () => {
         onPress={handleSubmit}
       >
         <Text style={Fonts.whiteColor18Medium}>View Stations On Route</Text>
+        {/* <Text style={Fonts.whiteColor18Medium}>View Route</Text> */}
       </TouchableOpacity>
     </View>
   );

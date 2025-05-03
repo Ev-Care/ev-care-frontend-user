@@ -6,6 +6,7 @@ import stationReducer from "../../screens/user/service/stationSlice"; // Import 
 import adminReducer from "../../screens/admin/services/adminSlice";
 import { getUserByKey } from "../../screens/auth/services/crudFunction";
 import snackbarReducer, { showSnackbar } from '../snackbar/snackbarSlice'
+import { TimeDelay } from "../../utils/globalMethods";
 
 const store = configureStore({
   reducer: {
@@ -26,9 +27,9 @@ const loadUserData = async () => {
     console.log("user key in store", user_key);
     console.log("Access token in store", accessToken);
     if (user_key && accessToken) {
-      store.dispatch(getUserByKey(user_key));
-      store.dispatch(restoreUser(accessToken));
-      store.dispatch(showSnackbar({ message: "Logged-In successfully", type: "success" }));
+      await store.dispatch(getUserByKey(user_key));
+      await store.dispatch(restoreUser(accessToken));
+      // await store.dispatch(showSnackbar({ message: "Logged-In successfully", type: "success" }));
 
     }
   } catch (error) {

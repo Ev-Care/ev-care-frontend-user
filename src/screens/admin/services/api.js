@@ -11,7 +11,7 @@ export const getAllPendingStationAPI = (data) =>
     accessToken: data.accessToken,
   });
 
-export const getAllUsersAPI = (data) =>
+export const getAllPendingUsersAPI = (data) =>
   apiGetRequest({
     apiUrl: `${API_URL}/users/get-all-pending-users`,
     content_type: "application/json",

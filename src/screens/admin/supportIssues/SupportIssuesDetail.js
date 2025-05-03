@@ -26,7 +26,7 @@ import { Overlay } from "@rneui/themed";
 import imageURL from "../../../constants/baseURL";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useDispatch } from "react-redux";
-import { approveVendorProfile, getAllUsers } from "../services/crudFunctions";
+import { approveVendorProfile, getAllPendingUsers } from "../services/crudFunctions";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 const SupportIssuesDetail = ({ route, navigation }) => {
@@ -68,9 +68,9 @@ const SupportIssuesDetail = ({ route, navigation }) => {
       console.log({ rejectResponse });
 
       if (approveVendorProfile.fulfilled.match(rejectResponse)) {
-        const pendingVendorResponse = await dispatch(getAllUsers());
+        const pendingVendorResponse = await dispatch(getAllPendingUsers());
 
-        if (getAllUsers.fulfilled.match(pendingVendorResponse)) {
+        if (getAllPendingUsers.fulfilled.match(pendingVendorResponse)) {
           await dispatch(
             showSnackbar({
               message: "Vendor profile rejected.",
@@ -78,7 +78,7 @@ const SupportIssuesDetail = ({ route, navigation }) => {
             })
           );
           navigation.goBack();
-        } else if (getAllUsers.rejected.match(pendingVendorResponse)) {
+        } else if (getAllPendingUsers.rejected.match(pendingVendorResponse)) {
           dispatch(
             showSnackbar({
               message: "Failed to reject vendor.",
@@ -103,9 +103,9 @@ const SupportIssuesDetail = ({ route, navigation }) => {
       );
 
       if (approveVendorProfile.fulfilled.match(approvedResponse)) {
-        const pendingVendorResponse = await dispatch(getAllUsers());
+        const pendingVendorResponse = await dispatch(getAllPendingUsers());
 
-        if (getAllUsers.fulfilled.match(pendingVendorResponse)) {
+        if (getAllPendingUsers.fulfilled.match(pendingVendorResponse)) {
           await dispatch(
             showSnackbar({
               message: "Vendor profile approved.",
@@ -113,7 +113,7 @@ const SupportIssuesDetail = ({ route, navigation }) => {
             })
           );
           navigation.goBack();
-        } else if (getAllUsers.rejected.match(pendingVendorResponse)) {
+        } else if (getAllPendingUsers.rejected.match(pendingVendorResponse)) {
           dispatch(
             showSnackbar({
               message: "Failed to approve vendor.",

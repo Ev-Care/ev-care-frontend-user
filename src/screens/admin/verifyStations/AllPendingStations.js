@@ -8,7 +8,7 @@ import {
   Platform,
   Linking,
   View,
-  ScrollView
+  ScrollView,
 } from "react-native";
 import {
   Colors,
@@ -45,7 +45,6 @@ const AllPendingStations = ({ navigation }) => {
     dispatch(fetchAllPendingStation());
   }, [dispatch]);
 
-
   const trimText = (text, limit) =>
     text.length > limit ? text.substring(0, limit) + "..." : text;
 
@@ -57,16 +56,25 @@ const AllPendingStations = ({ navigation }) => {
         // Optional: Show success snackbar or log
         console.log("Pending stations refreshed successfully.");
       } else {
-        await dispatch(showSnackbar({ message: "Failed to refresh pending stations.", type: 'error' }));
+        await dispatch(
+          showSnackbar({
+            message: "Failed to refresh pending stations.",
+            type: "error",
+          })
+        );
       }
     } catch (error) {
       console.error("Error refreshing stations:", error);
-      await dispatch(showSnackbar({ message: "Something went wrong during refresh.", type: 'error' }));
+      await dispatch(
+        showSnackbar({
+          message: "Something went wrong during refresh.",
+          type: "error",
+        })
+      );
     } finally {
       setRefreshing(false);
     }
   };
-
 
   const openGoogleMaps = (latitude, longitude) => {
     const url = Platform.select({
@@ -86,36 +94,44 @@ const AllPendingStations = ({ navigation }) => {
   );
 
   function allStationsInfo() {
-
     return (
-
-      <ScrollView style={styles.scrollContainer}
+      <ScrollView
+        style={styles.scrollContainer}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={['#9Bd35A', '#101942']}  // Android spinner colors
-            tintColor="#101942"            // iOS spinner color
+            colors={["#9Bd35A", "#101942"]} // Android spinner colors
+            tintColor="#101942" // iOS spinner color
           />
         }
       >
-
         {/* Check if stations is defined and not empty */}
         {filteredStations && filteredStations?.length > 0 ? (
           filteredStations.map((station) => (
             <TouchableOpacity
-              onPress={() => navigation.navigate("StationDetailToVerify", { item: station })}
+              onPress={() =>
+                navigation.navigate("StationDetailToVerify", { item: station })
+              }
               key={station.id}
               style={styles.card}
             >
               {station?.station_images ? (
-                <Image source={{ uri: imageURL.baseURL + station?.station_images }} style={styles.image} />
+                <Image
+                  source={{ uri: imageURL.baseURL + station?.station_images }}
+                  style={styles.image}
+                />
               ) : (
-                <View style={[styles.image, { alignItems: "center", justifyContent: "center", backgroundColor: "gray", opacity: 0.1 }]}>
+                <View
+                  style={[
+                    styles.image,
+                    { alignItems: "center", justifyContent: "center" },
+                  ]}
+                >
                   <MaterialIcons
                     name="ev-station"
-                    size={50}  // or match your image size
-                    color="#a3a3c2"
+                    size={50} // or match your image size
+                    color="#8f8f8f"
                   />
                 </View>
               )}
@@ -125,15 +141,15 @@ const AllPendingStations = ({ navigation }) => {
                   <Text style={styles.stationName}>
                     {trimText(station?.station_name, 25)}
                   </Text>
-
                 </View>
                 <Text style={styles.statusText}>
                   Status:{" "}
                   <Text
                     style={{
-                      color: station?.status !== "Active"
-                        ? Colors.darOrangeColor
-                        : Colors.primaryColor,
+                      color:
+                        station?.status !== "Active"
+                          ? Colors.darOrangeColor
+                          : Colors.primaryColor,
                     }}
                   >
                     {station?.status !== "Active" ? "Pending" : "Active"}
@@ -143,7 +159,9 @@ const AllPendingStations = ({ navigation }) => {
                 <Text style={styles.text}>
                   Chargers: {station?.chargers?.length || 0}
                 </Text>
-                <Text style={styles.addressText}>{trimText(station?.address, 100)}</Text>
+                <Text style={styles.addressText}>
+                  {trimText(station?.address, 100)}
+                </Text>
               </View>
             </TouchableOpacity>
           ))
@@ -188,8 +206,6 @@ const AllPendingStations = ({ navigation }) => {
 export default AllPendingStations;
 
 const styles = StyleSheet.create({
-
-
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
@@ -209,12 +225,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.primary,
     textAlign: "center",
   },
   card: {
-    backgroundColor: Colors.bodyBackColor,
+    backgroundColor: Colors.whiteColor,
     ...commonStyles.shadow,
     borderColor: Colors.extraLightGrayColor,
     borderRadius: 10,
@@ -228,6 +244,9 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 8,
     marginRight: 15,
+    borderWidth: 1,
+    borderColor: '#e2e2e2 ',
+    backgroundColor: '#f5f5f5' 
   },
   infoContainer: {
     flex: 1,

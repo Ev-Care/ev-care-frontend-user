@@ -259,7 +259,7 @@ const AddStations = () => {
         >
           <Icon name="arrow-left" size={24} color={PRIMARY_COLOR} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>List a Station</Text>
+        <Text style={styles.headerTitle}>Add New Station</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -271,7 +271,7 @@ const AddStations = () => {
       {/* Bottom Buttons */}
       <View style={styles.bottomButtons}>
         <TouchableOpacity onPress={handlePreview} style={styles.previewButton}>
-          <Text style={styles.previewButtonText}>Preview</Text>
+          <Text style={styles.previewButtonText}>Next</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

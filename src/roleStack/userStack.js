@@ -32,7 +32,9 @@ import FavoriteScreen from "../screens/user/favorite/favoriteScreen";
 import HelpScreen from "../screens/user/help/helpScreen";
 import userHome from "../screens/user/home/userHome";
 import PrivacyPolicyScreen from "../screens/user/privacyPolicy/privacyPolicyScreen";
+
 import TermsAndConditionsScreen from "../screens/user/termsAndConditions/termsAndConditionsScreen";
+import ProfileScreen from "../screens/user/profile/profileScreen";
 const Stack = createStackNavigator();
 // UserStack component to manage user-related screens and navigation
 export function UserStack() {
@@ -69,6 +71,7 @@ export function UserStack() {
           <Stack.Screen name="Help" component={HelpScreen} />
           <Stack.Screen name="FavoriteScreen" component={FavoriteScreen} />
           <Stack.Screen name="userHome" component={userHome} />
+          <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
         </>
      
     </Stack.Navigator>

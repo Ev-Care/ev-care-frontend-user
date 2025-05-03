@@ -201,7 +201,7 @@ const PreviewPage = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      {/* <View style={styles.header}>
         <Image
           source={{
             uri: stationImage || "https://via.placeholder.com/400x200",
@@ -229,8 +229,8 @@ const PreviewPage = ({ navigation, route }) => {
             </View>
           </View>
         </View>
-      </View>
-
+      </View> */}
+{header?.()}
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
@@ -337,7 +337,105 @@ const PreviewPage = ({ navigation, route }) => {
     );
   }
 
+  function header() {
+    if (!station) {
+      return <Text>Loading...</Text>;
+    }
 
+    const imageUrl = station?.station_images
+      ? { uri: imageURL.baseURL + station.station_images }
+      : require("../../../../../assets/images/nullStation.png");
+
+    return (
+      <View style={styles.header}>
+        <View style={styles.communityBadgeAndBack}>
+        <View
+            style={{
+              backgroundColor: Colors.primaryColor,
+              borderRadius: 20,
+              padding: 6, 
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+            }}
+          >
+            <MaterialIcons
+              name="arrow-back"
+              color={Colors.whiteColor}
+              size={26}
+              onPress={() => navigation.pop()}
+            />
+          </View>
+
+          <View style={styles.communityBadge}>
+            <Text style={styles.communityText}>Public</Text>
+          </View>
+        </View>
+        <TouchableOpacity
+  activeOpacity={0.9}
+  style={styles.mapBackground}
+  onPress={() => {
+   if ( station?.station_images &&  station?.station_images.trim() !== "") {
+        showFullImage(imageURL.baseURL + station.station_images);
+      }
+    }}
+>
+  <Image source={imageUrl} style={styles.mapBackground} />
+</TouchableOpacity>
+
+        
+
+        <View style={styles.overlay}>
+          <Text style={styles.stationName}>
+            {trimName(50, station?.station_name)}
+          </Text>
+          <Text style={styles.stationAddress}>
+            {trimName(50, station?.address)}
+          </Text>
+          <View
+            style={[{ flexDirection: "row", justifyContent: "space-between" }]}
+          >
+            <View style={styles.statusContainer}>
+              <Text
+                style={[
+                  styles.statusClosed,
+                  {
+                    color: station?.status === "Inactive" ? "#FF5722" : "green",
+                  },
+                ]}
+              >
+                {station?.status === "Inactive" ? "Closed" : "Open"}
+              </Text>
+              <Text style={styles.statusTime}>
+                {openHourFormatter(
+                  station?.open_hours_opening_time,
+                  station?.open_hours_closing_time
+                )}
+              </Text>
+              <View style={styles.newBadge}>
+                <Text style={styles.newText}>
+                  {station.status === "Active"
+                    ? "VERIFIED"
+                    : station.status === "Planned"
+                    ? "PENDING"
+                    : ""}
+                </Text>
+              </View>
+            </View>
+            <MaterialIcons
+              name={inFavorite ? "favorite" : "favorite-border"}
+              color={inFavorite ? Colors.redColor : Colors.primaryColor}
+              size={35}
+              onPress={() => {
+                handleAddToFavorite(station);
+              }}
+            />
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   // This will be used to show the error dialog in future
   function errorDialog() {

@@ -182,9 +182,7 @@ const ViewAllStationsPage = ({ navigation }) => {
   );
 
   function allStationsInfo() {
-
     return (
-
       <ScrollView style={styles.scrollContainer}
         refreshControl={
           <RefreshControl
@@ -200,18 +198,18 @@ const ViewAllStationsPage = ({ navigation }) => {
         {filteredStations && filteredStations?.length > 0 ? (
           filteredStations.map((station) => (
             <TouchableOpacity
-              onPress={() => navigation.navigate("StationDetailPage", { item: station })}
+              onPress={() => navigation.navigate("StationDetailScreen", { item: station })}
               key={station.id}
               style={styles.card}
             >
               {station?.station_images ? (
-                <Image source={{ uri: imageURL.baseURL + station?.station_images }} style={styles.image} />
+                <Image source={{ uri: imageURL.baseURL + station?.station_images }} style={styles.image } />
               ) : (
-                <View style={[styles.image, { alignItems: "center", justifyContent: "center", backgroundColor: "gray", opacity: 0.1 }]}>
+                <View style={[styles.image, { alignItems: "center", justifyContent: "center" }]}>
                   <MaterialIcons
                     name="ev-station"
                     size={50}  // or match your image size
-                    color="#a3a3c2"
+                    color="#8f8f8f"
                   />
                 </View>
               )}
@@ -346,7 +344,7 @@ const styles = StyleSheet.create({
       textAlign: "center",
     },
     card: {
-      backgroundColor: Colors.bodyBackColor,
+      backgroundColor: Colors.whiteColor,
       ...commonStyles.shadow,
       borderColor: Colors.extraLightGrayColor,
       borderRadius: 10,
@@ -360,6 +358,9 @@ const styles = StyleSheet.create({
       height: 100,
       borderRadius: 8,
       marginRight: 15,
+      borderWidth: 1,
+      borderColor: '#e2e2e2 ',
+      backgroundColor: '#f5f5f5' 
     },
     infoContainer: {
       flex: 1,

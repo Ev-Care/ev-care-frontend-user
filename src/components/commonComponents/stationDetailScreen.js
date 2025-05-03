@@ -9,7 +9,6 @@ import {
   Dimensions,
   Platform,
   Snackbar,
-  Modal,
   ActivityIndicator,
   TextInput,
   Linking,
@@ -20,22 +19,16 @@ import {
   Fonts,
   commonStyles,
   screenWidth,
-} from "../../../constants/styles";
+} from "../../constants/styles";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MapView, { Marker } from "react-native-maps";
 import { Overlay } from "@rneui/themed";
-import { addToFavorite } from "../service/stationSlice";
+
 import { useDispatch, useSelector } from "react-redux";
-import { selectFavoriteStations, selectUser } from "../service/selector";
-import imageURL from "../../../constants/baseURL";
-import {
-  getAllFavoriteStations,
-  postFavoriteStation,
-  unFavoriteStation,
-} from "../service/crudFunction";
-import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import { openHourFormatter } from "../../../utils/globalMethods";
+// import { selectFavoriteStations, selectUser } from "../service/selector";
+import imageURL from "../../constants/baseURL";
+import { openHourFormatter } from "../../utils/globalMethods";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -52,36 +45,19 @@ const COLORS = {
 
 const { width } = Dimensions.get("window");
 
-
-const ChargingStationDetailScreen = ({ route, navigation }) => {
+const StationDetailScreen = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
-  const favStations = useSelector(selectFavoriteStations);
-    const [isLoading, setIsLoading] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
   // const [showSnackBar, setshowSnackBar] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
   const scrollViewRef = useRef(null);
-  const dispatch = useDispatch();
-  const user = useSelector(selectUser);
-
   const station = route?.params?.item;
-
   if (!station) {
     return <Text>Loading...</Text>; // Handle when station is not available
   }
 
   const [inFavorite, setInFavorite] = useState(false);
   console.log(station.id);
-
-  useEffect(() => {
-    if (favStations && station) {
-      const isFavorite = favStations.some(
-        (favStation) => favStation.stationId === station.id
-      );
-      setInFavorite(isFavorite);
-      console.log("stationdetail useEffect called.", inFavorite);
-    }
-  }, [favStations, station]);
 
   useEffect(() => {
     console.log("inFavorite changed to", inFavorite);
@@ -93,12 +69,6 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     "Type-2": "ev-plug-type2",
     Wall: "ev-plug-type1",
     "GBT:": "ev-plug-type2",
-  };
-
-  const showFullImage = (uri) => {
-    if (!uri) return;
-    setSelectedImage(uri);
-    setModalVisible(true);
   };
 
   const handleTabPress = (index) => {
@@ -113,72 +83,6 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
       setActiveTab(index);
     }
   };
-
-  const openGoogleMaps = (latitude, longitude) => {
-    const url = Platform.select({
-      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
-    });
-    Linking.openURL(url);
-  };
-
-  const handleAddToFavorite = async (station) => {
-    setIsLoading(true);
-    try {
-      if (station && !inFavorite) {
-        const postFavresponse = await dispatch(
-          postFavoriteStation({ stationId: station.id, userId: user.id })
-        );
-        console.log("station favorited ");
-  
-        await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
-  
-        if (postFavoriteStation.fulfilled.match(postFavresponse)) {
-          await dispatch(
-            showSnackbar({
-              message: "Station added to favorite.",
-              type: "success",
-            })
-          );
-          setInFavorite(true);
-        } else if (postFavoriteStation.rejected.match(postFavresponse)) {
-          await dispatch(
-            showSnackbar({
-              message: errorMessage || "Failed to favorite station",
-              type: "error",
-            })
-          );
-        }
-      } else {
-        const unFavResponse = await dispatch(
-          unFavoriteStation({ stationId: station.id, userId: user.id })
-        );
-        console.log("station unfavorited ");
-  
-        await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
-  
-        if (unFavoriteStation.fulfilled.match(unFavResponse)) {
-          await dispatch(
-            showSnackbar({
-              message: "Station removed from favorite.",
-              type: "success",
-            })
-          );
-          setInFavorite(false);
-        } else if (unFavoriteStation.rejected.match(unFavResponse)) {
-          await dispatch(
-            showSnackbar({
-              message: errorMessage || "Failed to unfavorite station",
-              type: "error",
-            })
-          );
-        }
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
 
   const trimName = (threshold, str) => {
     if (str?.length <= threshold) {
@@ -198,17 +102,6 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
 
       {/* Bottom Buttons */}
       {buttons()}
-       <Modal visible={modalVisible} transparent={true}>
-        <View style={styles.modalContainer}>
-          <Image source={{ uri: selectedImage }} style={styles.fullImage} />
-          <TouchableOpacity
-            style={styles.modalCloseButton}
-            onPress={() => setModalVisible(false)}
-          >
-            <Text style={styles.closeText}>Close</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
       {isLoading && (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={Colors.primaryColor} />
@@ -224,7 +117,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
 
     const imageUrl = station?.station_images
       ? { uri: imageURL.baseURL + station.station_images }
-      : require("../../../../assets/images/nullStation.png");
+      : require("../../../assets/images/nullStation.png");
 
     return (
       <View style={styles.header}>
@@ -252,19 +145,8 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
             <Text style={styles.communityText}>Public</Text>
           </View>
         </View>
-        <TouchableOpacity
-  activeOpacity={0.9}
-  style={styles.mapBackground}
-  onPress={() => {
-   if ( station?.station_images &&  station?.station_images.trim() !== "") {
-        showFullImage(imageURL.baseURL + station.station_images);
-      }
-    }}
->
-  <Image source={imageUrl} style={styles.mapBackground} />
-</TouchableOpacity>
 
-        
+        <Image source={imageUrl} style={styles.mapBackground} />
 
         <View style={styles.overlay}>
           <Text style={styles.stationName}>
@@ -308,7 +190,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
               color={inFavorite ? Colors.redColor : Colors.primaryColor}
               size={35}
               onPress={() => {
-                handleAddToFavorite(station);
+                // handleAddToFavorite(station);
               }}
             />
           </View>
@@ -368,7 +250,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         <TouchableOpacity style={styles.directionButton}>
           <Text style={styles.directionButtonText}>Get Direction</Text>
         </TouchableOpacity>
- 
+       
       </View>
     );
   }
@@ -744,28 +626,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
   },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.9)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  fullImage: {
-    width: "90%",
-    height: "70%",
-    resizeMode: "contain",
-    borderRadius: 10,
-  },
-  modalCloseButton: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: "#fff",
-    borderRadius: 8,
-  },
-  closeText: {
-    color: "#000",
-    fontWeight: "bold",
-  },
 });
 
-export default ChargingStationDetailScreen;
+export default StationDetailScreen;

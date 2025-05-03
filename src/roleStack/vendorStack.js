@@ -100,6 +100,7 @@ export function VendorStack() {
             component={StationManagement}
           />
           <Stack.Screen name="UpdateStation" component={UpdateStation} />
+          <Stack.Screen name="AddStations" component={AddStations} />
 
         </>
       )}

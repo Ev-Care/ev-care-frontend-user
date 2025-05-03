@@ -122,14 +122,14 @@ const AdminBottomTabBar = ({ navigation }) => {
               focused ? (
                 <View style={styles.selectedTabCircleStyle}>
                   <MaterialIcons
-                    name="people-outline"
+                    name="people"
                     size={24}
                     color={Colors.whiteColor}
                   />
                 </View>
               ) : (
                 <MaterialIcons
-                  name="people-outline"
+                  name="people"
                   size={24}
                   color={Colors.primaryColor}
                 />

@@ -149,8 +149,9 @@ const RegisterScreen = ({ navigation, route }) => {
           {selectRole()}
           {fullNameInfo()}
           {emailInfo()}
-          {vehicleNumberInfo()}
+         {role==="user" && (<>{vehicleNumberInfo()}
           {vehicleDataForm()}
+          </>)}
           {continueButton()}
           {agreeInfo()}
         </ScrollView>

@@ -114,9 +114,7 @@ const ViewAllIssuesPage = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <MyStatusBar />
-
-      <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
-
+      {searchBar()}
       <FlatList
         data={filteredUsers}
         renderItem={({ item }) => <UserInfo user={item} />}
@@ -140,27 +138,36 @@ const ViewAllIssuesPage = ({ navigation }) => {
         onPress={() => navigation.navigate("SupportIssuesDetail", { user })}
         style={styles.userItem}
       >
-           <View style={[{ flexDirection: "row", alignItems: "center" ,justifyContent: "space-between",marginBottom:5}]}>
-            {user?.avatar ? (
-              <Image source={{ uri: user?.avatar }} style={styles.avatar} />
-            ) : (
-              <Icon
-                name="account-circle"
-                size={50}
-                color="#ccc"
-                style={styles.avatarIcon}
-              />
-            )}
+        <View
+          style={[
+            {
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 5,
+            },
+          ]}
+        >
+          {user?.avatar ? (
+            <Image source={{ uri: user?.avatar }} style={styles.avatar} />
+          ) : (
+            <Icon
+              name="account-circle"
+              size={50}
+              color="#ccc"
+              style={styles.avatarIcon}
+            />
+          )}
 
-            <View style={styles.userNameAndNumber}>
-              <Text style={styles.userName}>
-                {user?.owner_legal_name || "N/A"}
-              </Text>
-              <Text style={styles.userMobile}>
-                {user?.mobile_number || "N/A"}
-              </Text>
-            </View>
-      
+          <View style={styles.userNameAndNumber}>
+            <Text style={styles.userName}>
+              {user?.owner_legal_name || "N/A"}
+            </Text>
+            <Text style={styles.userMobile}>
+              {user?.mobile_number || "N/A"}
+            </Text>
+          </View>
+
           <View style={[styles.roleBadge]}>
             <Text
               style={[
@@ -190,9 +197,10 @@ const ViewAllIssuesPage = ({ navigation }) => {
     );
   }
 
-  function SearchBar({ value, onChangeText }) {
+  function searchBar() {
     return (
       <View style={{ margin: 20.0 }}>
+        <MyStatusBar />
         <View style={styles.searchBar}>
           <MaterialIcons
             name="search"
@@ -201,15 +209,15 @@ const ViewAllIssuesPage = ({ navigation }) => {
             style={{ marginRight: 8 }}
           />
           <TextInput
-            placeholder="Search users"
+            placeholder="Search users here ..."
             placeholderTextColor="#888"
             style={{
               flex: 1,
-              fontSize: 16,
-              color: "#000",
+              padding: 12,
+              fontSize: 12,
             }}
-            value={value}
-            onChangeText={onChangeText}
+            value={searchQuery}
+            onChangeText={(text) => setSearchQuery(text)}
           />
         </View>
       </View>
@@ -293,13 +301,12 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 50,
-   
   },
   avatarIcon: {
     width: 50,
     height: 50,
     borderRadius: 50,
-    backgroundColor:"#e0e0eb"
+    backgroundColor: "#e0e0eb",
   },
   userNameAndNumber: {
     flex: 1,

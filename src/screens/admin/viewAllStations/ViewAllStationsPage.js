@@ -63,7 +63,6 @@ const ViewAllStationsPage = ({ navigation }) => {
       setRefreshing(false);
     }
   };
-
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -159,9 +158,9 @@ const ViewAllStationsPage = ({ navigation }) => {
             placeholder="Search Charging Stations"
             placeholderTextColor="#888"
             style={{
-              flex: 1,
-              fontSize: 16,
-              color: "#000",
+              flex: 1,   
+              padding: 12,
+              fontSize: 12,
             }}
             value={searchText}
             onChangeText={(text) => setSearchText(text)}

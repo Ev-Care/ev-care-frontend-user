@@ -156,8 +156,8 @@ const AllPendingVendors = ({ navigation }) => {
             placeholderTextColor="#888"
             style={{
               flex: 1,
-              fontSize: 16,
-              color: "#000",
+              padding: 12,
+              fontSize: 12,
             }}
             value={searchQuery}
             onChangeText={(text) => setSearchQuery(text)}

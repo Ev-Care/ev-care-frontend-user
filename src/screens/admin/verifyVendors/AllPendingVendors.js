@@ -21,7 +21,7 @@ import {
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { color } from "@rneui/base";
-import { getAllUsers } from "../services/crudFunctions";
+import { getAllPendingUsers } from "../services/crudFunctions";
 import { useDispatch, useSelector } from "react-redux";
 import {  selectPendingUsers } from "../services/selector";
 import { useFocusEffect } from "@react-navigation/native";
@@ -55,15 +55,15 @@ const AllPendingVendors = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       console.log('pending users fetched from useFocusEffect');
-      dispatch(getAllUsers());
+      dispatch(getAllPendingUsers());
     }, [dispatch])
   );
   const handleRefresh = async () => {
     try {
       setRefreshing(true); // start refreshing UI
-      const response = await dispatch(getAllUsers());
+      const response = await dispatch(getAllPendingUsers());
   
-      if (getAllUsers.fulfilled.match(response)) {
+      if (getAllPendingUsers.fulfilled.match(response)) {
         console.log('vendors refreshed');
         // Optional: show a success snackbar
         // dispatch(showSnackbar({ message: "Vendors refreshed.", type: "success" }));
@@ -156,8 +156,8 @@ const AllPendingVendors = ({ navigation }) => {
             placeholderTextColor="#888"
             style={{
               flex: 1,
-              fontSize: 16,
-              color: "#000",
+              padding: 12,
+              fontSize: 12,
             }}
             value={searchQuery}
             onChangeText={(text) => setSearchQuery(text)}

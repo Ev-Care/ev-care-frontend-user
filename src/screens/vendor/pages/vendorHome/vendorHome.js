@@ -118,7 +118,7 @@ const VendorHome = () => {
     setIsLoading(true);
 
     try {
-     
+
       const newStatus = isLive ? "inactive" : "active";
 
       const statusResponse = await dispatch(
@@ -244,7 +244,7 @@ const VendorHome = () => {
         </View>
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Manage App</Text>
+          <Text style={styles.sectionTitle}>Manage Stations</Text>
           <TouchableOpacity>
             {/* <Text style={styles.viewAllText}>view all</Text> manageStationCard */}
           </TouchableOpacity>
@@ -265,7 +265,7 @@ const VendorHome = () => {
   function manageStationCard() {
     return (
       <TouchableOpacity
-      activeOpacity={0.8}
+        activeOpacity={0.8}
         onPress={() => navigation.navigate("AllStations")}
         style={[styles.featureCard, { backgroundColor: COLORS.primary }]}
       >
@@ -290,7 +290,7 @@ const VendorHome = () => {
           Manage Stations
         </Text>
         <Text style={{ fontSize: 10, color: COLORS.white, marginTop: 5 }}>
-          Click to Manage Stations & Ports Availability in Real-Time
+          Update station and port availability in real-time.
         </Text>
 
         <View style={styles.availabilityContainer}>
@@ -299,7 +299,7 @@ const VendorHome = () => {
           </Text>
           <Switch
             value={isLive}
-            onValueChange={toggleStation} 
+            onValueChange={toggleStation}
             trackColor={{ false: COLORS.secondary, true: COLORS.green }}
             thumbColor={COLORS.white}
           />

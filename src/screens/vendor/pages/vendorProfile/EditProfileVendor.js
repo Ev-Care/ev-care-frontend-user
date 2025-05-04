@@ -53,11 +53,7 @@ const EditProfileScreen = ({ route, navigation }) => {
   const [panNumber, setPanNumber] = useState(user?.pan_no || "Not found");
   const [gstNumber, setGstNumber] = useState(user?.gstin_number);
   //   image start
-  // const [aadhaarFrontImage, setAadhaarFrontImage] = useState(null);
-  // const [aadhaarBackImage, setAadhaarBackImage] = useState(null);
-  // const [panImage, setPanImage] = useState(null);
-  // const [gstImage, setGstImage] = useState(null);
-  // const [avatar, setAvatar] = useState(null);
+
   //   image uri
   const [aadhaarFrontImageURI, setAadhaarFrontImageURI] = useState(
     user?.adhar_front_pic
@@ -369,11 +365,11 @@ const EditProfileScreen = ({ route, navigation }) => {
           <View style={styles.modalContainer}>
             <Image source={{ uri: selectedImage }} style={styles.fullImage} />
             <TouchableOpacity
-              style={styles.modalCloseButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.closeText}>Close</Text>
-            </TouchableOpacity>
+            style={styles.modalCloseButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
+          </TouchableOpacity>
           </View>
         </Modal>
 
@@ -506,7 +502,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    gap:20,
     marginTop: 20,
 
     flexWrap: "wrap",
@@ -577,7 +573,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 10,
     backgroundColor: "#fff",
-    borderRadius: 8,
+    justifyContent:"center",
+    alignItems:"center",
+    height:50,
+    width:50,
+    borderRadius: 50,
   },
   closeText: {
     color: "#000",
@@ -661,6 +661,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#333",
   },
+  
 });
 
 export default EditProfileScreen;

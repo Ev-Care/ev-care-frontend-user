@@ -4,6 +4,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
   PermissionsAndroid,
   Platform,
   Image,
@@ -17,12 +18,15 @@ import { Colors, Fonts, commonStyles } from "../../../constants/styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, StackActions } from "@react-navigation/native";
 import * as Location from "expo-location";
+import {DottedLoader2} from "../../../utils/lottieLoader/loaderView";
 
 const PickLocationScreen = ({ navigation, route }) => {
   // const navigation = useNavigation();
   const mapRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   const [address, setAddress] = useState(""); // Store address
   const [region, setRegion] = useState({
     latitude: 28.6139, // Default to Delhi
@@ -44,6 +48,7 @@ const PickLocationScreen = ({ navigation, route }) => {
   }, []);
 
   const getUserLocation = async () => {
+    setIsLoading(true);
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
 
@@ -93,10 +98,14 @@ const PickLocationScreen = ({ navigation, route }) => {
         longitudeDelta: 0.05,
       });
     }
+    finally{ 
+      setIsLoading(false);
+    }
   };
 
   // Fetch address from coordinates using Google Maps API
   const fetchAddressFromCoordinates = async (latitude, longitude) => {
+    setIsLoading(true);
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${Key.apiKey}`;
     try {
       const response = await fetch(url);
@@ -108,36 +117,57 @@ const PickLocationScreen = ({ navigation, route }) => {
     } catch (error) {
       console.error("Error fetching address:", error);
     }
+    finally{
+      setIsLoading(false);
+    }
   };
 
   // Handle map tap to select location
-  const handleMapPress = (event) => {
+  const handleMapPress = async (event) => {
+    setIsLoading(true);
     const { latitude, longitude } = event.nativeEvent.coordinate;
-    setSelectedLocation({ latitude, longitude });
-    fetchAddressFromCoordinates(latitude, longitude);
-  };
-
-  // Handle search selection
-  const handleSearchSelect = (data, details) => {
-    const { lat, lng } = details.geometry.location;
-    const newRegion = {
-      latitude: lat,
-      longitude: lng,
-      latitudeDelta: 0.03,
-      longitudeDelta: 0.03,
-    };
-
-    setRegion(newRegion);
-    setSelectedLocation({ latitude: lat, longitude: lng });
-    fetchAddressFromCoordinates(lat, lng);
-
-    if (mapRef.current) {
-      mapRef.current.animateCamera(
-        { center: newRegion, zoom: 15 },
-        { duration: 1000 }
-      );
+  
+    try {
+      setSelectedLocation({ latitude, longitude });
+      await fetchAddressFromCoordinates(latitude, longitude);
+    } catch (error) {
+      console.error("Error fetching address:", error);
+    } finally {
+      setIsLoading(false); // <- fix: set to false, not true
     }
   };
+  
+
+  // Handle search selection
+  const handleSearchSelect = async (data, details) => {
+    setIsLoading(true);
+  
+    try {
+      const { lat, lng } = details.geometry.location;
+      const newRegion = {
+        latitude: lat,
+        longitude: lng,
+        latitudeDelta: 0.03,
+        longitudeDelta: 0.03,
+      };
+  
+      setRegion(newRegion);
+      setSelectedLocation({ latitude: lat, longitude: lng });
+      await fetchAddressFromCoordinates(lat, lng); // Assuming this is async
+  
+      if (mapRef.current) {
+        mapRef.current.animateCamera(
+          { center: newRegion, zoom: 15 },
+          { duration: 1000 }
+        );
+      }
+    } catch (error) {
+      console.error("Error in handleSearchSelect:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
 
   // Submit function
   const handleSubmit = () => {
@@ -222,6 +252,12 @@ const PickLocationScreen = ({ navigation, route }) => {
       >
         <Text style={Fonts.whiteColor18Medium}>Select Location</Text>
       </TouchableOpacity>
+      {isLoading && (
+              <View style={styles.loaderContainer}>
+                <DottedLoader2/>
+                {/* <ActivityIndicator size="large" color={Colors.primaryColor} /> */}
+              </View>
+            )}
     </View>
   );
 };
@@ -236,6 +272,16 @@ const styles = StyleSheet.create({
     left: 10,
     right: 10,
     zIndex: 1,
+  }, loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    zIndex: 999,
   },
   searchInput: {
     height: 50,

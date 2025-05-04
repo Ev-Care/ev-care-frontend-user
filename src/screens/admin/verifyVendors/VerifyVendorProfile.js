@@ -20,7 +20,7 @@ import {
   commonStyles
 } from "../../../constants/styles";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import { approveVendorProfile, getAllUsers } from "../services/crudFunctions";
+import { approveVendorProfile, getAllPendingUsers } from "../services/crudFunctions";
 import { default as Icon } from "react-native-vector-icons/MaterialIcons";
 
 const VerifyVendorProfile = ({ route, navigation }) => {
@@ -75,9 +75,9 @@ const VerifyVendorProfile = ({ route, navigation }) => {
       console.log({ rejectResponse });
 
       if (approveVendorProfile.fulfilled.match(rejectResponse)) {
-        const pendingVendorResponse = await dispatch(getAllUsers());
+        const pendingVendorResponse = await dispatch(getAllPendingUsers());
 
-        if (getAllUsers.fulfilled.match(pendingVendorResponse)) {
+        if (getAllPendingUsers.fulfilled.match(pendingVendorResponse)) {
           await dispatch(
             showSnackbar({
               message: "Vendor profile rejected.",
@@ -85,7 +85,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
             })
           );
           navigation.goBack();
-        } else if (getAllUsers.rejected.match(pendingVendorResponse)) {
+        } else if (getAllPendingUsers.rejected.match(pendingVendorResponse)) {
           dispatch(
             showSnackbar({
               message: "Failed to reject vendor.",
@@ -116,9 +116,9 @@ const VerifyVendorProfile = ({ route, navigation }) => {
       );
 
       if (approveVendorProfile.fulfilled.match(approvedResponse)) {
-        const pendingVendorResponse = await dispatch(getAllUsers());
+        const pendingVendorResponse = await dispatch(getAllPendingUsers());
 
-        if (getAllUsers.fulfilled.match(pendingVendorResponse)) {
+        if (getAllPendingUsers.fulfilled.match(pendingVendorResponse)) {
           await dispatch(
             showSnackbar({
               message: "Vendor profile approved.",
@@ -126,7 +126,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
             })
           );
           navigation.goBack();
-        } else if (getAllUsers.rejected.match(pendingVendorResponse)) {
+        } else if (getAllPendingUsers.rejected.match(pendingVendorResponse)) {
           dispatch(
             showSnackbar({
               message: "Failed to approve vendor.",
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
 
   imageContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    gap:20,
     marginTop: 20,
 
     flexWrap: "wrap",

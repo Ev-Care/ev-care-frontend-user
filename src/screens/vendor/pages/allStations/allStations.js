@@ -41,8 +41,8 @@ const COLORS = {
 const trimText = (text, limit) =>
   text.length > limit ? text.substring(0, limit) + "..." : text;
 
-const AllStations = ({ route }) => {
-  const navigation = useNavigation();
+const AllStations = ({ navigation, route }) => {
+  // const navigation = useNavigation();
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const [refreshing, setRefreshing] = useState(false);
@@ -52,23 +52,20 @@ const AllStations = ({ route }) => {
   // console.log("Stations in AllStations:", stations?.length);
   const [stationStatusMap, setStationStatusMap] = useState({});
 
-
-
-
   const updateStationStatus = async (stationData) => {
     setIsLoading(true);
-  
+
     // Optimistically toggle the status
     setStationStatusMap((prev) => ({
       ...prev,
       [stationData.station_id]: stationData.status === "active",
     }));
-  
+
     try {
       const response = await dispatch(
         updateStationsChargersConnectorsStatus(stationData)
       );
-  
+
       if (updateStationsChargersConnectorsStatus.fulfilled.match(response)) {
         await dispatch(
           showSnackbar({ message: "Station status updated.", type: "success" })
@@ -83,7 +80,7 @@ const AllStations = ({ route }) => {
           })
         );
       }
-  
+
       // Fetch updated stations after the status change
       const stationResponse = await dispatch(fetchStations(user?.id));
       if (fetchStations.fulfilled.match(stationResponse)) {
@@ -109,7 +106,6 @@ const AllStations = ({ route }) => {
       setIsLoading(false);
     }
   };
-  
 
   const handleRefresh = async () => {
     console.log("Refreshing stations...in all stations");
@@ -143,7 +139,7 @@ const AllStations = ({ route }) => {
         {stations && stations?.length > 0 ? (
           stations.map((station) => (
             <TouchableOpacity
-            activeOpacity={0.8}
+              activeOpacity={0.8}
               onPress={() =>
                 navigation.navigate("StationManagement", { station })
               }
@@ -159,18 +155,13 @@ const AllStations = ({ route }) => {
                 <View
                   style={[
                     styles.image,
-                    {
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: "gray",
-                      opacity: 0.1,
-                    },
+                    { alignItems: "center", justifyContent: "center" },
                   ]}
                 >
                   <MaterialIcons
                     name="ev-station"
                     size={50} // or match your image size
-                    color="#a3a3c2"
+                    color="#8f8f8f"
                   />
                 </View>
               )}
@@ -245,9 +236,37 @@ const AllStations = ({ route }) => {
           <ActivityIndicator size="large" color={Colors.primaryColor} />
         </View>
       )}
-      {/* <VendorBottomTabBar/> */}
+    {addSatationButton()}
     </View>
   );
+  function addSatationButton(){
+    return(
+    
+      <TouchableOpacity
+        onPress={()=>navigation?.navigate("AddStations")}
+        style={{
+          justifyContent: "center",
+          alignItems: "center",
+          width: 60,
+          height: 60,
+          borderRadius: 30,
+          backgroundColor: Colors.primaryColor,
+
+          shadowColor: Colors.primaryColor,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.4,
+          shadowRadius: 5,
+          elevation: 8,
+          position: "absolute",
+          bottom: 100,
+          right: "10%",
+        }}
+      >
+        <MaterialIcons name="add" size={30} color={Colors.whiteColor} />
+      </TouchableOpacity>
+     
+    )
+  }
 };
 
 const styles = StyleSheet.create({
@@ -285,7 +304,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   card: {
-    backgroundColor: Colors.bodyBackColor,
+    backgroundColor: Colors.whiteColor,
     ...commonStyles.shadow,
     borderColor: Colors.extraLightGrayColor,
     borderRadius: 10,
@@ -299,6 +318,9 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 8,
     marginRight: 15,
+    borderWidth: 1,
+    borderColor: '#e2e2e2 ',
+    backgroundColor: '#f5f5f5' 
   },
   infoContainer: {
     flex: 1,

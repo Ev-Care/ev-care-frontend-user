@@ -9,6 +9,8 @@ import {
   Dimensions,
   Platform,
   Snackbar,
+  Modal,
+  ActivityIndicator,
   TextInput,
   Linking,
 } from "react-native";
@@ -19,12 +21,16 @@ import {
   commonStyles,
   screenWidth,
 } from "../../../constants/styles";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MapView, { Marker } from "react-native-maps";
 import { Overlay } from "@rneui/themed";
-// import imageURL from "../../../constants/baseURL";
+import { useDispatch, useSelector } from "react-redux";
+import imageURL from "../../../constants/baseURL";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import { openHourFormatter } from "../../../utils/globalMethods";
+// Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
   accent: "#FF5722", // Orange
@@ -42,31 +48,37 @@ const { width } = Dimensions.get("window");
 
 const StationDetailPage = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
-  const [showSnackBar, setshowSnackBar] = useState(false);
   const [showDeleteDialogue, setshowDeleteDialogue] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
   const scrollViewRef = useRef(null);
+  const dispatch = useDispatch();
+
+
   const station = route?.params?.item;
 
   if (!station) {
     return <Text>Loading...</Text>; // Handle when station is not available
   }
 
+
+
+
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",
-    "CHAdeMO": "ev-plug-chademo",
+    CHAdeMO: "ev-plug-chademo",
     "Type-2": "ev-plug-type2",
-    "Wall": "ev-plug-type1",
-    "GBT": "ev-plug-type2",
+    Wall: "ev-plug-type1",
+    "GBT:": "ev-plug-type2",
   };
 
-  //   const amenityMap = {
-  //     Restroom: "toilet",
-  //     Cafe: "coffee",
-  //     Wifi: "wifi",
-  //     Store: "cart",
-  //     "Car Care": "car",
-  //     Lodging: "bed",
-  //   };
+  const showFullImage = (uri) => {
+    if (!uri) return;
+    setSelectedImage(uri);
+    setModalVisible(true);
+  };
 
   const handleTabPress = (index) => {
     setActiveTab(index);
@@ -81,36 +93,18 @@ const StationDetailPage = ({ route, navigation }) => {
     }
   };
 
-  const openGoogleMaps = (latitude, longitude) => {
-    const url = Platform.select({
-      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
-    });
-    Linking.openURL(url);
-  };
-
-  const openHourFormatter = (openingTime, closingTime) => {
-    const formatTime = (time) => {
-      const [hour, minute] = time.split(":").map(Number);
-      const ampm = hour >= 12 ? "PM" : "AM";
-      const adjustedHour = hour % 12 || 12;
-      return `${adjustedHour}:${minute.toString().padStart(2, "0")}${ampm}`;
-    };
-
-    return {
-      opening: formatTime(openingTime),
-      closing: formatTime(closingTime),
-    };
-  };
+  const handleDelete = async () => {
+    // setIsLoading(true);
+    console.log("handleDelete Called");
+    // setIsLoading(false);
+  }
+  
 
   const trimName = (threshold, str) => {
     if (str?.length <= threshold) {
       return str;
     }
     return str?.substring(0, threshold) + ".....";
-  };
-  const handleDelete = () => {
-    console.log("handleDelete Called");
   };
 
   return (
@@ -124,40 +118,76 @@ const StationDetailPage = ({ route, navigation }) => {
 
       {/* Bottom Buttons */}
       {buttons()}
-      {/* delete dialog */}
       {deleteDialogue()}
+       <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modalContainer}>
+          <Image source={{ uri: selectedImage }} style={styles.fullImage} />
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
+          </TouchableOpacity>
+        </View>
+      </Modal>
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </View>
   );
 
   function header() {
     if (!station) {
-      return <Text>Loading...</Text>; // Or show a fallback UI
+      return <Text>Loading...</Text>;
     }
 
     const imageUrl = station?.station_images
       ? { uri: imageURL.baseURL + station.station_images }
-      : {
-          uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        };
+      : require("../../../../assets/images/nullStation.png");
 
     return (
       <View style={styles.header}>
-        <Image source={imageUrl} style={styles.mapBackground} />
-
-        <View style={styles.overlay}>
-          <View style={styles.communityBadgeAndBack}>
+        <View style={styles.communityBadgeAndBack}>
+        <View
+            style={{
+              backgroundColor: Colors.primaryColor,
+              borderRadius: 20,
+              padding: 6, 
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+            }}
+          >
             <MaterialIcons
               name="arrow-back"
               color={Colors.whiteColor}
               size={26}
-              onPress={() => {
-                navigation.pop(); // Check if this works as expected
-              }}
+              onPress={() => navigation.pop()}
             />
-            <View style={styles.communityBadge}>
-              <Text style={styles.communityText}>Public</Text>
-            </View>
           </View>
+
+          <View style={styles.communityBadge}>
+            <Text style={styles.communityText}>Public</Text>
+          </View>
+        </View>
+        <TouchableOpacity
+  activeOpacity={0.9}
+  style={styles.mapBackground}
+  onPress={() => {
+   if ( station?.station_images &&  station?.station_images.trim() !== "") {
+        showFullImage(imageURL.baseURL + station.station_images);
+      }
+    }}
+>
+  <Image source={imageUrl} style={styles.mapBackground} />
+</TouchableOpacity>
+
+        
+
+        <View style={styles.overlay}>
           <Text style={styles.stationName}>
             {trimName(50, station?.station_name)}
           </Text>
@@ -179,25 +209,22 @@ const StationDetailPage = ({ route, navigation }) => {
                 {station?.status === "Inactive" ? "Closed" : "Open"}
               </Text>
               <Text style={styles.statusTime}>
-                •
-                {
-                  openHourFormatter(
-                    station?.open_hours_opening_time,
-                    station?.open_hours_closing_time
-                  ).opening
-                }{" "}
-                -{" "}
-                {
-                  openHourFormatter(
-                    station?.open_hours_opening_time,
-                    station?.open_hours_closing_time
-                  ).closing
-                }
+                {openHourFormatter(
+                  station?.open_hours_opening_time,
+                  station?.open_hours_closing_time
+                )}
               </Text>
               <View style={styles.newBadge}>
-                <Text style={styles.newText}>New</Text>
+                <Text style={styles.newText}>
+                  {station.status === "Active"
+                    ? "VERIFIED"
+                    : station.status === "Planned"
+                    ? "PENDING"
+                    : ""}
+                </Text>
               </View>
             </View>
+          
           </View>
         </View>
       </View>
@@ -256,125 +283,21 @@ const StationDetailPage = ({ route, navigation }) => {
           onPress={() => {
             setshowDeleteDialogue(true);
           }}
-          style={styles.deleteButton}
+          style={styles.editButton}
         >
-          <Text style={styles.updateButtonText}>Delete</Text>
+          <Text style={styles.editButtonText}>Delete</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.updateButton}>
-          <Text style={styles.updateButtonText}>Update</Text>
+        {/* onPress={() => navigation.navigate("UpdateStation")} */}
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={() => navigation.navigate("UpdateStation", { station })}
+        >
+          <Text style={styles.submitButtonText}>Update</Text>
         </TouchableOpacity>
       </View>
     );
   }
-  function chargerTab() {
-    return (
-      <ScrollView style={styles.tabContent}>
-        {station?.chargers?.map((charger, index) => (
-          <View key={charger.charger_id} style={styles.chargerCard}>
-            <Text style={styles.chargerTitle}>
-              {charger?.name || `Charger ${index + 1}`}
-            </Text>
-            <View style={styles.chargerSpecs}>
-              <Text style={styles.chargerSpecText}>
-                Type: {charger?.charger_type || "Unknown Type"}
-              </Text>
-              <Text style={styles.chargerSpecText}>|</Text>
-              <Text style={styles.chargerSpecText}>
-                Power: {charger?.max_power_kw || "Unknown Power"} KW
-              </Text>
-            </View>
-
-            {/* Map over connectors */}
-            <View style={styles.connectorContainer}>
-              {charger?.connectors?.map((connector, connectorIndex) => (
-                <View key={connectorIndex} style={styles.connector}>
-                  <Text style={styles.connectorTitle}>
-                    {connector?.connectorType?.description ||
-                      `Cherger ${connectorIndex + 1}`}
-                  </Text>
-                  <View style={styles.connectorType}>
-                    <Icon
-                      name={
-                        connector?.connectorType?.description
-                          ? connectorIcons[
-                              connector?.connectorType?.description
-                            ]
-                          : "ev-plug-type1"
-                      }
-                      size={20}
-                      color={COLORS.primary}
-                    />
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-        ))}
-      </ScrollView>
-    );
-  }
-
-  function detailTab() {
-    return (
-      <ScrollView style={styles.tabContent}>
-        <Text style={styles.sectionTitle}>Location Details</Text>
-        <View style={styles.mapContainer}>
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: station?.coordinates?.latitude,
-              longitude: station?.coordinates?.longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }}
-          >
-            <Marker
-              coordinate={{
-                latitude: station?.coordinates?.latitude,
-                longitude: station?.coordinates?.longitude,
-              }}
-              title={station?.station_name}
-              description={station?.address}
-            />
-          </MapView>
-        </View>
-        <Text style={styles.sectionTitle}>Address</Text>
-        <View style={styles.landmarkContainer}>
-          <Text style={styles.landmarkTitle}>{station?.address}</Text>
-        </View>
-
-        <Text style={styles.sectionTitle}>Amenities</Text>
-        <View style={styles.amenitiesContainer}>
-          {station?.amenities?.split(",").map((amenityName, index) => {
-            const trimmedName = amenityName.trim();
-            let iconName = "help-circle"; // default fallback
-
-            if (trimmedName === "Restroom") {
-              iconName = "toilet";
-            } else if (trimmedName === "Cafe") {
-              iconName = "coffee";
-            } else if (trimmedName === "Wifi") {
-              iconName = "wifi";
-            } else if (trimmedName === "Store") {
-              iconName = "cart";
-            } else if (trimmedName === "Car Care") {
-              iconName = "car";
-            } else if (trimmedName === "Lodging") {
-              iconName = "bed";
-            }
-
-            return (
-              <View key={trimmedName} style={styles.amenityItem}>
-                <Icon name={iconName} size={24} color={COLORS.primary} />
-                <Text style={styles.connectorTypeText}>{trimmedName}</Text>
-              </View>
-            );
-          })}
-        </View>
-      </ScrollView>
-    );
-  }
-  function deleteDialogue() {
+ function deleteDialogue() {
     return (
       <Overlay
         isVisible={showDeleteDialogue}
@@ -443,13 +366,129 @@ const StationDetailPage = ({ route, navigation }) => {
                 borderBottomRightRadius: 4,
                 ...styles.dialogYesNoButtonStyle,
               }}
-              
             >
               <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Overlay>
+    );
+}
+  function chargerTab() {
+    return (
+      <ScrollView style={styles.tabContent}>
+        {station?.chargers?.map((charger, index) => (
+          <View key={charger.charger_id} style={styles.chargerCard}>
+            <Text style={styles.chargerTitle}>
+              {charger?.name || `Charger ${index + 1}`}
+            </Text>
+            <View style={styles.chargerSpecs}>
+              <Text style={styles.chargerSpecText}>
+                Type: {charger?.charger_type || "Unknown Type"}
+              </Text>
+              <Text style={styles.chargerSpecText}>|</Text>
+              <Text style={[styles.chargerSpecText]}>
+                Power:⚡{charger?.max_power_kw || "Unknown Power"} kW
+              </Text>
+            </View>
+            <View style={styles.connector}>
+              <View style={[{ flexDirection: "row", alignItems: "center" }]}>
+                <Icon
+                  name={
+                    charger?.connector_type
+                      ? connectorIcons[charger?.connector_type]
+                      : "ev-plug-type1"
+                  }
+                  size={20}
+                  color={COLORS.primary}
+                />
+                <Text
+                  style={[
+                    styles.connectorTypeText,
+                    { fontWeight: "700", fontSize: 12 },
+                  ]}
+                >
+                  {charger?.connector_type}
+                </Text>
+              </View>
+              <Text
+                style={[
+                  styles.connectorTypeText,
+                  {
+                    color:
+                      charger?.status === "Available"
+                        ? "green"
+                        : Colors.darOrangeColor,
+                  },
+                ]}
+              >
+                {charger?.status}
+              </Text>
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    );
+  }
+
+  function detailTab() {
+    return (
+      <ScrollView style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Location Details</Text>
+        <View style={styles.mapContainer}>
+          <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: station?.coordinates?.latitude,
+              longitude: station?.coordinates?.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }}
+          >
+            <Marker
+              coordinate={{
+                latitude: station?.coordinates?.latitude,
+                longitude: station?.coordinates?.longitude,
+              }}
+              title={station?.station_name}
+              description={station?.address}
+            />
+          </MapView>
+        </View>
+        <Text style={styles.sectionTitle}>Address</Text>
+        <View style={styles.landmarkContainer}>
+          <Text style={styles.landmarkTitle}>{station?.address}</Text>
+        </View>
+
+        <Text style={styles.sectionTitle}>Amenities</Text>
+        <View style={styles.amenitiesContainer}>
+          {station?.amenities?.split(",").map((amenityName, index) => {
+            const trimmedName = amenityName.trim();
+            let iconName = "help-circle"; // default fallback
+
+            if (trimmedName === "Restroom") {
+              iconName = "toilet";
+            } else if (trimmedName === "Cafe") {
+              iconName = "coffee";
+            } else if (trimmedName === "Wifi") {
+              iconName = "wifi";
+            } else if (trimmedName === "Store") {
+              iconName = "cart";
+            } else if (trimmedName === "Car Care") {
+              iconName = "car";
+            } else if (trimmedName === "Lodging") {
+              iconName = "bed";
+            }
+
+            return (
+              <View key={trimmedName} style={styles.amenityItem}>
+                <Icon name={iconName} size={24} color={COLORS.primary} />
+                <Text style={styles.AminitiesTypeText}>{trimmedName}</Text>
+              </View>
+            );
+          })}
+        </View>
+      </ScrollView>
     );
   }
 };
@@ -459,39 +498,32 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
   },
-  header: {
-    height: 200,
-    position: "relative",
-  },
+  header: {},
   mapBackground: {
     width: "100%",
-    height: "100%",
-    position: "absolute",
-    opacity: 1,
+    height: 200,
   },
   overlay: {
-    padding: 16,
-    height: "100%",
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(230, 216, 242, 0.44)", // Light purple with opacity
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: "rgb(255, 255, 255)", // Light purple with opacity
   },
   communityBadgeAndBack: {
     position: "absolute",
     flexDirection: "row",
     justifyContent: "space-between",
-    top: 16,
-    paddingLeft: 0,
-    paddingRight: 5,
-    paddingVertical: 6,
-    borderRadius: 4,
-    // backgroundColor:"cyan",
+    alignItems: "center", 
+    top: 26,
+    paddingLeft: 15,
+    paddingRight: 25,
+    // backgroundColor: "cyan",
     width: "100%",
-    marginLeft: 18,
+    zIndex: 9999,
   },
+  
+
   communityBadge: {
-    position: "absolute",
-    top: 16,
-    right: 16,
+  
     backgroundColor: COLORS.white,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -501,6 +533,17 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: "bold",
     fontSize: 12,
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
   },
   stationName: {
     fontSize: 18,
@@ -543,6 +586,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
+    borderTopWidth: 0.5,
+    borderTopColor: "#E0E0E0",
   },
   tabButton: {
     flex: 1,
@@ -600,6 +645,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.gray,
     marginRight: 8,
+    fontWeight: "700",
   },
   connectorContainer: {
     marginBottom: 16,
@@ -626,7 +672,11 @@ const styles = StyleSheet.create({
   },
   connectorTypeText: {
     fontSize: 10,
-    marginLeft: 8,
+    marginLeft: 10,
+    color: COLORS.gray,
+  },
+  AminitiesTypeText: {
+    fontSize: 10,
     color: COLORS.gray,
   },
   divider: {
@@ -663,8 +713,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   amenityItem: {
-    width: 60,
-    height: 50,
+    padding: 6,
+    minWidth: 60,
+    minHeight: 60,
     borderRadius: 8,
     backgroundColor: COLORS.lightGray,
     justifyContent: "center",
@@ -672,24 +723,23 @@ const styles = StyleSheet.create({
     marginRight: 16,
     marginBottom: 10,
   },
-
   bottomButtons: {
     flexDirection: "row",
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: "#E0E0E0",
-    gap: 10,
   },
-
-  updateButton: {
+  editButton: {
     flex: 1,
-    backgroundColor: COLORS.primary,
-    paddingVertical: 12,
-    borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
   },
-  deleteButton: {
+  editButtonText: {
+    color: COLORS.accent,
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  submitButton: {
     flex: 1,
     backgroundColor: COLORS.accent,
     paddingVertical: 12,
@@ -697,34 +747,65 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  updateButtonText: {
+  submitButtonText: {
     color: COLORS.white,
     fontSize: 14,
     fontWeight: "bold",
   },
-  /* delete Dialog Styles */
-  dialogStyle: {
-    backgroundColor: Colors.whiteColor,
-    borderRadius: Sizes.fixPadding - 5.0,
-    width: "85%",
-    padding: 0.0,
-    elevation: 0,
-  },
 
-  dialogYesNoButtonStyle: {
+  modalContainer: {
     flex: 1,
-    ...commonStyles.shadow,
-
-    padding: Sizes.fixPadding,
-    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.9)",
     justifyContent: "center",
+    alignItems: "center",
   },
-  noButtonStyle: {
-    backgroundColor: Colors.whiteColor,
-    borderTopColor: Colors.extraLightGrayColor,
-    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+  fullImage: {
+    width: "90%",
+    height: "70%",
+    resizeMode: "contain",
+    borderRadius: 10,
   },
-  /*End of delete Dialog Styles */
+  modalCloseButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#fff",
+    justifyContent:"center",
+    alignItems:"center",
+    height:50,
+    width:50,
+    borderRadius: 50,
+  },
+  closeText: {
+    color: "#000",
+    fontWeight: "bold",
+  },
+  dialogStyle: {
+      backgroundColor: Colors.whiteColor,
+      borderRadius: Sizes.fixPadding - 5.0,
+      width: "85%",
+      padding: 0.0,
+      elevation: 0,
+    },
+ 
+
+    dialogYesNoButtonStyle: {
+      flex: 1,
+      ...commonStyles.shadow,
+  
+      padding: Sizes.fixPadding,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    noButtonStyle: {
+      backgroundColor: Colors.whiteColor,
+      borderTopColor: Colors.extraLightGrayColor,
+      borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+    },
+    yesButtonStyle: {
+      borderTopColor: Colors.primaryColor,
+      backgroundColor: Colors.primaryColor,
+      borderBottomRightRadius: Sizes.fixPadding - 5.0,
+    },
 });
 
 export default StationDetailPage;

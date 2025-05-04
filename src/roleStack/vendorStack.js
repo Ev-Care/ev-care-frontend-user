@@ -45,8 +45,8 @@ export function VendorStack() {
   const isVendor = role === "vendor";
   const isActive = user?.status === "Active";
   const isCompleted = user?.status === "Completed";
-  const isKYCIncomplete = !user?.pan_no || !user?.adhar_no;
-  const isKYCComplete = user?.pan_no && user?.adhar_no;
+  const isKYCIncomplete = !user?.pan_no;
+  const isKYCComplete = user?.pan_no;
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -100,6 +100,7 @@ export function VendorStack() {
             component={StationManagement}
           />
           <Stack.Screen name="UpdateStation" component={UpdateStation} />
+          <Stack.Screen name="AddStations" component={AddStations} />
 
         </>
       )}

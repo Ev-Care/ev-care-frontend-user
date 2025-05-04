@@ -44,6 +44,7 @@ const AddStations = () => {
   const navigation = useNavigation();
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [openHours, setOpenHours] = useState("24 Hours");
+  const [accessType, setAccessType] = useState("public");
   const [photo, setPhoto] = useState(null);
   const [address, setAddress] = useState("");
   const [openTime, setOpenTime] = useState("");
@@ -258,7 +259,7 @@ const AddStations = () => {
         >
           <Icon name="arrow-left" size={24} color={PRIMARY_COLOR} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>List a Station</Text>
+        <Text style={styles.headerTitle}>Add New Station</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -270,7 +271,7 @@ const AddStations = () => {
       {/* Bottom Buttons */}
       <View style={styles.bottomButtons}>
         <TouchableOpacity onPress={handlePreview} style={styles.previewButton}>
-          <Text style={styles.previewButtonText}>Preview</Text>
+          <Text style={styles.previewButtonText}>Next</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -283,7 +284,7 @@ const AddStations = () => {
         onPress={() => handleVisibility("locationdetail")}
       >
         <Text style={styles?.sectionTitle}>Location Details</Text>
-        {selectedForm === "locationdetail" && (
+        {(selectedForm === "locationdetail" || selectedForm === null )&& (
           <>
             <TouchableOpacity style={styles?.mapButton} onPress={selectOnMap}>
               <Text style={styles?.mapButtonText}>
@@ -321,6 +322,7 @@ const AddStations = () => {
             {amenitiesSection?.()}
             {openHoursSection?.()}
             {uploadPhotoSection?.()}
+            {accessTypeSection?.()}
           </>
         )}
       </TouchableOpacity>
@@ -657,7 +659,50 @@ const AddStations = () => {
       </View>
     );
   }
-
+  function accessTypeSection() {
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>Access Type</Text>
+        <View style={styles.hoursContainer}>
+          <TouchableOpacity
+            style={[
+              styles.hoursButton,
+              accessType === "public" && styles.selectedButton,
+            ]}
+            onPress={() => {
+              setAccessType("public");
+            
+            }}
+          >
+            <Text
+              style={[
+                styles.buttonText,
+                accessType === "public" && styles.selectedButtonText,
+              ]}
+            >
+              Public
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.hoursButton,
+              accessType === "private" && styles.selectedButton,
+            ]}
+            onPress={() => setAccessType("private")}
+          >
+            <Text
+              style={[
+                styles.buttonText,
+                accessType === "private" && styles.selectedButtonText,
+              ]}
+            >
+              Private
+            </Text>
+          </TouchableOpacity>
+        </View> 
+      </View>
+    );
+  }
   function stationNameSection() {
     return (
       <View style={styles.section}>

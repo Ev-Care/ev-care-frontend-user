@@ -53,7 +53,7 @@ import {
   getChargerLabel,
 } from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import DottedLoader from "../../../utils/lottieLoader/loaderView";
+import {DottedLoader} from "../../../utils/lottieLoader/loaderView";
 const COLORS = {
   primary: "#101942",
   secondary: "#FF8C00",
@@ -74,7 +74,7 @@ const UserHome = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const isLoading = useSelector(selectStationsLoading || selectUserLoading);
   const stations = useSelector(selectStations);
- 
+
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -90,9 +90,9 @@ const UserHome = ({ navigation }) => {
 
   useEffect(() => {
     let subscription = null;
-   
+
     const startLocationUpdates = async () => {
-      
+
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
@@ -118,7 +118,7 @@ const UserHome = ({ navigation }) => {
             console.log({ currentLocation });
 
             dispatch(updateUserCoordinate(coords)); // Update user coordinates
-          
+
             // 1. Fetch stations
             const locationResponse = await dispatch(
               fetchStationsByLocation({ radius, coords })
@@ -140,7 +140,7 @@ const UserHome = ({ navigation }) => {
       } catch (err) {
         console.error("Error watching location:", err);
       }
-     
+
     };
 
     startLocationUpdates();
@@ -322,7 +322,7 @@ const UserHome = ({ navigation }) => {
                     Nearest Charging Stations
                   </Text>
                   <Text style={styles.featureText}>
-                    View Nearest Charging Stations from Your Current Location
+                    Discover nearby EV stations and filter by distance or connector type.
                   </Text>
                 </View>
                 <View style={styles.featureIcons}>
@@ -331,15 +331,17 @@ const UserHome = ({ navigation }) => {
                     size={14}
                     color={COLORS.white}
                   />
-                 {!stations?.length>0 ? ( <DottedLoader/>):(
-                  <Text style={styles.featureText}>
-                   
-                   {formatDistance(stations[0]?.distance_km)}
-                   
-                  </Text>)}
-                  <Text style={styles.featureText}>(From here)</Text>
+                  {!stations?.length > 0 ? (
+                    <DottedLoader />
+                  ) : (
+                    <Text style={styles.featureText}>
+                      {formatDistance(stations[0]?.distance_km)}
+                    </Text>
+                  )}
+                  <Text style={styles.featureText}>(from your location)</Text>
                 </View>
               </TouchableOpacity>
+
             </LinearGradient>
 
             <LinearGradient
@@ -486,18 +488,18 @@ const UserHome = ({ navigation }) => {
               marginTop: Sizes.fixPadding,
             }}
           >
-           
-              <Text
-                numberOfLines={1}
-                style={{
-                  ...Fonts.blackColor16Medium,
-                  flex: 1,
-                  marginRight: Sizes.fixPadding - 5.0,
-                }}
-              >
-                {formatDistance(item?.distance_km)}
-              </Text>
-           
+
+            <Text
+              numberOfLines={1}
+              style={{
+                ...Fonts.blackColor16Medium,
+                flex: 1,
+                marginRight: Sizes.fixPadding - 5.0,
+              }}
+            >
+              {formatDistance(item?.distance_km)}
+            </Text>
+
 
             <TouchableOpacity
               onPress={() =>

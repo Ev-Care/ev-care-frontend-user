@@ -5,7 +5,8 @@ import {
   approveStationAPI,
   approveVendorProfileAPI,
   getAllPendingStationAPI,
-  getAllUsersAPI,
+  getAllPendingUsersAPI,
+  getAllStationsAPI,
 } from "./api";
 // Async thunk to fetch stations
 export const fetchAllPendingStation = createAsyncThunk(
@@ -39,14 +40,45 @@ export const fetchAllPendingStation = createAsyncThunk(
     }
   }
 );
+export const fetchAllStations = createAsyncThunk(
+  "admin/fetchAllStations",
+  async (_, { rejectWithValue }) => {
+    try {
+      console.log("Fetching all pending stations...");
 
-export const getAllUsers = createAsyncThunk(
-  "admin/getAllUsers",
+      const accessToken = await AsyncStorage.getItem("accessToken");
+
+      if (!accessToken) {
+        return rejectWithValue("Access token not found.");
+      }
+
+      const response = await getAllStationsAPI({ accessToken });
+
+      if (response?.data?.code === 200 || response?.data?.code === 201) {
+        return response?.data;
+      } else {
+        return rejectWithValue(
+          response?.message || response?.data?.message || "Failed to fetch pending stations."
+        );
+      }
+    } catch (error) {
+      console.log("Error in fetchAllStations:", error);
+
+      const errorMessage =
+        error?.response?.data?.message || error?.message || "Server error";
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const getAllPendingUsers = createAsyncThunk(
+  "admin/getAllPendingUsers",
   async (_, { rejectWithValue }) => {
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
 
-      const response = await getAllUsersAPI({
+      const response = await getAllPendingUsersAPI({
         accessToken,
       }); // Call the API to fetch stations by location
 
@@ -54,11 +86,11 @@ export const getAllUsers = createAsyncThunk(
         return response?.data;
       } else {
         return rejectWithValue(
-          response.data.message || "User's detail not found"
+          response?.message || response?.data?.message || "User's detail not found"
         );
       }
     } catch (error) {
-      console.log("Error in getAllUsers:", error);
+      console.log("Error in getAllPendingUsers:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -86,7 +118,7 @@ export const approveStation = createAsyncThunk(
         return response?.data;
       } else {
         return rejectWithValue(
-          response?.data?.message || "Failed to approve station"
+          response?.message || response?.data?.message || "Failed to approve station"
         );
       }
     } catch (error) {
@@ -121,7 +153,7 @@ export const approveVendorProfile = createAsyncThunk(
         return response?.data;
       } else {
         return rejectWithValue(
-          response?.data?.message || "Failed to approve vendor profile."
+          response?.message || response?.data?.message || "Failed to approve vendor profile."
         );
       }
     } catch (error) {

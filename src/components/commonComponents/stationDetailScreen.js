@@ -7,10 +7,9 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
-  ActivityIndicator,
   Platform,
   Snackbar,
-  Modal,
+  ActivityIndicator,
   TextInput,
   Linking,
 } from "react-native";
@@ -20,25 +19,17 @@ import {
   Fonts,
   commonStyles,
   screenWidth,
-} from "../../../constants/styles";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+} from "../../constants/styles";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MapView, { Marker } from "react-native-maps";
 import { Overlay } from "@rneui/themed";
-import imageURL from "../../../constants/baseURL";
-import {
-  approveStation,
-  fetchAllPendingStation,
-} from "../services/crudFunctions";
-import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import { useDispatch } from "react-redux";
-import {
-  formatDistance,
-  openHourFormatter,
-} from "../../../utils/globalMethods";
 
-// import imageURL from "../../../constants/baseURL";
+import { useDispatch, useSelector } from "react-redux";
+// import { selectFavoriteStations, selectUser } from "../service/selector";
+import imageURL from "../../constants/baseURL";
+import { openHourFormatter } from "../../utils/globalMethods";
+// Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
   accent: "#FF5722", // Orange
@@ -54,37 +45,31 @@ const COLORS = {
 
 const { width } = Dimensions.get("window");
 
-const StationDetailToVerify = ({ route, navigation }) => {
+const StationDetailScreen = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
-  const [showSnackBar, setshowSnackBar] = useState(false);
-  const [showRejectDialogue, setshowRejectDialogue] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
-   const [modalVisible, setModalVisible] = useState(false);
-      const [selectedImage, setSelectedImage] = useState(null);
-  const [showApproveDialogue, setshowApproveDialogue] = useState(false);
+  // const [showSnackBar, setshowSnackBar] = useState(false);
   const scrollViewRef = useRef(null);
   const station = route?.params?.item;
-  const dispatch = useDispatch();
   if (!station) {
     return <Text>Loading...</Text>; // Handle when station is not available
   }
+
+  const [inFavorite, setInFavorite] = useState(false);
+  console.log(station.id);
+
+  useEffect(() => {
+    console.log("inFavorite changed to", inFavorite);
+  }, [inFavorite]);
 
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",
     CHAdeMO: "ev-plug-chademo",
     "Type-2": "ev-plug-type2",
     Wall: "ev-plug-type1",
-    GBT: "ev-plug-type2",
+    "GBT:": "ev-plug-type2",
   };
-
-  //   const amenityMap = {
-  //     Restroom: "toilet",
-  //     Cafe: "coffee",
-  //     Wifi: "wifi",
-  //     Store: "cart",
-  //     "Car Care": "car",
-  //     Lodging: "bed",
-  //   };
 
   const handleTabPress = (index) => {
     setActiveTab(index);
@@ -99,74 +84,11 @@ const StationDetailToVerify = ({ route, navigation }) => {
     }
   };
 
-  const openGoogleMaps = (latitude, longitude) => {
-    const url = Platform.select({
-      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
-    });
-    Linking.openURL(url);
-  };
-  const showFullImage = (uri) => {
-    if (!uri) return;
-    setSelectedImage(uri);
-    setModalVisible(true);
-  };
   const trimName = (threshold, str) => {
     if (str?.length <= threshold) {
       return str;
     }
     return str?.substring(0, threshold) + ".....";
-  };
-
-  const handleReject = async () => {
-    console.log("handle Reject Called");
-    await dispatch(
-      showSnackbar({
-        message: "This service is in under development.",
-        type: "error",
-      })
-    );
-  };
-  const handleApprove = async () => {
-    console.log("in approve");
-    setIsLoading(true);
-
-    try {
-      const approvedResponse = await dispatch(approveStation(station?.id));
-      console.log("in approve fff");
-
-      if (approveStation.fulfilled.match(approvedResponse)) {
-        console.log("in approve fulfill");
-
-        const pendingStationResponse = await dispatch(fetchAllPendingStation());
-        console.log("in approve fulfill");
-
-        if (fetchAllPendingStation.fulfilled.match(pendingStationResponse)) {
-          await dispatch(
-            showSnackbar({
-              message: "Station approved successfully.",
-              type: "success",
-            })
-          );
-          navigation.goBack();
-        } else if (
-          fetchAllPendingStation.rejected.match(pendingStationResponse)
-        ) {
-          await dispatch(
-            showSnackbar({
-              message: "Failed to get all pending station.",
-              type: "error",
-            })
-          );
-        }
-      } else if (approveStation.rejected.match(approvedResponse)) {
-        await dispatch(
-          showSnackbar({ message: "Failed to approve station.", type: "error" })
-        );
-      }
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
@@ -180,22 +102,11 @@ const StationDetailToVerify = ({ route, navigation }) => {
 
       {/* Bottom Buttons */}
       {buttons()}
-      {/* reject dialog */}
-      {rejectDialogue()}
-      {approveDialogue()}
-      {loadingDialog()}
-      <Modal visible={modalVisible} transparent={true}>
-        <View style={styles.modalContainer}>
-          <Image source={{ uri: selectedImage }} style={styles.fullImage} />
-          <TouchableOpacity
-            style={styles.modalCloseButton}
-            onPress={() => setModalVisible(false)}
-          >
-            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
-          </TouchableOpacity>
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
         </View>
-      </Modal>
-      {/* Snackbar for feedback */}
+      )}
     </View>
   );
 
@@ -206,16 +117,16 @@ const StationDetailToVerify = ({ route, navigation }) => {
 
     const imageUrl = station?.station_images
       ? { uri: imageURL.baseURL + station.station_images }
-      : require("../../../../assets/images/nullStation.png");
+      : require("../../../assets/images/nullStation.png");
 
     return (
       <View style={styles.header}>
         <View style={styles.communityBadgeAndBack}>
-          <View
+        <View
             style={{
               backgroundColor: Colors.primaryColor,
               borderRadius: 20,
-              padding: 6,
+              padding: 6, 
               alignItems: "center",
               justifyContent: "center",
               width: 40,
@@ -234,20 +145,8 @@ const StationDetailToVerify = ({ route, navigation }) => {
             <Text style={styles.communityText}>Public</Text>
           </View>
         </View>
-        <TouchableOpacity
-          activeOpacity={0.9}
-          style={styles.mapBackground}
-          onPress={() => {
-            if (
-              station?.station_images &&
-              station?.station_images.trim() !== ""
-            ) {
-              showFullImage(imageURL.baseURL + station.station_images);
-            }
-          }}
-        >
-          <Image source={imageUrl} style={styles.mapBackground} />
-        </TouchableOpacity>
+
+        <Image source={imageUrl} style={styles.mapBackground} />
 
         <View style={styles.overlay}>
           <Text style={styles.stationName}>
@@ -286,6 +185,14 @@ const StationDetailToVerify = ({ route, navigation }) => {
                 </Text>
               </View>
             </View>
+            <MaterialIcons
+              name={inFavorite ? "favorite" : "favorite-border"}
+              color={inFavorite ? Colors.redColor : Colors.primaryColor}
+              size={35}
+              onPress={() => {
+                // handleAddToFavorite(station);
+              }}
+            />
           </View>
         </View>
       </View>
@@ -340,25 +247,14 @@ const StationDetailToVerify = ({ route, navigation }) => {
   function buttons() {
     return (
       <View style={styles.bottomButtons}>
-        <TouchableOpacity
-          onPress={() => {
-            setshowRejectDialogue(true);
-          }}
-          style={styles.rejectButton}
-        >
-          <Text style={styles.approveButtonText}>Reject</Text>
+        <TouchableOpacity style={styles.directionButton}>
+          <Text style={styles.directionButtonText}>Get Direction</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            setshowApproveDialogue(true);
-          }}
-          style={styles.approveButton}
-        >
-          <Text style={styles.approveButtonText}>Approve</Text>
-        </TouchableOpacity>
+       
       </View>
     );
   }
+
   function chargerTab() {
     return (
       <ScrollView style={styles.tabContent}>
@@ -372,8 +268,8 @@ const StationDetailToVerify = ({ route, navigation }) => {
                 Type: {charger?.charger_type || "Unknown Type"}
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
-              <Text style={styles.chargerSpecText}>
-                Power:⚡ {charger?.max_power_kw || "Unknown Power"} kW
+              <Text style={[styles.chargerSpecText]}>
+                Power:⚡{charger?.max_power_kw || "Unknown Power"} kW
               </Text>
             </View>
             <View style={styles.connector}>
@@ -415,159 +311,7 @@ const StationDetailToVerify = ({ route, navigation }) => {
       </ScrollView>
     );
   }
-  function rejectDialogue() {
-    return (
-      <Overlay
-        isVisible={showRejectDialogue}
-        onBackdropPress={() => setshowRejectDialogue(false)}
-        overlayStyle={styles.dialogStyle}
-      >
-        <View>
-          <Text
-            style={{
-              ...Fonts.blackColor18Medium,
-              textAlign: "center",
-              marginHorizontal: Sizes.fixPadding * 2.0,
-              marginVertical: Sizes.fixPadding * 2.0,
-            }}
-          >
-            Do You Want To Reject?
-          </Text>
-          <View
-            style={{
-              alignSelf: "center",
-              width: 80,
-              height: 80,
-              borderRadius: 40,
-              borderWidth: 2,
-              borderColor: Colors.darOrangeColor,
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: Sizes.fixPadding * 1.5,
-            }}
-          >
-            <MaterialCommunityIcons
-              name="trash-can-outline"
-              size={40}
-              color={Colors.darOrangeColor}
-            />
-          </View>
 
-          <View
-            style={{
-              ...commonStyles.rowAlignCenter,
-              marginTop: Sizes.fixPadding,
-            }}
-          >
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => {
-                setshowRejectDialogue(false);
-              }}
-              style={{
-                ...styles.noButtonStyle,
-                ...styles.dialogYesNoButtonStyle,
-              }}
-            >
-              <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => {
-                handleReject();
-                setshowRejectDialogue(false);
-                // handle delete logic here
-              }}
-              style={{
-                backgroundColor: Colors.darOrangeColor,
-                borderBottomRightRadius: 4,
-                ...styles.dialogYesNoButtonStyle,
-              }}
-            >
-              <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Overlay>
-    );
-  }
-  function approveDialogue() {
-    return (
-      <Overlay
-        isVisible={showApproveDialogue}
-        onBackdropPress={() => setshowApproveDialogue(false)}
-        overlayStyle={styles.dialogStyle}
-      >
-        <View>
-          <Text
-            style={{
-              ...Fonts.blackColor18Medium,
-              textAlign: "center",
-              marginHorizontal: Sizes.fixPadding * 2.0,
-              marginVertical: Sizes.fixPadding * 2.0,
-            }}
-          >
-            Do You Want To Approve?
-          </Text>
-          <View
-            style={{
-              alignSelf: "center",
-              width: 80,
-              height: 80,
-              borderRadius: 40,
-              borderWidth: 2,
-              borderColor: Colors.primaryColor,
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: Sizes.fixPadding * 1.5,
-            }}
-          >
-            <MaterialCommunityIcons
-              name="question-mark-circle-outline"
-              size={40}
-              color={Colors.primaryColor}
-            />
-          </View>
-
-          <View
-            style={{
-              ...commonStyles.rowAlignCenter,
-              marginTop: Sizes.fixPadding,
-            }}
-          >
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => {
-                setshowApproveDialogue(false);
-              }}
-              style={{
-                ...styles.noButtonStyle,
-                ...styles.dialogYesNoButtonStyle,
-              }}
-            >
-              <Text style={{ ...Fonts.blackColor16Medium }}>No</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => {
-                handleApprove();
-                setshowApproveDialogue(false);
-                // handle delete logic here
-              }}
-              style={{
-                ...styles.yesButtonStyle,
-                ...styles.dialogYesNoButtonStyle,
-              }}
-            >
-              <Text style={{ ...Fonts.whiteColor16Medium }}>Yes</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Overlay>
-    );
-  }
   function detailTab() {
     return (
       <ScrollView style={styles.tabContent}>
@@ -620,35 +364,12 @@ const StationDetailToVerify = ({ route, navigation }) => {
             return (
               <View key={trimmedName} style={styles.amenityItem}>
                 <Icon name={iconName} size={24} color={COLORS.primary} />
-                <Text style={styles.connectorTypeText}>{trimmedName}</Text>
+                <Text style={styles.AminitiesTypeText}>{trimmedName}</Text>
               </View>
             );
           })}
         </View>
       </ScrollView>
-    );
-  }
-  function loadingDialog() {
-    return (
-      <Overlay
-        isVisible={isLoading}
-        overlayStyle={[styles.loaderDialogStyle, {}]}
-      >
-        <ActivityIndicator
-          size={50}
-          color={Colors.primaryColor}
-          style={{ alignSelf: "center" }}
-        />
-        <Text
-          style={{
-            marginTop: Sizes.fixPadding,
-            textAlign: "center",
-            ...Fonts.blackColor16Regular,
-          }}
-        >
-          Please wait...
-        </Text>
-      </Overlay>
     );
   }
 };
@@ -672,7 +393,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "center", 
     top: 26,
     paddingLeft: 15,
     paddingRight: 25,
@@ -680,8 +401,20 @@ const styles = StyleSheet.create({
     width: "100%",
     zIndex: 9999,
   },
-
+  
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
+  },
   communityBadge: {
+  
     backgroundColor: COLORS.white,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -819,7 +552,11 @@ const styles = StyleSheet.create({
   },
   connectorTypeText: {
     fontSize: 10,
-    marginLeft: 8,
+    marginLeft: 10,
+    color: COLORS.gray,
+  },
+  AminitiesTypeText: {
+    fontSize: 10,
     color: COLORS.gray,
   },
   divider: {
@@ -856,8 +593,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   amenityItem: {
-    width: 60,
-    height: 50,
+    padding: 6,
+    minWidth: 60,
+    minHeight: 60,
     borderRadius: 8,
     backgroundColor: COLORS.lightGray,
     justifyContent: "center",
@@ -874,7 +612,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 
-  approveButton: {
+  directionButton: {
     flex: 1,
     backgroundColor: COLORS.primary,
     paddingVertical: 12,
@@ -882,74 +620,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  rejectButton: {
-    flex: 1,
-    backgroundColor: COLORS.accent,
-    paddingVertical: 12,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  approveButtonText: {
+
+  directionButtonText: {
     color: COLORS.white,
     fontSize: 14,
     fontWeight: "bold",
   },
-
-  /*  Dialog Styles */
-  dialogStyle: {
-    backgroundColor: Colors.whiteColor,
-    borderRadius: Sizes.fixPadding - 5.0,
-    width: "85%",
-    padding: 0.0,
-    elevation: 0,
-  },
-
-  dialogYesNoButtonStyle: {
-    flex: 1,
-    ...commonStyles.shadow,
-
-    padding: Sizes.fixPadding,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  noButtonStyle: {
-    backgroundColor: Colors.whiteColor,
-    borderTopColor: Colors.extraLightGrayColor,
-    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
-  },
-  yesButtonStyle: {
-    borderTopColor: Colors.primaryColor,
-    backgroundColor: Colors.primaryColor,
-    borderBottomRightRadius: Sizes.fixPadding - 5.0,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.9)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  fullImage: {
-    width: "90%",
-    height: "70%",
-    resizeMode: "contain",
-    borderRadius: 10,
-  },
-  modalCloseButton: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: "#fff",
-    justifyContent:"center",
-    alignItems:"center",
-    height:50,
-    width:50,
-    borderRadius: 50,
-  },
-  closeText: {
-    color: "#000",
-    fontWeight: "bold",
-  },
-  /*End of  Dialog Styles */
 });
 
-export default StationDetailToVerify;
+export default StationDetailScreen;

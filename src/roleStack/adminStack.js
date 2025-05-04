@@ -19,12 +19,13 @@ import EditAdminProfile from "../screens/admin/adminProfile/EditProfileAdmin";
 import PrivacyPolicyScreen from "../screens/user/privacyPolicy/privacyPolicyScreen";
 import TermsAndConditionsScreen from "../screens/user/termsAndConditions/termsAndConditionsScreen";
 import SupportIssuesDetail from "../screens/admin/supportIssues/SupportIssuesDetail";
+import StationDetailScreen from "../components/commonComponents/stationDetailScreen";
 
 const Stack = createStackNavigator();
 
 export function AdminStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
        <Stack.Screen name="AdminBottomTabBar" component={AdminBottomTabBar} />
       <Stack.Screen name="AdminHome" component={AdminHome} />
       <Stack.Screen name="AdminProfilePage" component={AdminProfilePage} />
@@ -39,13 +40,11 @@ export function AdminStack() {
       <Stack.Screen name="CreateUser" component={CreateUser} />
       <Stack.Screen name="ViewAllIssuesPage" component={ViewAllIssuesPage} />
       <Stack.Screen name="CreateStation" component={AddStations} />
-
-
       <Stack.Screen name="EditAdminProfile" component={EditAdminProfile} />
       <Stack.Screen name="TermsAndConditionsScreen" component={TermsAndConditionsScreen} />
       <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
       <Stack.Screen name="SupportIssuesDetail" component={SupportIssuesDetail} />
-     
+      <Stack.Screen name="StationDetailScreen" component={StationDetailScreen} />
     </Stack.Navigator>
   );
 }

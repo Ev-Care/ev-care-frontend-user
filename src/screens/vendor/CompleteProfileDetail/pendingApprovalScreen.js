@@ -44,7 +44,7 @@ const PendingApprovalScreen = (route) => {
         style={[styles.button, { backgroundColor: Colors.primaryColor }]}
         onPress={handleContinue}
       >
-        <Text style={styles.buttonText}>continue</Text>
+        <Text style={styles.buttonText}>Check  Status</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => dispatch(logoutUser())}>
@@ -66,5 +66,5 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 12, color: "grey", textAlign: "center", marginVertical: 10 },
   button: { width: "100%", backgroundColor: "#F4721E", paddingVertical: 10, borderRadius: 8, alignItems: "center", marginVertical: 30 },
   buttonText: { fontSize: 14, color: "white", fontWeight: "bold" },
-  goBackText: { fontSize: 14, color: "#F4721E", textAlign: "center", marginTop: 80 },
+  goBackText: { fontSize: 14, color: "#F4721E", textAlign: "center", marginTop: 30 },
 });

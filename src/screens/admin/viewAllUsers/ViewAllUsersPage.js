@@ -178,9 +178,9 @@ const ViewAllUserPage = ({navigation}) => {
             placeholder="Search users here ..."
             placeholderTextColor="#888"
             style={{
-              flex: 1,
-              fontSize: 16,
-              color: "#000",
+              flex: 1,   
+              padding: 12,
+              fontSize: 12,
             }}
             value={searchQuery}
             onChangeText={(text) => setSearchQuery(text)}

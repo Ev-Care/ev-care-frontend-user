@@ -9,6 +9,7 @@ import {
   Dimensions,
   Platform,
   Snackbar,
+  Modal,
   ActivityIndicator,
   TextInput,
   Linking,
@@ -50,39 +51,15 @@ const COLORS = {
 };
 
 const { width } = Dimensions.get("window");
-// Sample review data
-const reviews = [
-  {
-    id: "1",
-    name: "Andrew Anderson",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    rating: 5,
-    comment:
-      "Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.",
-  },
-  {
-    id: "2",
-    name: "Peter Jones",
-    avatar: "https://randomuser.me/api/portraits/men/44.jpg",
-    rating: 3,
-    comment:
-      "Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.",
-  },
-  {
-    id: "3",
-    name: "Emily Wood",
-    avatar: "https://randomuser.me/api/portraits/women/65.jpg",
-    rating: 4,
-    comment:
-      "Lorem ipsum dolor sit amet consectetur. Vitae turpissimus viverra eget pulvinar. Vestibulum ut core eleifend natoque nec. Sed eget gravida phasellus viverra vel sit id. Placerat et lacus tellus. Facilisis et id a eros tincidunt egestas in faucibus viverra.",
-  },
-];
+
 
 const ChargingStationDetailScreen = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const favStations = useSelector(selectFavoriteStations);
     const [isLoading, setIsLoading] = useState(false);
   // const [showSnackBar, setshowSnackBar] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
   const scrollViewRef = useRef(null);
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
@@ -118,13 +95,10 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     "GBT:": "ev-plug-type2",
   };
 
-  const amenityMap = {
-    Restroom: "toilet",
-    Cafe: "coffee",
-    Wifi: "wifi",
-    Store: "cart",
-    "Car Care": "car",
-    Lodging: "bed",
+  const showFullImage = (uri) => {
+    if (!uri) return;
+    setSelectedImage(uri);
+    setModalVisible(true);
   };
 
   const handleTabPress = (index) => {
@@ -141,6 +115,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
   };
 
   const openGoogleMaps = (latitude, longitude) => {
+    // console.log("called")
     const url = Platform.select({
       ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
       android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
@@ -224,6 +199,17 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
 
       {/* Bottom Buttons */}
       {buttons()}
+       <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modalContainer}>
+          <Image source={{ uri: selectedImage }} style={styles.fullImage} />
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
+          </TouchableOpacity>
+        </View>
+      </Modal>
       {isLoading && (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={Colors.primaryColor} />
@@ -234,7 +220,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
 
   function header() {
     if (!station) {
-      return <Text>Loading...</Text>; // Or show a fallback UI
+      return <Text>Loading...</Text>;
     }
 
     const imageUrl = station?.station_images
@@ -243,22 +229,45 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
 
     return (
       <View style={styles.header}>
-        <Image source={imageUrl} style={styles.mapBackground} />
-
-        <View style={styles.overlay}>
-          <View style={styles.communityBadgeAndBack}>
+        <View style={styles.communityBadgeAndBack}>
+        <View
+            style={{
+              backgroundColor: Colors.primaryColor,
+              borderRadius: 20,
+              padding: 6, 
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+            }}
+          >
             <MaterialIcons
               name="arrow-back"
               color={Colors.whiteColor}
               size={26}
-              onPress={() => {
-                navigation.pop(); // Check if this works as expected
-              }}
+              onPress={() => navigation.pop()}
             />
-            <View style={styles.communityBadge}>
-              <Text style={styles.communityText}>Public</Text>
-            </View>
           </View>
+
+          <View style={styles.communityBadge}>
+            <Text style={styles.communityText}>Public</Text>
+          </View>
+        </View>
+        <TouchableOpacity
+  activeOpacity={0.9}
+  style={styles.mapBackground}
+  onPress={() => {
+   if ( station?.station_images &&  station?.station_images.trim() !== "") {
+        showFullImage(imageURL.baseURL + station.station_images);
+      }
+    }}
+>
+  <Image source={imageUrl} style={styles.mapBackground} />
+</TouchableOpacity>
+
+        
+
+        <View style={styles.overlay}>
           <Text style={styles.stationName}>
             {trimName(50, station?.station_name)}
           </Text>
@@ -356,21 +365,15 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
   }
   function buttons() {
     return (
-      <View style={styles.bottomButtons}>
-        <TouchableOpacity
-          onPress={() =>
-            openGoogleMaps(
-              station?.coordinates?.latitude,
-              station?.coordinates?.longitude
-            )
-          }
-          style={styles.directionButton}
-        >
+      <View  style={styles.bottomButtons}>
+        <TouchableOpacity onPress={openGoogleMaps} style={styles.directionButton}>
           <Text style={styles.directionButtonText}>Get Direction</Text>
         </TouchableOpacity>
+ 
       </View>
     );
   }
+
   function chargerTab() {
     return (
       <ScrollView style={styles.tabContent}>
@@ -488,22 +491,6 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
       </ScrollView>
     );
   }
-
-  function snackBarInfo() {
-    return (
-      <Snackbar
-        style={{ backgroundColor: Colors.lightBlackColor }}
-        visible={showSnackBar}
-        onDismiss={() => setshowSnackBar(false)}
-        elevation={0}
-      >
-        <Text style={{ ...Fonts.whiteColor14Medium }}>
-          {inFavorite ? "Added to favorite" : "Removed from favorite"}
-        </Text>
-      </Snackbar>
-    );
-  }
-
 };
 
 const styles = StyleSheet.create({
@@ -511,35 +498,29 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
   },
-  header: {
-    height: 200,
-    position: "relative",
-  },
+  header: {},
   mapBackground: {
     width: "100%",
-    height: "100%",
-    position: "absolute",
-    opacity: 1,
+    height: 200,
   },
   overlay: {
-    padding: 16,
-    height: "100%",
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(230, 216, 242, 0.28)", // Light purple with opacity
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: "rgb(255, 255, 255)", // Light purple with opacity
   },
   communityBadgeAndBack: {
     position: "absolute",
     flexDirection: "row",
     justifyContent: "space-between",
-    top: 16,
-    paddingLeft: 0,
-    paddingRight: 5,
-    paddingVertical: 6,
-    borderRadius: 4,
-    // backgroundColor:"cyan",
+    alignItems: "center", 
+    top: 26,
+    paddingLeft: 15,
+    paddingRight: 25,
+    // backgroundColor: "cyan",
     width: "100%",
-    marginLeft: 18,
+    zIndex: 9999,
   },
+  
   loaderContainer: {
     position: "absolute",
     top: 0,
@@ -548,13 +529,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
     zIndex: 999,
   },
   communityBadge: {
-    position: "absolute",
-    top: 16,
-    right: 16,
+  
     backgroundColor: COLORS.white,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -606,6 +585,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
+    borderTopWidth: 0.5,
+    borderTopColor: "#E0E0E0",
   },
   tabButton: {
     flex: 1,
@@ -762,6 +743,32 @@ const styles = StyleSheet.create({
   directionButtonText: {
     color: COLORS.white,
     fontSize: 14,
+    fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullImage: {
+    width: "90%",
+    height: "70%",
+    resizeMode: "contain",
+    borderRadius: 10,
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#fff",
+    justifyContent:"center",
+    alignItems:"center",
+    height:50,
+    width:50,
+    borderRadius: 50,
+  },
+  closeText: {
+    color: "#000",
     fontWeight: "bold",
   },
 });

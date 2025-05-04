@@ -330,7 +330,7 @@ function monthlyGrowth(){
       <Text style={styles.sectionTitle}>Quick Access</Text>
       <View style={styles.featureCardsContainer}>
         {featureCards.map((card, index) => (
-          <TouchableOpacity key={index} onPress={()=>handleCardClick(card.id)} style={styles.featureCardWrapper}>
+          <TouchableOpacity activeOpacity={0.8} key={index} onPress={()=>handleCardClick(card.id)} style={styles.featureCardWrapper}>
             <LinearGradient
               colors={card.gradient}
               start={{ x: 0, y: 0 }}

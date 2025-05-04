@@ -64,15 +64,6 @@ const ViewAllStationsPage = ({ navigation }) => {
     }
   };
 
-
-
-  const openGoogleMaps = (latitude, longitude) => {
-    const url = Platform.select({
-      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
-    });
-    Linking.openURL(url);
-  };
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />

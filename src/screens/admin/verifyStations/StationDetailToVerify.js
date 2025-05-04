@@ -7,9 +7,10 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
-   ActivityIndicator,
+  ActivityIndicator,
   Platform,
   Snackbar,
+  Modal,
   TextInput,
   Linking,
 } from "react-native";
@@ -58,6 +59,8 @@ const StationDetailToVerify = ({ route, navigation }) => {
   const [showSnackBar, setshowSnackBar] = useState(false);
   const [showRejectDialogue, setshowRejectDialogue] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+   const [modalVisible, setModalVisible] = useState(false);
+      const [selectedImage, setSelectedImage] = useState(null);
   const [showApproveDialogue, setshowApproveDialogue] = useState(false);
   const scrollViewRef = useRef(null);
   const station = route?.params?.item;
@@ -103,8 +106,11 @@ const StationDetailToVerify = ({ route, navigation }) => {
     });
     Linking.openURL(url);
   };
-
-
+  const showFullImage = (uri) => {
+    if (!uri) return;
+    setSelectedImage(uri);
+    setModalVisible(true);
+  };
   const trimName = (threshold, str) => {
     if (str?.length <= threshold) {
       return str;
@@ -124,17 +130,17 @@ const StationDetailToVerify = ({ route, navigation }) => {
   const handleApprove = async () => {
     console.log("in approve");
     setIsLoading(true);
-  
+
     try {
       const approvedResponse = await dispatch(approveStation(station?.id));
       console.log("in approve fff");
-  
+
       if (approveStation.fulfilled.match(approvedResponse)) {
         console.log("in approve fulfill");
-  
+
         const pendingStationResponse = await dispatch(fetchAllPendingStation());
         console.log("in approve fulfill");
-  
+
         if (fetchAllPendingStation.fulfilled.match(pendingStationResponse)) {
           await dispatch(
             showSnackbar({
@@ -162,7 +168,6 @@ const StationDetailToVerify = ({ route, navigation }) => {
       setIsLoading(false);
     }
   };
-  
 
   return (
     <View style={styles.container}>
@@ -178,40 +183,73 @@ const StationDetailToVerify = ({ route, navigation }) => {
       {/* reject dialog */}
       {rejectDialogue()}
       {approveDialogue()}
-      { loadingDialog()}
+      {loadingDialog()}
+      <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modalContainer}>
+          <Image source={{ uri: selectedImage }} style={styles.fullImage} />
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
+          </TouchableOpacity>
+        </View>
+      </Modal>
       {/* Snackbar for feedback */}
     </View>
   );
 
   function header() {
     if (!station) {
-      return <Text>Loading...</Text>; // Or show a fallback UI
+      return <Text>Loading...</Text>;
     }
 
     const imageUrl = station?.station_images
       ? { uri: imageURL.baseURL + station.station_images }
-      : {
-          uri: "https://plus.unsplash.com/premium_photo-1664283228670-83be9ec315e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        };
+      : require("../../../../assets/images/nullStation.png");
 
     return (
       <View style={styles.header}>
-        <Image source={imageUrl} style={styles.mapBackground} />
-
-        <View style={styles.overlay}>
-          <View style={styles.communityBadgeAndBack}>
+        <View style={styles.communityBadgeAndBack}>
+          <View
+            style={{
+              backgroundColor: Colors.primaryColor,
+              borderRadius: 20,
+              padding: 6,
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+            }}
+          >
             <MaterialIcons
               name="arrow-back"
               color={Colors.whiteColor}
               size={26}
-              onPress={() => {
-                navigation.pop(); // Check if this works as expected
-              }}
+              onPress={() => navigation.pop()}
             />
-            <View style={styles.communityBadge}>
-              <Text style={styles.communityText}>Public</Text>
-            </View>
           </View>
+
+          <View style={styles.communityBadge}>
+            <Text style={styles.communityText}>Public</Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          activeOpacity={0.9}
+          style={styles.mapBackground}
+          onPress={() => {
+            if (
+              station?.station_images &&
+              station?.station_images.trim() !== ""
+            ) {
+              showFullImage(imageURL.baseURL + station.station_images);
+            }
+          }}
+        >
+          <Image source={imageUrl} style={styles.mapBackground} />
+        </TouchableOpacity>
+
+        <View style={styles.overlay}>
           <Text style={styles.stationName}>
             {trimName(50, station?.station_name)}
           </Text>
@@ -239,7 +277,13 @@ const StationDetailToVerify = ({ route, navigation }) => {
                 )}
               </Text>
               <View style={styles.newBadge}>
-                <Text style={styles.newText}>New</Text>
+                <Text style={styles.newText}>
+                  {station.status === "Active"
+                    ? "VERIFIED"
+                    : station.status === "Planned"
+                    ? "PENDING"
+                    : ""}
+                </Text>
               </View>
             </View>
           </View>
@@ -329,7 +373,7 @@ const StationDetailToVerify = ({ route, navigation }) => {
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
               <Text style={styles.chargerSpecText}>
-              Power:⚡ {charger?.max_power_kw || "Unknown Power"} KW
+                Power:⚡ {charger?.max_power_kw || "Unknown Power"} kW
               </Text>
             </View>
             <View style={styles.connector}>
@@ -343,7 +387,12 @@ const StationDetailToVerify = ({ route, navigation }) => {
                   size={20}
                   color={COLORS.primary}
                 />
-                <Text style={[styles.connectorTypeText,{fontWeight:"700",fontSize:12}]}>
+                <Text
+                  style={[
+                    styles.connectorTypeText,
+                    { fontWeight: "700", fontSize: 12 },
+                  ]}
+                >
                   {charger?.connector_type}
                 </Text>
               </View>
@@ -474,7 +523,6 @@ const StationDetailToVerify = ({ route, navigation }) => {
               marginBottom: Sizes.fixPadding * 1.5,
             }}
           >
-           
             <MaterialCommunityIcons
               name="question-mark-circle-outline"
               size={40}
@@ -580,16 +628,29 @@ const StationDetailToVerify = ({ route, navigation }) => {
       </ScrollView>
     );
   }
-    function loadingDialog() {
-      return (
-        <Overlay isVisible={isLoading} overlayStyle={[styles.loaderDialogStyle,{}]}>
-          <ActivityIndicator size={50} color={Colors.primaryColor} style={{ alignSelf: "center" }} />
-          <Text style={{ marginTop: Sizes.fixPadding, textAlign: "center", ...Fonts.blackColor16Regular }}>
-            Please wait...
-          </Text>
-        </Overlay>
-      );
-    }
+  function loadingDialog() {
+    return (
+      <Overlay
+        isVisible={isLoading}
+        overlayStyle={[styles.loaderDialogStyle, {}]}
+      >
+        <ActivityIndicator
+          size={50}
+          color={Colors.primaryColor}
+          style={{ alignSelf: "center" }}
+        />
+        <Text
+          style={{
+            marginTop: Sizes.fixPadding,
+            textAlign: "center",
+            ...Fonts.blackColor16Regular,
+          }}
+        >
+          Please wait...
+        </Text>
+      </Overlay>
+    );
+  }
 };
 
 const styles = StyleSheet.create({
@@ -597,39 +658,30 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
   },
-  header: {
-    height: 200,
-    position: "relative",
-  },
+  header: {},
   mapBackground: {
     width: "100%",
-    height: "100%",
-    position: "absolute",
-    opacity: 1,
+    height: 200,
   },
   overlay: {
-    padding: 16,
-    height: "100%",
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(230, 216, 242, 0.44)", // Light purple with opacity
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: "rgb(255, 255, 255)", // Light purple with opacity
   },
   communityBadgeAndBack: {
     position: "absolute",
     flexDirection: "row",
     justifyContent: "space-between",
-    top: 16,
-    paddingLeft: 0,
-    paddingRight: 5,
-    paddingVertical: 6,
-    borderRadius: 4,
-    // backgroundColor:"cyan",
+    alignItems: "center",
+    top: 26,
+    paddingLeft: 15,
+    paddingRight: 25,
+    // backgroundColor: "cyan",
     width: "100%",
-    marginLeft: 18,
+    zIndex: 9999,
   },
+
   communityBadge: {
-    position: "absolute",
-    top: 16,
-    right: 16,
     backgroundColor: COLORS.white,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -681,6 +733,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
+    borderTopWidth: 0.5,
+    borderTopColor: "#E0E0E0",
   },
   tabButton: {
     flex: 1,
@@ -738,7 +792,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.gray,
     marginRight: 8,
-    fontWeight:"700"
+    fontWeight: "700",
   },
   connectorContainer: {
     marginBottom: 16,
@@ -868,6 +922,32 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.primaryColor,
     backgroundColor: Colors.primaryColor,
     borderBottomRightRadius: Sizes.fixPadding - 5.0,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullImage: {
+    width: "90%",
+    height: "70%",
+    resizeMode: "contain",
+    borderRadius: 10,
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#fff",
+    justifyContent:"center",
+    alignItems:"center",
+    height:50,
+    width:50,
+    borderRadius: 50,
+  },
+  closeText: {
+    color: "#000",
+    fontWeight: "bold",
   },
   /*End of  Dialog Styles */
 });

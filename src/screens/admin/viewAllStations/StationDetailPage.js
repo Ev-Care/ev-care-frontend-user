@@ -46,12 +46,11 @@ const COLORS = {
 
 const { width } = Dimensions.get("window");
 
-
 const StationDetailPage = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [showDeleteDialogue, setshowDeleteDialogue] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
- 
+
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
   const scrollViewRef = useRef(null);
@@ -127,7 +126,7 @@ const StationDetailPage = ({ route, navigation }) => {
             style={styles.modalCloseButton}
             onPress={() => setModalVisible(false)}
           >
-            <Text style={styles.closeText}>Close</Text>
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
           </TouchableOpacity>
         </View>
       </Modal>
@@ -374,7 +373,7 @@ const StationDetailPage = ({ route, navigation }) => {
         </View>
       </Overlay>
     );
-  }
+}
   function chargerTab() {
     return (
       <ScrollView style={styles.tabContent}>
@@ -522,17 +521,7 @@ const styles = StyleSheet.create({
     zIndex: 9999,
   },
   
-  loaderContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "center",
-    alignItems: "center",
-    // backgroundColor: "rgba(182, 206, 232, 0.3)",
-    zIndex: 999,
-  },
+
   communityBadge: {
   
     backgroundColor: COLORS.white,
@@ -544,6 +533,17 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: "bold",
     fontSize: 12,
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
   },
   stationName: {
     fontSize: 18,
@@ -769,7 +769,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 10,
     backgroundColor: "#fff",
-    borderRadius: 8,
+    justifyContent:"center",
+    alignItems:"center",
+    height:50,
+    width:50,
+    borderRadius: 50,
   },
   closeText: {
     color: "#000",

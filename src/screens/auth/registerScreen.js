@@ -28,6 +28,29 @@ import { postSignUp } from "./services/crudFunction";
 import { selectAuthError, selectToken, selectUser } from "./services/selector";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
+import { Picker } from '@react-native-picker/picker';
+import { Entypo } from '@expo/vector-icons';
+// import DropDownPicker from 'react-native-dropdown-picker';
+
+
+
+
+
+const vehicleData = {
+  "Tata": ["Ace", "Intra", "Yodha"],
+  "Mahindra": ["Bolero", "Jeeto", "Supro"],
+  "Ashok Leyland": ["Dost", "Partner", "Boss"],
+  "Maruti Suzuki": ["Super Carry", "Eeco Cargo", "Omni Cargo"],
+  "Piaggio": ["Ape Xtra", "Porter", "Ape Auto"],
+  "Force Motors": ["Kargo King", "Shaktiman", "Traveller Pickup"],
+  "Isuzu": ["D-Max", "S-CAB", "Hi-Lander"],
+  "Eicher": ["Pro 2049", "Pro 3015", "Pro 2059"],
+  "Toyota": ["Hilux", "Innova Crysta Commercial", "LC79 Pickup"],
+  "Others": [] , 
+  
+
+};
+
 const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setfullName] = useState("");
   const [email, setemail] = useState("");
@@ -38,7 +61,13 @@ const RegisterScreen = ({ navigation, route }) => {
   const token = useSelector(selectToken); // Get user data from Redux store
   const error = useSelector(selectAuthError); // Get error from Redux store
   const userKey = route?.params?.userKey;
+  const [selectedCompany, setSelectedCompany] = useState("");
+  const [selectedModel, setSelectedModel] = useState("");
+  const [customCompany, setCustomCompany] = useState("");
+  const [customModel, setCustomModel] = useState("");
+  const [vehicleNumber, setVehicleNumber] = useState("");
 
+  const models = selectedCompany && vehicleData[selectedCompany] ? vehicleData[selectedCompany] : [];
   // console.log("user key in register : ", userKey);
 
   const handleSignUp = async () => {
@@ -109,9 +138,10 @@ const RegisterScreen = ({ navigation, route }) => {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1 ,}}>
         {topImage()}
         <ScrollView
+          style={{paddingHorizontal:20}}
           automaticallyAdjustKeyboardInsets={true}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: Sizes.fixPadding * 2.0 }}
@@ -119,6 +149,8 @@ const RegisterScreen = ({ navigation, route }) => {
           {selectRole()}
           {fullNameInfo()}
           {emailInfo()}
+          {vehicleNumberInfo()}
+          {vehicleDataForm()}
           {continueButton()}
           {agreeInfo()}
         </ScrollView>
@@ -128,30 +160,22 @@ const RegisterScreen = ({ navigation, route }) => {
 
   function selectRole() {
     return (
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-around",
-          margin: Sizes.fixPadding * 2,
-        }}
+      <View style={{marginTop:30}}>
+       <Text style={styles.sectionLabel}>
+       Select Role <Text style={styles.label}>*</Text>
+      </Text>
+      <View style={styles.pickerWrapper}>
+      <Picker
+        selectedValue={selectedModel}
+        onValueChange={(itemValue) => setRole(itemValue)}
+        style={styles.pickerStyle}
       >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <RadioButton
-            value="User"
-            status={role === "user" ? "checked" : "unchecked"}
-            onPress={() => setRole("user")}
-          />
-          <Text>User</Text>
-        </View>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <RadioButton
-            value="Vendor"
-            status={role === "vendor" ? "checked" : "unchecked"}
-            onPress={() => setRole("vendor")}
-          />
-          <Text>Vendor</Text>
-        </View>
-      </View>
+        <Picker.Item style={{fontSize:12}}label="Select Role" value="" />
+        <Picker.Item style={{fontSize:12}} label="User" value="user" />
+        <Picker.Item style={{fontSize:12}} label="Vendor" value="vendor" />
+      </Picker>
+       </View>
+       </View>
     );
   }
 
@@ -182,7 +206,11 @@ const RegisterScreen = ({ navigation, route }) => {
   }
 
   function emailInfo() {
-    return (
+    return (<>
+     <Text style={styles.sectionLabel}>
+      Email Id <Text style={styles.label}>*</Text>
+      {/* <Text style={styles.optional}>(Optional)</Text> */}
+    </Text>
       <View
         style={{
           ...styles.textFieldWrapper,
@@ -190,7 +218,7 @@ const RegisterScreen = ({ navigation, route }) => {
         }}
       >
         <TextInput
-          placeholder="Email address"
+          placeholder="Enter Your Email id "
           placeholderTextColor={Colors.grayColor}
           value={email}
           onChangeText={(text) => setemail(text.toLowerCase())}
@@ -200,22 +228,52 @@ const RegisterScreen = ({ navigation, route }) => {
           keyboardType="email-address"
         />
       </View>
+      </>
     );
   }
 
   function fullNameInfo() {
-    return (
+    return (<>
+      <Text style={styles.sectionLabel}>
+      Full Name <Text style={styles.label}>*</Text>
+      {/* <Text style={styles.optional}>(Optional)</Text> */}
+    </Text>
       <View style={{ ...styles.textFieldWrapper }}>
+        
         <TextInput
-          placeholder="Full name"
+          placeholder="Enter Your Full name"
           placeholderTextColor={Colors.grayColor}
           value={fullName}
           onChangeText={(text) => setfullName(text)}
-          style={{ ...Fonts.blackColor16Medium }}
+          style={{ ...Fonts.blackColor16Medium, paddingVertical: 12,
+            fontSize: 12,}}
           cursorColor={Colors.primaryColor}
           selectionColor={Colors.primaryColor}
         />
       </View>
+      </>
+    );
+  }
+  function vehicleNumberInfo() {
+    return (<>
+      <Text style={styles.sectionLabel}>
+      Vehicle Registration Number <Text style={styles.label}>*</Text>
+      {/* <Text style={styles.optional}>(Optional)</Text> */}
+    </Text>
+      <View style={{ ...styles.textFieldWrapper }}>
+        
+        <TextInput
+          placeholder="Enter Your Vehicle Registration Number"
+          placeholderTextColor={Colors.grayColor}
+          value={vehicleNumber}
+          onChangeText={(text) => setVehicleNumber(text)}
+          style={{ ...Fonts.blackColor16Medium, paddingVertical: 12,
+            fontSize: 12,}}
+          cursorColor={Colors.primaryColor}
+          selectionColor={Colors.primaryColor}
+        />
+      </View>
+      </>
     );
   }
 
@@ -227,7 +285,7 @@ const RegisterScreen = ({ navigation, route }) => {
         style={{
           ...commonStyles.button,
           borderRadius: Sizes.fixPadding - 5.0,
-          margin: Sizes.fixPadding * 2.0,
+          marginBottom: Sizes.fixPadding * 2.0,
         }}
         disabled={loading}
       >
@@ -276,6 +334,133 @@ const RegisterScreen = ({ navigation, route }) => {
       </ImageBackground>
     );
   }
+
+  function vehicleDataForm(){
+    return(
+      <View style={styles.container}>
+
+      {/* Company Picker */}
+      <Text style={styles.sectionLabel}>
+      Select Vehicle Manufacturer <Text style={styles.label}>*</Text>
+      
+    </Text>
+      <View style={styles.pickerWrapper}>
+        <Picker
+          selectedValue={selectedCompany}
+          onValueChange={(itemValue) => {
+            setSelectedCompany(itemValue);
+            setSelectedModel(""); // Reset model
+            setCustomCompany("");
+            setCustomModel("");
+          }}
+          style={styles.pickerStyle}
+        >
+          <Picker.Item style={{fontSize:12}}  label="Select Company" value="" />
+          {Object.keys(vehicleData).map((make) => (
+            <Picker.Item style={{fontSize:12}} key={make} label={make} value={make} />
+          ))}
+        </Picker>
+       </View>
+
+      {/* Custom company if 'Other' */}
+      {selectedCompany === "Others" && (
+        <>
+         
+      <Text style={styles.sectionLabel}>
+       Enter Manufacturer Name <Text style={styles.label}>*</Text>
+      </Text>
+  
+        <View
+        style={{
+          ...styles.textFieldWrapper,
+          marginBottom: Sizes.fixPadding * 2.0,
+        
+        }}
+      >
+        <TextInput
+          placeholder="Enter Company Name here "
+          placeholderTextColor={Colors.grayColor}
+          value={customCompany}
+          onChangeText={setCustomCompany}
+          style={{ ...Fonts.blackColor16Medium }}
+          cursorColor={Colors.primaryColor}
+          selectionColor={Colors.primaryColor}
+         
+        />
+      </View>
+      <Text style={styles.sectionLabel}>
+       Enter Vehicle Model <Text style={styles.label}>*</Text>
+      </Text>
+       <View
+       style={{
+         ...styles.textFieldWrapper,
+         marginBottom: Sizes.fixPadding * 2.0,
+        
+       }}
+     >
+       <TextInput
+         placeholder="Enter Model here "
+         placeholderTextColor={Colors.grayColor}
+         value={customModel}
+         onChangeText={setCustomModel}
+         style={{ ...Fonts.blackColor16Medium }}
+         cursorColor={Colors.primaryColor}
+         selectionColor={Colors.primaryColor}
+        
+       />
+     </View>
+     </>
+      )}
+
+      {/* Model Picker if applicable */}
+      {models.length > 0 ? (<>
+          <Text style={styles.sectionLabel}>
+          Select Vehicle Model <Text style={styles.label}>*</Text>
+         </Text>
+          <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={selectedModel}
+            onValueChange={(itemValue) => setSelectedModel(itemValue)}
+            style={styles.pickerStyle}
+          >
+            <Picker.Item style={{fontSize:12}}label="Select Model" value="" />
+            {models.map((model) => (
+              <Picker.Item style={{fontSize:12}} key={model} label={model} value={model} />
+            ))}
+            <Picker.Item style={{fontSize:12}} label="Other" value="Other" />
+          </Picker>
+           </View></>
+      ) : selectedCompany !== "" ? null : null}
+
+      {/* Custom model if no models found or "Other" selected */}
+      {(selectedCompany === "Other" || selectedModel === "Other") && (
+        <>
+     <Text style={styles.sectionLabel}>
+       Enter Manufacturer Name <Text style={styles.label}>*</Text>
+      </Text>
+        <View
+        style={{
+          ...styles.textFieldWrapper,
+          marginBottom: Sizes.fixPadding * 2.0,
+        
+        }}
+      >
+        <TextInput
+          placeholder="Enter Model here "
+          placeholderTextColor={Colors.grayColor}
+          value={customModel}
+          onChangeText={setCustomModel}
+          style={{ ...Fonts.blackColor16Medium }}
+          cursorColor={Colors.primaryColor}
+          selectionColor={Colors.primaryColor}
+         
+        />
+      </View>
+      </>
+      )}
+    </View>
+    )
+  }
 };
 
 export default RegisterScreen;
@@ -293,13 +478,51 @@ const styles = StyleSheet.create({
     ...commonStyles.shadow,
     borderRadius: Sizes.fixPadding - 5.0,
     paddingHorizontal: Sizes.fixPadding * 1.5,
-    paddingVertical:
-      Platform.OS === "ios" ? Sizes.fixPadding + 3.0 : Sizes.fixPadding,
-    marginHorizontal: Sizes.fixPadding * 2.0,
+    // backgroundColor:"cyan",
+    paddingVertical:5,
     borderColor: Colors.extraLightGrayColor,
     borderWidth: 1.0,
     marginBottom: Sizes.fixPadding * 2.0,
-    marginLeft: Sizes.fixPadding,
-    marginRight: Sizes.fixPadding,
+   
   },
+  sectionLabel: {
+
+    fontSize: 12,
+    fontWeight: "bold",
+    color: Colors.primaryColor,
+    marginBottom: 10,
+  },
+  optional: {
+    fontSize: 12,
+    fontWeight: "normal",
+    color: "#888",
+  },
+  container: { marginBottom:10},
+  textField: {
+    borderWidth: 1,
+    borderColor: Colors.extraLightGrayColor,
+    ...commonStyles.shadow,
+    padding: 12,
+    borderRadius: Sizes.fixPadding - 5.0,
+    marginTop: 10,
+    fontSize: 16,
+    backgroundColor: Colors.bodyBackColor,
+  },
+  pickerWrapper: {
+    position: "relative",
+    borderWidth: 1,
+    borderColor: Colors.extraLightGrayColor,
+    ...commonStyles.shadow,
+    borderRadius: Sizes.fixPadding - 5.0,
+
+    marginBottom: Sizes.fixPadding * 2.0,
+    backgroundColor: Colors.bodyBackColor,
+  },
+  pickerStyle: {
+    height: Platform.OS === "ios" ? 180 : 50,
+    width: "100%",
+    color: "#000",
+    fontSize: 16,
+  },
+
 });

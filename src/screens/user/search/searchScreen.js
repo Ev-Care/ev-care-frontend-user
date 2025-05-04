@@ -37,7 +37,48 @@ import {
 const width = screenWidth;
 const cardWidth = width / 1.15;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
-
+const customMapStyle = [
+  {
+    featureType: "poi",
+    elementType: "all",
+    stylers: [{ visibility: "off" }],
+  },
+  {
+    featureType: "poi.government",
+    elementType: "all",
+    stylers: [{ visibility: "on" }],
+  },
+  {
+    featureType: "poi.medical",
+    elementType: "all",
+    stylers: [{ visibility: "on" }],
+  },
+  {
+    featureType: "poi.park",
+    elementType: "all",
+    stylers: [{ visibility: "on" }],
+  },
+  {
+    featureType: "poi.sports_complex",
+    elementType: "all",
+    stylers: [{ visibility: "on" }],
+  },
+  {
+    featureType: "poi.airport",
+    elementType: "all",
+    stylers: [{ visibility: "on" }],
+  },
+  {
+    featureType: "poi.train_station",
+    elementType: "all",
+    stylers: [{ visibility: "on" }],
+  },
+  {
+    featureType: "transit.station",
+    elementType: "all",
+    stylers: [{ visibility: "on" }],
+  },
+];
 const ChargingStationMap = () => {
   const navigation = useNavigation();
   const mapRef = useRef(null);
@@ -58,48 +99,7 @@ const ChargingStationMap = () => {
   let mapAnimation = new Animated.Value(0);
   let mapIndex = 0;
 
-  const customMapStyle = [
-    {
-      featureType: "poi",
-      elementType: "all",
-      stylers: [{ visibility: "off" }],
-    },
-    {
-      featureType: "poi.government",
-      elementType: "all",
-      stylers: [{ visibility: "on" }],
-    },
-    {
-      featureType: "poi.medical",
-      elementType: "all",
-      stylers: [{ visibility: "on" }],
-    },
-    {
-      featureType: "poi.park",
-      elementType: "all",
-      stylers: [{ visibility: "on" }],
-    },
-    {
-      featureType: "poi.sports_complex",
-      elementType: "all",
-      stylers: [{ visibility: "on" }],
-    },
-    {
-      featureType: "poi.airport",
-      elementType: "all",
-      stylers: [{ visibility: "on" }],
-    },
-    {
-      featureType: "poi.train_station",
-      elementType: "all",
-      stylers: [{ visibility: "on" }],
-    },
-    {
-      featureType: "transit.station",
-      elementType: "all",
-      stylers: [{ visibility: "on" }],
-    },
-  ];
+
 
   const _scrollView = useRef(null);
   useEffect(() => {
@@ -136,7 +136,7 @@ const ChargingStationMap = () => {
     });
   }, [mapAnimation, stations]);
 
-  const getUserLocation = async (calledBy) => {
+const getUserLocation = async (calledBy) => {
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
@@ -211,7 +211,7 @@ const ChargingStationMap = () => {
     }
   };
 
-  const selectSuggestion = async (placeId, description) => {
+const selectSuggestion = async (placeId, description) => {
     setSuggestions([]);
     setSearch(description);
     try {
@@ -220,6 +220,7 @@ const ChargingStationMap = () => {
       const data = await response.json();
       if (data.results.length > 0) {
         const { lat, lng } = data.results[0].geometry.location;
+        
         const newRegion = {
           latitude: lat,
           longitude: lng,

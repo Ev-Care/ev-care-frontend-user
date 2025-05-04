@@ -115,6 +115,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
   };
 
   const openGoogleMaps = (latitude, longitude) => {
+    // console.log("called")
     const url = Platform.select({
       ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
       android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
@@ -364,8 +365,8 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
   }
   function buttons() {
     return (
-      <View onPress={()=>openGoogleMaps} style={styles.bottomButtons}>
-        <TouchableOpacity style={styles.directionButton}>
+      <View  style={styles.bottomButtons}>
+        <TouchableOpacity onPress={openGoogleMaps} style={styles.directionButton}>
           <Text style={styles.directionButtonText}>Get Direction</Text>
         </TouchableOpacity>
  

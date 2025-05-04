@@ -7,6 +7,7 @@ import {
   Platform,
   ScrollView,
   Dimensions,
+  ActivityIndicator,
   Linking,
   TouchableOpacity,
 } from "react-native";
@@ -31,6 +32,7 @@ import {
   getChargerLabel,
 } from "../../../utils/globalMethods";
 import polyline from "@mapbox/polyline";
+import { DottedLoader2 } from "../../../utils/lottieLoader/loaderView";
 
 const width = screenWidth;
 const cardWidth = width / 1.15;
@@ -139,7 +141,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   const [addedStops, setAddedStops] = useState([]);
   const { enrouteStations } = route?.params || [];
   const [mapLayoutCompleted, setMapLayoutCompleted] = useState(false);
- 
+  const [isLoading, setIsLoading] = useState(false);
   // console.log("enrouteStations", JSON.stringify(enrouteStations[0]));
   const [destinationAddress, setDestinationAddress] = useState(
     route?.params?.destinationAddress || "Destination Address"
@@ -354,6 +356,12 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
         {chargingSpotsInfo()}
         {bottomSheet()}
       </View>
+      {isLoading && (
+              <View style={styles.loaderContainer}>
+                <DottedLoader2/>
+                {/* <ActivityIndicator size="large" color={Colors.primaryColor} /> */}
+              </View>
+            )}
     </View>
   );
   function bottomSheet() {
@@ -766,6 +774,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizes.fixPadding * 2.0,
     borderTopLeftRadius: Sizes.fixPadding,
     borderBottomRightRadius: Sizes.fixPadding,
+  }, 
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    zIndex: 999,
   },
   // bottom sheet
   bottomSheetContainer: {

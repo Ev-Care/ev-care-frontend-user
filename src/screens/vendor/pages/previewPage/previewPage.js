@@ -7,10 +7,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  Modal,
   TouchableOpacity,
   View,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { openHourFormatter } from "../../../../utils/globalMethods";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useDispatch, useSelector } from "react-redux";
 import { Colors, Fonts, Sizes } from "../../../../constants/styles";
@@ -25,6 +28,7 @@ import {
   selectVendorStation,
 } from "../../services/selector";
 import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
+import imageURL from "../../../../constants/baseURL";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -50,6 +54,8 @@ const PreviewPage = ({ navigation, route }) => {
   const isLoading = useSelector(selectVendorLoading);
   const errorMessage = useSelector(selectVendorError);
   const stations = useSelector(selectVendorStation);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const station = stations.find(
     (station) => station.id === stationData.station_id
   );
@@ -93,6 +99,11 @@ const PreviewPage = ({ navigation, route }) => {
     }
   }, [stationData?.coordinates]);
 
+  const showFullImage = (uri) => {
+    if (!uri) return;
+    setSelectedImage(uri);
+    setModalVisible(true);
+  };
   const handleSubmit = async () => {
     try {
       if (type === "add") {
@@ -230,7 +241,7 @@ const PreviewPage = ({ navigation, route }) => {
           </View>
         </View>
       </View> */}
-{header?.()}
+      {header?.()}
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
@@ -270,7 +281,6 @@ const PreviewPage = ({ navigation, route }) => {
         {chargerTab?.()}
         {/* Details Tab */}
         {detailTab?.()}
-      
       </ScrollView>
 
       {/* Bottom Buttons */}
@@ -287,6 +297,7 @@ const PreviewPage = ({ navigation, route }) => {
           <Text style={styles.submitButtonText}>Submit</Text>
         </TouchableOpacity>
       </View>
+      {fullViewImage?.()}
       {isLoading && (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={Colors.primaryColor} />
@@ -295,6 +306,28 @@ const PreviewPage = ({ navigation, route }) => {
     </View>
   );
 
+  function fullViewImage() {
+    return (
+      <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modalContainer}>
+          <Image source={{ uri: selectedImage }} style={styles.fullImage} />
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => setModalVisible(false)}
+          >
+           
+             
+              <MaterialIcons
+                name="close"
+                color={Colors.blackColor}
+                size={26}       
+              />
+           
+          </TouchableOpacity>
+        </View>
+      </Modal>
+    );
+  }
   function chargerTab() {
     return (
       <ScrollView style={styles.tabContent}>
@@ -309,7 +342,7 @@ const PreviewPage = ({ navigation, route }) => {
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
               <Text style={styles.chargerSpecText}>
-                Power: {charger?.power_rating || "Unknown Power"} KW
+                Power:⚡{charger?.power_rating || "Unknown Power"} KW
               </Text>
             </View>
 
@@ -338,22 +371,22 @@ const PreviewPage = ({ navigation, route }) => {
   }
 
   function header() {
-    if (!station) {
+    if (!stationData) {
       return <Text>Loading...</Text>;
     }
-
-    const imageUrl = station?.station_images
-      ? { uri: imageURL.baseURL + station.station_images }
+    //  console.log("station image in preview page upper",stationImage);
+    const imageUrl = stationImage
+      ? { uri: stationImage }
       : require("../../../../../assets/images/nullStation.png");
-
+      // console.log("station image in preview page lower",imageUrl);
     return (
       <View style={styles.header}>
         <View style={styles.communityBadgeAndBack}>
-        <View
+          <View
             style={{
               backgroundColor: Colors.primaryColor,
               borderRadius: 20,
-              padding: 6, 
+              padding: 6,
               alignItems: "center",
               justifyContent: "center",
               width: 40,
@@ -373,25 +406,26 @@ const PreviewPage = ({ navigation, route }) => {
           </View>
         </View>
         <TouchableOpacity
-  activeOpacity={0.9}
-  style={styles.mapBackground}
-  onPress={() => {
-   if ( station?.station_images &&  station?.station_images.trim() !== "") {
-        showFullImage(imageURL.baseURL + station.station_images);
-      }
-    }}
->
-  <Image source={imageUrl} style={styles.mapBackground} />
-</TouchableOpacity>
-
-        
+          activeOpacity={0.9}
+          style={styles.mapBackground}
+          onPress={() => {
+            if (
+              stationImage &&
+              stationImage.trim() !== ""
+            ) {
+              showFullImage(stationImage);
+            }
+          }}
+        >
+          <Image source={imageUrl} style={styles.mapBackground} />
+        </TouchableOpacity>
 
         <View style={styles.overlay}>
           <Text style={styles.stationName}>
-            {trimName(50, station?.station_name)}
+            {trimName(50, stationData?.station_name)}
           </Text>
           <Text style={styles.stationAddress}>
-            {trimName(50, station?.address)}
+            {trimName(50, stationData?.address)}
           </Text>
           <View
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
@@ -401,36 +435,28 @@ const PreviewPage = ({ navigation, route }) => {
                 style={[
                   styles.statusClosed,
                   {
-                    color: station?.status === "Inactive" ? "#FF5722" : "green",
+                    color: stationData?.status === "Inactive" ? "#FF5722" : "green",
                   },
                 ]}
               >
-                {station?.status === "Inactive" ? "Closed" : "Open"}
+                {stationData?.status === "Inactive" ? "Closed" : "Open"}
               </Text>
               <Text style={styles.statusTime}>
                 {openHourFormatter(
-                  station?.open_hours_opening_time,
-                  station?.open_hours_closing_time
+                  stationData?.open_hours_opening_time,
+                  stationData?.open_hours_closing_time
                 )}
               </Text>
               <View style={styles.newBadge}>
                 <Text style={styles.newText}>
-                  {station.status === "Active"
+                  {stationData.status === "Active"
                     ? "VERIFIED"
-                    : station.status === "Planned"
-                    ? "PENDING"
-                    : ""}
+                    : 
+                    "New"
+                   }
                 </Text>
               </View>
             </View>
-            <MaterialIcons
-              name={inFavorite ? "favorite" : "favorite-border"}
-              color={inFavorite ? Colors.redColor : Colors.primaryColor}
-              size={35}
-              onPress={() => {
-                handleAddToFavorite(station);
-              }}
-            />
           </View>
         </View>
       </View>
@@ -516,22 +542,29 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
   },
-  header: {
-    height: 200,
-    position: "relative",
-  },
+  header: {},
   mapBackground: {
     width: "100%",
-    height: "100%",
-    position: "absolute",
-    opacity: 1,
+    height: 200,
   },
   overlay: {
-    padding: 16,
-    height: "100%",
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(230, 216, 242, 0.6)", // Light purple with opacity
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: "rgb(255, 255, 255)", // Light purple with opacity
   },
+  communityBadgeAndBack: {
+    position: "absolute",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    top: 26,
+    paddingLeft: 15,
+    paddingRight: 25,
+    // backgroundColor: "cyan",
+    width: "100%",
+    zIndex: 9999,
+  },
+
   loaderContainer: {
     position: "absolute",
     top: 0,
@@ -540,13 +573,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
     zIndex: 999,
   },
   communityBadge: {
-    position: "absolute",
-    top: 16,
-    right: 16,
     backgroundColor: COLORS.white,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -598,6 +628,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
+    borderTopWidth: 0.5,
+    borderTopColor: "#E0E0E0",
   },
   tabButton: {
     flex: 1,
@@ -655,6 +687,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.gray,
     marginRight: 8,
+    fontWeight: "700",
   },
   connectorContainer: {
     marginBottom: 16,
@@ -729,11 +762,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  seeAllText: {
-    color: COLORS.accent,
-    fontWeight: "bold",
-  },
-
   bottomButtons: {
     flexDirection: "row",
     padding: 16,
@@ -761,6 +789,32 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: COLORS.white,
     fontSize: 14,
+    fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullImage: {
+    width: "90%",
+    height: "70%",
+    resizeMode: "contain",
+    borderRadius: 10,
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    height: 50,
+    width: 50,
+    borderRadius: 50,
+  },
+  closeText: {
+    color: "#000",
     fontWeight: "bold",
   },
 });

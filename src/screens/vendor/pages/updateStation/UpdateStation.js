@@ -241,7 +241,7 @@ const UpdateStation = ({ navigation, route }) => {
         onPress={() => handleVisibility("locationdetail")}
       >
         <Text style={styles.sectionTitle}>Location Details</Text>
-        {selectedForm === "locationdetail" && (
+        {(selectedForm === "locationdetail" || selectedForm === null )&& (
           <>
             {/* Select Coordinate and Address on Map */}
             <TouchableOpacity style={styles.mapButton} onPress={selectOnMap}>

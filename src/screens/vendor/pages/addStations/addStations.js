@@ -284,7 +284,7 @@ const AddStations = () => {
         onPress={() => handleVisibility("locationdetail")}
       >
         <Text style={styles?.sectionTitle}>Location Details</Text>
-        {selectedForm === "locationdetail" && (
+        {(selectedForm === "locationdetail" || selectedForm === null )&& (
           <>
             <TouchableOpacity style={styles?.mapButton} onPress={selectOnMap}>
               <Text style={styles?.mapButtonText}>

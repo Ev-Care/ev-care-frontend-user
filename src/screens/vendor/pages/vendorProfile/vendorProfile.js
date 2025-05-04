@@ -67,7 +67,7 @@ const VendorProfile = () => {
             style={styles.modalCloseButton}
             onPress={() => setModalVisible(false)}
           >
-            <Text style={styles.closeText}>Close</Text>
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
           </TouchableOpacity>
         </View>
       </Modal>
@@ -377,7 +377,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 10,
     backgroundColor: "#fff",
-    borderRadius: 8,
+    justifyContent:"center",
+    alignItems:"center",
+    height:50,
+    width:50,
+    borderRadius: 50,
   },
   closeText: {
     color: "#000",

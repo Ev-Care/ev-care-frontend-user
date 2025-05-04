@@ -9,6 +9,7 @@ import {
   Dimensions,
   Switch,
   Platform,
+  Modal,
   ActivityIndicator,
   FlatList,
   Alert,
@@ -40,6 +41,7 @@ import imageURL from "../../../../constants/baseURL";
 import { getAllStationsAPI } from "../../services/api";
 import { selectUser } from "../../../auth/services/selector";
 import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
+import { openHourFormatter } from "../../../../utils/globalMethods";
 
 // Define colors at the top for easy customization
 const COLORS = {
@@ -88,13 +90,18 @@ const StationManagement = ({ navigation, route }) => {
   const [isChargerAvailable, setIsChargerAvailable] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [chargerStatusMap, setChargerStatusMap] = useState({});
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   // console.log("StationManagement", JSON.stringify(station, null, 2));
   const handleTabPress = (index) => {
     setActiveTab(index);
     scrollViewRef.current.scrollTo({ x: index * width, animated: true });
   };
-
+  const showFullImage = (uri) => {
+    if (!uri) return;
+    setSelectedImage(uri);
+    setModalVisible(true);
+  };
   useEffect(() => {
     if (!station) {
       console.log("Station no longer exists. Navigating back.");
@@ -194,7 +201,7 @@ const StationManagement = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       {/* Header with map background */}
-      <View style={styles.header}>
+      {/* <View style={styles.header}>
         <Image
           source={
             station?.station_images
@@ -263,8 +270,8 @@ const StationManagement = ({ navigation, route }) => {
             )}
           </View>
         </View>
-      </View>
-
+      </View> */}
+      {header()}
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
@@ -324,7 +331,8 @@ const StationManagement = ({ navigation, route }) => {
           <Text style={styles.submitButtonText}>Update</Text>
         </TouchableOpacity>
       </View>
-      {deleteDialogue()}
+      {deleteDialogue?.()}
+      {showFullViewImage?.()}
       {isLoading && (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={Colors.primaryColor} />
@@ -332,6 +340,21 @@ const StationManagement = ({ navigation, route }) => {
       )}
     </View>
   );
+  function showFullViewImage() {
+    return (
+      <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modalContainer}>
+          <Image source={{ uri: selectedImage }} style={styles.fullImage} />
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
+          </TouchableOpacity>
+        </View>
+      </Modal>
+    );
+  }
   function chargerTab(station) {
     // Log chargers
     return (
@@ -359,7 +382,7 @@ const StationManagement = ({ navigation, route }) => {
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
               <Text style={styles.chargerSpecText}>
-              Power:⚡{charger?.max_power_kw} kW
+                Power:⚡{charger?.max_power_kw} kW
               </Text>
             </View>
 
@@ -528,6 +551,98 @@ const StationManagement = ({ navigation, route }) => {
       </Overlay>
     );
   }
+  function header() {
+    if (!station) {
+      return <Text>Loading...</Text>;
+    }
+
+    const imageUrl = station?.station_images
+      ? { uri: imageURL.baseURL + station.station_images }
+      : require("../../../../../assets/images/nullStation.png");
+
+    return (
+      <View style={styles.header}>
+        <View style={styles.communityBadgeAndBack}>
+          <View
+            style={{
+              backgroundColor: Colors.primaryColor,
+              borderRadius: 20,
+              padding: 6,
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+            }}
+          >
+            <MaterialIcons
+              name="arrow-back"
+              color={Colors.whiteColor}
+              size={26}
+              onPress={() => navigation.pop()}
+            />
+          </View>
+
+          <View style={styles.communityBadge}>
+            <Text style={styles.communityText}>Public</Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          activeOpacity={0.9}
+          style={styles.mapBackground}
+          onPress={() => {
+            if (
+              station?.station_images &&
+              station?.station_images.trim() !== ""
+            ) {
+              showFullImage(imageURL.baseURL + station.station_images);
+            }
+          }}
+        >
+          <Image source={imageUrl} style={styles.mapBackground} />
+        </TouchableOpacity>
+
+        <View style={styles.overlay}>
+          <Text style={styles.stationName}>
+            {trimName(50, station?.station_name)}
+          </Text>
+          <Text style={styles.stationAddress}>
+            {trimName(50, station?.address)}
+          </Text>
+          <View
+            style={[{ flexDirection: "row", justifyContent: "space-between" }]}
+          >
+            <View style={styles.statusContainer}>
+              <Text
+                style={[
+                  styles.statusClosed,
+                  {
+                    color: station?.status === "Inactive" ? "#FF5722" : "green",
+                  },
+                ]}
+              >
+                {station?.status === "Inactive" ? "Closed" : "Open"}
+              </Text>
+              <Text style={styles.statusTime}>
+                {openHourFormatter(
+                  station?.open_hours_opening_time,
+                  station?.open_hours_closing_time
+                )}
+              </Text>
+              <View style={styles.newBadge}>
+                <Text style={styles.newText}>
+                  {station.status === "Active"
+                    ? "VERIFIED"
+                    : station.status === "Planned"
+                    ? "PENDING"
+                    : ""}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
 };
 
 const styles = StyleSheet.create({
@@ -535,21 +650,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
   },
-  header: {
-    height: 200,
-    position: "relative",
-  },
+  header: {},
   mapBackground: {
     width: "100%",
-    height: "100%",
-    position: "absolute",
-    opacity: 1,
+    height: 200,
   },
   overlay: {
-    padding: 16,
-    height: "100%",
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(230, 216, 242, 0.6)", // Light purple with opacity
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: "rgb(255, 255, 255)",
   },
   communityBadge: {
     backgroundColor: COLORS.white,
@@ -557,24 +666,24 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 4,
   },
-  communityBadgeAndBack: {
-    position: "absolute",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    top: 16,
-    paddingLeft: 0,
-    paddingRight: 5,
-    paddingVertical: 6,
-    borderRadius: 4,
-    // backgroundColor:"cyan",
-    width: "100%",
-    marginLeft: 18,
-  },
   communityText: {
     color: COLORS.primary,
     fontWeight: "bold",
     fontSize: 12,
   },
+  communityBadgeAndBack: {
+    position: "absolute",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    top: 26,
+    paddingLeft: 15,
+    paddingRight: 25,
+    // backgroundColor: "cyan",
+    width: "100%",
+    zIndex: 9999,
+  },
+
   stationName: {
     fontSize: 18,
     fontWeight: "bold",
@@ -615,6 +724,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
+    borderTopWidth: 0.5,
+    borderTopColor: "#E0E0E0",
   },
   tabButton: {
     flex: 1,
@@ -792,18 +903,7 @@ const styles = StyleSheet.create({
     padding: 0.0,
     elevation: 0,
   },
-  ratingImageStyle: {
-    marginTop: Sizes.fixPadding * 1.5,
-    width: 70.0,
-    height: 60.0,
-    resizeMode: "contain",
-    alignSelf: "center",
-  },
-  ratingWrapStyle: {
-    ...commonStyles.rowAlignCenter,
-    justifyContent: "center",
-    marginVertical: Sizes.fixPadding + 5.0,
-  },
+
   dialogYesNoButtonStyle: {
     flex: 1,
     ...commonStyles.shadow,
@@ -838,6 +938,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     // backgroundColor: 'rgba(67, 92, 128, 0.43)', // Optional: semi-transparent overlay
     zIndex: 999,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullImage: {
+    width: "90%",
+    height: "70%",
+    resizeMode: "contain",
+    borderRadius: 10,
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#fff",
+    justifyContent:"center",
+    alignItems:"center",
+    height:50,
+    width:50,
+    borderRadius: 50,
+  },
+  closeText: {
+    color: "#000",
+    fontWeight: "bold",
   },
 });
 

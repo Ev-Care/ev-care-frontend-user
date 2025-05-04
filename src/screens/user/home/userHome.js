@@ -53,7 +53,7 @@ import {
   getChargerLabel,
 } from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import DottedLoader from "../../../utils/lottieLoader/loaderView";
+import {DottedLoader} from "../../../utils/lottieLoader/loaderView";
 const COLORS = {
   primary: "#101942",
   secondary: "#FF8C00",

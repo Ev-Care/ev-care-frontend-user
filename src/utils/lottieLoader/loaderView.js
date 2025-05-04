@@ -3,7 +3,7 @@ import { View } from "react-native";
 import LottieView from "lottie-react-native";
 
 
-const DottedLoader = () => {
+export  const DottedLoader = () => {
   return (
     <View
       style={{
@@ -30,5 +30,23 @@ const DottedLoader = () => {
     </View>
   );
 };
-
-export default DottedLoader;
+export  const DottedLoader2 = () => {
+  return (
+    <View
+      style={{
+       
+      }}
+    >
+      <LottieView
+        source={require("./animatedLoader2.json")}
+        autoPlay
+        loop
+        style={{
+          width: 100,
+          height: 100,
+        
+        }}
+      />
+    </View>
+  );
+};

@@ -223,7 +223,7 @@ const RegisterScreen = ({ navigation, route }) => {
           placeholderTextColor={Colors.grayColor}
           value={email}
           onChangeText={(text) => setemail(text.toLowerCase())}
-          style={{ ...Fonts.blackColor16Medium }}
+           style={{ ...Fonts.blackColor16Medium, paddingVertical: 12,fontSize: 12,}}
           cursorColor={Colors.primaryColor}
           selectionColor={Colors.primaryColor}
           keyboardType="email-address"
@@ -368,7 +368,7 @@ const RegisterScreen = ({ navigation, route }) => {
         <>
          
       <Text style={styles.sectionLabel}>
-       Enter Manufacturer Name <Text style={styles.label}>*</Text>
+       Enter Vehicle Manufacturer <Text style={styles.label}>*</Text>
       </Text>
   
         <View
@@ -383,7 +383,7 @@ const RegisterScreen = ({ navigation, route }) => {
           placeholderTextColor={Colors.grayColor}
           value={customCompany}
           onChangeText={setCustomCompany}
-          style={{ ...Fonts.blackColor16Medium }}
+         style={{ ...Fonts.blackColor16Medium, paddingVertical: 12,fontSize: 12,}}
           cursorColor={Colors.primaryColor}
           selectionColor={Colors.primaryColor}
          
@@ -404,7 +404,7 @@ const RegisterScreen = ({ navigation, route }) => {
          placeholderTextColor={Colors.grayColor}
          value={customModel}
          onChangeText={setCustomModel}
-         style={{ ...Fonts.blackColor16Medium }}
+        style={{ ...Fonts.blackColor16Medium, paddingVertical: 12,fontSize: 12,}}
          cursorColor={Colors.primaryColor}
          selectionColor={Colors.primaryColor}
         
@@ -437,7 +437,7 @@ const RegisterScreen = ({ navigation, route }) => {
       {(selectedCompany === "Other" || selectedModel === "Other") && (
         <>
      <Text style={styles.sectionLabel}>
-       Enter Manufacturer Name <Text style={styles.label}>*</Text>
+       Enter Vehicle Model <Text style={styles.label}>*</Text>
       </Text>
         <View
         style={{
@@ -451,7 +451,7 @@ const RegisterScreen = ({ navigation, route }) => {
           placeholderTextColor={Colors.grayColor}
           value={customModel}
           onChangeText={setCustomModel}
-          style={{ ...Fonts.blackColor16Medium }}
+         style={{ ...Fonts.blackColor16Medium, paddingVertical: 12,fontSize: 12,}}
           cursorColor={Colors.primaryColor}
           selectionColor={Colors.primaryColor}
          

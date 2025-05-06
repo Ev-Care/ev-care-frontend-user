@@ -88,12 +88,12 @@ function AppNavigator() {
       >
         {!userType ? (
           <>
+            <Stack.Screen name="Loading" component={LoadingScreen} /> 
             <Stack.Screen
               name="FirstSplashScreen"
               component={FirstSplashScreen}
               options={{ ...TransitionPresets.DefaultTransition }}
             />
-            <Stack.Screen name="Loading" component={LoadingScreen} />
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
             <Stack.Screen name="Signin" component={SigninScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
@@ -106,16 +106,7 @@ function AppNavigator() {
         ) :  (
           renderRoleStack()
         ) 
-        // : (
-        //   <Stack.Screen name="ErrorPage">
-        //     {(props) => (
-        //       <ErrorPage
-        //         {...props}
-        //         setHasLocationPermission={setHasLocationPermission}
-        //       />
-        //     )}
-        //   </Stack.Screen>
-        // )
+       
         
         }
       </Stack.Navigator>

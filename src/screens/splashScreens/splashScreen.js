@@ -5,10 +5,10 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
-import { Fonts } from "../constants/styles";
+import { Fonts } from "../../constants/styles";
 import LinearGradient from "react-native-linear-gradient";
 
-const FirstSplashScreen = ({ navigation }) => {
+const SplashScreen = ({ navigation }) => {
   const iconPosition = useSharedValue(0); // Horizontal movement
   const iconScale = useSharedValue(1); // Icon shrinking
   const textOpacity = useSharedValue(0.2); // Initial visibility
@@ -41,7 +41,7 @@ const FirstSplashScreen = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.innerContainer}>
         <Animated.Image
-          source={require("../../assets/splashicon.png")}
+          source={require("../../../assets/splashicon.png")}
           style={[styles.icon, { aspectRatio: 1.5 }, iconAnimatedStyle]}
           resizeMode="contain"
         />
@@ -70,21 +70,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   icon: {
-    width: 110,
-    height: 100,
+    width: 100,
+    height: 150,
     resizeMode: "contain",
     marginBottom: 0, // if needed to nudge for visual alignment
   },
-  gradientTextContainer: {
-    justifyContent: "center", 
-    alignItems: "center",
-  },
+  
   text: {
-    ...Fonts.whiteColor38SemiBold,
-    fontSize: 45,
-    marginBottom: -8, // Adjust as needed
+    // ...Fonts.whiteColor38SemiBold,
+    fontSize: 40,
+    marginBottom: -5, 
     color: "#29cafc",
   },
 });
 
-export default FirstSplashScreen;
+export default SplashScreen;

@@ -34,7 +34,7 @@ const LoadingScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     pageStyle: {
         flex: 1,
-        backgroundColor:Colors.whiteColor ,
+        backgroundColor:Colors.primaryColor,
         justifyContent: 'center',
         alignItems: 'center'
     }

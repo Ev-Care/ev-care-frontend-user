@@ -8,7 +8,7 @@ export const apiPatchRequest = async (request) => {
             Authorization: `Bearer ${request.accessToken}`, // Add Bearer token here
 
         };
-        console.log("request in apiPatchRequest", request);
+        console.log("request in apiPatchRequest", JSON.stringify(request, null, 2));
 
         const response = await axios.patch(request.apiUrl, request.data, { headers });
         console.log("response in apiPatchRequest", response.data);

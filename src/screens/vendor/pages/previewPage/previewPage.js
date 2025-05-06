@@ -60,8 +60,7 @@ const PreviewPage = ({ navigation, route }) => {
     (station) => station.id === stationData.station_id
   );
 
-  console.log("error in preview", errorMessage);
-  console.log("stations in preview", stations);
+  
   useEffect(() => {
     console.log(
       "Transformed station data preview:",
@@ -139,6 +138,7 @@ const PreviewPage = ({ navigation, route }) => {
           );
         }
       } else {
+        
         const updateStationResponse = await dispatch(
           updateStation(stationData)
         );
@@ -342,7 +342,7 @@ const PreviewPage = ({ navigation, route }) => {
               </Text>
               <Text style={styles.chargerSpecText}>|</Text>
               <Text style={styles.chargerSpecText}>
-                Power:⚡{charger?.power_rating || "Unknown Power"} KW
+                Power:⚡{charger?.max_power_kw || "Unknown Power"} KW
               </Text>
             </View>
 

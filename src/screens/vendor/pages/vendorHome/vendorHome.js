@@ -293,7 +293,7 @@ const VendorHome = () => {
           Update station and port availability in real-time.
         </Text>
 
-        <View style={styles.availabilityContainer}>
+        {/* <View style={styles.availabilityContainer}>
           <Text style={[styles.featureDescription, { color: COLORS.white }]}>
             {isLive ? "Live" : "Offline"}
           </Text>
@@ -303,7 +303,7 @@ const VendorHome = () => {
             trackColor={{ false: COLORS.secondary, true: COLORS.green }}
             thumbColor={COLORS.white}
           />
-        </View>
+        </View> */}
       </TouchableOpacity>
     );
   }

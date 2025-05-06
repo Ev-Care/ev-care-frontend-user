@@ -105,9 +105,9 @@ const ChargingStationMap = () => {
   let mapIndex = 0;
 
   useEffect(() => {
-    console.log('new stations = ', JSON.stringify(stations, null, 2));
+    // console.log('new stations = ', JSON.stringify(stations, null, 2));
   }, [stations]);
-  
+
 
   const handleSearchedStation = async (data) => {
     try {
@@ -125,7 +125,7 @@ const ChargingStationMap = () => {
 
     }
 
-    
+
 
   }
   const _scrollView = useRef(null);
@@ -252,45 +252,41 @@ const ChargingStationMap = () => {
         const coords = {
           latitude: lat,
           longitude: lng
-        }
+        };
 
-        handleSearchedStation({coords, radius:50})
+        await handleSearchedStation({ coords, radius: 50 });
+
+        const radiusInKm = 50;
+        const oneDegreeOfLatitudeInKm = 111.32;
+        const latitudeDelta = radiusInKm / oneDegreeOfLatitudeInKm;
+        const longitudeDelta = radiusInKm / (oneDegreeOfLatitudeInKm * Math.cos(lat * (Math.PI / 180)));
 
         const newRegion = {
           latitude: lat,
           longitude: lng,
-          latitudeDelta: 0.03,
-          longitudeDelta: 0.03,
+          latitudeDelta,
+          longitudeDelta,
         };
+
         setRegion(newRegion);
         const selectedCoord = { latitude: lat, longitude: lng };
         setSelectedLocation(selectedCoord);
         scrollTo();
+
         if (mapRef.current) {
           mapRef.current.animateCamera(
-            { center: newRegion, zoom: 15 },
+            { center: newRegion, zoom: 10 },
             { duration: 1000 }
           );
         }
 
-        if (mapRef.current && currentLocation && selectedCoord) {
-          mapRef.current.fitToCoordinates(
-            [
-              // currentLocation, // user's current location
-              selectedCoord,
-              stations[0].coordinates,
-            ],
-            {
-              edgePadding: { top: 150, right: 50, bottom: 200, left: 50 },
-              animated: true,
-            }
-          );
-        }
+        console.log('nearest stations: ', stations[0]);
       }
     } catch (error) {
       console.error("Place details error:", error);
     }
   };
+
 
   const scrollTo = () => {
     if (stations.length > 0 && _scrollView.current) {

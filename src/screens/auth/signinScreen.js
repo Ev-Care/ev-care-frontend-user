@@ -148,7 +148,7 @@ const SigninScreen = ({ navigation }) => {
       <ImageBackground
         source={require("../../../assets/images/authbg.png")}
         style={{ width: screenWidth, height: screenWidth - 150 }}
-        resizeMode="stretch"
+        // resizeMode="stretch"
       >
         <View style={styles.topImageOverlay}>
           <Text style={{ ...Fonts.whiteColor22SemiBold }}>Sign in</Text>

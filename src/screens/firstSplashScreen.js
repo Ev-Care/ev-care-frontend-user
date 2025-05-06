@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   text: {
     ...Fonts.whiteColor38SemiBold,
     fontSize: 45,
-    marginBottom: -8, // Adjust as needed
+    marginBottom: -6, // Adjust as needed
     color: "#29cafc",
   },
 });

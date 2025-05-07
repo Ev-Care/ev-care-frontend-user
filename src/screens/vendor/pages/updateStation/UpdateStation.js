@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  ActivityIndicator,
   Image,
+  Modal,
   Platform,
 } from "react-native";
 import MyStatusBar from "../../../../components/myStatusBar";
@@ -19,9 +21,13 @@ import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { selectToken, selectUser } from "../../../auth/services/selector";
 import imageURL from "../../../../constants/baseURL";
-import { showSnackbar } from '../../../../redux/snackbar/snackbarSlice'
+import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
 import { postSingleFile } from "../../../auth/services/crudFunction";
 import { setupImagePicker } from "../../CompleteProfileDetail/vendorDetailForm";
+import { MaterialIcons, Ionicons, Entypo } from "@expo/vector-icons";
+
+import RNModal from "react-native-modal";
+import { Colors } from "../../../../constants/styles";
 const PRIMARY_COLOR = "#101942";
 const amenities = [
   { id: 1, icon: "toilet", label: "Restroom" },
@@ -67,21 +73,36 @@ const UpdateStation = ({ navigation, route }) => {
       ? "24 Hours"
       : "Custom"
   );
-  const [photo, setPhoto] = useState(station?.station_images || null);
+ 
   const [address, setAddress] = useState(station?.address || "");
-  const [openTime, setOpenTime] = useState(station?.open_hours_opening_time || "");
-  const [closeTime, setCloseTime] = useState(station?.open_hours_closing_time || "");
+  const [openTime, setOpenTime] = useState(
+    station?.open_hours_opening_time || ""
+  );
+  const [closeTime, setCloseTime] = useState(
+    station?.open_hours_closing_time || ""
+  );
   const [showPicker, setShowPicker] = useState(false);
   const [selectedField, setSelectedField] = useState(null);
   const [stationName, setStationName] = useState(station?.station_name || "");
-  const [stationImages, setStationImages] = useState(station?.station_images || "");
+  const [stationImages, setStationImages] = useState(
+    station?.station_images || ""
+  );
   const [chargerType, setchargerType] = useState("");
-  const [accessType, setAccessType] = useState( station?.access_type || "public");
+  const [accessType, setAccessType] = useState(
+    station?.access_type || "public"
+  );
   const [powerRating, setPowerRating] = useState("");
   const [chargerForms, setChargerForms] = useState(station?.chargers || [{}]);
   const [selectedForm, setSelectedForm] = useState(null);
   const [coordinate, setCoordinate] = useState(station?.coordinates || null);
-  const accessToken = useSelector(selectToken)
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const [currentImageSetter, setCurrentImageSetter] = useState(null);
+  const [currentImageLabel, setCurrentImageLabel] = useState(null);
+  const [imageloading, setImageLoading] = useState("");
+
+  const accessToken = useSelector(selectToken);
   // Initialize selectedConnectors with chargerIndex as key and connector_type as value
   const [selectedConnectors, setSelectedConnectors] = useState(() => {
     const initialConnectors = {};
@@ -127,78 +148,177 @@ const UpdateStation = ({ navigation, route }) => {
   };
 
   // Function to pick an image
-  const handleImagePick = async (source, type) => {
-    console.log('inside imaoege pick');
-    let permissionResult;
+  // const handleImagePick = async (source, type) => {
+  //   console.log("inside imaoege pick");
+  //   let permissionResult;
 
-    if (source === "camera") {
-      permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-    } else {
-      permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    }
+  //   if (source === "camera") {
+  //     permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+  //   } else {
+  //     permissionResult =
+  //       await ImagePicker.requestMediaLibraryPermissionsAsync();
+  //   }
 
-    if (permissionResult.granted === false) {
-      dispatch(showSnackbar({ message: 'Permission is required!', type: 'error' }));
-      return;
-    }
+  //   if (permissionResult.granted === false) {
+  //     dispatch(
+  //       showSnackbar({ message: "Permission is required!", type: "error" })
+  //     );
+  //     return;
+  //   }
 
-    let result;
-    if (source === "camera") {
-      result = await ImagePicker.launchCameraAsync({
+  //   let result;
+  //   if (source === "camera") {
+  //     result = await ImagePicker.launchCameraAsync({
+  //       allowsEditing: true,
+  //       quality: 0.2,
+  //     });
+  //   } else {
+  //     result = await ImagePicker.launchImageLibraryAsync({
+  //       allowsEditing: true,
+  //       quality: 0.2,
+  //     });
+  //   }
+
+  //   if (!result.canceled) {
+  //     const imageUri = result.assets[0].uri;
+  //     await new Promise((resolve) => setTimeout(resolve, 200));
+  //     const file = await setupImagePicker(imageUri);
+
+  //     console.log("image", imageUri);
+  //     // Check for internet connectivity before sending request
+  //     // const netState = await NetInfo.fetch();
+  //     // if (!netState.isConnected) {
+  //     //   dispatch(showSnackbar({ message: "No internet connection.", type: "error" }));
+  //     //   return;
+  //     // }
+
+  //     try {
+  //       console.log("inside try");
+  //       const response = await dispatch(
+  //         postSingleFile({ file: file, accessToken: accessToken })
+  //       );
+
+  //       if (
+  //         response?.payload?.code === 200 ||
+  //         response?.payload?.code === 201
+  //       ) {
+  //         setPhoto(imageUri);
+  //         console.log(
+  //           "photo url in pick image = ",
+  //           response?.payload?.data?.filePathUrl
+  //         );
+  //         setStationImages(response?.payload?.data?.filePathUrl);
+  //       } else {
+  //         dispatch(
+  //           showSnackbar({
+  //             message: authErrorMessage || "File Should be less than 5 MB",
+  //             type: "error",
+  //           })
+  //         );
+
+  //         // Alert.alert("Error", "File Should be less than 5 MB");
+  //       }
+  //     } catch (error) {
+  //       dispatch(
+  //         showSnackbar({
+  //           message: authErrorMessage || "Upload failed. Please try again.",
+  //           type: "error",
+  //         })
+  //       );
+
+  //       // Alert.alert("Error", "Upload failed. Please try again.");
+  //     } finally {
+  //       // 👉 Always stop loader
+  //     }
+  //   }
+  // };
+  const showFullImage = (uri) => {
+    if (!uri) return;
+    setSelectedImage(uri);
+    setModalVisible(true);
+  };
+  const removeImage = (setter) => {
+    setter(null);
+    setBottomSheetVisible(false);
+  };
+  const openGallery = async (setter, label) => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.1,
         allowsEditing: true,
-        quality: 0.2,
+        aspect: label === "avatar" ? [1, 1] : undefined,
       });
-    } else {
-      result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true,
-        quality: 0.2,
-      });
-    }
 
-    if (!result.canceled) {
-      const imageUri = result.assets[0].uri;
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      const file = await setupImagePicker(imageUri);
+      if (!result.canceled) {
+        const imageUri = result.assets[0].uri;
+        setImageLoading(label);
+        const file = await setupImagePicker(imageUri);
 
-      console.log('image',imageUri);
-      // Check for internet connectivity before sending request
-      // const netState = await NetInfo.fetch();
-      // if (!netState.isConnected) {
-      //   dispatch(showSnackbar({ message: "No internet connection.", type: "error" }));
-      //   return;
-      // }
-
-
-      try {
-
-        console.log('inside try')
         const response = await dispatch(
           postSingleFile({ file: file, accessToken: accessToken })
         );
 
-        if (response?.payload?.code === 200 || response?.payload?.code === 201) {
-          
-            setPhoto(imageUri);
-            console.log('photo url in pick image = ', response?.payload?.data?.filePathUrl);
-            setStationImages(response?.payload?.data?.filePathUrl);
-          
+        if (
+          response?.payload?.code === 200 ||
+          response?.payload?.code === 201
+        ) {
+          setter(response?.payload?.data?.filePathUrl);
+          console.log(
+            "Profile Image URI set successfully:",
+            response?.payload?.data?.filePathUrl
+          );
         } else {
-
-          dispatch(showSnackbar({ message: authErrorMessage || 'File Should be less than 5 MB', type: 'error' }));
-
-          // Alert.alert("Error", "File Should be less than 5 MB");
+          Alert.alert("Error", "File should be less than 5 MB");
         }
-      } catch (error) {
-        dispatch(showSnackbar({ message: authErrorMessage || 'Upload failed. Please try again.', type: 'error' }));
-
-        // Alert.alert("Error", "Upload failed. Please try again.");
-      } finally {
-        // 👉 Always stop loader
-      
       }
+    } catch (error) {
+      console.log("Error uploading file:", error);
+      Alert.alert("Error", "Upload failed. Please try again.");
+    } finally {
+      setImageLoading("");
+      setBottomSheetVisible(false);
     }
   };
 
+  const openCamera = async (setter, label) => {
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        quality: 0.1,
+        allowsEditing: true,
+        aspect: label === "avatar" ? [1, 1] : undefined,
+      });
+
+      if (!result.canceled) {
+        const imageUri = result.assets[0].uri;
+        setImageLoading(label);
+        const file = await setupImagePicker(imageUri);
+
+        const response = await dispatch(
+          postSingleFile({ file: file, accessToken: accessToken })
+        );
+
+        if (
+          response?.payload?.code === 200 ||
+          response?.payload?.code === 201
+        ) {
+          setter(response?.payload?.data?.filePathUrl);
+          console.log(
+            "Profile Image URI set successfully:",
+            response?.payload?.data?.filePathUrl
+          );
+        } else {
+          Alert.alert("Error", "File should be less than 5 MB");
+        }
+      }
+    } catch (error) {
+      console.log("Error uploading file:", error);
+      Alert.alert("Error", "Upload failed. Please try again.");
+    } finally {
+      setImageLoading("");
+      setBottomSheetVisible(false);
+    }
+  };
   const selectOnMap = () => {
     navigation.push("PickLocation", {
       addressFor: "stationAddress",
@@ -219,8 +339,6 @@ const UpdateStation = ({ navigation, route }) => {
     const amenitiesString = selectedAmenities
       .map((id) => amenities.find((amenity) => amenity.id === id)?.label)
       .join(",");
-
-
 
     // Prepare the final station data
     const stationData = {
@@ -250,7 +368,7 @@ const UpdateStation = ({ navigation, route }) => {
     navigation.push("PreviewPage", {
       stationData,
       type: "update",
-      stationImage: photo,
+      stationImage: stationImages,
     });
   };
 
@@ -264,7 +382,42 @@ const UpdateStation = ({ navigation, route }) => {
   const removeChargerForm = (index) => {
     setChargerForms(chargerForms.filter((_, i) => i !== index));
   };
+  const renderImageBox = (label, setter, apiRespUri) => {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          if (apiRespUri) {
+            showFullImage(imageURL.baseURL + apiRespUri);
+          }
+        }}
+        style={{ alignItems: "center" }}
+      >
+        <View style={[styles.imageBox, { borderRadius: 12 }]}>
+          {imageloading === label ? (
+            <ActivityIndicator size={40} color="#ccc" />
+          ) : apiRespUri ? (
+            <Image
+              source={{ uri: imageURL.baseURL + apiRespUri }}
+              style={[styles.imageStyle, { borderRadius: 12 }]}
+            />
+          ) : (
+            <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
+          )}
 
+          <TouchableOpacity
+            style={styles.editIcon}
+            onPress={() => {
+              setCurrentImageSetter(() => setter);
+              setCurrentImageLabel(label);
+              setBottomSheetVisible(true);
+            }}
+          >
+            <MaterialIcons name="edit" size={20} color="white" />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  };
   return (
     <ScrollView style={styles.container}>
       <MyStatusBar />
@@ -287,8 +440,55 @@ const UpdateStation = ({ navigation, route }) => {
           <Text style={styles.previewButtonText}>Preview</Text>
         </TouchableOpacity>
       </View>
+      <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modalContainer}>
+          <Image source={{ uri: selectedImage }} style={styles.fullImage} />
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
+          </TouchableOpacity>
+        </View>
+      </Modal>
+      {bottomSheet()}
     </ScrollView>
   );
+  function bottomSheet() {
+    return (
+      <RNModal
+        isVisible={isBottomSheetVisible}
+        onBackdropPress={() => setBottomSheetVisible(false)}
+        style={{ justifyContent: "flex-end", margin: 0 }}
+      >
+        <View style={styles.bottomSheet}>
+          <TouchableOpacity
+            style={styles.sheetOption}
+            onPress={() => openCamera(currentImageSetter, currentImageLabel)}
+          >
+            <Ionicons name="camera" size={22} color="#555" />
+            <Text style={styles.sheetOptionText}>Use Camera</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sheetOption}
+            onPress={() => openGallery(currentImageSetter, currentImageLabel)}
+          >
+            <Entypo name="image" size={22} color="#555" />
+            <Text style={styles.sheetOptionText}>Choose from Gallery</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sheetOption}
+            onPress={() => removeImage(currentImageSetter)}
+          >
+            <MaterialIcons name="delete" size={22} color="red" />
+            <Text style={[styles.sheetOptionText, { color: "red" }]}>
+              Remove Image
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </RNModal>
+    );
+  }
   function locationDetail() {
     const [networkType, setNetworkType] = useState("");
     const networkTypes = ["Type-1", "Type-2", "Type-3", "Self"];
@@ -377,7 +577,7 @@ const UpdateStation = ({ navigation, route }) => {
                   style={[
                     styles.hoursButton,
                     chargerForms[index]?.charger_type === "AC" &&
-                    styles.selectedButton,
+                      styles.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -393,7 +593,7 @@ const UpdateStation = ({ navigation, route }) => {
                     style={[
                       styles.buttonText,
                       chargerForms[index]?.charger_type === "AC" &&
-                      styles.selectedButtonText,
+                        styles.selectedButtonText,
                     ]}
                   >
                     AC
@@ -404,7 +604,7 @@ const UpdateStation = ({ navigation, route }) => {
                   style={[
                     styles.hoursButton,
                     chargerForms[index]?.charger_type === "DC" &&
-                    styles.selectedButton,
+                      styles.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -420,7 +620,7 @@ const UpdateStation = ({ navigation, route }) => {
                     style={[
                       styles.buttonText,
                       chargerForms[index]?.charger_type === "DC" &&
-                      styles.selectedButtonText,
+                        styles.selectedButtonText,
                     ]}
                   >
                     DC
@@ -440,27 +640,33 @@ const UpdateStation = ({ navigation, route }) => {
                 value={String(chargerForms[index]?.max_power_kw ?? "")}
                 onChangeText={(text) => {
                   // Remove non-numeric characters
-                  let numericText = text.replace(/[^0-9]/g, '');
+                  let numericText = text.replace(/[^0-9]/g, "");
 
                   // Prevent leading zeros
-                  if (numericText.length > 1 && numericText.startsWith('0')) {
-                    numericText = numericText.replace(/^0+/, '');
+                  if (numericText.length > 1 && numericText.startsWith("0")) {
+                    numericText = numericText.replace(/^0+/, "");
                   }
 
                   // If input is not empty and > 99, block it
                   if (numericText && parseInt(numericText, 10) > 99) {
-                    dispatch(showSnackbar({ message: "Power rating cannot exceed 99 kW", type: "error" }));
+                    dispatch(
+                      showSnackbar({
+                        message: "Power rating cannot exceed 99 kW",
+                        type: "error",
+                      })
+                    );
                     return;
                   }
 
                   setChargerForms((prev) =>
                     prev.map((charger, i) =>
-                      i === index ? { ...charger, max_power_kw: numericText } : charger
+                      i === index
+                        ? { ...charger, max_power_kw: numericText }
+                        : charger
                     )
                   );
                 }}
               />
-
             </View>
 
             {connectorsInfo(charger, index)}
@@ -514,9 +720,8 @@ const UpdateStation = ({ navigation, route }) => {
                   setSelectedConnectors((prev) => ({
                     ...prev,
                     [chargerIndex]: connector?.type,
-                  }))
-                }
-                }
+                  }));
+                }}
                 key={`connector-${connector?.id}`}
                 style={styles?.connectorsItem}
               >
@@ -539,7 +744,6 @@ const UpdateStation = ({ navigation, route }) => {
                     justifyContent: "center",
                     marginTop: 6,
                   }}
-
                 >
                   {isSelected && (
                     <View
@@ -563,8 +767,6 @@ const UpdateStation = ({ navigation, route }) => {
     );
   }
 
-
-
   function amenitiesSection() {
     return (
       <View style={styles.section}>
@@ -578,7 +780,7 @@ const UpdateStation = ({ navigation, route }) => {
               style={[
                 styles.amenityItem,
                 selectedAmenities.includes(amenity.id) &&
-                styles.selectedAmenity,
+                  styles.selectedAmenity,
               ]}
               onPress={() => toggleAmenity(amenity.id)}
             >
@@ -595,7 +797,7 @@ const UpdateStation = ({ navigation, route }) => {
                 style={[
                   styles.amenityLabel,
                   selectedAmenities.includes(amenity.id) &&
-                  styles.selectedAmenityText,
+                    styles.selectedAmenityText,
                 ]}
               >
                 {amenity.label}
@@ -608,7 +810,6 @@ const UpdateStation = ({ navigation, route }) => {
   }
 
   function openHoursSection() {
-
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>Open Hours</Text>
@@ -689,7 +890,7 @@ const UpdateStation = ({ navigation, route }) => {
     );
   }
   function uploadPhotoSection() {
-    console.log("photo url = ", imageURL.baseURL + photo);
+  
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>
@@ -698,13 +899,15 @@ const UpdateStation = ({ navigation, route }) => {
         <Text style={styles.photoDescription}>
           Contribute to smoother journeys; include a location/charger photo.
         </Text>
-        <TouchableOpacity style={styles.photoUpload} onPress={handleImagePick}>
-          {photo ? (
-            <Image source={{ uri: imageURL.baseURL+stationImages }} style={styles.previewImage} />
-          ) : (
-            <Icon name="camera-plus-outline" size={40} color="#ccc" />
-          )}
-        </TouchableOpacity>
+     
+        <View
+          style={{
+            flexWrap: "wrap",
+            // backgroundColor:"teal"
+          }}
+        >
+          {renderImageBox("station", setStationImages, stationImages)}
+        </View>
       </View>
     );
   }
@@ -720,7 +923,6 @@ const UpdateStation = ({ navigation, route }) => {
             ]}
             onPress={() => {
               setAccessType("public");
-
             }}
           >
             <Text
@@ -844,7 +1046,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 
-
   amenityItem: {
     width: "18%",
     alignItems: "center",
@@ -916,21 +1117,7 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 12,
   },
-  photoUpload: {
-    width: 120,
-    height: 120,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: "#ccc",
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  previewImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 8,
-  },
+
   input: {
     borderWidth: 1,
     borderColor: "#e0e0e0",
@@ -1015,6 +1202,69 @@ const styles = StyleSheet.create({
   mapButtonText: {
     color: "#F4721E",
     fontSize: 12,
+  },
+  imageBox: {
+    width: 120,
+    height: 120,
+    borderWidth: 1,
+    borderStyle: "dotted",
+    borderColor: "#aaa",
+
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+    backgroundColor: "#f9f9f9",
+  },
+  imageStyle: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 12,
+  },
+  editIcon: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    backgroundColor: Colors.primaryColor,
+    borderRadius: 15,
+    padding: 2,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#fff",
+    borderRadius: 30,
+  },
+  fullImage: {
+    width: "90%",
+    height: "70%",
+    resizeMode: "contain",
+    borderRadius: 10,
+  },
+  // closeText: {
+  //   color: "#000",
+  //   fontWeight: "bold",
+  // },
+  bottomSheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+  },
+  sheetOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  sheetOptionText: {
+    fontSize: 16,
+    marginLeft: 12,
+    color: "#333",
   },
 });
 

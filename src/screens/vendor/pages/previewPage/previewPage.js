@@ -411,7 +411,7 @@ const PreviewPage = ({ navigation, route }) => {
           </View>
 
           <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>Public</Text>
+            <Text style={styles.communityText}>{stationData?.access_type || 'Public'}</Text>
           </View>
         </View>
         <TouchableOpacity

@@ -30,17 +30,9 @@ import { approveVendorProfile, getAllPendingUsers } from "../services/crudFuncti
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 const SupportIssuesDetail = ({ route, navigation }) => {
-  const { user } = route?.params; // Get the user data from route params
+  const { issue } = route?.params; // Get the user data from route params
 
-  const [email, setEmail] = useState(user?.email || "Not found");
-  const [contactNumber, setContactNumber] = useState(
-    user?.mobile_number || "Not found"
-  );
-  const [title, setTitle] = useState("This is Title");
-  const [message, setMessage] = useState("This is Message");
-  //   image start
-  const [referenceImage, setReferenceImage] = useState( null );
-
+  
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -95,41 +87,41 @@ const SupportIssuesDetail = ({ route, navigation }) => {
       setIsLoading(false);
     }
   };
-  const handleApprove = async () => {
-    setIsLoading(true);
-    try {
-      const approvedResponse = await dispatch(
-        approveVendorProfile({ user_key: user?.user_key, status: "approve" })
-      );
+  // const handleApprove = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     const approvedResponse = await dispatch(
+  //       approveVendorProfile({ user_key: user?.user_key, status: "approve" })
+  //     );
 
-      if (approveVendorProfile.fulfilled.match(approvedResponse)) {
-        const pendingVendorResponse = await dispatch(getAllPendingUsers());
+  //     if (approveVendorProfile.fulfilled.match(approvedResponse)) {
+  //       const pendingVendorResponse = await dispatch(getAllPendingUsers());
 
-        if (getAllPendingUsers.fulfilled.match(pendingVendorResponse)) {
-          await dispatch(
-            showSnackbar({
-              message: "Vendor profile approved.",
-              type: "success",
-            })
-          );
-          navigation.goBack();
-        } else if (getAllPendingUsers.rejected.match(pendingVendorResponse)) {
-          dispatch(
-            showSnackbar({
-              message: "Failed to approve vendor.",
-              type: "error",
-            })
-          );
-        }
-      } else if (approveVendorProfile.rejected.match(approvedResponse)) {
-        dispatch(
-          showSnackbar({ message: "Failed to approve vendor.", type: "error" })
-        );
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //       if (getAllPendingUsers.fulfilled.match(pendingVendorResponse)) {
+  //         await dispatch(
+  //           showSnackbar({
+  //             message: "Vendor profile approved.",
+  //             type: "success",
+  //           })
+  //         );
+  //         navigation.goBack();
+  //       } else if (getAllPendingUsers.rejected.match(pendingVendorResponse)) {
+  //         dispatch(
+  //           showSnackbar({
+  //             message: "Failed to approve vendor.",
+  //             type: "error",
+  //           })
+  //         );
+  //       }
+  //     } else if (approveVendorProfile.rejected.match(approvedResponse)) {
+  //       dispatch(
+  //         showSnackbar({ message: "Failed to approve vendor.", type: "error" })
+  //       );
+  //     }
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const renderUserData = (key, value) => (
     <View
@@ -224,9 +216,9 @@ const SupportIssuesDetail = ({ route, navigation }) => {
             },
           ]}
         >
-          {user?.avatar && user.avatar.trim() !== "" ? (
-            <TouchableOpacity onPress={() =>  showFullImage(imageURL?.baseURL + user?.avatar)}>
-            <Image source={{ uri: user?.avatar }} style={styles.avatar} />
+          {issue?.user?.avatar && issue?.user.avatar.trim() !== "" ? (
+            <TouchableOpacity onPress={() =>  showFullImage(imageURL?.baseURL + issue?.user?.avatar)}>
+            <Image source={{ uri: imageURL.baseURL + issue?.user?.avatar }} style={styles.avatar} />
             </TouchableOpacity>
           ) : (
             <Icon
@@ -239,19 +231,19 @@ const SupportIssuesDetail = ({ route, navigation }) => {
 
           <View style={styles.userNameAndNumber}>
             <Text style={styles.userName}>
-              {user?.owner_legal_name || "N/A"}
+              {issue?.user?.owner_legal_name || "N/A"}
             </Text>
             <Text style={styles.userMobile}>
-              {user?.mobile_number || "N/A"}
+              {issue?.user?.mobile_number || "N/A"}
             </Text>
           </View>
         </View>
-        {renderUserData("Contact Number", contactNumber)}
-        {renderUserData("Contact Email", email)}
-        {renderTitleMessage("Title", title)}
-        {renderTitleMessage("Message", message)}
+        {renderUserData("Contact Number", issue.contact_number)}
+        {renderUserData("Contact Email", issue.contact_email)}
+        {renderTitleMessage("Title", issue.title)}
+        {renderTitleMessage("Message", issue.message)}
         <View style={styles.imageContainer}>
-          {renderImageBox("Reference", referenceImage)}
+          {renderImageBox("Reference", imageURL.baseURL + issue.reference_image_url)}
          
         </View>
 

@@ -7,6 +7,7 @@ import {
   getAllPendingStationAPI,
   getAllPendingUsersAPI,
   getAllStationsAPI,
+  getAllSupportIssuesAPI,
 } from "./api";
 // Async thunk to fetch stations
 export const fetchAllPendingStation = createAsyncThunk(
@@ -91,6 +92,38 @@ export const getAllPendingUsers = createAsyncThunk(
       }
     } catch (error) {
       console.log("Error in getAllPendingUsers:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message || // API sent error message
+        error?.message || // JS error message
+        "Server error"; // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+//Get all Support issues
+export const getAllSupportIssues = createAsyncThunk(
+  "admin/getAllSupportIssues",
+  async (_, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
+
+      const response = await getAllSupportIssuesAPI({
+        accessToken,
+      }); // Call the API to fetch stations by location
+
+      if (response?.data?.code === 200 || response?.data?.code === 201) {
+        return response?.data;
+      } else {
+        return rejectWithValue(
+          response?.message || response?.data?.message || "Issues detail not found"
+        );
+      }
+    } catch (error) {
+      console.log("Error in getAllSupportIssues:", error);
 
       // Always extract message properly even in catch
       const errorMessage =

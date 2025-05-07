@@ -22,6 +22,7 @@ import MyStatusBar from "../../../components/myStatusBar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { color } from "@rneui/base";
+import imageURL from "../../../constants/baseURL";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -96,6 +97,126 @@ const USERS = [
   },
 ];
 
+const allIssues = [
+  {
+    "user": {
+      "id": 60,
+      "user_key": "ALdwJF818e",
+      "owner_legal_name": "vendor5",
+      "business_name": "This is business 3466",
+      "mobile_number": "6666666666",
+      "email": "Vendor66@gmail.com",
+      "otp": "264844",
+      "pan_no": "MCNPS2766K",
+      "tan_no": null,
+      "gstin_number": null,
+      "gstin_image": null,
+      "adhar_no": "343934391765",
+      "address": "16, Near Ganesh Garden, Ambegaon Pathar, Pune, Maharashtra 411046, India",
+      "avatar": "/uploads/1746087113689.jpeg",
+      "adhar_front_pic": "/uploads/1746087164706.jpeg",
+      "adhar_back_pic": "/uploads/1746087168841.jpeg",
+      "pan_pic": "/uploads/1746087180925.jpeg",
+      "tan_pic": null,
+      "google_id": null,
+      "otp_expiry_date": "2025-05-07T20:02:48.000Z",
+      "status": "Active",
+      "role": "vendor",
+      "vehicle_registration_number": null,
+      "vehicle_manufacturer": null,
+      "vehicle_model": null,
+      "vendor_type": null,
+      "login_method": "mobile_otp",
+      "created_at": "2025-05-01T07:24:49.453Z",
+      "update_at": "2025-05-07T19:52:47.000Z",
+      "updated_by": 0,
+      "isLoggedIn": true,
+      "password": null
+    },
+    status: "pending",
+    "contact_number": "+916666666666",
+    "contact_email": "dummy.user@example.com",
+    "title": "Unable to update profile",
+    "message": "Every time I try to update my profile, the app crashes.",
+    "reference_image_url": null,
+    "created_at": "2025-05-08T13:30:00Z"
+  },
+  {
+    "user":  {
+      id: 19,
+      user_key: "b2ZB4gFprc",
+      owner_legal_name: "Ravi Kumar",
+      business_name: null,
+      mobile_number: "+911234567890",
+      email: null,
+      otp: "573937",
+      pan_no: null,
+      tan_no: null,
+      adhar_no: null,
+      address: null,
+      avatar: null,
+      adhar_front_pic: null,
+      adhar_back_pic: null,
+      pan_pic: null,
+      tan_pic: null,
+      google_id: null,
+      otp_expiry_date: "2025-04-23T18:41:38.000Z",
+      status: "New",
+      role: "vendor",
+      login_method: "mobile_otp",
+      created_at: "2025-04-23T18:31:38.000Z",
+      update_at: "2025-04-23T18:31:38.509Z",
+      updated_by: 0,
+      isLoggedIn: true,
+      password: null,
+    },
+    status: "pending",
+    "contact_number": "+916666666666",
+    "contact_email": "dummy.user@example.com",
+    "title": "App UI issue on support screen",
+    "message": "The image preview is not loading correctly as shown in the screenshot.",
+    "reference_image_url": "https://yourdomain.com/uploads/support/issue_screenshot_123.jpg",
+    "created_at": "2025-05-08T14:05:00Z"
+  },
+  {
+    "user": {
+      id: 19,
+      user_key: "b2ZB4gFprc",
+      owner_legal_name: "Gaurav Chaubey",
+      business_name: null,
+      mobile_number: "+9166666666669",
+      email: null,
+      otp: "573937",
+      pan_no: null,
+      tan_no: null,
+      adhar_no: null,
+      address: null,
+      avatar: null,
+      adhar_front_pic: null,
+      adhar_back_pic: null,
+      pan_pic: null,
+      tan_pic: null,
+      google_id: null,
+      otp_expiry_date: "2025-04-23T18:41:38.000Z",
+      status: "New",
+      role: "vendor",
+      login_method: "mobile_otp",
+      created_at: "2025-04-23T18:31:38.000Z",
+      update_at: "2025-04-23T18:31:38.509Z",
+      updated_by: 0,
+      isLoggedIn: true,
+      password: null,
+    },
+    status: "pending",
+    "contact_number": "+916666666666",
+    "contact_email": null,
+    "title": "Login OTP not received",
+    "message": "Tried multiple times but no OTP was received on my phone.",
+    "reference_image_url": null,
+    "created_at": "2025-05-08T15:00:00Z"
+  }
+];
+
 // User item component - extracted for better code organization
 
 const ViewAllIssuesPage = ({ navigation }) => {
@@ -103,12 +224,12 @@ const ViewAllIssuesPage = ({ navigation }) => {
   const [users, setUsers] = useState(USERS);
 
   // Filter users based on search query
-  const filteredUsers = users.filter(
-    (user) =>
-      user?.owner_legal_name
+  const filteredIssues = allIssues.filter(
+    (issue) =>
+      issue?.user?.owner_legal_name
         ?.toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      user?.mobile_number?.includes(searchQuery)
+      issue?.user.mobile_number?.includes(searchQuery)
   );
 
   return (
@@ -116,8 +237,8 @@ const ViewAllIssuesPage = ({ navigation }) => {
       <MyStatusBar />
       {searchBar()}
       <FlatList
-        data={filteredUsers}
-        renderItem={({ item }) => <UserInfo user={item} />}
+        data={filteredIssues}
+        renderItem={({ item }) => <SupportInfo issue={item} />}
         keyExtractor={(item) => item?.id?.toString()}
         contentContainerStyle={styles.listContainer}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -125,17 +246,17 @@ const ViewAllIssuesPage = ({ navigation }) => {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Icon name="account-search" size={60} color={COLORS.lightGray} />
-            <Text style={styles.emptyText}>No users found</Text>
+            <Text style={styles.emptyText}>No Issues found</Text>
           </View>
         }
       />
     </SafeAreaView>
   );
 
-  function UserInfo({ user }) {
+  function SupportInfo({ issue }) {
     return (
       <TouchableOpacity
-        onPress={() => navigation.navigate("SupportIssuesDetail", { user })}
+        onPress={() => navigation.navigate("SupportIssuesDetail", { issue })}
         style={styles.userItem}
       >
         <View
@@ -148,8 +269,8 @@ const ViewAllIssuesPage = ({ navigation }) => {
             },
           ]}
         >
-          {user?.avatar ? (
-            <Image source={{ uri: user?.avatar }} style={styles.avatar} />
+          {issue?.user?.avatar ? (
+            <Image source={{ uri: imageURL.baseURL + issue?.user?.avatar }} style={styles.avatar} />
           ) : (
             <Icon
               name="account-circle"
@@ -161,10 +282,10 @@ const ViewAllIssuesPage = ({ navigation }) => {
 
           <View style={styles.userNameAndNumber}>
             <Text style={styles.userName}>
-              {user?.owner_legal_name || "N/A"}
+              {issue?.user?.owner_legal_name || "N/A"}
             </Text>
             <Text style={styles.userMobile}>
-              {user?.mobile_number || "N/A"}
+              {issue?.user?.mobile_number || "N/A"}
             </Text>
           </View>
 
@@ -172,25 +293,25 @@ const ViewAllIssuesPage = ({ navigation }) => {
             <Text
               style={[
                 styles.roleText,
-                { color: user?.role === "user" ? COLORS.primary : "orange" },
+                { color: issue?.user?.role === "user" ? COLORS.primary : "orange" },
               ]}
             >
-              {user?.role || "N/A"}
+              {issue?.user?.role || "N/A"}
             </Text>
           </View>
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
           <Text style={[styles.userName, {}]}>Status: </Text>
-          <Text style={[styles.userMobile, { color: "red" }]}>Pending </Text>
+          <Text style={[styles.userMobile, { color: "red" }]}>{issue?.status} </Text>
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
           <Text style={[styles.userName, {}]}>Created at: </Text>
-          <Text style={[styles.userMobile, {}]}>24/04/2025</Text>
+          <Text style={[styles.userMobile, {}]}>{issue?.created_at}</Text>
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
           <Text style={[styles.userName, {}]}>Title: </Text>
           <Text style={[styles.userMobile, {}]}>
-            I'm not able to Post Stations
+            {issue?.title}
           </Text>
         </View>
       </TouchableOpacity>

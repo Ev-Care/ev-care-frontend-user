@@ -236,7 +236,7 @@ const RegisterScreen = ({ navigation, route }) => {
         </Text>
         <TouchableOpacity
           onPress={() =>
-            Linking.openURL("http://89.116.34.17:3000/terms-and-conditions")
+            Linking.openURL("http://evcareindia.com/")
           }
         >
           <Text

@@ -290,7 +290,7 @@ const StationDetailPage = ({ route, navigation }) => {
         {/* onPress={() => navigation.navigate("UpdateStation")} */}
         <TouchableOpacity
           style={styles.submitButton}
-          onPress={() => navigation.navigate("UpdateStation", { station })}
+          onPress={() => navigation.navigate("UpdateStationPage", { station })}
         >
           <Text style={styles.submitButtonText}>Update</Text>
         </TouchableOpacity>

@@ -76,7 +76,7 @@ const UpdateStation = ({ navigation, route }) => {
   const [stationName, setStationName] = useState(station?.station_name || "");
   const [stationImages, setStationImages] = useState(station?.station_images || "");
   const [chargerType, setchargerType] = useState("");
-  const [accessType, setAccessType] = useState("public");
+  const [accessType, setAccessType] = useState( station?.access_type || "public");
   const [powerRating, setPowerRating] = useState("");
   const [chargerForms, setChargerForms] = useState(station?.chargers || [{}]);
   const [selectedForm, setSelectedForm] = useState(null);

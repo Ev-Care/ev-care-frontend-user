@@ -153,7 +153,7 @@ const AddStations = () => {
 
     const chargers = chargerForms.map((charger, index) => ({
       charger_type: charger.chargerType || null,
-      power_rating: parseFloat(charger.powerRating) || null,
+      max_power_kw: parseFloat(charger.powerRating) || null,
 
       connector_type: charger.connector_type || null,
     }));
@@ -162,6 +162,7 @@ const AddStations = () => {
       owner_id: user?.id || null,
       station_name: stationName,
       address,
+      station_type: accessType,
       coordinates: {
         latitude: coordinate?.latitude || null,
         longitude: coordinate?.longitude || null,
@@ -204,7 +205,7 @@ const AddStations = () => {
 
     for (let i = 0; i < stationData?.chargers?.length; i++) {
       const charger = stationData?.chargers[i];
-      if (!charger?.charger_type || !charger?.power_rating || !charger?.connector_type) {
+      if (!charger?.charger_type || !charger?.max_power_kw || !charger?.connector_type) {
         dispatch(showSnackbar({ message: `Charger ${i + 1} details are incomplete.`, type: 'error' }));
         return;
       }

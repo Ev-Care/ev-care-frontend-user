@@ -36,7 +36,7 @@ import { Entypo } from '@expo/vector-icons';
 
 
 
-const vehicleData = {
+export const vehicleData = {
   "Tata": ["Ace", "Intra", "Yodha"],
   "Mahindra": ["Bolero", "Jeeto", "Supro"],
   "Ashok Leyland": ["Dost", "Partner", "Boss"],
@@ -52,20 +52,20 @@ const vehicleData = {
 };
 
 const RegisterScreen = ({ navigation, route }) => {
-  const [fullName, setfullName] = useState("");
-  const [email, setemail] = useState("");
-  const [role, setRole] = useState("user");
+  const [fullName, setfullName] = useState(null);
+  const [email, setemail] = useState(null);
+  const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(false); // Loader state
   const dispatch = useDispatch();
   const user = useSelector(selectUser); // Get user data from Redux store
   const token = useSelector(selectToken); // Get user data from Redux store
   const error = useSelector(selectAuthError); // Get error from Redux store
   const userKey = route?.params?.userKey;
-  const [selectedCompany, setSelectedCompany] = useState("");
-  const [selectedModel, setSelectedModel] = useState("");
-  const [customCompany, setCustomCompany] = useState("");
-  const [customModel, setCustomModel] = useState("");
-  const [vehicleNumber, setVehicleNumber] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedModel, setSelectedModel] = useState(null);
+  const [customCompany, setCustomCompany] = useState(null);
+  const [customModel, setCustomModel] = useState(null);
+  const [vehicleNumber, setVehicleNumber] = useState(null);
 
   const models = selectedCompany && vehicleData[selectedCompany] ? vehicleData[selectedCompany] : [];
   // console.log("user key in register : ", userKey);

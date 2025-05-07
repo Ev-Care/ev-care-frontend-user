@@ -177,35 +177,41 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   }, []);
 
   const getRouteBetweenCoordinates = async (origin, destination) => {
-    const originStr = `${origin.latitude},${origin.longitude}`;
-    const destinationStr = `${destination.latitude},${destination.longitude}`;
-    const apiKey = Key.apiKey; // Replace with your actual key
-
-    const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${originStr}&destination=${destinationStr}&key=${apiKey}&mode=driving&overview=full&steps=true`;
-
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (data.routes.length) {
-      // Get polyline points from the steps
-      let allPoints = [];
-
-      // Loop through each step to collect polyline points
-      data.routes[0].legs.forEach((leg) => {
-        leg.steps.forEach((step) => {
-          if (step.polyline) {
-            const decodedPoints = polyline.decode(step.polyline.points);
-            allPoints = [...allPoints, ...decodedPoints];
-          }
+    setIsLoading(true);
+    try {
+      const originStr = `${origin.latitude},${origin.longitude}`;
+      const destinationStr = `${destination.latitude},${destination.longitude}`;
+      const apiKey = Key.apiKey;
+  
+      const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${originStr}&destination=${destinationStr}&key=${apiKey}&mode=driving&overview=full&steps=true`;
+  
+      const response = await fetch(url);
+      const data = await response.json();
+  
+      if (data.routes.length) {
+        let allPoints = [];
+  
+        data.routes[0].legs.forEach((leg) => {
+          leg.steps.forEach((step) => {
+            if (step.polyline) {
+              const decodedPoints = polyline.decode(step.polyline.points);
+              allPoints = [...allPoints, ...decodedPoints];
+            }
+          });
         });
-      });
-
-      // Convert the decoded points to { latitude, longitude } format
-      return allPoints.map(([lat, lng]) => ({ latitude: lat, longitude: lng }));
-    } else {
-      throw new Error("No route found");
+  
+        return allPoints.map(([lat, lng]) => ({ latitude: lat, longitude: lng }));
+      } else {
+        throw new Error("No route found");
+      }
+    } catch (error) {
+      console.error("Error fetching route:", error);
+      return []; // return empty array or null depending on your app's behavior
+    } finally {
+      setIsLoading(false);
     }
   };
+  
 
   const [markerList] = useState(enrouteStations || []);
   const [region, setRegion] = useState({

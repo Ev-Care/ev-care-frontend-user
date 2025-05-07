@@ -160,18 +160,18 @@ const AdminHome = ({navigation}) => {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-          <TouchableOpacity>
+            <TouchableOpacity>
               <Image
-                source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }}
+                 source={require("../../../../assets/icon.png")}
                 style={styles.profileImage}
               />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>{user?.name || "Guest"}</Text>
+            <Text style={styles.headerTitle}>EV Care</Text>
           </View>
-          <View style={styles.headerRight}>
+            <View style={styles.headerRight}>
             <TouchableOpacity style={styles.notificationButton}>
               <Icon name="bell-outline" size={24} color={COLORS.primary} />
-              <View style={styles.notificationBadge} />
+              {/* <View style={styles.notificationBadge} /> */}
             </TouchableOpacity>
             
           </View>

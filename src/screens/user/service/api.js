@@ -11,7 +11,8 @@ export const getAllStationsByLocationAPI = (data) =>
     accessToken: data.accessToken,
   });
 
-export const updateUserProfileAPI = (data) =>
+export const 
+updateUserProfileAPI = (data) =>
   apiPatchRequest({
     apiUrl: `${API_URL}/users/edit-user/${data.user_key}`,
     content_type: "application/json",
@@ -20,7 +21,11 @@ export const updateUserProfileAPI = (data) =>
       email: data.email,
       role: data.role,
       avatar: data.avatar,
-      business_name: data?.business_name || null
+      vehicle_model:data.vehicle_model,
+      vehicle_manufacturer:data.vehicle_manufacturer,
+      vehicle_registration_number:data.vehicle_registration_number,
+      business_name: data?.business_name || null,
+
     },
     accessToken: data.accessToken,
   });

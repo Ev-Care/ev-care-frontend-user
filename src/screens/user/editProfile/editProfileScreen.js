@@ -34,7 +34,10 @@ import {
   selectToken,
   selectUser,
 } from "../../auth/services/selector";
+import { Picker } from '@react-native-picker/picker';
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import { vehicleData } from "../../auth/registerScreen";
+
 const EditProfileScreen = ({ route, navigation }) => {
   const user = useSelector(selectUser);
   const accessToken = useSelector(selectToken);
@@ -52,6 +55,15 @@ const EditProfileScreen = ({ route, navigation }) => {
   );
   const [panNumber, setPanNumber] = useState(user?.pan_no || "Not found");
   const [gstNumber, setGstNumber] = useState(user?.gstin_number || "Not found");
+  const [vehicleCompany, setVehicleCompany] = useState(user?.vehicle_manufacturer|| "Not found");
+  const [vehicleModel, setVehicleModel] = useState(user?.vehicle_model|| "Not found");
+  const [vehicleNumber, setVehicleNumber] = useState(user?.vehicle_registration_number|| "Not found");
+  // const [selectedCompany, setSelectedCompany] = useState(user?.vehicle_manufacturer|| "Not found");
+  // const [selectedModel, setSelectedModel] = useState(user?.vehicle_model|| "Not found");
+  // const [customCompany, setCustomCompany] = useState(null);
+  // const [customModel, setCustomModel] = useState(null); 
+
+  // const models = selectedCompany && vehicleData[selectedCompany] ? vehicleData[selectedCompany] : [];
   //   image start
   // const [aadhaarFrontImage, setAadhaarFrontImage] = useState(null);
   // const [aadhaarBackImage, setAadhaarBackImage] = useState(null);
@@ -83,17 +95,60 @@ const EditProfileScreen = ({ route, navigation }) => {
     setSelectedImage(uri);
     setModalVisible(true);
   };
+  const validateUserData = (data) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const nameRegex = /^[A-Za-z\s]{3,}$/;
+    const vehicleNumberRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
 
+    if (!data.email || !emailRegex.test(data.email)) {
+      return "Invalid email address.";
+    }
+
+    if (!data.owner_legal_name || !nameRegex.test(data.owner_legal_name)) {
+      return "Invalid full name. Only letters and spaces, at least 3 characters.";
+    }
+
+    if (!data.role || !['user', 'vendor'].includes(data.role.toLowerCase())) {
+      return "Role must be either 'user' or 'vendor'.";
+    }
+    if (data.role === 'user') {
+
+      if (!data.vehicle_registration_number || !vehicleNumberRegex.test(data.vehicle_registration_number)) {
+        return "Invalid vehicle number format (e.g., MH12AB1234).";
+      }
+
+      if (!data.vehicle_manufacturer || data.vehicle_manufacturer.trim() === "") {
+        return "Vehicle manufacturer is required.";
+      }
+
+      if (!data.vehicle_model || data.vehicle_model.trim() === "") {
+        return "Vehicle model is required.";
+      }
+    }
+
+    return null; // all good
+  };
   const handleSubmit = async () => {
+    const vehicleNumberRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
     setIsLoading(true);
     try {
       const updatedData = {
         owner_legal_name: name,
         email: email,
         avatar: avatarURI,
+        vehicle_model:vehicleModel,
+        vehicle_manufacturer:vehicleCompany,
+        vehicle_registration_number:vehicleNumber,
         role: user?.role,
         user_key: user?.user_key,
       };
+
+     const error = validateUserData(updatedData);
+      if (error) {
+        console.log('error cartched');
+        dispatch(showSnackbar({ message: error, type: 'error' }));
+        return;
+      }
   
       console.log("Updated Data:", updatedData);
   
@@ -222,7 +277,21 @@ const EditProfileScreen = ({ route, navigation }) => {
       />
     </View>
   );
-
+  // const renderVehicleInput = (label, value) => (
+  //   <View style={{ marginBottom: 12 , }}>
+  //     <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+  //       {label}
+  //     </Text>
+  //     <TextInput
+  //       style={styles.input}
+  //       value={value}
+  //       editable={false}
+  //     />
+  //     <TouchableOpacity  style={styles.vehicleEditIcon}>
+  //     <MaterialIcons name="edit" size={20} color="white" />
+  //     </TouchableOpacity>
+  //   </View>
+  // );
   const renderNonEditableInput = (label, value, setter, placeholder) => (
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
@@ -309,50 +378,14 @@ const EditProfileScreen = ({ route, navigation }) => {
           "Enter your full name"
         )}
         {renderInput("Email", email, setEmail, "Enter your email")}
+        {renderInput("Vehicle Number", vehicleNumber, setVehicleNumber, "Enter your Vehicle Number")}
+        {renderInput("Vehicle Manufacturer", vehicleCompany, setVehicleCompany, "Enter Vehicle Manufacturer Name")}
+        {renderInput("Vehicle Model", vehicleModel, setVehicleModel, "Enter Vehicle Model")}
+     
+            
 
-        {user?.role === "vendor" && (
-          <>
-            {renderInput(
-              "Business Name",
-              businessName,
-              setBusinessName,
-              "Enter business name"
-            )}
-            {renderNonEditableInput(
-              "Aadhar Number",
-              aadharNumber,
-              setAadharNumber,
-              "Enter Aadhar number"
-            )}
-            {renderNonEditableInput(
-              "PAN Number",
-              panNumber,
-              setPanNumber,
-              "Enter PAN number"
-            )}
-            {renderNonEditableInput(
-              "GST Number",
-              gstNumber,
-              setGstNumber,
-              "Enter GST number"
-            )}
-            <View style={styles.imageContainer}>
-              {renderImageBox(
-                "Aadhaar front",
-                setAadhaarFrontImageURI,
-                aadhaarFrontImageURI
-              )}
-              {renderImageBox(
-                "Aadhaar Back",
-                setAadhaarBackImageURI,
-                aadhaarBackImageURI
-              )}
-              {renderImageBox("PAN", setPanImageURI, panImageURI)}
-              {renderImageBox("GST", setGstImageURI, gstImageURI)}
-            </View>
-          </>
-        )}
 
+            
         <View style={styles.buttonRow}>
           <TouchableOpacity
             onPress={() => {
@@ -486,7 +519,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     // backgroundColor: "#fff",
-    flex:1,
+    // flex:1,
     backgroundColor: Colors.bodyBackColor,
     paddingBottom: 50,
   },
@@ -552,6 +585,14 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 5,
     right: 5,
+    backgroundColor: Colors.primaryColor,
+    borderRadius: 15,
+    padding: 2,
+  },
+  vehicleEditIcon: {
+    position: "absolute",
+    top: "50%",
+    right: 10,
     backgroundColor: Colors.primaryColor,
     borderRadius: 15,
     padding: 2,

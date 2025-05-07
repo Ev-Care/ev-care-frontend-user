@@ -237,7 +237,7 @@ const VendorHome = () => {
           </View>
 
           <Image
-            source={require("../../../../../assets/images/vendorWelcome.png")}
+            source={require("../../../../../assets/icon.png")}
             style={styles.welcomeImage}
             resizeMode="contain"
           />
@@ -497,6 +497,7 @@ const styles = StyleSheet.create({
   welcomeImage: {
     width: 100,
     height: 100,
+    borderRadius:12,
   },
   sectionHeader: {
     flexDirection: "row",

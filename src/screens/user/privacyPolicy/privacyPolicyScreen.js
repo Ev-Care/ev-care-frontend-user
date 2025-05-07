@@ -1,4 +1,4 @@
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View ,Linking} from "react-native";
 import React from "react";
 import { Colors, Fonts, Sizes, commonStyles } from "../../../constants/styles";
 import MyStatusBar from "../../../components/myStatusBar";

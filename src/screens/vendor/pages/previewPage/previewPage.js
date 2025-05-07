@@ -221,35 +221,6 @@ const PreviewPage = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      {/* <View style={styles.header}>
-        <Image
-          source={{
-            uri: stationImage || "https://via.placeholder.com/400x200",
-          }}
-          style={styles.mapBackground}
-        />
-        <View style={styles.overlay}>
-          <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>Public</Text>
-          </View>
-          <Text style={styles.stationName}>
-            {trimName(30, stationData?.station_name)}
-          </Text>
-          <Text style={styles.stationAddress}>
-            {trimName(50, stationData?.address)}
-          </Text>
-          <View style={styles.statusContainer}>
-            <Text style={styles.openHour}>Open Hours</Text>
-            <Text style={styles.statusTime}>
-              • {stationData?.open_hours_opening_time} -{" "}
-              {stationData?.open_hours_closing_time}
-            </Text>
-            <View style={styles.newBadge}>
-              <Text style={styles.newText}>New</Text>
-            </View>
-          </View>
-        </View>
-      </View> */}
       {header?.()}
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
@@ -319,7 +290,7 @@ const PreviewPage = ({ navigation, route }) => {
     return (
       <Modal visible={modalVisible} transparent={true}>
         <View style={styles.modalContainer}>
-          <Image source={{ uri: selectedImage }} style={styles.fullImage} />
+          <Image source={{ uri: imageURL.baseURL+selectedImage }} style={styles.fullImage} />
           <TouchableOpacity
             style={styles.modalCloseButton}
             onPress={() => setModalVisible(false)}
@@ -385,7 +356,7 @@ const PreviewPage = ({ navigation, route }) => {
     }
     //  console.log("station image in preview page upper",stationImage);
     const imageUrl = stationImage
-      ? { uri: stationImage }
+      ? { uri: imageURL.baseURL+stationImage }
       : require("../../../../../assets/images/nullStation.png");
     // console.log("station image in preview page lower",imageUrl);
     return (
@@ -411,7 +382,7 @@ const PreviewPage = ({ navigation, route }) => {
           </View>
 
           <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>Public</Text>
+            <Text style={styles.communityText}>{stationData?.access_type}</Text>
           </View>
         </View>
         <TouchableOpacity
@@ -826,6 +797,7 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "bold",
   },
+
 });
 
 export default PreviewPage;

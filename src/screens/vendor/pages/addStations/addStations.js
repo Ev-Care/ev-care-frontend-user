@@ -9,6 +9,7 @@ import {
   TextInput,
   ScrollView,
   Image,
+  Modal,
   Alert,
   Platform,
 } from "react-native";
@@ -16,6 +17,7 @@ import MyStatusBar from "../../../../components/myStatusBar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
+import { MaterialIcons, Ionicons, Entypo } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
@@ -23,6 +25,9 @@ import { setupImagePicker } from "../../CompleteProfileDetail/vendorDetailForm";
 import { postSingleFile } from "../../../auth/services/crudFunction";
 import { selectToken, selectUser } from "../../../auth/services/selector";
 import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
+import { Colors } from "../../../../constants/styles";
+import RNModal from "react-native-modal";
+import imageURL from "../../../../constants/baseURL";
 
 const PRIMARY_COLOR = "#101942";
 const amenities = [
@@ -62,10 +67,14 @@ const AddStations = () => {
   const [connectorsList, setConnectorsList] = useState([]);
   const accessToken = useSelector(selectToken); // Get access token from Redux store
   const dispatch = useDispatch(); // Get the dispatch function
-  const [imageloading, setImageLoading] = useState(false);
-  const [viewImage, setViewImage] = useState(null);
   const user = useSelector(selectUser); // Get user data
   const [selectedConnectors, setSelectedConnectors] = useState({});
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const [currentImageSetter, setCurrentImageSetter] = useState(null);
+  const [currentImageLabel, setCurrentImageLabel] = useState(null);
+  const [imageloading, setImageLoading] = useState("");
 
   const handleTimeChange = (event, selectedDate) => {
     setShowPicker(false);
@@ -90,28 +99,76 @@ const AddStations = () => {
     }
   };
 
-  const handleImagePick = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Sorry, we need gallery access permissions to make this work!");
-      return;
-    }
+  // const handleImagePick = async () => {
+  //   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  //   if (status !== "granted") {
+  //     alert("Sorry, we need gallery access permissions to make this work!");
+  //     return;
+  //   }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-    });
+  //   const result = await ImagePicker.launchImageLibraryAsync({
+  //     mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  //     allowsEditing: true,
+  //     quality: 1,
+  //   });
 
-    if (!result.canceled) {
-      const imageUri = result.assets?.[0]?.uri;
-      if (!imageUri) return;
+  //   if (!result.canceled) {
+  //     const imageUri = result.assets?.[0]?.uri;
+  //     if (!imageUri) return;
 
-      setImageLoading(true);
-      const file = await setupImagePicker(imageUri);
-      console.log("File selected", file);
+  //     setImageLoading(true);
+  //     const file = await setupImagePicker(imageUri);
+  //     console.log("File selected", file);
 
-      try {
+  //     try {
+  //       const response = await dispatch(
+  //         postSingleFile({ file: file, accessToken: accessToken })
+  //       );
+
+  //       if (
+  //         response?.payload?.code === 200 ||
+  //         response?.payload?.code === 201
+  //       ) {
+  //         setPhoto(response?.payload?.data?.filePathUrl);
+  //         setViewImage(imageUri);
+  //         console.log(
+  //           "Station image uploaded:",
+  //           response?.payload?.data?.filePathUrl
+  //         );
+  //       } else {
+  //         Alert.alert("Error", "File Should be less than 5 MB");
+  //       }
+  //     } catch (error) {
+  //       Alert.alert("Error", "Something went wrong while uploading.");
+  //     } finally {
+  //       setImageLoading(false);
+  //     }
+  //   }
+  // };
+
+  const showFullImage = (uri) => {
+    if (!uri) return;
+    setSelectedImage(uri);
+    setModalVisible(true);
+  };
+  const removeImage = (setter) => {
+    setter(null);
+    setBottomSheetVisible(false);
+  };
+  const openGallery = async (setter, label) => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.1,
+        allowsEditing: true,
+        aspect: label === "avatar" ? [1, 1] : undefined,
+      });
+
+      if (!result.canceled) {
+        const imageUri = result.assets[0].uri;
+        setImageLoading(label);
+        const file = await setupImagePicker(imageUri);
+
         const response = await dispatch(
           postSingleFile({ file: file, accessToken: accessToken })
         );
@@ -120,20 +177,60 @@ const AddStations = () => {
           response?.payload?.code === 200 ||
           response?.payload?.code === 201
         ) {
-          setPhoto(response?.payload?.data?.filePathUrl);
-          setViewImage(imageUri);
+          setter(response?.payload?.data?.filePathUrl);
           console.log(
-            "Station image uploaded:",
+            "Profile Image URI set successfully:",
             response?.payload?.data?.filePathUrl
           );
         } else {
-          Alert.alert("Error", "File Should be less than 5 MB");
+          Alert.alert("Error", "File should be less than 5 MB");
         }
-      } catch (error) {
-        Alert.alert("Error", "Something went wrong while uploading.");
-      } finally {
-        setImageLoading(false);
       }
+    } catch (error) {
+      console.log("Error uploading file:", error);
+      Alert.alert("Error", "Upload failed. Please try again.");
+    } finally {
+      setImageLoading("");
+      setBottomSheetVisible(false);
+    }
+  };
+
+  const openCamera = async (setter, label) => {
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        quality: 0.1,
+        allowsEditing: true,
+        aspect: label === "avatar" ? [1, 1] : undefined,
+      });
+
+      if (!result.canceled) {
+        const imageUri = result.assets[0].uri;
+        setImageLoading(label);
+        const file = await setupImagePicker(imageUri);
+
+        const response = await dispatch(
+          postSingleFile({ file: file, accessToken: accessToken })
+        );
+
+        if (
+          response?.payload?.code === 200 ||
+          response?.payload?.code === 201
+        ) {
+          setter(response?.payload?.data?.filePathUrl);
+          console.log(
+            "Profile Image URI set successfully:",
+            response?.payload?.data?.filePathUrl
+          );
+        } else {
+          Alert.alert("Error", "File should be less than 5 MB");
+        }
+      }
+    } catch (error) {
+      console.log("Error uploading file:", error);
+      Alert.alert("Error", "Upload failed. Please try again.");
+    } finally {
+      setImageLoading("");
+      setBottomSheetVisible(false);
     }
   };
 
@@ -162,7 +259,7 @@ const AddStations = () => {
       owner_id: user?.id || null,
       station_name: stationName,
       address,
-      station_type: accessType,
+      access_type: accessType,
       coordinates: {
         latitude: coordinate?.latitude || null,
         longitude: coordinate?.longitude || null,
@@ -181,32 +278,66 @@ const AddStations = () => {
       JSON.stringify(stationData, null, 2)
     );
 
-    if(!stationData?.station_name || stationData?.station_name ==='') {
-      dispatch(showSnackbar({ message: "Station name cannot be empty.", type: 'error' }));
+    if (!stationData?.station_name || stationData?.station_name === "") {
+      dispatch(
+        showSnackbar({
+          message: "Station name cannot be empty.",
+          type: "error",
+        })
+      );
       return;
     }
-    if(!stationData?.address || stationData.address === '') {
-      dispatch(showSnackbar({ message: "Station address cannot be empty.", type: 'error' }));
+    if (!stationData?.address || stationData.address === "") {
+      dispatch(
+        showSnackbar({
+          message: "Station address cannot be empty.",
+          type: "error",
+        })
+      );
       return;
     }
-    if(!stationData?.amenities || stationData.amenities === '') {
-      dispatch(showSnackbar({ message: "Station Amenities cannot be empty.", type: 'error' }));
+    if (!stationData?.amenities || stationData.amenities === "") {
+      dispatch(
+        showSnackbar({
+          message: "Station Amenities cannot be empty.",
+          type: "error",
+        })
+      );
       return;
     }
-    if(!stationData?.station_images || stationData.station_images === '') {
-      dispatch(showSnackbar({ message: "Please upload Station Images.", type: 'error' }));
+    if (!stationData?.station_images || stationData.station_images === "") {
+      dispatch(
+        showSnackbar({
+          message: "Please upload Station Images.",
+          type: "error",
+        })
+      );
       return;
     }
 
     if (!stationData?.chargers || stationData?.chargers?.length === 0) {
-      dispatch(showSnackbar({ message: "At least one charger must be added.", type: 'error' }));
+      dispatch(
+        showSnackbar({
+          message: "At least one charger must be added.",
+          type: "error",
+        })
+      );
       return;
     }
 
     for (let i = 0; i < stationData?.chargers?.length; i++) {
       const charger = stationData?.chargers[i];
-      if (!charger?.charger_type || !charger?.max_power_kw || !charger?.connector_type) {
-        dispatch(showSnackbar({ message: `Charger ${i + 1} details are incomplete.`, type: 'error' }));
+      if (
+        !charger?.charger_type ||
+        !charger?.max_power_kw ||
+        !charger?.connector_type
+      ) {
+        dispatch(
+          showSnackbar({
+            message: `Charger ${i + 1} details are incomplete.`,
+            type: "error",
+          })
+        );
         return;
       }
     }
@@ -214,7 +345,7 @@ const AddStations = () => {
     navigation.push("PreviewPage", {
       stationData,
       type: "add",
-      stationImage: viewImage,
+      stationImage: photo,
       clearForm,
     });
   };
@@ -247,10 +378,44 @@ const AddStations = () => {
     setCoordinate(null);
     setConnectorsList([]);
     setImageLoading(false);
-    setViewImage(null);
     setSelectedConnectors({});
   };
+  const renderImageBox = (label, setter, apiRespUri) => {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          if (apiRespUri) {
+            showFullImage(imageURL.baseURL + apiRespUri);
+          }
+        }}
+        style={{ alignItems: "center" }}
+      >
+        <View style={[styles.imageBox, { borderRadius: 12 }]}>
+          {imageloading === label ? (
+            <ActivityIndicator size={40} color="#ccc" />
+          ) : apiRespUri ? (
+            <Image
+              source={{ uri: imageURL.baseURL + apiRespUri }}
+              style={[styles.imageStyle, { borderRadius: 12 }]}
+            />
+          ) : (
+            <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
+          )}
 
+          <TouchableOpacity
+            style={styles.editIcon}
+            onPress={() => {
+              setCurrentImageSetter(() => setter);
+              setCurrentImageLabel(label);
+              setBottomSheetVisible(true);
+            }}
+          >
+            <MaterialIcons name="edit" size={20} color="white" />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  };
   return (
     <ScrollView style={styles.container}>
       <MyStatusBar />
@@ -260,12 +425,13 @@ const AddStations = () => {
         >
           <Icon name="arrow-left" size={24} color={PRIMARY_COLOR} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add New Station</Text>
+        <Text style={styles.headerTitle}>Add a New Station</Text>
         <View style={{ width: 24 }} />
       </View>
 
       {locationDetail()}
       {additionalDetail()}
+      {bottomSheet()}
       {chargerForms.map((_, index) => (
         <View key={`charger-${index}`}>{chargerDetail(index)}</View>
       ))}
@@ -275,17 +441,64 @@ const AddStations = () => {
           <Text style={styles.previewButtonText}>Next</Text>
         </TouchableOpacity>
       </View>
+      <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modalContainer}>
+          <Image source={{ uri: selectedImage }} style={styles.fullImage} />
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </ScrollView>
   );
+  function bottomSheet() {
+    return (
+      <RNModal
+        isVisible={isBottomSheetVisible}
+        onBackdropPress={() => setBottomSheetVisible(false)}
+        style={{ justifyContent: "flex-end", margin: 0 }}
+      >
+        <View style={styles.bottomSheet}>
+          <TouchableOpacity
+            style={styles.sheetOption}
+            onPress={() => openCamera(currentImageSetter, currentImageLabel)}
+          >
+            <Ionicons name="camera" size={22} color="#555" />
+            <Text style={styles.sheetOptionText}>Use Camera</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sheetOption}
+            onPress={() => openGallery(currentImageSetter, currentImageLabel)}
+          >
+            <Entypo name="image" size={22} color="#555" />
+            <Text style={styles.sheetOptionText}>Choose from Gallery</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sheetOption}
+            onPress={() => removeImage(currentImageSetter)}
+          >
+            <MaterialIcons name="delete" size={22} color="red" />
+            <Text style={[styles.sheetOptionText, { color: "red" }]}>
+              Remove Image
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </RNModal>
+    );
+  }
+
   function locationDetail() {
     return (
       <TouchableOpacity
-      activeOpacity={1}
+        activeOpacity={1}
         style={styles?.card}
         onPress={() => handleVisibility("locationdetail")}
       >
         <Text style={styles?.sectionTitle}>Location Details</Text>
-        {(selectedForm === "locationdetail" || selectedForm === null )&& (
+        {(selectedForm === "locationdetail" || selectedForm === null) && (
           <>
             <TouchableOpacity style={styles?.mapButton} onPress={selectOnMap}>
               <Text style={styles?.mapButtonText}>
@@ -358,7 +571,7 @@ const AddStations = () => {
                   style={[
                     styles?.hoursButton,
                     chargerForms?.[index]?.chargerType === "AC" &&
-                    styles?.selectedButton,
+                      styles?.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -374,7 +587,7 @@ const AddStations = () => {
                     style={[
                       styles?.buttonText,
                       chargerForms?.[index]?.chargerType === "AC" &&
-                      styles?.selectedButtonText,
+                        styles?.selectedButtonText,
                     ]}
                   >
                     AC
@@ -385,7 +598,7 @@ const AddStations = () => {
                   style={[
                     styles?.hoursButton,
                     chargerForms?.[index]?.chargerType === "DC" &&
-                    styles?.selectedButton,
+                      styles?.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -401,7 +614,7 @@ const AddStations = () => {
                     style={[
                       styles?.buttonText,
                       chargerForms?.[index]?.chargerType === "DC" &&
-                      styles?.selectedButtonText,
+                        styles?.selectedButtonText,
                     ]}
                   >
                     DC
@@ -423,7 +636,12 @@ const AddStations = () => {
                   const numericText = text.replace(/[^0-9]/g, "");
 
                   if (numericText && parseInt(numericText) > 1000) {
-                    dispatch(showSnackbar({ message: "Power rating cannot exceed 1000 kW", type: "error" }));
+                    dispatch(
+                      showSnackbar({
+                        message: "Power rating cannot exceed 1000 kW",
+                        type: "error",
+                      })
+                    );
                     return;
                   }
 
@@ -431,9 +649,9 @@ const AddStations = () => {
                     prev.map((charger, i) =>
                       i === index
                         ? {
-                          ...charger,
-                          powerRating: numericText,
-                        }
+                            ...charger,
+                            powerRating: numericText,
+                          }
                         : charger
                     )
                   );
@@ -510,7 +728,6 @@ const AddStations = () => {
                     justifyContent: "center",
                     marginTop: 6,
                   }}
-                 
                 >
                   {isSelected && (
                     <View
@@ -541,8 +758,8 @@ const AddStations = () => {
           What amenities are available at your station?
         </Text> */}
         <Text style={styles.sectionLabel}>
-          Amenities 
-        <Text style={styles.optional}>(Optional)</Text>
+          Amenities
+          <Text style={styles.optional}>(Optional)</Text>
         </Text>
         <View style={styles.amenitiesContainer}>
           {amenities.map((amenity) => (
@@ -551,7 +768,7 @@ const AddStations = () => {
               style={[
                 styles.amenityItem,
                 selectedAmenities.includes(amenity.id) &&
-                styles.selectedAmenity,
+                  styles.selectedAmenity,
               ]}
               onPress={() => toggleAmenity(amenity.id)}
             >
@@ -568,7 +785,7 @@ const AddStations = () => {
                 style={[
                   styles.amenityLabel,
                   selectedAmenities.includes(amenity.id) &&
-                  styles.selectedAmenityText,
+                    styles.selectedAmenityText,
                 ]}
               >
                 {amenity.label}
@@ -672,7 +889,6 @@ const AddStations = () => {
             ]}
             onPress={() => {
               setAccessType("public");
-            
             }}
           >
             <Text
@@ -700,7 +916,7 @@ const AddStations = () => {
               Private
             </Text>
           </TouchableOpacity>
-        </View> 
+        </View>
       </View>
     );
   }
@@ -733,15 +949,15 @@ const AddStations = () => {
         <Text style={styles.photoDescription}>
           Contribute to smoother journeys; include a location/charger photo.
         </Text>
-        <TouchableOpacity style={styles.photoUpload} onPress={handleImagePick}>
-          {imageloading ? (
-            <ActivityIndicator size={40} color="#ccc" />
-          ) : viewImage ? (
-            <Image source={{ uri: viewImage }} style={styles.previewImage} />
-          ) : (
-            <Icon name="camera-plus-outline" size={40} color="#ccc" />
-          )}
-        </TouchableOpacity>
+
+        <View
+          style={{
+            flexWrap: "wrap",
+            // backgroundColor:"teal"
+          }}
+        >
+          {renderImageBox("station", setPhoto, photo)}
+        </View>
       </View>
     );
   }
@@ -754,14 +970,14 @@ const styles = StyleSheet.create({
   },
 
   header: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      // backgroundColor: Colors.bodyBackColor,
-      padding: 15,
-      borderBottomWidth: 1,
-      borderBottomColor: "#e0e0eb",
-    },
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    // backgroundColor: Colors.bodyBackColor,
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0eb",
+  },
   headerTitle: {
     fontSize: 16,
     // fontWeight: "bold",
@@ -772,7 +988,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     margin: 16,
     paddingVertical: 20,
-    paddingHorizontal:20,
+    paddingHorizontal: 20,
     paddingBottom: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -894,21 +1110,7 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 12,
   },
-  photoUpload: {
-    width: 120,
-    height: 120,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: "#ccc",
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  previewImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 8,
-  },
+
   input: {
     borderWidth: 1,
     borderColor: "#e0e0e0",
@@ -992,6 +1194,69 @@ const styles = StyleSheet.create({
   mapButtonText: {
     color: "#F4721E",
     fontSize: 12,
+  },
+  imageBox: {
+    width: 120,
+    height: 120,
+    borderWidth: 1,
+    borderStyle: "dotted",
+    borderColor: "#aaa",
+
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+    backgroundColor: "#f9f9f9",
+  },
+  imageStyle: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 12,
+  },
+  editIcon: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    backgroundColor: Colors.primaryColor,
+    borderRadius: 15,
+    padding: 2,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#fff",
+    borderRadius: 30,
+  },
+  fullImage: {
+    width: "90%",
+    height: "70%",
+    resizeMode: "contain",
+    borderRadius: 10,
+  },
+  // closeText: {
+  //   color: "#000",
+  //   fontWeight: "bold",
+  // },
+  bottomSheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+  },
+  sheetOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  sheetOptionText: {
+    fontSize: 16,
+    marginLeft: 12,
+    color: "#333",
   },
 });
 

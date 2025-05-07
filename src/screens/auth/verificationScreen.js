@@ -104,12 +104,12 @@ const VerificationScreen = ({ navigation, route }) => {
       try {
         AsyncStorage.setItem("user", user.user_key);
         AsyncStorage.setItem("accessToken", token);
-        dispatch(
-          showSnackbar({
-            message: "OTP verified successfully",
-            type: "success",
-          })
-        );
+        // dispatch(
+        //   showSnackbar({
+        //     message: "OTP verified successfully",
+        //     type: "success",
+        //   })
+        // );
       } catch (error) {
         dispatch(
           showSnackbar({

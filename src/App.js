@@ -88,7 +88,7 @@ function AppNavigator() {
       >
         {!userType ? (
           <>
-            <Stack.Screen name="Loading" component={LoadingScreen} /> 
+            {/* <Stack.Screen name="Loading" component={LoadingScreen} />  */}
             <Stack.Screen
               name="FirstSplashScreen"
               component={FirstSplashScreen}

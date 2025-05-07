@@ -46,8 +46,8 @@ const vehicleData = {
   "Isuzu": ["D-Max", "S-CAB", "Hi-Lander"],
   "Eicher": ["Pro 2049", "Pro 3015", "Pro 2059"],
   "Toyota": ["Hilux", "Innova Crysta Commercial", "LC79 Pickup"],
-  "Others": [] , 
-  
+  "Others": [],
+
 
 };
 
@@ -70,20 +70,68 @@ const RegisterScreen = ({ navigation, route }) => {
   const models = selectedCompany && vehicleData[selectedCompany] ? vehicleData[selectedCompany] : [];
   // console.log("user key in register : ", userKey);
 
+  const validateUserData = (data) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const nameRegex = /^[A-Za-z\s]{3,}$/;
+    const vehicleNumberRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
+
+    if (!data.email || !emailRegex.test(data.email)) {
+      return "Invalid email address.";
+    }
+
+    if (!data.owner_legal_name || !nameRegex.test(data.owner_legal_name)) {
+      return "Invalid full name. Only letters and spaces, at least 3 characters.";
+    }
+
+    if (!data.role || !['user', 'vendor'].includes(data.role.toLowerCase())) {
+      return "Role must be either 'user' or 'vendor'.";
+    }
+    if (data.role === 'user') {
+
+
+      if (!data.vehicle_registration_number || !vehicleNumberRegex.test(data.vehicle_registration_number)) {
+        return "Invalid vehicle number format (e.g., MH12AB1234).";
+      }
+
+      if (!data.vehicle_manufacturer || data.vehicle_manufacturer.trim() === "") {
+        return "Vehicle manufacturer is required.";
+      }
+
+      if (!data.vehicle_model || data.vehicle_model.trim() === "") {
+        return "Vehicle model is required.";
+      }
+    }
+
+    return null; // all good
+  };
+
   const handleSignUp = async () => {
-    if (!fullName.trim() || !email.trim()) {
-      Alert.alert("Error", "Please fill in all the fields.");
+    const userData = {
+      email: email,
+      owner_legal_name: fullName,
+      role: role,
+      user_key: userKey,
+      vehicle_registration_number: vehicleNumber,
+      vehicle_manufacturer: customCompany !== '' ? customCompany : selectedCompany,
+      vehicle_model: customModel !== '' ? customModel : selectedModel
+    };
+
+    const vendorData = {
+      email: email,
+      owner_legal_name: fullName,
+      role: role,
+      user_key: userKey,
+
+    };
+    const error = validateUserData(userData);
+    if (error) {
+      console.log('error cartched');
+      dispatch(showSnackbar({ message: error, type: 'error' }));
       return;
     }
 
     setLoading(true);
 
-    const userData = {
-      email: email,
-      owner_legal_name: fullName,
-      role: role,
-      user_key: userKey, // Use user_key from Redux state
-    };
 
     console.log("Post signup called");
     try {
@@ -138,10 +186,10 @@ const RegisterScreen = ({ navigation, route }) => {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
-      <View style={{ flex: 1 ,}}>
+      <View style={{ flex: 1, }}>
         {topImage()}
         <ScrollView
-          style={{paddingHorizontal:20}}
+          style={{ paddingHorizontal: 20 }}
           automaticallyAdjustKeyboardInsets={true}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: Sizes.fixPadding * 2.0 }}
@@ -149,8 +197,8 @@ const RegisterScreen = ({ navigation, route }) => {
           {selectRole()}
           {fullNameInfo()}
           {emailInfo()}
-         {role==="user" && (<>{vehicleNumberInfo()}
-          {vehicleDataForm()}
+          {role === "user" && (<>{vehicleNumberInfo()}
+            {vehicleDataForm()}
           </>)}
           {continueButton()}
           {agreeInfo()}
@@ -161,22 +209,22 @@ const RegisterScreen = ({ navigation, route }) => {
 
   function selectRole() {
     return (
-      <View style={{marginTop:30}}>
-       <Text style={styles.sectionLabel}>
-       Select Role <Text style={styles.label}>*</Text>
-      </Text>
-      <View style={styles.pickerWrapper}>
-      <Picker
-        selectedValue={selectedModel}
-        onValueChange={(itemValue) => setRole(itemValue)}
-        style={styles.pickerStyle}
-      >
-        <Picker.Item style={{fontSize:12}}label="Select Role" value="" />
-        <Picker.Item style={{fontSize:12}} label="User" value="user" />
-        <Picker.Item style={{fontSize:12}} label="Vendor" value="vendor" />
-      </Picker>
-       </View>
-       </View>
+      <View style={{ marginTop: 30 }}>
+        <Text style={styles.sectionLabel}>
+          Select Role <Text style={styles.label}>*</Text>
+        </Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={selectedModel}
+            onValueChange={(itemValue) => setRole(itemValue)}
+            style={styles.pickerStyle}
+          >
+            <Picker.Item style={{ fontSize: 12 }} label="Select Role" value="" />
+            <Picker.Item style={{ fontSize: 12 }} label="User" value="user" />
+            <Picker.Item style={{ fontSize: 12 }} label="Vendor" value="vendor" />
+          </Picker>
+        </View>
+      </View>
     );
   }
 
@@ -195,7 +243,7 @@ const RegisterScreen = ({ navigation, route }) => {
             style={{
               textAlign: "center",
               ...Fonts.grayColor18SemiBold,
-              color:"blue",
+              color: "blue",
               marginTop: Sizes.fixPadding - 5.0,
             }}
           >
@@ -208,10 +256,10 @@ const RegisterScreen = ({ navigation, route }) => {
 
   function emailInfo() {
     return (<>
-     <Text style={styles.sectionLabel}>
-      Email Id <Text style={styles.label}>*</Text>
-      {/* <Text style={styles.optional}>(Optional)</Text> */}
-    </Text>
+      <Text style={styles.sectionLabel}>
+        Email Id <Text style={styles.label}>*</Text>
+        {/* <Text style={styles.optional}>(Optional)</Text> */}
+      </Text>
       <View
         style={{
           ...styles.textFieldWrapper,
@@ -223,58 +271,62 @@ const RegisterScreen = ({ navigation, route }) => {
           placeholderTextColor={Colors.grayColor}
           value={email}
           onChangeText={(text) => setemail(text.toLowerCase())}
-           style={{ ...Fonts.blackColor16Medium, paddingVertical: 12,fontSize: 12,}}
+          style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
           cursorColor={Colors.primaryColor}
           selectionColor={Colors.primaryColor}
           keyboardType="email-address"
         />
       </View>
-      </>
+    </>
     );
   }
 
   function fullNameInfo() {
     return (<>
       <Text style={styles.sectionLabel}>
-      Full Name <Text style={styles.label}>*</Text>
-      {/* <Text style={styles.optional}>(Optional)</Text> */}
-    </Text>
+        Full Name <Text style={styles.label}>*</Text>
+        {/* <Text style={styles.optional}>(Optional)</Text> */}
+      </Text>
       <View style={{ ...styles.textFieldWrapper }}>
-        
+
         <TextInput
           placeholder="Enter Your Full name"
           placeholderTextColor={Colors.grayColor}
           value={fullName}
           onChangeText={(text) => setfullName(text)}
-          style={{ ...Fonts.blackColor16Medium, paddingVertical: 12,
-            fontSize: 12,}}
+          style={{
+            ...Fonts.blackColor16Medium, paddingVertical: 12,
+            fontSize: 12,
+          }}
           cursorColor={Colors.primaryColor}
           selectionColor={Colors.primaryColor}
         />
       </View>
-      </>
+    </>
     );
   }
   function vehicleNumberInfo() {
     return (<>
       <Text style={styles.sectionLabel}>
-      Vehicle Registration Number <Text style={styles.label}>*</Text>
-      {/* <Text style={styles.optional}>(Optional)</Text> */}
-    </Text>
+        Vehicle Registration Number <Text style={styles.label}>*</Text>
+        {/* <Text style={styles.optional}>(Optional)</Text> */}
+      </Text>
       <View style={{ ...styles.textFieldWrapper }}>
-        
+
         <TextInput
           placeholder="Enter Your Vehicle Registration Number"
           placeholderTextColor={Colors.grayColor}
           value={vehicleNumber}
           onChangeText={(text) => setVehicleNumber(text)}
-          style={{ ...Fonts.blackColor16Medium, paddingVertical: 12,
-            fontSize: 12,}}
+          style={{
+            ...Fonts.blackColor16Medium, paddingVertical: 12,
+            fontSize: 12,
+          }}
           cursorColor={Colors.primaryColor}
           selectionColor={Colors.primaryColor}
         />
       </View>
-      </>
+    </>
     );
   }
 
@@ -336,130 +388,130 @@ const RegisterScreen = ({ navigation, route }) => {
     );
   }
 
-  function vehicleDataForm(){
-    return(
+  function vehicleDataForm() {
+    return (
       <View style={styles.container}>
 
-      {/* Company Picker */}
-      <Text style={styles.sectionLabel}>
-      Select Vehicle Manufacturer <Text style={styles.label}>*</Text>
-      
-    </Text>
-      <View style={styles.pickerWrapper}>
-        <Picker
-          selectedValue={selectedCompany}
-          onValueChange={(itemValue) => {
-            setSelectedCompany(itemValue);
-            setSelectedModel(""); // Reset model
-            setCustomCompany("");
-            setCustomModel("");
-          }}
-          style={styles.pickerStyle}
-        >
-          <Picker.Item style={{fontSize:12}}  label="Select Company" value="" />
-          {Object.keys(vehicleData).map((make) => (
-            <Picker.Item style={{fontSize:12}} key={make} label={make} value={make} />
-          ))}
-        </Picker>
-       </View>
+        {/* Company Picker */}
+        <Text style={styles.sectionLabel}>
+          Select Vehicle Manufacturer <Text style={styles.label}>*</Text>
 
-      {/* Custom company if 'Other' */}
-      {selectedCompany === "Others" && (
-        <>
-         
-      <Text style={styles.sectionLabel}>
-       Enter Vehicle Manufacturer <Text style={styles.label}>*</Text>
-      </Text>
-  
-        <View
-        style={{
-          ...styles.textFieldWrapper,
-          marginBottom: Sizes.fixPadding * 2.0,
-        
-        }}
-      >
-        <TextInput
-          placeholder="Enter Company Name here "
-          placeholderTextColor={Colors.grayColor}
-          value={customCompany}
-          onChangeText={setCustomCompany}
-         style={{ ...Fonts.blackColor16Medium, paddingVertical: 12,fontSize: 12,}}
-          cursorColor={Colors.primaryColor}
-          selectionColor={Colors.primaryColor}
-         
-        />
-      </View>
-      <Text style={styles.sectionLabel}>
-       Enter Vehicle Model <Text style={styles.label}>*</Text>
-      </Text>
-       <View
-       style={{
-         ...styles.textFieldWrapper,
-         marginBottom: Sizes.fixPadding * 2.0,
-        
-       }}
-     >
-       <TextInput
-         placeholder="Enter Model here "
-         placeholderTextColor={Colors.grayColor}
-         value={customModel}
-         onChangeText={setCustomModel}
-        style={{ ...Fonts.blackColor16Medium, paddingVertical: 12,fontSize: 12,}}
-         cursorColor={Colors.primaryColor}
-         selectionColor={Colors.primaryColor}
-        
-       />
-     </View>
-     </>
-      )}
-
-      {/* Model Picker if applicable */}
-      {models.length > 0 ? (<>
-          <Text style={styles.sectionLabel}>
-          Select Vehicle Model <Text style={styles.label}>*</Text>
-         </Text>
-          <View style={styles.pickerWrapper}>
+        </Text>
+        <View style={styles.pickerWrapper}>
           <Picker
-            selectedValue={selectedModel}
-            onValueChange={(itemValue) => setSelectedModel(itemValue)}
+            selectedValue={selectedCompany}
+            onValueChange={(itemValue) => {
+              setSelectedCompany(itemValue);
+              setSelectedModel(""); // Reset model
+              setCustomCompany("");
+              setCustomModel("");
+            }}
             style={styles.pickerStyle}
           >
-            <Picker.Item style={{fontSize:12}}label="Select Model" value="" />
-            {models.map((model) => (
-              <Picker.Item style={{fontSize:12}} key={model} label={model} value={model} />
+            <Picker.Item style={{ fontSize: 12 }} label="Select Company" value="" />
+            {Object.keys(vehicleData).map((make) => (
+              <Picker.Item style={{ fontSize: 12 }} key={make} label={make} value={make} />
             ))}
-            <Picker.Item style={{fontSize:12}} label="Other" value="Other" />
           </Picker>
-           </View></>
-      ) : selectedCompany !== "" ? null : null}
+        </View>
 
-      {/* Custom model if no models found or "Other" selected */}
-      {(selectedCompany === "Other" || selectedModel === "Other") && (
-        <>
-     <Text style={styles.sectionLabel}>
-       Enter Vehicle Model <Text style={styles.label}>*</Text>
-      </Text>
-        <View
-        style={{
-          ...styles.textFieldWrapper,
-          marginBottom: Sizes.fixPadding * 2.0,
-        
-        }}
-      >
-        <TextInput
-          placeholder="Enter Model here "
-          placeholderTextColor={Colors.grayColor}
-          value={customModel}
-          onChangeText={setCustomModel}
-         style={{ ...Fonts.blackColor16Medium, paddingVertical: 12,fontSize: 12,}}
-          cursorColor={Colors.primaryColor}
-          selectionColor={Colors.primaryColor}
-         
-        />
+        {/* Custom company if 'Other' */}
+        {selectedCompany === "Others" && (
+          <>
+
+            <Text style={styles.sectionLabel}>
+              Enter Vehicle Manufacturer <Text style={styles.label}>*</Text>
+            </Text>
+
+            <View
+              style={{
+                ...styles.textFieldWrapper,
+                marginBottom: Sizes.fixPadding * 2.0,
+
+              }}
+            >
+              <TextInput
+                placeholder="Enter Company Name here "
+                placeholderTextColor={Colors.grayColor}
+                value={customCompany}
+                onChangeText={setCustomCompany}
+                style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
+                cursorColor={Colors.primaryColor}
+                selectionColor={Colors.primaryColor}
+
+              />
+            </View>
+            <Text style={styles.sectionLabel}>
+              Enter Vehicle Model <Text style={styles.label}>*</Text>
+            </Text>
+            <View
+              style={{
+                ...styles.textFieldWrapper,
+                marginBottom: Sizes.fixPadding * 2.0,
+
+              }}
+            >
+              <TextInput
+                placeholder="Enter Model here "
+                placeholderTextColor={Colors.grayColor}
+                value={customModel}
+                onChangeText={setCustomModel}
+                style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
+                cursorColor={Colors.primaryColor}
+                selectionColor={Colors.primaryColor}
+
+              />
+            </View>
+          </>
+        )}
+
+        {/* Model Picker if applicable */}
+        {models.length > 0 ? (<>
+          <Text style={styles.sectionLabel}>
+            Select Vehicle Model <Text style={styles.label}>*</Text>
+          </Text>
+          <View style={styles.pickerWrapper}>
+            <Picker
+              selectedValue={selectedModel}
+              onValueChange={(itemValue) => setSelectedModel(itemValue)}
+              style={styles.pickerStyle}
+            >
+              <Picker.Item style={{ fontSize: 12 }} label="Select Model" value="" />
+              {models.map((model) => (
+                <Picker.Item style={{ fontSize: 12 }} key={model} label={model} value={model} />
+              ))}
+              <Picker.Item style={{ fontSize: 12 }} label="Other" value="Other" />
+            </Picker>
+          </View></>
+        ) : selectedCompany !== "" ? null : null}
+
+        {/* Custom model if no models found or "Other" selected */}
+        {(selectedCompany === "Other" || selectedModel === "Other") && (
+          <>
+            <Text style={styles.sectionLabel}>
+              Enter Vehicle Model <Text style={styles.label}>*</Text>
+            </Text>
+            <View
+              style={{
+                ...styles.textFieldWrapper,
+                marginBottom: Sizes.fixPadding * 2.0,
+
+              }}
+            >
+              <TextInput
+                placeholder="Enter Model here "
+                placeholderTextColor={Colors.grayColor}
+                value={customModel}
+                onChangeText={setCustomModel}
+                style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
+                cursorColor={Colors.primaryColor}
+                selectionColor={Colors.primaryColor}
+
+              />
+            </View>
+          </>
+        )}
       </View>
-      </>
-      )}
-    </View>
     )
   }
 };
@@ -480,11 +532,11 @@ const styles = StyleSheet.create({
     borderRadius: Sizes.fixPadding - 5.0,
     paddingHorizontal: Sizes.fixPadding * 1.5,
     // backgroundColor:"cyan",
-    paddingVertical:5,
+    paddingVertical: 5,
     borderColor: Colors.extraLightGrayColor,
     borderWidth: 1.0,
     marginBottom: Sizes.fixPadding * 2.0,
-   
+
   },
   sectionLabel: {
 
@@ -498,7 +550,7 @@ const styles = StyleSheet.create({
     fontWeight: "normal",
     color: "#888",
   },
-  container: { marginBottom:10},
+  container: { marginBottom: 10 },
   textField: {
     borderWidth: 1,
     borderColor: Colors.extraLightGrayColor,

@@ -29,6 +29,9 @@ import {
 } from "../../services/selector";
 import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
 import imageURL from "../../../../constants/baseURL";
+import { postSingleFile } from "../../../auth/services/crudFunction";
+import { setupImagePicker } from "../../CompleteProfileDetail/vendorDetailForm";
+import { selectToken } from "../../../auth/services/selector";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -55,12 +58,13 @@ const PreviewPage = ({ navigation, route }) => {
   const errorMessage = useSelector(selectVendorError);
   const stations = useSelector(selectVendorStation);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(stationImage || '');
+  const authToken = useSelector(selectToken);
   const station = stations.find(
     (station) => station.id === stationData.station_id
   );
 
-  
+
   useEffect(() => {
     console.log(
       "Transformed station data preview:",
@@ -103,8 +107,11 @@ const PreviewPage = ({ navigation, route }) => {
     setSelectedImage(uri);
     setModalVisible(true);
   };
+
   const handleSubmit = async () => {
     try {
+      
+      console.log('station data', stationData);
       if (type === "add") {
         const addStationresponse = await dispatch(addStation(stationData));
         if (addStation.fulfilled.match(addStationresponse)) {
@@ -138,7 +145,9 @@ const PreviewPage = ({ navigation, route }) => {
           );
         }
       } else {
-        
+
+
+
         const updateStationResponse = await dispatch(
           updateStation(stationData)
         );
@@ -315,14 +324,14 @@ const PreviewPage = ({ navigation, route }) => {
             style={styles.modalCloseButton}
             onPress={() => setModalVisible(false)}
           >
-           
-             
-              <MaterialIcons
-                name="close"
-                color={Colors.blackColor}
-                size={26}       
-              />
-           
+
+
+            <MaterialIcons
+              name="close"
+              color={Colors.blackColor}
+              size={26}
+            />
+
           </TouchableOpacity>
         </View>
       </Modal>
@@ -356,7 +365,7 @@ const PreviewPage = ({ navigation, route }) => {
                   name={
                     charger?.connector_type
                       ? connectorIcons?.[charger?.connector_type] ||
-                        "ev-plug-type1"
+                      "ev-plug-type1"
                       : "ev-plug-type1"
                   }
                   size={20}
@@ -378,7 +387,7 @@ const PreviewPage = ({ navigation, route }) => {
     const imageUrl = stationImage
       ? { uri: stationImage }
       : require("../../../../../assets/images/nullStation.png");
-      // console.log("station image in preview page lower",imageUrl);
+    // console.log("station image in preview page lower",imageUrl);
     return (
       <View style={styles.header}>
         <View style={styles.communityBadgeAndBack}>
@@ -451,9 +460,9 @@ const PreviewPage = ({ navigation, route }) => {
                 <Text style={styles.newText}>
                   {stationData.status === "Active"
                     ? "VERIFIED"
-                    : 
+                    :
                     "New"
-                   }
+                  }
                 </Text>
               </View>
             </View>

@@ -33,10 +33,6 @@ const AdminProfilePage = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
 
-  console.log(
-    "user image on vendor profile screen",
-    imageURL?.baseURL + user?.avatar
-  );
 
   const showFullImage = (uri) => {
     if (!uri) return;

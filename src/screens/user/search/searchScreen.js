@@ -20,7 +20,7 @@ import {
   Sizes,
   Fonts,
 } from "../../../constants/styles";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Circle, Marker } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useNavigation } from "@react-navigation/native";
@@ -105,7 +105,7 @@ const ChargingStationMap = () => {
   let mapIndex = 0;
 
   useEffect(() => {
-    // console.log('new stations = ', JSON.stringify(stations, null, 2));
+    console.log('new stations = ', JSON.stringify(stations[0], null, 2));
   }, [stations]);
 
 
@@ -270,6 +270,7 @@ const ChargingStationMap = () => {
 
         setRegion(newRegion);
         const selectedCoord = { latitude: lat, longitude: lng };
+        
         setSelectedLocation(selectedCoord);
         scrollTo();
 
@@ -279,8 +280,9 @@ const ChargingStationMap = () => {
             { duration: 1000 }
           );
         }
+        
 
-        console.log('nearest stations: ', stations[0]);
+        
       }
     } catch (error) {
       console.error("Place details error:", error);
@@ -390,6 +392,16 @@ const ChargingStationMap = () => {
         onPress={() => setSuggestions([])}
       >
         {selectedLocation && <Marker coordinate={selectedLocation} />}
+
+        {selectedLocation && (
+          <Circle
+            center={selectedLocation}
+            radius={50000} // 50 km
+            strokeWidth={2}
+            strokeColor="rgba(0, 150, 255, 0.5)"
+            fillColor="rgba(0, 150, 255, 0.1)"
+          />
+        )}
 
         {stations?.map((marker, index) => {
           // Optional chaining to prevent errors if stationsList is undefined or null

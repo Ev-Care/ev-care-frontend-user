@@ -25,7 +25,7 @@ const LoadingScreen = ({ navigation }) => {
             <MyStatusBar/>
             <ActivityIndicator
                 size={50}
-                color={Colors.primaryColor}
+                color={Colors.whiteColor}
             />
         </View>
     )

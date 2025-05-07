@@ -17,9 +17,11 @@ import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../../../auth/services/selector";
+import { selectToken, selectUser } from "../../../auth/services/selector";
 import imageURL from "../../../../constants/baseURL";
-import {showSnackbar} from '../../../../redux/snackbar/snackbarSlice'
+import { showSnackbar } from '../../../../redux/snackbar/snackbarSlice'
+import { postSingleFile } from "../../../auth/services/crudFunction";
+import { setupImagePicker } from "../../CompleteProfileDetail/vendorDetailForm";
 const PRIMARY_COLOR = "#101942";
 const amenities = [
   { id: 1, icon: "toilet", label: "Restroom" },
@@ -72,12 +74,14 @@ const UpdateStation = ({ navigation, route }) => {
   const [showPicker, setShowPicker] = useState(false);
   const [selectedField, setSelectedField] = useState(null);
   const [stationName, setStationName] = useState(station?.station_name || "");
+  const [stationImages, setStationImages] = useState(station?.station_images || "");
   const [chargerType, setchargerType] = useState("");
-   const [accessType, setAccessType] = useState("public");
+  const [accessType, setAccessType] = useState("public");
   const [powerRating, setPowerRating] = useState("");
   const [chargerForms, setChargerForms] = useState(station?.chargers || [{}]);
   const [selectedForm, setSelectedForm] = useState(null);
   const [coordinate, setCoordinate] = useState(station?.coordinates || null);
+  const accessToken = useSelector(selectToken)
   // Initialize selectedConnectors with chargerIndex as key and connector_type as value
   const [selectedConnectors, setSelectedConnectors] = useState(() => {
     const initialConnectors = {};
@@ -122,25 +126,79 @@ const UpdateStation = ({ navigation, route }) => {
     }
   };
 
-  const handleImagePick = async () => {
-    // Request permission
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Sorry, we need camera roll permissions to make this work!");
+  // Function to pick an image
+  const handleImagePick = async (source, type) => {
+    console.log('inside imaoege pick');
+    let permissionResult;
+
+    if (source === "camera") {
+      permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    } else {
+      permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    }
+
+    if (permissionResult.granted === false) {
+      dispatch(showSnackbar({ message: 'Permission is required!', type: 'error' }));
       return;
     }
 
-    // Launch image picker
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-    });
+    let result;
+    if (source === "camera") {
+      result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        quality: 0.2,
+      });
+    } else {
+      result = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        quality: 0.2,
+      });
+    }
 
     if (!result.canceled) {
-      setPhoto(result.assets[0].uri);
+      const imageUri = result.assets[0].uri;
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      const file = await setupImagePicker(imageUri);
+
+      console.log('image',imageUri);
+      // Check for internet connectivity before sending request
+      // const netState = await NetInfo.fetch();
+      // if (!netState.isConnected) {
+      //   dispatch(showSnackbar({ message: "No internet connection.", type: "error" }));
+      //   return;
+      // }
+
+
+      try {
+
+        console.log('inside try')
+        const response = await dispatch(
+          postSingleFile({ file: file, accessToken: accessToken })
+        );
+
+        if (response?.payload?.code === 200 || response?.payload?.code === 201) {
+          
+            setPhoto(imageUri);
+            console.log('photo url in pick image = ', response?.payload?.data?.filePathUrl);
+            setStationImages(response?.payload?.data?.filePathUrl);
+          
+        } else {
+
+          dispatch(showSnackbar({ message: authErrorMessage || 'File Should be less than 5 MB', type: 'error' }));
+
+          // Alert.alert("Error", "File Should be less than 5 MB");
+        }
+      } catch (error) {
+        dispatch(showSnackbar({ message: authErrorMessage || 'Upload failed. Please try again.', type: 'error' }));
+
+        // Alert.alert("Error", "Upload failed. Please try again.");
+      } finally {
+        // 👉 Always stop loader
+      
+      }
     }
   };
+
   const selectOnMap = () => {
     navigation.push("PickLocation", {
       addressFor: "stationAddress",
@@ -169,6 +227,7 @@ const UpdateStation = ({ navigation, route }) => {
       owner_id: user.id, // Replace with the actual owner ID if available
       station_id: station?.id || null,
       station_name: stationName,
+      station_images: stationImages,
       address,
       coordinates: {
         latitude: coordinate?.latitude || null,
@@ -236,12 +295,12 @@ const UpdateStation = ({ navigation, route }) => {
 
     return (
       <TouchableOpacity
-      activeOpacity={1}
+        activeOpacity={1}
         style={styles.card}
         onPress={() => handleVisibility("locationdetail")}
       >
         <Text style={styles.sectionTitle}>Location Details</Text>
-        {(selectedForm === "locationdetail" || selectedForm === null )&& (
+        {(selectedForm === "locationdetail" || selectedForm === null) && (
           <>
             {/* Select Coordinate and Address on Map */}
             <TouchableOpacity style={styles.mapButton} onPress={selectOnMap}>
@@ -267,7 +326,7 @@ const UpdateStation = ({ navigation, route }) => {
   function additionalDetail() {
     return (
       <TouchableOpacity
-      activeOpacity={1}
+        activeOpacity={1}
         style={styles.card}
         onPress={() => handleVisibility("additionaldetail")}
       >
@@ -293,7 +352,7 @@ const UpdateStation = ({ navigation, route }) => {
     console.log("charger details", chargerForms[index]);
     return (
       <TouchableOpacity
-       activeOpacity={1}
+        activeOpacity={1}
         style={styles.card}
         onPress={() => handleVisibility(index)}
       >
@@ -444,20 +503,20 @@ const UpdateStation = ({ navigation, route }) => {
 
             return (
               <TouchableOpacity
-              onPress={() => {
-                setChargerForms((prev) =>
-                  prev.map((charger, index) =>
-                    index === chargerIndex
-                      ? { ...charger, connector_type: connector?.type }
-                      : charger
-                  )
-                );
-                setSelectedConnectors((prev) => ({
-                  ...prev,
-                  [chargerIndex]: connector?.type,
-                }))
-              }
-              }
+                onPress={() => {
+                  setChargerForms((prev) =>
+                    prev.map((charger, index) =>
+                      index === chargerIndex
+                        ? { ...charger, connector_type: connector?.type }
+                        : charger
+                    )
+                  );
+                  setSelectedConnectors((prev) => ({
+                    ...prev,
+                    [chargerIndex]: connector?.type,
+                  }))
+                }
+                }
                 key={`connector-${connector?.id}`}
                 style={styles?.connectorsItem}
               >
@@ -480,7 +539,7 @@ const UpdateStation = ({ navigation, route }) => {
                     justifyContent: "center",
                     marginTop: 6,
                   }}
-                
+
                 >
                   {isSelected && (
                     <View
@@ -549,7 +608,7 @@ const UpdateStation = ({ navigation, route }) => {
   }
 
   function openHoursSection() {
-   
+
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>Open Hours</Text>
@@ -641,7 +700,7 @@ const UpdateStation = ({ navigation, route }) => {
         </Text>
         <TouchableOpacity style={styles.photoUpload} onPress={handleImagePick}>
           {photo ? (
-            <Image source={{ uri: imageURL.baseURL + "/" + photo }} style={styles.previewImage} />
+            <Image source={{ uri: imageURL.baseURL+stationImages }} style={styles.previewImage} />
           ) : (
             <Icon name="camera-plus-outline" size={40} color="#ccc" />
           )}
@@ -649,50 +708,50 @@ const UpdateStation = ({ navigation, route }) => {
       </View>
     );
   }
-   function accessTypeSection() {
-      return (
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Access Type</Text>
-          <View style={styles.hoursContainer}>
-            <TouchableOpacity
+  function accessTypeSection() {
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>Access Type</Text>
+        <View style={styles.hoursContainer}>
+          <TouchableOpacity
+            style={[
+              styles.hoursButton,
+              accessType === "public" && styles.selectedButton,
+            ]}
+            onPress={() => {
+              setAccessType("public");
+
+            }}
+          >
+            <Text
               style={[
-                styles.hoursButton,
-                accessType === "public" && styles.selectedButton,
+                styles.buttonText,
+                accessType === "public" && styles.selectedButtonText,
               ]}
-              onPress={() => {
-                setAccessType("public");
-              
-              }}
             >
-              <Text
-                style={[
-                  styles.buttonText,
-                  accessType === "public" && styles.selectedButtonText,
-                ]}
-              >
-                Public
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+              Public
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.hoursButton,
+              accessType === "private" && styles.selectedButton,
+            ]}
+            onPress={() => setAccessType("private")}
+          >
+            <Text
               style={[
-                styles.hoursButton,
-                accessType === "private" && styles.selectedButton,
+                styles.buttonText,
+                accessType === "private" && styles.selectedButtonText,
               ]}
-              onPress={() => setAccessType("private")}
             >
-              <Text
-                style={[
-                  styles.buttonText,
-                  accessType === "private" && styles.selectedButtonText,
-                ]}
-              >
-                Private
-              </Text>
-            </TouchableOpacity>
-          </View> 
+              Private
+            </Text>
+          </TouchableOpacity>
         </View>
-      );
-    }
+      </View>
+    );
+  }
 
   function stationNameSection() {
     return (

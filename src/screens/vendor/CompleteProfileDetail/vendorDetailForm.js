@@ -152,6 +152,7 @@ const VendorDetailForm = () => {
     if (businessType === "individual") {
       vendorDetail = {
         ...vendorDetail,
+        vendor_type: businessType,
         adhar_no: aadharNumber,
         adhar_front_pic: aadhaarFrontImageURI,
         adhar_back_pic: aadhaarBackImageURI,
@@ -160,6 +161,7 @@ const VendorDetailForm = () => {
       if (isCheckBoxClicked) {
         vendorDetail = {
           ...vendorDetail,
+          
           gstin_number: gstNumber,
           gstin_image: gstImageURI,
         };
@@ -168,6 +170,7 @@ const VendorDetailForm = () => {
     else if (businessType === "organization") {
       vendorDetail = {
         ...vendorDetail,
+        vendor_type: businessType,
         gstin_number: gstNumber,
         gstin_image: gstImageURI,
       };

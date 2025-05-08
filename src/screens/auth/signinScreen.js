@@ -98,13 +98,13 @@ const SigninScreen = ({ navigation }) => {
 
       if (login.fulfilled.match(response)) {
         // Save user data and token to AsyncStorage
-        AsyncStorage.setItem("user", user?.user_key);
-        console.log('token in sigin = ', token);
-        AsyncStorage.setItem("accessToken", token);
+        AsyncStorage.setItem("user", response?.payload?.data?.user?.user_key);
+        // console.log('token in sigin = ', token);
+        AsyncStorage.setItem("accessToken", response?.payload?.data?.access_token);
 
         console.log(
           "Access token stored in AsyncStorage:",
-          AsyncStorage.getItem("token")
+          AsyncStorage.getItem("accessToken")
         );
 
         dispatch(

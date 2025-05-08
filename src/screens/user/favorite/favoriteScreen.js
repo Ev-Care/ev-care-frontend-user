@@ -77,6 +77,7 @@ const FavoriteScreen = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
+      console.log('use focus called in fav');
       const fetchFavorites = async () => {
         const favResponse = await dispatch(
           getAllFavoriteStations({ user_key: user?.user_key })
@@ -93,14 +94,16 @@ const FavoriteScreen = ({ navigation }) => {
         }
 
         // ✅ Get updated favorites from store after dispatch
-        const updatedFavStations = store.getState().favorites.favStations;
+        // const updatedFavStations = store.getState().favorites.favStations;
 
-        if (stations && updatedFavStations) {
-          const filtered = updatedFavStations
+        if (stations && favStations) {
+          const filtered = favStations
             .map((fav) =>
               stations.find((station) => station.id == fav.station.id)
             )
             .filter(Boolean);
+
+            console.log('filtered = ', filtered);
 
           setListData(filtered);
         }

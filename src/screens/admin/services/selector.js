@@ -9,4 +9,4 @@ export const selectUserLoading = (state) => state.auth.loading;
 export const selectRejectedStations = (state) => state.admin.rejectedStations;
 export const selectRejectedUsers = (state) => state.admin.rejectedUsers;
 export const selectAllSupportIssues = (state) => state.admin.supportIssues;
-;
+

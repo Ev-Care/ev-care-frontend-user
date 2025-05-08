@@ -23,7 +23,7 @@ export const getAllPendingUsersAPI = (data) =>
     content_type: "application/json",
     accessToken: data.accessToken,
   });
-export const getAllSupportIssuesAPI = () =>
+export const getAllSupportIssuesAPI = (data) =>
   apiGetRequest({
     apiUrl: `${API_URL}/support`,
     content_type: "application/json",

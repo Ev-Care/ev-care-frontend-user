@@ -1,5 +1,5 @@
 // ViewAllUserPage.js
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -23,6 +23,11 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { color } from "@rneui/base";
 import imageURL from "../../../constants/baseURL";
+import { useDispatch, useSelector } from "react-redux";
+import { selectAllSupportIssues } from "../services/selector";
+import { useFocusEffect } from "@react-navigation/native";
+import { getAllSupportIssues } from "../services/crudFunctions";
+import { selectUser } from "../../auth/services/selector";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -97,7 +102,7 @@ const USERS = [
   },
 ];
 
-const allIssues = [
+const allIssues1 = [
   {
     "user": {
       "id": 60,
@@ -221,9 +226,11 @@ const allIssues = [
 
 const ViewAllIssuesPage = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState(USERS);
-
+  const user = useSelector(selectUser);
+  const allIssues = useSelector(selectAllSupportIssues);
+  const dispatch = useDispatch();
   // Filter users based on search query
+  console.log('all Issue = ', allIssues);
   const filteredIssues = allIssues.filter(
     (issue) =>
       issue?.user?.owner_legal_name
@@ -231,6 +238,17 @@ const ViewAllIssuesPage = ({ navigation }) => {
         .includes(searchQuery.toLowerCase()) ||
       issue?.user.mobile_number?.includes(searchQuery)
   );
+
+  useFocusEffect(
+    useCallback(
+      () => {
+        console.log('issues useFocusEffect called');
+        dispatch(getAllSupportIssues());
+      },
+      [user],
+    )
+    
+  )
 
   return (
     <SafeAreaView style={styles.container}>

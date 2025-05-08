@@ -41,7 +41,7 @@ const SupportIssuesDetail = ({ route, navigation }) => {
   const [imageloading, setImageLoading] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-
+  console.log('issue = ', issue);
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
@@ -238,10 +238,11 @@ const SupportIssuesDetail = ({ route, navigation }) => {
             </Text>
           </View>
         </View>
-        {renderUserData("Contact Number", issue.contact_number)}
-        {renderUserData("Contact Email", issue.contact_email)}
+        {renderUserData("Contact Number", issue.contactNumber)}
+        {renderUserData("Contact Email", issue.email)}
         {renderTitleMessage("Title", issue.title)}
-        {renderTitleMessage("Message", issue.message)}
+        {console.log(issue.title)}
+        {renderTitleMessage("Message", issue.description)}
         <View style={styles.imageContainer}>
           {renderImageBox("Reference", imageURL.baseURL + issue.reference_image_url)}
          

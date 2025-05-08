@@ -114,7 +114,7 @@ export const getAllSupportIssues = createAsyncThunk(
       const response = await getAllSupportIssuesAPI({
         accessToken,
       }); // Call the API to fetch stations by location
-
+      // console.log('response = ', response);
       if (response?.data?.code === 200 || response?.data?.code === 201) {
         return response?.data;
       } else {

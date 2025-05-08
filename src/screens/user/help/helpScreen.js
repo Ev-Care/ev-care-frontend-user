@@ -102,7 +102,7 @@ const HelpScreen = ({ navigation }) => {
         description: description,
         email: email,
         contactNumber: mobileNumber,
-        image: "",
+        image: null,
       })
     );
     console.log("data - ", data);
@@ -111,7 +111,7 @@ const HelpScreen = ({ navigation }) => {
       dispatch(
         showSnackbar({
           message:
-            "Support ticket is created regarding your query. You will got response withen 24 hours.",
+            "Support ticket is created regarding your query. You will got response within 24 hours.",
           type: "success",
         })
       );
@@ -199,6 +199,7 @@ const HelpScreen = ({ navigation }) => {
           <TextInput
             placeholder="Write your description here.."
             value={description}
+            maxLength={256}
             onChangeText={(text) => {
               setDescription(text);
 
@@ -298,7 +299,7 @@ const HelpScreen = ({ navigation }) => {
             placeholder="Enter your email here"
             value={email}
             onChangeText={(text) => {
-              setEmail(text.trim());
+              setEmail(text.trim().toLowerCase());
 
               // Clear previous validation timer
               if (emailTimer.current) {

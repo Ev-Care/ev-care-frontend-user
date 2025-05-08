@@ -95,7 +95,7 @@ const adminSlice = createSlice({
             })
             .addCase(getAllSupportIssues.fulfilled, (state, action) => {
                 state.loading = false;
-                state.allStations = action.payload.data.chargingStations;
+                state.supportIssues = action.payload.data;
 
             })
             .addCase(getAllSupportIssues.rejected, (state, action) => {

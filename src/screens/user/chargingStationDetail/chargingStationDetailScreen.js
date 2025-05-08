@@ -135,6 +135,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
   
         if (postFavoriteStation.fulfilled.match(postFavresponse)) {
+          
           await dispatch(
             showSnackbar({
               message: "Station added to favorite.",

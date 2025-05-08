@@ -25,7 +25,7 @@ import MyStatusBar from "../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from "react-redux";
-import { postSignUp } from "./services/crudFunction";
+import { postSignUp, register } from "./services/crudFunction";
 import { selectAuthError, selectToken, selectUser } from "./services/selector";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
@@ -135,31 +135,40 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
       owner_legal_name: fullName,
       role: role,
       password,
+      mobile_number: mobNumber,
       confirm_password: confirmPassword,
-      user_key: userKey,
-      vehicle_registration_number: vehicleNumber,
-      vehicle_manufacturer: customCompany !== '' ? customCompany : selectedCompany,
-      vehicle_model: customModel !== '' ? customModel : selectedModel
+      // vehicle_registration_number: vehicleNumber,
+      // vehicle_manufacturer: customCompany !== '' ? customCompany : selectedCompany,
+      // vehicle_model: customModel !== '' ? customModel : selectedModel
     };
 
     
-    const error = validateUserData(userData);
-    if (error) {
-      console.log('error cartched');
-      dispatch(showSnackbar({ message: error, type: 'error' }));
-      return;
-    }
+    // const validationError = validateUserData(userData);
+    // if (validationError) {
+    //   console.log('error cartched');
+    //   dispatch(showSnackbar({ message: validationError, type: 'error' }));
+    //   return;
+    // }
 
     setLoading(true);
 
 
     console.log("Post signup called");
     try {
-      const response = await dispatch(postSignUp(userData));
+      const response = await dispatch(register(userData));
+      if (register.fulfilled.match(response)) {
+        dispatch(
+          showSnackbar({ message: "Registration Successfull", type: "success" })
+        );
+      } else if (register.rejected.match(response)) {
+        dispatch(
+          showSnackbar({ message: error||"Registration Failed", type: "error" })
+        );
+      }
     } catch (error) {
       console.log("Error during registration");
       dispatch(
-        showSnackbar({ message: error || "Registration Failed", type: "error" })
+        showSnackbar({ message: error || "Something went wrong. Please try again later!", type: "error" })
       );
     } finally {
       setLoading(false);

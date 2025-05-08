@@ -26,6 +26,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectloader } from "./services/selector";
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { forgetPassword } from "./services/crudFunction";
 const ForgetPassword = ({ navigation }) => {
   // 
   const [backClickCount, setBackClickCount] = useState(0);
@@ -34,8 +35,23 @@ const ForgetPassword = ({ navigation }) => {
   const dispatch = useDispatch();
 
 
-  const handleSubmit =  () => {
+  const handleSubmit =  async() => {
     console.log("submitt button clicked");
+
+    try{
+
+  
+    const response = await dispatch(forgetPassword({identifier: emailOrNumber}));
+      console.log('response = ',response?.payload);
+    if(response?.payload?.code == 200){
+      dispatch(showSnackbar({message: response?.payload?.message, type: 'success'}));
+    }else{
+      dispatch(showSnackbar({message: response?.payload, type: 'error'}));
+    }
+
+  } catch(error){
+    dispatch(showSnackbar({message: 'Something went wrong. Please try again', type: 'error'}));
+  }
   }
 
   return (

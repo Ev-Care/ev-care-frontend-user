@@ -38,6 +38,13 @@ export const registerAPI = (data) =>
     content_type: "application/json",
     data: data,
   });
+  
+export const forgetPasswordAPI = (data) =>
+  apiPostRequest({
+    apiUrl: `${API_URL}/auth/forgotPassword`,
+    content_type: "application/json",
+    data: data,
+  });
 
 export const postSingleFileAPI = (data) => {
   // console.log("data", data);

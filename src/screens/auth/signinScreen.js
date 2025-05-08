@@ -11,7 +11,7 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   Colors,
   screenWidth,
@@ -25,7 +25,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Overlay } from "@rneui/themed";
 import { login, postSignIn } from "./services/crudFunction";
 import { useDispatch, useSelector } from "react-redux";
-import { selectAuthError, selectloader, selectUser } from "./services/selector";
+import { selectAuthError, selectloader, selectToken, selectUser } from "./services/selector";
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -38,7 +38,7 @@ const SigninScreen = ({ navigation }) => {
   const [secureText, setSecureText] = useState(true);
   const user = useSelector(selectUser);
   const authErrorMessage = useSelector(selectAuthError);
-
+  const token = useSelector(selectToken);
   const isLoading = useSelector(selectloader);
   const dispatch = useDispatch();
 
@@ -72,15 +72,15 @@ const SigninScreen = ({ navigation }) => {
     }, 1000);
   }
 
-  const handleSignIn = () => {
+  const handleSignIn = async() => {
     console.log(" handle Signin called ");
     if (!emailOrNumber || emailOrNumber.length < 3) {
-      dispatch(showSnackbar({ message: 'Invalid Email or Phone' }))
+      dispatch(showSnackbar({ message: 'Invalid Email or Phone', type: 'error' }))
       return;
     }
 
     if (!password || password.length < 8) {
-      dispatch(showSnackbar({ message: 'Password must be at least 8 characters long' }));
+      dispatch(showSnackbar({ message: 'Password must be at least 8 characters long', type: 'error' }));
       return;
     }
 
@@ -88,17 +88,18 @@ const SigninScreen = ({ navigation }) => {
 
     if (!strongPasswordRegex.test(password)) {
       dispatch(showSnackbar({
-        message: 'Password must contain uppercase, lowercase, number, and special character',
+        message: 'Password must contain uppercase, lowercase, number, and special character', type: 'error'
       }));
       return;
     }
 
     try {
-      const response = dispatch(login({ identifier: emailOrNumber, password }));
+      const response = await dispatch(login({ identifier: emailOrNumber, password }));
 
       if (login.fulfilled.match(response)) {
         // Save user data and token to AsyncStorage
         AsyncStorage.setItem("user", user?.user_key);
+        console.log('token in sigin = ', token);
         AsyncStorage.setItem("accessToken", token);
 
         console.log(
@@ -113,14 +114,14 @@ const SigninScreen = ({ navigation }) => {
           })
         );
       } else if(login.rejected.match(response)){
-       console.log('error occured', authErrorMessage) ;
+   
         dispatch(showSnackbar({
           message: authErrorMessage || "Log-In Failed",
           type: "error",
         }))
       }
     } catch (error) {
-
+     
       dispatch(showSnackbar({
         message: authErrorMessage || "Something went wrong, try again",
         type: "error",
@@ -129,24 +130,6 @@ const SigninScreen = ({ navigation }) => {
     }
 
 
-    /*
-     try {
-       const sanitizedPhoneNumber = phoneNumber.replace(/\s+/g, "");
-       // console.log("Calling API with:", sanitizedPhoneNumber);
- 
-       // Dispatch the Redux action
-       dispatch(postSignIn({ mobileNumber: sanitizedPhoneNumber })).unwrap();
-       dispatch(showSnackbar({ message: 'OTP Sent Successfuly', type: 'success' }));
-       navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber,handleSignIn });
-       
-     } catch (error) {
-       console.log("Error in handleSignIn:", error);
-       dispatch(showSnackbar({ message: 'Error ocurred', type: 'error' }));
-     } finally {
-       console.log("Signin API call completed");
-     }
- 
-     */
   };
 
 

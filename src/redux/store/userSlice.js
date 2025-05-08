@@ -182,6 +182,7 @@ const authSlice = createSlice({
         );
         state.user = extractUser(action.payload.data.user); // Extract user data from the response
         state.accessToken = action.payload.data.access_token
+        console.log('token in slice = ', state.accessToken);
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;

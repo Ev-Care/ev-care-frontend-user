@@ -1,9 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
+  forgetPasswordAPI,
   getUserByKeyApi,
   loginAPI,
   postSingleFileAPI,
+  registerAPI,
   signInAPI,
   signupAPI,
   updateVendorAPI,
@@ -91,7 +93,7 @@ export const register = createAsyncThunk(
   "auth/register",
   async (data, { rejectWithValue }) => {
     try {
-      const response = await signupAPI(data);
+      const response = await registerAPI(data);
 
       if (response.data.code === 200 || response.data.code === 201) {
         return response?.data;
@@ -203,10 +205,38 @@ export const login =  createAsyncThunk(
      
       const response = await loginAPI(data);
       if (response.data.code === 200 || response.data.code === 201) {
-        console.log('success');
+      
         return response.data;
       } else {
-        console.log('error', response?.data?.message);
+       
+        return rejectWithValue(
+          response?.data?.message || response?.message|| "Failed to get user details."
+        );
+      }
+    } catch (error) {
+      console.log("Error in getUserByKey:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message || // API sent error message
+        error?.message || // JS error message
+        "Failed to get user details."; // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+export const forgetPassword =  createAsyncThunk(
+  "auth/forgetPassword",
+  async (data, { rejectWithValue }) => {
+    try {
+     
+      const response = await forgetPasswordAPI(data);
+      if (response.data.code === 200 || response.data.code === 201) {
+    
+        return response.data;
+      } else {
+     
         return rejectWithValue(
           response?.data?.message || response?.message|| "Failed to get user details."
         );

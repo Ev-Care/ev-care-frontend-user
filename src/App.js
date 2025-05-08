@@ -29,6 +29,7 @@ import { VendorStack } from "./roleStack/vendorStack";
 import Snackbar from "./components/snackbar"; // Ensure correct import
 import { getLocationPermission } from "./utils/globalMethods";
 import ErrorPage from "./screens/errorPage";
+import ForgetPassword from "./screens/auth/forgetPassword";
 
 LogBox.ignoreAllLogs();
 
@@ -96,6 +97,7 @@ function AppNavigator() {
             />
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
             <Stack.Screen name="Signin" component={SigninScreen} />
+            <Stack.Screen name="ForgetPassword" component={ForgetPassword} />
             <Stack.Screen name="Register" component={RegisterScreen} />
             <Stack.Screen name="Verification">
               {(props) => (

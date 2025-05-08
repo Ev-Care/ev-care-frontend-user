@@ -23,9 +23,7 @@ import { selectToken, selectUser } from "../../auth/services/selector";
 import imageURL from "../../../constants/baseURL";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { postSingleFile } from "../../auth/services/crudFunction";
-
 import { MaterialIcons, Ionicons, Entypo } from "@expo/vector-icons";
-
 import RNModal from "react-native-modal";
 import { Colors } from "../../../constants/styles";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";

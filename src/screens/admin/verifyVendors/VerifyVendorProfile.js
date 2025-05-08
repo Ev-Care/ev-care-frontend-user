@@ -37,7 +37,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
     user?.adhar_no || "Not found"
   );
   const [panNumber, setPanNumber] = useState(user?.pan_no || "Not found");
-  const [gstNumber, setGstNumber] = useState(user?.gst_no || "--");
+  const [gstNumber, setGstNumber] = useState(user?.gstin_number || "Not found");
 
   //   image start
   const [aadhaarFrontImage, setAadhaarFrontImage] = useState(
@@ -47,7 +47,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
     imageURL.baseURL + user?.adhar_back_pic
   );
   const [panImage, setPanImage] = useState(imageURL.baseURL + user?.pan_pic);
-  const [gstImage, setGstImage] = useState(imageURL.baseURL + user?.gst_pic);
+  const [gstImage, setGstImage] = useState(imageURL.baseURL + user?.gstin_image);
   const [avatar, setAvatar] = useState(imageURL.baseURL + user?.avatar);
 
   const [modalVisible, setModalVisible] = useState(false);

@@ -7,61 +7,112 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import React, { useState } from "react";
 import MyStatusBar from "../../../components/myStatusBar";
 import { Colors, Fonts, Sizes, commonStyles } from "../../../constants/styles";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { StackActions } from '@react-navigation/native';
 
 const connectionTypesList = [
   {
     id: "1",
-    connectionTypeImage: require("../../../../assets/images/connectionTypes/connection_type1.png"),
-    connectionType: "CCS",
-    selected: true,
+    connectionTypeIcon:"ev-plug-ccs2",
+    connectionType: "CCS-2",
+    selected: false,
   },
   {
     id: "2",
-    connectionTypeImage: require("../../../../assets/images/connectionTypes/connection_type2.png"),
-    connectionType: "CCS2",
+    connectionTypeIcon: "ev-plug-chademo",
+    connectionType: "CHAdeMO",
     selected: false,
   },
   {
     id: "3",
-    connectionTypeImage: require("../../../../assets/images/connectionTypes/connection_type3.png"),
-    connectionType: "Mennekes",
-    selected: false,
-  },
-];
-
-const distanceList = ["<5 km", "<10 km", "<20 km", "<30 km", ">30 km"];
-
-const chargingSpeedsList = [
-  {
-    id: "1",
-    speed: "Standard (<3.7 kW)",
-    selected: true,
-  },
-  {
-    id: "2",
-    speed: "Semi fast (3.7 - 20 kW)",
-    selected: false,
-  },
-  {
-    id: "3",
-    speed: "Fast (20 - 43 kW)",
+    connectionTypeIcon:"ev-plug-type2",
+    connectionType: "Type-2",
     selected: false,
   },
   {
     id: "4",
-    speed: "Ultra fast (>43 kW)",
+    connectionTypeIcon: "ev-plug-type1",
+    connectionType: "Wall",
+    selected: false,
+  },
+  {
+    id: "5",
+    connectionTypeIcon: "ev-plug-type2",
+    connectionType: "GBT",
     selected: false,
   },
 ];
 
-const FilterScreen = ({ navigation }) => {
+const distanceList = ["> 0 Km","<5 km", "<10 km", "<20 km", "<30 km", ">30 km",];
+
+const powerRatingList = [
+  {
+    id: "1",
+    speed: "Standard (<10 kW)",
+    selected: false,
+  },
+  {
+    id: "2",
+    speed: "Semi fast (10 - 20 kW)",
+    selected: false,
+  },
+  {
+    id: "3",
+    speed: "Fast (20 - 40 kW)",
+    selected: false,
+  },
+  {
+    id: "4",
+    speed: "Ultra fast (>50 kW)",
+    selected: false,
+  },
+];
+
+const FilterScreen = ({ navigation,route }) => {
   const [connectionTypes, setconnectionTypes] = useState(connectionTypesList);
   const [selectedDistanceIndex, setselectedDistanceIndex] = useState(0);
-  const [chargingSpeeds, setchargingSpeeds] = useState(chargingSpeedsList);
+  const [powerRating, setPowerRating] = useState(powerRatingList);
+
+
+  const handleSubmit = () => {
+    const selectedFilters = {
+      selectedDistanceIndex,
+      connectionTypes: connectionTypes.find(item => item.selected),  
+      powerRating: powerRating.find(item => item.selected) 
+    };
+  
+    // console.log("selected filters", selectedFilters);
+  
+    // Check if `connectionTypes` or `powerRating` have a valid selected item before applying
+    if (selectedFilters) {
+      // Add optional chaining here to avoid potential errors if `route.params` is undefined
+      route.params?.onApplyFilter(selectedFilters);
+      navigation.dispatch(StackActions.pop(1));
+    } else {
+      console.log("Please select a valid filter.");
+    }
+  };
+  
+  
+  const handleCancel = () => {
+    setconnectionTypes(connectionTypesList.map(item => ({ ...item, selected: false })));
+    setPowerRating(powerRatingList.map(item => ({ ...item, selected: false })));
+    setselectedDistanceIndex(0);
+    const selectedFilters = {
+      selectedDistanceIndex,
+      connectionTypes: connectionTypes.find(item => item.selected), 
+      powerRating: powerRating.find(item => item.selected) 
+    };
+    route.params?.onApplyFilter(selectedFilters);
+    navigation.dispatch(StackActions.pop(1));
+  };
+  
+  
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -74,7 +125,7 @@ const FilterScreen = ({ navigation }) => {
         >
           {connectionTypesInfo()}
           {distanceInfo()}
-          {speedInfo()}
+          {powerInfo()}
         </ScrollView>
       </View>
       {cancelAndApplyButton()}
@@ -87,18 +138,26 @@ const FilterScreen = ({ navigation }) => {
         style={{
           ...commonStyles.rowAlignCenter,
           marginVertical: Sizes.fixPadding,
-          marginHorizontal: Sizes.fixPadding * 2.0,
+          marginHorizontal: Sizes.fixPadding * 0.5,
         }}
       >
-        <Text
-          onPress={() => navigation.pop()}
-          style={{ ...Fonts.blackColor18Medium }}
-        >
-          Cancel
-        </Text>
         <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={()=>{navigation.pop()}}
+          activeOpacity={0.8}
+          onPress={  handleCancel}
+          style={{
+            ...commonStyles.button,
+            marginLeft: Sizes.fixPadding * 2.0,
+            flex: 1,
+            backgroundColor: Colors.darOrangeColor,
+          }}
+        >
+          <Text style={{ ...Fonts.whiteColor20SemiBold }}>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={
+           handleSubmit
+          }
           style={{
             ...commonStyles.button,
             marginLeft: Sizes.fixPadding * 2.0,
@@ -111,8 +170,8 @@ const FilterScreen = ({ navigation }) => {
     );
   }
 
-  function changeSpeedSelection({ id }) {
-    const copyData = chargingSpeeds;
+  function changePowerSelection({ id }) {
+    const copyData = powerRating;
     const newData = copyData.map((item) => {
       if (item.id === id) {
         return { ...item, selected: !item.selected };
@@ -120,15 +179,15 @@ const FilterScreen = ({ navigation }) => {
         return item;
       }
     });
-    setchargingSpeeds(newData);
+    setPowerRating(newData);
   }
 
-  function speedInfo() {
+  function powerInfo() {
     const renderItem = ({ item }) => (
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => {
-          changeSpeedSelection({ id: item.id });
+          changePowerSelection({ id: item.id });
         }}
         style={{
           ...commonStyles.rowAlignCenter,
@@ -161,9 +220,16 @@ const FilterScreen = ({ navigation }) => {
     );
     return (
       <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.blackColor20SemiBold,marginBottom:Sizes.fixPadding*2.0}}>Charging speed</Text>
+        <Text
+          style={{
+            ...Fonts.blackColor20SemiBold,
+            marginBottom: Sizes.fixPadding * 2.0,
+          }}
+        >
+          Power Rating
+        </Text>
         <FlatList
-          data={chargingSpeeds}
+          data={powerRating}
           keyExtractor={(item) => `${item.id}`}
           renderItem={renderItem}
           scrollEnabled={false}
@@ -232,17 +298,28 @@ const FilterScreen = ({ navigation }) => {
         }}
         style={{
           ...styles.connectionTypesWrapper,
-          borderColor: item.selected
+          backgroundColor: item.selected
             ? Colors.primaryColor
             : Colors.extraLightGrayColor,
         }}
       >
-        <Image
+        <Icon
+          name={
+          item.connectionTypeIcon || "ev-plug-type1"
+          }
+          size={20}
+          color={item.selected ? Colors.whiteColor : Colors.primaryColor}
+        />
+        {/* <Image
           source={item.connectionTypeImage}
           style={{ width: 40.0, height: 40.0, resizeMode: "contain" }}
-        />
+        /> */}
         <Text
-          style={{ ...Fonts.blackColor18Medium, marginTop: Sizes.fixPadding }}
+          style={{
+            ...Fonts.blackColor18Medium,
+            marginTop: Sizes.fixPadding,
+            color: item.selected ? Colors.whiteColor : Colors.blackColor,
+          }}
         >
           {item.connectionType}
         </Text>

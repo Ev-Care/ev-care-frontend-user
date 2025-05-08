@@ -1,5 +1,15 @@
-import { FlatList, StyleSheet, Text, Image, View } from "react-native";
-import React from "react";
+import {
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  Image,
+  View,
+  Linking,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
+import React, { useState } from "react";
 import {
   Colors,
   Fonts,
@@ -9,134 +19,150 @@ import {
 } from "../../../constants/styles";
 import MyStatusBar from "../../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectStations,
+  selectStationsLoading,
+  selectUserCoordinate,
+} from "../service/selector";
+import { filterStations } from "../../../utils/filter";
 
-const allStationsList = [
-  {
-    id: "1",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
-    stationName: "Apex Charging Point",
-    stationAddress: "Near shell petrol station",
-    rating: 4.7,
-    totalStations: 8,
-    distance: "5.7 km",
-    isOpen: true,
-  },
-  {
-    id: "2",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station3.png"),
-    stationName: "Horizon EV Station",
-    stationAddress: "Near apex hospital",
-    rating: 4.2,
-    totalStations: 18,
-    distance: "5.7 km",
-    isOpen: true,
-  },
-  {
-    id: "3",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station1.png"),
-    stationName: "Rapid EV Charge",
-    stationAddress: "Near shelby play ground",
-    rating: 4.2,
-    totalStations: 12,
-    distance: "5.7 km",
-    isOpen: false,
-  },
-  {
-    id: "4",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
-    stationName: "Tesla Recharge",
-    stationAddress: "Near nissan show room",
-    rating: 4.9,
-    totalStations: 22,
-    distance: "5.7 km",
-    isOpen: true,
-  },
-  {
-    id: "5",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station2.png"),
-    stationName: "BYD Charging Point",
-    stationAddress: "Near shell petrol station",
-    rating: 4.7,
-    totalStations: 8,
-    distance: "4.5 km",
-    isOpen: true,
-  },
-  {
-    id: "6",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
-    stationName: "TATA EStation",
-    stationAddress: "Near orange business hub",
-    rating: 3.9,
-    totalStations: 15,
-    distance: "5.7 km",
-    isOpen: false,
-  },
-];
+import imageURL from "../../../constants/baseURL";
+import { RefreshControl } from "react-native";
+import { handleRefreshStationsByLocation } from "../service/handleRefresh";
+import {
+  openHourFormatter,
+  formatDistance,
+  getChargerLabel,
+  getLocationPermission,
+} from "../../../utils/globalMethods";
+import * as Location from "expo-location";
+
 
 const AllChargingStationsScreen = ({ navigation }) => {
+  const stations = useSelector(selectStations);
+  const [refreshing, setRefreshing] = useState(false);
+  const userCoords = useSelector(selectUserCoordinate);
+  const isLoading = useSelector(selectStationsLoading);
+ 
+  const dispatch = useDispatch();
+
+  const openGoogleMaps = (latitude, longitude) => {
+    const url = Platform.select({
+      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
+      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
+    });
+    Linking.openURL(url);
+  };
+
+  const [initialStations, setInitialStations] = useState(stations || []); // ensure fallback to empty array if stations is null or undefined
+  const [filteredStations, setFilteredStations] = useState(stations || []); // same as above for filteredStations
+
+  const handleFilterApply = (filters) => {
+    const result = filterStations(stations, filters);
+    setFilteredStations(result);
+  };
+
+  const handleRefresh = async () => {
+    console.log("handle refresh called");
+    const data = {
+      radius: 30000,
+      coords: userCoords,
+    };
+    //  const { status } = await Location.requestForegroundPermissionsAsync();
+    //  if(status==="granted"){
+    await handleRefreshStationsByLocation(dispatch, data, setRefreshing);
+    // }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
-      <View style={{ flex: 1 }}>
-        {header()}
-        {allStationsInfo()}
-      </View>
+
+      {header()}
+      {allStationsInfo()}
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </View>
   );
 
   function allStationsInfo() {
+    const noItemInfo = () => {
+      if (filteredStations.length === 0) {
+        return (
+          <View style={[styles.centeredContainer, {}]}>
+            <Text style={styles.noStationsText}>
+              No Charging Stations Found
+            </Text>
+          </View>
+        );
+      }
+    };
+
     const renderItem = ({ item }) => (
-      <View style={styles.enrouteChargingStationWrapStyle}>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => {
+          navigation.navigate("ChargingStationDetail", { item });
+        }}
+        style={[styles.enrouteChargingStationWrapStyle, {}]}
+      >
         <Image
-          source={item.stationImage}
+          source={
+            item?.station_images
+              ? { uri: imageURL.baseURL + item?.station_images }
+              : require("../../../../assets/images/nullStation.png")
+          }
           style={styles.enrouteChargingStationImage}
         />
+
         <View style={styles.enrouteStationOpenCloseWrapper}>
           <Text style={{ ...Fonts.whiteColor18Regular }}>
-            {item.isOpen ? "Open" : "Closed"}
+            {item?.status === "Planned" || item?.status === "Active"
+              ? "Open"
+              : "Closed"}
           </Text>
         </View>
         <View style={{ flex: 1 }}>
           <View style={{ margin: Sizes.fixPadding }}>
             <Text numberOfLines={1} style={{ ...Fonts.blackColor18SemiBold }}>
-              {item.stationName}
+              {item?.station_name}
             </Text>
             <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
-              {item.stationAddress}
+              {item?.address}
             </Text>
+
             <View
               style={{
                 marginTop: Sizes.fixPadding,
-                ...commonStyles.rowAlignCenter,
+                ...commonStyles.rowSpaceBetween,
               }}
             >
+              {/* Left Section */}
               <View style={{ ...commonStyles.rowAlignCenter }}>
-                <Text style={{ ...Fonts.blackColor18Medium }}>
-                  {item.rating}
+                <Text style={{ ...Fonts.blackColor16Medium }}>
+                  {openHourFormatter(
+                    item?.open_hours_opening_time,
+                    item?.open_hours_closing_time
+                  )}
                 </Text>
-                <MaterialIcons
-                  name="star"
-                  color={Colors.yellowColor}
-                  size={20}
-                />
               </View>
-              <View
-                style={{
-                  marginLeft: Sizes.fixPadding * 2.0,
-                  ...commonStyles.rowAlignCenter,
-                  flex: 1,
-                }}
-              >
+
+              {/* Right Section */}
+              <View style={{ ...commonStyles.rowAlignCenter }}>
                 <View style={styles.primaryColorDot} />
                 <Text
                   numberOfLines={1}
                   style={{
                     marginLeft: Sizes.fixPadding,
                     ...Fonts.grayColor14Medium,
-                    flex: 1,
+                    maxWidth: 150, // optional: limit text to prevent overflow
                   }}
                 >
-                  {item.totalStations} Charging Points
+                  {getChargerLabel(item?.chargers?.length ?? 0)}
                 </Text>
               </View>
             </View>
@@ -148,36 +174,60 @@ const AllChargingStationsScreen = ({ navigation }) => {
               marginTop: Sizes.fixPadding,
             }}
           >
-            <Text
-              numberOfLines={1}
-              style={{
-                ...Fonts.blackColor16Medium,
-                flex: 1,
-                marginRight: Sizes.fixPadding - 5.0,
-              }}
+            
+           
+              <Text
+                numberOfLines={1}
+                style={{
+                  ...Fonts.blackColor16Medium,
+                  flex: 1,
+                  marginRight: Sizes.fixPadding - 5.0,
+                }}
+              >
+                {formatDistance(item?.distance_km)}
+              </Text>
+       
+
+            <TouchableOpacity
+              onPress={() =>
+                openGoogleMaps(
+                  item?.coordinates?.latitude,
+                  item?.coordinates?.longitude
+                )
+              }
+              style={styles.getDirectionButton}
             >
-              {item.distance}
-            </Text>
-            <View style={styles.getDirectionButton}>
               <Text style={{ ...Fonts.whiteColor16Medium }}>Get Direction</Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
+
     return (
       <FlatList
-        data={allStationsList}
-        keyExtractor={(item) => `${item.id}`}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        data={filteredStations}
+        keyExtractor={(item) => `${item?.id}`}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: 15 }}
+        ListEmptyComponent={noItemInfo}
       />
     );
   }
 
   function header() {
     return (
-      <View style={{ ...commonStyles.rowSpaceBetween, margin: 20.0 }}>
+      <View
+        style={{
+          ...commonStyles.rowSpaceBetween,
+          elevation: 10,
+          padding: 15,
+          backgroundColor: Colors.bodyBackColor,
+        }}
+      >
         <View
           style={{
             ...commonStyles.rowAlignCenter,
@@ -198,6 +248,8 @@ const AllChargingStationsScreen = ({ navigation }) => {
             style={{
               ...Fonts.blackColor20SemiBold,
               flex: 1,
+              color: "black",
+              textAlign: "center",
               marginLeft: Sizes.fixPadding * 2.0,
             }}
           >
@@ -208,9 +260,9 @@ const AllChargingStationsScreen = ({ navigation }) => {
           name="filter-list"
           color={Colors.blackColor}
           size={26}
-          onPress={() => {
-            navigation.push("Filter");
-          }}
+          onPress={() =>
+            navigation.navigate("Filter", { onApplyFilter: handleFilterApply })
+          }
         />
       </View>
     );
@@ -236,7 +288,18 @@ const styles = StyleSheet.create({
     borderTopWidth: 1.0,
     flexDirection: "row",
     marginHorizontal: Sizes.fixPadding * 2.0,
-    marginBottom: Sizes.fixPadding * 2.0,
+    marginBottom: Sizes.fixPadding * 1.0,
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
   },
   enrouteChargingStationImage: {
     width: screenWidth / 3.2,
@@ -257,5 +320,17 @@ const styles = StyleSheet.create({
     height: 10.0,
     borderRadius: 5.0,
     backgroundColor: Colors.primaryColor,
+  },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: "80%",
+    // backgroundColor: Colors.whiteColor,
+  },
+  noStationsText: {
+    ...Fonts.blackColor18Medium,
+    textAlign: "center",
+    color: Colors.blackColor,
   },
 });

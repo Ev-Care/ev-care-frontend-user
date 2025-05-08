@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  ActivityIndicator,
   StyleSheet,
   ScrollView,
   Image,
@@ -10,75 +11,156 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
-
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import CompleteDetailProgressBar from "../../../components/vendorComponents/CompleteDetailProgressBar";
-import {Colors} from "../../../constants/styles";
-const UploadAadhar = () => {
-  const navigation = useNavigation();
+import { Colors } from "../../../constants/styles";
+import { setupImagePicker } from "./vendorDetailForm";
+import { useDispatch, useSelector } from "react-redux";
+import { selectAuthError, selectToken } from "../../auth/services/selector";
+import { postSingleFile } from "../../auth/services/crudFunction";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import NetInfo from "@react-native-community/netinfo";
+
+
+const UploadAadhar = ({ route, navigation }) => {
+  // const navigation = useNavigation();
   const [frontImage, setFrontImage] = useState(null);
   const [backImage, setBackImage] = useState(null);
-
+  const [frontImageUri, setFrontImageUri] = useState(null);
+  const [backImageUri, setBackImageUri] = useState(null);
+  const [frontImageloading, setFrontImageLoading] = useState(false); 
+  const [backImageloading, setBackImageLoading] = useState(false); 
+  const { vendorDetail ,isCheckBoxClicked } = route.params || {};
+  const dispatch = useDispatch(); // Get the dispatch function
+  const accessToken = useSelector(selectToken); // Get access token from Redux store
+  const authErrorMessage = useSelector(selectAuthError);
   // Function to pick an image
-  const pickImage = async (source, type) => {
+  const pickImage = async(source, type) => {
     let permissionResult;
-
+  
     if (source === "camera") {
       permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     } else {
-      permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     }
-
+  
     if (permissionResult.granted === false) {
-      alert("Permission is required!");
+      dispatch(showSnackbar({ message: 'Permission is required!', type: 'error' }));
       return;
     }
-
+  
     let result;
     if (source === "camera") {
       result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
+        quality: 0.2,
       });
     } else {
       result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
+        quality: 0.2,
       });
     }
-
+  
     if (!result.canceled) {
       const imageUri = result.assets[0].uri;
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      const file = await setupImagePicker(imageUri);
+  
+      
+      // Check for internet connectivity before sending request
+      const netState = await NetInfo.fetch();
+      if (!netState.isConnected) {
+        dispatch(showSnackbar({ message: "No internet connection.", type: "error" }));
+        return;
+      }
+    
+
+      // 👉 Show loader BEFORE dispatch
       if (type === "front") {
-        setFrontImage(imageUri);
+        setFrontImageLoading(true);
       } else {
-        setBackImage(imageUri);
+        setBackImageLoading(true);
+      }
+  
+      try {
+        const response = await dispatch(
+          postSingleFile({ file: file, accessToken: accessToken })
+        );
+  
+        if (response?.payload?.code === 200 || response?.payload?.code === 201) {
+          if (type === "front") {
+            setFrontImage(imageUri);
+            setFrontImageUri(response?.payload?.data?.filePathUrl);
+            console.log("front Image URI set successfully:", response?.payload?.data?.filePathUrl);
+          } else {
+            setBackImage(imageUri);
+            setBackImageUri(response?.payload?.data?.filePathUrl);
+            console.log("back Image URI set successfully:", response?.payload?.data?.filePathUrl);
+          }
+        } else {
+          
+          dispatch(showSnackbar({ message: authErrorMessage || 'File Should be less than 5 MB', type: 'error' }));
+
+          // Alert.alert("Error", "File Should be less than 5 MB");
+        }
+      } catch (error) {
+        dispatch(showSnackbar({ message: authErrorMessage || 'Upload failed. Please try again.', type: 'error' }));
+
+        // Alert.alert("Error", "Upload failed. Please try again.");
+      } finally {
+        // 👉 Always stop loader
+        if (type === "front") {
+          setFrontImageLoading(false);
+        } else {
+          setBackImageLoading(false);
+        }
       }
     }
   };
+  
 
   // Handle Submit
-  const handleSubmit = () => {
-    // if (!frontImage && !backImage) {
-    //   Alert.alert("Error", "Please upload both front and back images.");
-    //   return;
-    // }
-    // if (!frontImage) {
-    //   Alert.alert("Error", "Please upload the front side image.");
-    //   return;
-    // }
-    // if (!backImage) {
-    //   Alert.alert("Error", "Please upload the back side image.");
-    //   return;
-    // }
-    
-    // Alert.alert("Success", "Submitted!");
-    navigation.navigate("UploadPAN");
+  const handleSubmit = async() => {
+    if (!frontImageUri && !backImageUri) {
+      dispatch(showSnackbar({ message: 'Please upload both front and back images.', type: 'error' }));
+      // Alert.alert("Error", "Please upload both front and back images.");
+      return;
+    }
+    if (!frontImageUri) {
+      dispatch(showSnackbar({ message: 'Please upload the Aadhar front side image.', type: 'error' }));
+
+      // Alert.alert("Error", "Please upload the front side image.");
+      return;
+    }
+    if (!backImageUri) {
+      dispatch(showSnackbar({ message: 'Please upload the Aadhar back side image.', type: 'error' }));
+
+      // Alert.alert("Error", "Please upload the back side image.");
+      return;
+    }
+    if (!vendorDetail) {
+      dispatch(showSnackbar({ message: 'VendorDetail not passed at aadhar Page!', type: 'error' }));
+
+      console.warn("vendorDetail not passed at aadhar Page!");
+      return null;
+    }
+
+    // Check for internet connectivity before sending request
+        const netState = await NetInfo.fetch();
+        if (!netState.isConnected) {
+          dispatch(showSnackbar({ message: "No internet connection.", type: "error" }));
+          return;
+        }
+      
+    let VendorDetailAtAadharPage = {
+      ...vendorDetail,
+      adhar_front_pic: frontImageUri,
+      adhar_back_pic: backImageUri,
+    };
+    // console.log("Updated Vendor Detail at page 2:", VendorDetailAtAadharPage);
+    navigation.navigate("UploadPAN", { VendorDetailAtAadharPage ,isCheckBoxClicked });
   };
-  
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -95,11 +177,13 @@ const UploadAadhar = () => {
         </View>
 
         {/* Progress Bar */}
-        <CompleteDetailProgressBar completedSteps={1} />
+        <CompleteDetailProgressBar  completedSteps={isCheckBoxClicked?2:1} totalSteps={isCheckBoxClicked?4:3} />
 
         {/* Upload Front Side */}
         <View style={styles.uploadBox}>
-          {frontImage ? (
+          {frontImageloading? (
+            <ActivityIndicator size={40} color="black" />
+          ) : frontImage ? (
             <Image source={{ uri: frontImage }} style={styles.uploadedImage} />
           ) : (
             <Text style={styles.uploadText}>Upload Front Side</Text>
@@ -126,7 +210,9 @@ const UploadAadhar = () => {
 
         {/* Upload Back Side */}
         <View style={styles.uploadBox}>
-          {backImage ? (
+          {backImageloading? (
+            <ActivityIndicator size={40} color="black" />
+          ) : backImage ? (
             <Image source={{ uri: backImage }} style={styles.uploadedImage} />
           ) : (
             <Text style={styles.uploadText}>Upload Back Side</Text>
@@ -150,10 +236,9 @@ const UploadAadhar = () => {
             <Text style={styles.buttonText}> Upload from Gallery</Text>
           </TouchableOpacity>
         </View>
-
         {/* Submit Button */}
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitText}>Submit</Text>
+          <Text style={styles.submitText}>Next</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

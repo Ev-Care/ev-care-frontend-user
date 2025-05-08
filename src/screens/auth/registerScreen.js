@@ -7,11 +7,12 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  Linking,
   TouchableOpacity,
   View,
 } from "react-native";
 import { RadioButton } from "react-native-paper";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Colors,
   screenWidth,
@@ -21,55 +22,174 @@ import {
 } from "../../constants/styles";
 import MyStatusBar from "../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { signUpUser } from "../../redux/store/userSlice";
-import { useDispatch } from "react-redux";
+
+import { useDispatch, useSelector } from "react-redux";
 import { postSignUp } from "./services/crudFunction";
+import { selectAuthError, selectToken, selectUser } from "./services/selector";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
+import { Picker } from '@react-native-picker/picker';
+import { Entypo } from '@expo/vector-icons';
+// import DropDownPicker from 'react-native-dropdown-picker';
+
+
+
+
+
+export const vehicleData = {
+  "Tata": ["Ace", "Intra", "Yodha"],
+  "Mahindra": ["Bolero", "Jeeto", "Supro"],
+  "Ashok Leyland": ["Dost", "Partner", "Boss"],
+  "Maruti Suzuki": ["Super Carry", "Eeco Cargo", "Omni Cargo"],
+  "Piaggio": ["Ape Xtra", "Porter", "Ape Auto"],
+  "Force Motors": ["Kargo King", "Shaktiman", "Traveller Pickup"],
+  "Isuzu": ["D-Max", "S-CAB", "Hi-Lander"],
+  "Eicher": ["Pro 2049", "Pro 3015", "Pro 2059"],
+  "Toyota": ["Hilux", "Innova Crysta Commercial", "LC79 Pickup"],
+  "Others": [],
+
+
+};
+
 const RegisterScreen = ({ navigation, route }) => {
-  const [fullName, setfullName] = useState("");
-  const [email, setemail] = useState("");
-  const [role, setRole] = useState("User");
+  const [fullName, setfullName] = useState(null);
+  const [email, setemail] = useState(null);
+  const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(false); // Loader state
   const dispatch = useDispatch();
-  
-  const user = route.params?.user;
+  const user = useSelector(selectUser); // Get user data from Redux store
+  const token = useSelector(selectToken); // Get user data from Redux store
+  const error = useSelector(selectAuthError); // Get error from Redux store
+  const userKey = route?.params?.userKey;
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedModel, setSelectedModel] = useState(null);
+  const [customCompany, setCustomCompany] = useState(null);
+  const [customModel, setCustomModel] = useState(null);
+  const [vehicleNumber, setVehicleNumber] = useState(null);
+
+  const models = selectedCompany && vehicleData[selectedCompany] ? vehicleData[selectedCompany] : [];
+  // console.log("user key in register : ", userKey);
+
+  const validateUserData = (data) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const nameRegex = /^[A-Za-z\s]{3,}$/;
+    const vehicleNumberRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
+
+    if (!data.email || !emailRegex.test(data.email)) {
+      return "Invalid email address.";
+    }
+
+    if (!data.owner_legal_name || !nameRegex.test(data.owner_legal_name)) {
+      return "Invalid full name. Only letters and spaces, at least 3 characters.";
+    }
+
+    if (!data.role || !['user', 'vendor'].includes(data.role.toLowerCase())) {
+      return "Role must be either 'user' or 'vendor'.";
+    }
+    if (data.role === 'user') {
+
+
+      if (!data.vehicle_registration_number || !vehicleNumberRegex.test(data.vehicle_registration_number)) {
+        return "Invalid vehicle number format (e.g., MH12AB1234).";
+      }
+
+      if (!data.vehicle_manufacturer || data.vehicle_manufacturer.trim() === "") {
+        return "Vehicle manufacturer is required.";
+      }
+
+      if (!data.vehicle_model || data.vehicle_model.trim() === "") {
+        return "Vehicle model is required.";
+      }
+    }
+
+    return null; // all good
+  };
 
   const handleSignUp = async () => {
-    if (!fullName.trim() || !email.trim()) {
-      Alert.alert("Error", "Please fill in all the fields.");
+    const userData = {
+      email: email,
+      owner_legal_name: fullName,
+      role: role,
+      user_key: userKey,
+      vehicle_registration_number: vehicleNumber,
+      vehicle_manufacturer: customCompany !== '' ? customCompany : selectedCompany,
+      vehicle_model: customModel !== '' ? customModel : selectedModel
+    };
+
+    const vendorData = {
+      email: email,
+      owner_legal_name: fullName,
+      role: role,
+      user_key: userKey,
+
+    };
+    const error = validateUserData(userData);
+    if (error) {
+      console.log('error cartched');
+      dispatch(showSnackbar({ message: error, type: 'error' }));
       return;
     }
 
     setLoading(true);
 
-    const userData = {
-        email: email,
-        owner_legal_name: fullName,
-        role: role,
-        user_key: user.user_key
-    };
 
-    console.log("post signup called");
-
+    console.log("Post signup called");
     try {
-        const response = await dispatch(postSignUp(userData)).unwrap(); // ✅ Ensure API response is returned
-        console.log("post signup success", response);
-        Alert.alert("Success", "Registration successful!");
-        userData.status = "Completed";
-        dispatch(signUpUser(userData)); // ✅ Use actual API response data
+      const response = await dispatch(postSignUp(userData));
     } catch (error) {
-        console.error("Signup failed:", error);
-        Alert.alert("Registration Failed", "Please check your details and try again.");
+      console.log("Error during registration");
+      dispatch(
+        showSnackbar({ message: error || "Registration Failed", type: "error" })
+      );
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
+
+  // useEffect to handle user and token updates
+  useEffect(() => {
+    if (user && user?.status !== "New" && token) {
+      console.log("User and token updated in useEffect:", user, token);
+
+      try {
+        // Save user data and token to AsyncStorage
+        AsyncStorage.setItem("user", user.user_key);
+        AsyncStorage.setItem("accessToken", token);
+
+        console.log(
+          "Access token stored in AsyncStorage:",
+          AsyncStorage.getItem("token")
+        );
+
+        dispatch(
+          showSnackbar({
+            message: error || "Registration Successfull",
+            type: "success",
+          })
+        );
+
+        navigation.navigate("userHome"); // Navigate to the home screen
+      } catch (error) {
+        console.error("Error saving user data:", error);
+        dispatch(
+          showSnackbar({ message: "Error in saving user data", type: "error" })
+        );
+      }
+    } else if (error) {
+      console.error("Error during registration:", error);
+      dispatch(
+        showSnackbar({ message: error || "Registration Failed", type: "error" })
+      );
+    }
+  }, [user, token, error, navigation]);
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, }}>
         {topImage()}
         <ScrollView
+          style={{ paddingHorizontal: 20 }}
           automaticallyAdjustKeyboardInsets={true}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: Sizes.fixPadding * 2.0 }}
@@ -77,6 +197,9 @@ const RegisterScreen = ({ navigation, route }) => {
           {selectRole()}
           {fullNameInfo()}
           {emailInfo()}
+          {role === "user" && (<>{vehicleNumberInfo()}
+            {vehicleDataForm()}
+          </>)}
           {continueButton()}
           {agreeInfo()}
         </ScrollView>
@@ -86,22 +209,20 @@ const RegisterScreen = ({ navigation, route }) => {
 
   function selectRole() {
     return (
-      <View style={{ flexDirection: "row", justifyContent: "space-around", margin: Sizes.fixPadding * 2 }}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <RadioButton
-            value="User"
-            status={role === "User" ? "checked" : "unchecked"}
-            onPress={() => setRole("User")}
-          />
-          <Text>User</Text>
-        </View>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <RadioButton
-            value="Vendor"
-            status={role === "Vendor" ? "checked" : "unchecked"}
-            onPress={() => setRole("Vendor")}
-          />
-          <Text>Vendor</Text>
+      <View style={{ marginTop: 30 }}>
+        <Text style={styles.sectionLabel}>
+          Select Role <Text style={styles.label}>*</Text>
+        </Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={selectedModel}
+            onValueChange={(itemValue) => setRole(itemValue)}
+            style={styles.pickerStyle}
+          >
+            <Picker.Item style={{ fontSize: 12 }} label="Select Role" value="" />
+            <Picker.Item style={{ fontSize: 12 }} label="User" value="user" />
+            <Picker.Item style={{ fontSize: 12 }} label="Vendor" value="vendor" />
+          </Picker>
         </View>
       </View>
     );
@@ -113,49 +234,99 @@ const RegisterScreen = ({ navigation, route }) => {
         <Text style={{ textAlign: "center", ...Fonts.grayColor16Medium }}>
           By continuing, you agree to our
         </Text>
-        <Text
-          style={{
-            textAlign: "center",
-            ...Fonts.grayColor18SemiBold,
-            marginTop: Sizes.fixPadding - 5.0,
-          }}
+        <TouchableOpacity
+          onPress={() =>
+            Linking.openURL("http://evcareindia.com/")
+          }
         >
-          Terms & Conditions
-        </Text>
+          <Text
+            style={{
+              textAlign: "center",
+              ...Fonts.grayColor18SemiBold,
+              color: "blue",
+              marginTop: Sizes.fixPadding - 5.0,
+            }}
+          >
+            Terms & Conditions
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   function emailInfo() {
-    return (
-      <View style={{ ...styles.textFieldWrapper, marginBottom: Sizes.fixPadding * 2.0 }}>
+    return (<>
+      <Text style={styles.sectionLabel}>
+        Email Id <Text style={styles.label}>*</Text>
+        {/* <Text style={styles.optional}>(Optional)</Text> */}
+      </Text>
+      <View
+        style={{
+          ...styles.textFieldWrapper,
+          marginBottom: Sizes.fixPadding * 2.0,
+        }}
+      >
         <TextInput
-          placeholder="Email address"
+          placeholder="Enter Your Email id "
           placeholderTextColor={Colors.grayColor}
           value={email}
-          onChangeText={(text) => setemail(text)}
-          style={{ ...Fonts.blackColor16Medium }}
+          onChangeText={(text) => setemail(text.toLowerCase())}
+          style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
           cursorColor={Colors.primaryColor}
           selectionColor={Colors.primaryColor}
           keyboardType="email-address"
         />
       </View>
+    </>
     );
   }
 
   function fullNameInfo() {
-    return (
+    return (<>
+      <Text style={styles.sectionLabel}>
+        Full Name <Text style={styles.label}>*</Text>
+        {/* <Text style={styles.optional}>(Optional)</Text> */}
+      </Text>
       <View style={{ ...styles.textFieldWrapper }}>
+
         <TextInput
-          placeholder="Full name"
+          placeholder="Enter Your Full name"
           placeholderTextColor={Colors.grayColor}
           value={fullName}
           onChangeText={(text) => setfullName(text)}
-          style={{ ...Fonts.blackColor16Medium }}
+          style={{
+            ...Fonts.blackColor16Medium, paddingVertical: 12,
+            fontSize: 12,
+          }}
           cursorColor={Colors.primaryColor}
           selectionColor={Colors.primaryColor}
         />
       </View>
+    </>
+    );
+  }
+  function vehicleNumberInfo() {
+    return (<>
+      <Text style={styles.sectionLabel}>
+        Vehicle Registration Number <Text style={styles.label}>*</Text>
+        {/* <Text style={styles.optional}>(Optional)</Text> */}
+      </Text>
+      <View style={{ ...styles.textFieldWrapper }}>
+
+        <TextInput
+          placeholder="Enter Your Vehicle Registration Number"
+          placeholderTextColor={Colors.grayColor}
+          value={vehicleNumber}
+          onChangeText={(text) => setVehicleNumber(text)}
+          style={{
+            ...Fonts.blackColor16Medium, paddingVertical: 12,
+            fontSize: 12,
+          }}
+          cursorColor={Colors.primaryColor}
+          selectionColor={Colors.primaryColor}
+        />
+      </View>
+    </>
     );
   }
 
@@ -164,13 +335,24 @@ const RegisterScreen = ({ navigation, route }) => {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handleSignUp}
-        style={{ ...commonStyles.button, borderRadius: Sizes.fixPadding - 5.0, margin: Sizes.fixPadding * 2.0 }}
+        style={{
+          ...commonStyles.button,
+          borderRadius: Sizes.fixPadding - 5.0,
+          marginBottom: Sizes.fixPadding * 2.0,
+        }}
         disabled={loading}
       >
         {loading ? (
-          <ActivityIndicator size="small" color="#fff" />
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <ActivityIndicator
+              size="small"
+              color="#fff"
+              style={{ marginRight: 8 }}
+            />
+            <Text style={{ ...Fonts.whiteColor18Medium }}>Please Wait...</Text>
+          </View>
         ) : (
-          <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>
+          <Text style={{ ...Fonts.whiteColor18Medium }}>Continue</Text>
         )}
       </TouchableOpacity>
     );
@@ -188,17 +370,149 @@ const RegisterScreen = ({ navigation, route }) => {
             name="arrow-back"
             color={Colors.whiteColor}
             size={26}
-            onPress={() => navigation.pop()}
+            onPress={() => navigation.goBack()} // Use goBack instead of navigate
           />
           <View>
             <Text style={{ ...Fonts.whiteColor22SemiBold }}>Register</Text>
-            <Text style={{ ...Fonts.whiteColor16Regular, marginTop: Sizes.fixPadding }}>
+            <Text
+              style={{
+                ...Fonts.whiteColor16Regular,
+                marginTop: Sizes.fixPadding,
+              }}
+            >
               Create your account
             </Text>
           </View>
         </View>
       </ImageBackground>
     );
+  }
+
+  function vehicleDataForm() {
+    return (
+      <View style={styles.container}>
+
+        {/* Company Picker */}
+        <Text style={styles.sectionLabel}>
+          Select Vehicle Manufacturer <Text style={styles.label}>*</Text>
+
+        </Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={selectedCompany}
+            onValueChange={(itemValue) => {
+              setSelectedCompany(itemValue);
+              setSelectedModel(""); // Reset model
+              setCustomCompany("");
+              setCustomModel("");
+            }}
+            style={styles.pickerStyle}
+          >
+            <Picker.Item style={{ fontSize: 12 }} label="Select Company" value="" />
+            {Object.keys(vehicleData).map((make) => (
+              <Picker.Item style={{ fontSize: 12 }} key={make} label={make} value={make} />
+            ))}
+          </Picker>
+        </View>
+
+        {/* Custom company if 'Other' */}
+        {selectedCompany === "Others" && (
+          <>
+
+            <Text style={styles.sectionLabel}>
+              Enter Vehicle Manufacturer <Text style={styles.label}>*</Text>
+            </Text>
+
+            <View
+              style={{
+                ...styles.textFieldWrapper,
+                marginBottom: Sizes.fixPadding * 2.0,
+
+              }}
+            >
+              <TextInput
+                placeholder="Enter Company Name here "
+                placeholderTextColor={Colors.grayColor}
+                value={customCompany}
+                onChangeText={setCustomCompany}
+                style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
+                cursorColor={Colors.primaryColor}
+                selectionColor={Colors.primaryColor}
+
+              />
+            </View>
+            <Text style={styles.sectionLabel}>
+              Enter Vehicle Model <Text style={styles.label}>*</Text>
+            </Text>
+            <View
+              style={{
+                ...styles.textFieldWrapper,
+                marginBottom: Sizes.fixPadding * 2.0,
+
+              }}
+            >
+              <TextInput
+                placeholder="Enter Model here "
+                placeholderTextColor={Colors.grayColor}
+                value={customModel}
+                onChangeText={setCustomModel}
+                style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
+                cursorColor={Colors.primaryColor}
+                selectionColor={Colors.primaryColor}
+
+              />
+            </View>
+          </>
+        )}
+
+        {/* Model Picker if applicable */}
+        {models.length > 0 ? (<>
+          <Text style={styles.sectionLabel}>
+            Select Vehicle Model <Text style={styles.label}>*</Text>
+          </Text>
+          <View style={styles.pickerWrapper}>
+            <Picker
+              selectedValue={selectedModel}
+              onValueChange={(itemValue) => setSelectedModel(itemValue)}
+              style={styles.pickerStyle}
+            >
+              <Picker.Item style={{ fontSize: 12 }} label="Select Model" value="" />
+              {models.map((model) => (
+                <Picker.Item style={{ fontSize: 12 }} key={model} label={model} value={model} />
+              ))}
+              <Picker.Item style={{ fontSize: 12 }} label="Other" value="Other" />
+            </Picker>
+          </View></>
+        ) : selectedCompany !== "" ? null : null}
+
+        {/* Custom model if no models found or "Other" selected */}
+        {(selectedCompany === "Other" || selectedModel === "Other") && (
+          <>
+            <Text style={styles.sectionLabel}>
+              Enter Vehicle Model <Text style={styles.label}>*</Text>
+            </Text>
+            <View
+              style={{
+                ...styles.textFieldWrapper,
+                marginBottom: Sizes.fixPadding * 2.0,
+
+              }}
+            >
+              <TextInput
+                placeholder="Enter Model here "
+                placeholderTextColor={Colors.grayColor}
+                value={customModel}
+                onChangeText={setCustomModel}
+                style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
+                cursorColor={Colors.primaryColor}
+                selectionColor={Colors.primaryColor}
+
+              />
+            </View>
+          </>
+        )}
+      </View>
+    )
   }
 };
 
@@ -217,12 +531,51 @@ const styles = StyleSheet.create({
     ...commonStyles.shadow,
     borderRadius: Sizes.fixPadding - 5.0,
     paddingHorizontal: Sizes.fixPadding * 1.5,
-    paddingVertical: Platform.OS === "ios" ? Sizes.fixPadding + 3.0 : Sizes.fixPadding,
-    marginHorizontal: Sizes.fixPadding * 2.0,
+    // backgroundColor:"cyan",
+    paddingVertical: 5,
     borderColor: Colors.extraLightGrayColor,
     borderWidth: 1.0,
     marginBottom: Sizes.fixPadding * 2.0,
-    marginLeft: Sizes.fixPadding,
-    marginRight: Sizes.fixPadding,
+
   },
+  sectionLabel: {
+
+    fontSize: 12,
+    fontWeight: "bold",
+    color: Colors.primaryColor,
+    marginBottom: 10,
+  },
+  optional: {
+    fontSize: 12,
+    fontWeight: "normal",
+    color: "#888",
+  },
+  container: { marginBottom: 10 },
+  textField: {
+    borderWidth: 1,
+    borderColor: Colors.extraLightGrayColor,
+    ...commonStyles.shadow,
+    padding: 12,
+    borderRadius: Sizes.fixPadding - 5.0,
+    marginTop: 10,
+    fontSize: 16,
+    backgroundColor: Colors.bodyBackColor,
+  },
+  pickerWrapper: {
+    position: "relative",
+    borderWidth: 1,
+    borderColor: Colors.extraLightGrayColor,
+    ...commonStyles.shadow,
+    borderRadius: Sizes.fixPadding - 5.0,
+
+    marginBottom: Sizes.fixPadding * 2.0,
+    backgroundColor: Colors.bodyBackColor,
+  },
+  pickerStyle: {
+    height: Platform.OS === "ios" ? 180 : 50,
+    width: "100%",
+    color: "#000",
+    fontSize: 16,
+  },
+
 });

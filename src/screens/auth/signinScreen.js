@@ -23,11 +23,14 @@ import { useFocusEffect } from "@react-navigation/native";
 import IntlPhoneInput from "react-native-intl-phone-input";
 import { Overlay } from "@rneui/themed";
 import { postSignIn } from "./services/crudFunction";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { selectloader } from "./services/selector";
+import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 const SigninScreen = ({ navigation }) => {
+  // 
   const [backClickCount, setBackClickCount] = useState(0);
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const isLoading =useSelector(selectloader);
   const dispatch = useDispatch();
 
 
@@ -60,29 +63,27 @@ const SigninScreen = ({ navigation }) => {
     }, 1000);
   }
 
-  const handleSignIn = async () => {
+  const handleSignIn =  () => {
+    console.log(" handle Signin called ");
     if (!phoneNumber || phoneNumber.length < 10) {
       Alert.alert("Invalid Phone Number");
       return;
     }
-    setIsLoading(true);
-
+   
     try {
       const sanitizedPhoneNumber = phoneNumber.replace(/\s+/g, "");
-      console.log("Calling API with:", sanitizedPhoneNumber);
+      // console.log("Calling API with:", sanitizedPhoneNumber);
 
       // Dispatch the Redux action
-      const response = await dispatch(postSignIn({ mobileNumber: sanitizedPhoneNumber })).unwrap();
-      
-      console.log("API Response:", response);
-      // Alert.alert("Success", response.message);
-      navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber });
+      dispatch(postSignIn({ mobileNumber: sanitizedPhoneNumber })).unwrap();
+      dispatch(showSnackbar({ message: 'OTP Sent Successfuly', type: 'success' }));
+      navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber,handleSignIn });
       
     } catch (error) {
       console.log("Error in handleSignIn:", error);
-      Alert.alert("Error", error?.message || "Something went wrong. Please try again.");
+      dispatch(showSnackbar({ message: 'Error ocurred', type: 'error' }));
     } finally {
-      setIsLoading(false);
+      console.log("Signin API call completed");
     }
 };
 
@@ -100,20 +101,10 @@ const SigninScreen = ({ navigation }) => {
         </ScrollView>
       </View>
       {exitInfo()}
-      {loadingDialog()}
+      
     </View>
   );
 
-  function loadingDialog() {
-    return (
-      <Overlay isVisible={isLoading} overlayStyle={styles.dialogStyle}>
-        <ActivityIndicator size={50} color={Colors.primaryColor} style={{ alignSelf: "center" }} />
-        <Text style={{ marginTop: Sizes.fixPadding, textAlign: "center", ...Fonts.blackColor16Regular }}>
-          Please wait...
-        </Text>
-      </Overlay>
-    );
-  }
 
   function continueButton() {
     return (
@@ -122,7 +113,14 @@ const SigninScreen = ({ navigation }) => {
         onPress={handleSignIn}
         style={{ ...commonStyles.button, borderRadius: Sizes.fixPadding - 5.0, margin: Sizes.fixPadding * 2.0 }}
       >
-        <Text style={{ ...Fonts.whiteColor18SemiBold }}>Continue</Text>
+      {isLoading ? (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+              <Text style={{ ...Fonts.whiteColor18Medium }}>Please Wait...</Text>
+            </View>
+          ) : (
+            <Text style={{ ...Fonts.whiteColor18Medium }}>Continue</Text>
+          )}
       </TouchableOpacity>
     );
   }
@@ -139,6 +137,7 @@ const SigninScreen = ({ navigation }) => {
           phoneInputStyle={{ flex: 1, ...Fonts.blackColor16Medium }}
           dialCodeTextStyle={{ ...Fonts.blackColor16Medium, marginHorizontal: Sizes.fixPadding - 2.0 }}
           modalCountryItemCountryNameStyle={{ ...Fonts.blackColor16SemiBold }}
+          maxLength={10}
         />
       </View>
     );
@@ -149,7 +148,7 @@ const SigninScreen = ({ navigation }) => {
       <ImageBackground
         source={require("../../../assets/images/authbg.png")}
         style={{ width: screenWidth, height: screenWidth - 150 }}
-        resizeMode="stretch"
+        // resizeMode="stretch"
       >
         <View style={styles.topImageOverlay}>
           <Text style={{ ...Fonts.whiteColor22SemiBold }}>Sign in</Text>
@@ -184,6 +183,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
   topImageOverlay: {
     backgroundColor: "rgba(0, 0, 0, 0.8)",
     width: "100%",

@@ -1,16 +1,33 @@
+import { useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
+  Alert,
   Image,
-  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
   Switch,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  View,
 } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
-import VendorBottomTabBar from "../../../../components/vendorComponents/vendorBottomTabBar";
-import { useNavigation } from "@react-navigation/native";
+import {
+  default as Icon,
+  default as MaterialIcons,
+} from "react-native-vector-icons/MaterialIcons";
+import { useDispatch, useSelector } from "react-redux";
+import MyStatusBar from "../../../../components/myStatusBar";
+import { Colors, commonStyles } from "../../../../constants/styles";
+import { selectAuthError, selectUser } from "../../../auth/services/selector";
+import { selectVendorStation } from "../../services/selector";
+import {
+  fetchStations,
+  updateStationsChargersConnectorsStatus,
+} from "../../services/crudFunction";
+import imageURL from "../../../../constants/baseURL";
+import { RefreshControl } from "react-native";
+import { handleRefreshStations } from "../../services/handleRefresh";
+import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
 const COLORS = {
   primary: "#101942",
   secondary: "#FF8C00",
@@ -21,149 +38,289 @@ const COLORS = {
   green: "#00FF00",
 };
 
-const stations = [
-  {
-    id: 1,
-    name: "Tesla EV Station",
-    chargers: 5,
-    address: "MG Road, Pune, Maharashtra, India",
-    image:
-      "https://plus.unsplash.com/premium_photo-1717007464480-2ab8d1b96f4b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGV2fGVufDB8fDB8fHww",
-    rating: 4.7,
-  },
-  {
-    id: 2,
-    name: "indira EV Hub",
-    chargers: 3,
-    address: "Fergusson College Road, Pune, Maharashtra, India",
-    image:
-      "https://images.unsplash.com/photo-1647418551307-a9bb946afe2e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGV2fGVufDB8fDB8fHww",
-    rating: 4.5,
-  },
-  {
-    id: 3,
-    name: "Bandra hills EV Point",
-    chargers: 4,
-    address: "Bandra Kurla Complex, Mumbai, Maharashtra, India",
-    image:
-      "https://plus.unsplash.com/premium_photo-1715639312136-56a01f236440?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8ZXZ8ZW58MHx8MHx8fDA%3D",
-    rating: 4.8,
-  },
-  {
-    id: 4,
-    name: "Mumbai Central EV Station",
-    chargers: 6,
-    address: "Mumbai Central, Mumbai, Maharashtra, India",
-    image:
-      "https://media.istockphoto.com/id/1662932717/photo/electric-car-charging.webp?a=1&b=1&s=612x612&w=0&k=20&c=9FIRR8R78lBruFtHTTBkLRzSnvMdms6nnsnQ6gab3cU=",
-    rating: 4.3,
-  },
-];
-
 const trimText = (text, limit) =>
   text.length > limit ? text.substring(0, limit) + "..." : text;
 
-const AllStations = () => {
-    const navigation = useNavigation();
-  const [availability, setAvailability] = useState(
-    stations.reduce((acc, station) => ({ ...acc, [station.id]: true }), {})
-  );
+const AllStations = ({ navigation, route }) => {
+  // const navigation = useNavigation();
+  const user = useSelector(selectUser);
+  const dispatch = useDispatch();
+  const [refreshing, setRefreshing] = useState(false);
+  const stations = useSelector(selectVendorStation);
+  const [isLoading, setIsLoading] = useState(false);
+  const errorMessage = useSelector(selectAuthError);
+  // console.log("Stations in AllStations:", stations?.length);
+  const [stationStatusMap, setStationStatusMap] = useState({});
 
-  const toggleAvailability = (id) => {
-    setAvailability((prev) => ({ ...prev, [id]: !prev[id] }));
+  const updateStationStatus = async (stationData) => {
+    setIsLoading(true);
+
+    // Optimistically toggle the status
+    setStationStatusMap((prev) => ({
+      ...prev,
+      [stationData.station_id]: stationData.status === "active",
+    }));
+
+    try {
+      const response = await dispatch(
+        updateStationsChargersConnectorsStatus(stationData)
+      );
+
+      if (updateStationsChargersConnectorsStatus.fulfilled.match(response)) {
+        await dispatch(
+          showSnackbar({ message: "Station status updated.", type: "success" })
+        );
+      } else if (
+        updateStationsChargersConnectorsStatus.rejected.match(response)
+      ) {
+        await dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to update station status.",
+            type: "error",
+          })
+        );
+      }
+
+      // Fetch updated stations after the status change
+      const stationResponse = await dispatch(fetchStations(user?.id));
+      if (fetchStations.fulfilled.match(stationResponse)) {
+        // Optionally show a success message for fetching stations
+        // await dispatch(showSnackbar({ message: "Stations fetched successfully.", type: "success" }));
+      } else if (fetchStations.rejected.match(stationResponse)) {
+        await dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to fetch stations.",
+            type: "error",
+          })
+        );
+      }
+    } catch (error) {
+      console.error("Error updating station status:", error);
+      await dispatch(
+        showSnackbar({
+          message: errorMessage || "Failed to update station status.",
+          type: "error",
+        })
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    console.log("Refreshing stations...in all stations");
+    await handleRefreshStations(dispatch, user?.id, setRefreshing);
   };
 
   return (
     <View style={styles.container}>
+      <MyStatusBar />
       {/* App Bar */}
       <View style={styles.appBar}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color={COLORS.primary} />
         </TouchableOpacity>
         <Text style={styles.title}>All Charging Stations</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: 20 }} />
       </View>
 
-      <ScrollView style={styles.scrollContainer}>
-        {stations.map((station) => (
-          <TouchableOpacity onPress={() => navigation.navigate("StationDetail")} key={station.id} style={styles.card}>
-            <Image source={{ uri: station.image }} style={styles.image} />
-            <View style={styles.infoContainer}>
-              <View style={styles.headerRow}>
-                <Text style={styles.stationName}>
-                  {trimText(station.name, 18)}
-                </Text>
-                <Switch
-                  trackColor={{ false: COLORS.secondary, true: COLORS.green }}
-                  thumbColor={COLORS.white}
-                  value={availability[station.id]}
-                  onValueChange={() => toggleAvailability(station.id)}
+      <ScrollView
+        style={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={["#9Bd35A", "#101942"]} // Android spinner colors
+            tintColor="#101942" // iOS spinner color
+          />
+        }
+      >
+        {/* Check if stations is defined and not empty */}
+        {stations && stations?.length > 0 ? (
+          stations.map((station) => (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() =>
+                navigation.navigate("StationManagement", { station })
+              }
+              key={station.id}
+              style={styles.card}
+            >
+              {station?.station_images ? (
+                <Image
+                  source={{ uri: imageURL.baseURL + station?.station_images }}
+                  style={styles.image}
                 />
-              </View>
-              <Text style={styles.statusText}>
-                Status:{" "}
-                <Text
-                  style={{
-                    color: availability[station.id]
-                      ? COLORS.green
-                      : COLORS.secondary,           
-                  }}
+              ) : (
+                <View
+                  style={[
+                    styles.image,
+                    { alignItems: "center", justifyContent: "center" },
+                  ]}
                 >
-                  {availability[station.id] ? "Live" : "Offline"}
+                  <MaterialIcons
+                    name="ev-station"
+                    size={50} // or match your image size
+                    color="#8f8f8f"
+                  />
+                </View>
+              )}
+
+              <View style={styles.infoContainer}>
+                <View style={styles.headerRow}>
+                  <Text style={styles.stationName}>
+                    {trimText(station?.station_name, 18)}
+                  </Text>
+                  <Switch
+                    trackColor={
+                      station?.status === "Planned"
+                        ? { false: COLORS.darkGray, true: COLORS.green }
+                        : { false: COLORS.secondary, true: COLORS.green }
+                    }
+                    thumbColor={COLORS.white}
+                    value={
+                      stationStatusMap[station?.id] ??
+                      station?.status === "Active"
+                    }
+                    disabled={station?.status === "Planned"}
+                    onValueChange={async () => {
+                      const newStatus =
+                        station?.status === "Active" ? "inactive" : "active";
+                      const stationData = {
+                        station_id: station?.id,
+                        statusType: "station",
+                        status: newStatus,
+                      };
+                      await updateStationStatus(stationData); // Update the station status on server
+                    }}
+                  />
+                </View>
+                <Text style={styles.statusText}>
+                  Status:{" "}
+                  <Text
+                    style={{
+                      color:
+                        station?.status !== "Inactive"
+                          ? station?.status === "Active"
+                            ? COLORS.green
+                            : COLORS.darkGray
+                          : COLORS.secondary,
+                    }}
+                  >
+                    {station?.status !== "Inactive"
+                      ? station?.status === "Active"
+                        ? "Live"
+                        : "Not Published"
+                      : "Offline"}
+                  </Text>
                 </Text>
-              </Text>
-             
-              <Text style={styles.text}>Chargers: {station.chargers}</Text>
-              <Text style={styles.addressText}>{station.address}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+
+                <Text style={styles.text}>
+                  Chargers: {station?.chargers?.length || 0}
+                </Text>
+                <Text style={styles.addressText}>
+                  {trimText(station?.address, 100)}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        ) : (
+          // Fallback UI when stations is undefined or empty
+          <Text style={{ textAlign: "center", marginTop: 20 }}>
+            No stations available.
+          </Text>
+        )}
       </ScrollView>
-      {/* <VendorBottomTabBar/> */}
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
+    {addSatationButton()}
     </View>
   );
+  function addSatationButton(){
+    return(
+    
+      <TouchableOpacity
+        onPress={()=>navigation?.navigate("AddStations")}
+        style={{
+          justifyContent: "center",
+          alignItems: "center",
+          width: 60,
+          height: 60,
+          borderRadius: 30,
+          backgroundColor: Colors.primaryColor,
+
+          shadowColor: Colors.primaryColor,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.4,
+          shadowRadius: 5,
+          elevation: 8,
+          position: "absolute",
+          bottom: 100,
+          right: "10%",
+        }}
+      >
+        <MaterialIcons name="add" size={30} color={Colors.whiteColor} />
+      </TouchableOpacity>
+     
+    )
+  }
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: Colors.bodyBackColor,
   },
-  scrollContainer: {
-    padding: 10,
-  },
+
   appBar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: COLORS.white,
+    backgroundColor: Colors.bodyBackColor,
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.gray,
+    borderBottomColor: "#e0e0eb",
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
+  },
+  scrollContainer: {
+    padding: 10,
   },
   title: {
-    fontSize: 18,
-
+    fontSize: 16,
+    // fontWeight: "bold",
     color: COLORS.primary,
     textAlign: "center",
   },
   card: {
-    backgroundColor: COLORS.white,
+    backgroundColor: Colors.whiteColor,
+    ...commonStyles.shadow,
+    borderColor: Colors.extraLightGrayColor,
     borderRadius: 10,
     padding: 15,
     marginBottom: 15,
     flexDirection: "row",
     alignItems: "center",
-    elevation: 5,
-    shadowColor: COLORS.black,
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2 },
   },
   image: {
     width: 80,
     height: 100,
     borderRadius: 8,
     marginRight: 15,
+    borderWidth: 1,
+    borderColor: '#e2e2e2 ',
+    backgroundColor: '#f5f5f5' 
   },
   infoContainer: {
     flex: 1,
@@ -174,14 +331,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   stationName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     color: COLORS.primary,
     marginBottom: 5,
   },
   statusText: {
     fontSize: 12,
-    color: COLORS.primary, 
+    color: COLORS.primary,
     marginBottom: 5,
   },
   text: {

@@ -1,83 +1,169 @@
-import { 
-    signInSuccess, 
-    signInFailed, 
-    verifyOtpSuccess, 
-    verifyOtpFailed, 
-    signUpSuccess, 
-    signUpFailed 
-} from "./slice"; 
-
-import { signInAPI, verifyOtpAPI, signupAPI } from "./api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  getUserByKeyApi,
+  postSingleFileAPI,
+  signInAPI,
+  signupAPI,
+  updateVendorAPI,
+  verifyOtpAPI,
+} from "./api";
 
 // Async Thunks
 export const postSignIn = createAsyncThunk(
-    "auth/signIn",
-    async (data, { rejectWithValue }) => {
-        try {
-            console.log("postSignIn called with:", data);
-            const response = await signInAPI(data);
+  "auth/signIn",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await signInAPI(data);
 
-            if (response.status === 200 || response.status === 201) {
-                console.log("API Response:", response.data);
-                return response.data;
-            } else {
-                throw new Error(response.data?.message || "OTP not sent, try again");
-            }
-        } catch (error) {
-            console.log("Error in postSignIn:", error);
-            return rejectWithValue(error?.response?.data?.message || "Something went wrong");
-        }
-      
-    
+      if (response.status === 200 || response.status === 201) {
+        // console.log("API Response:", response.data);
+        return response.data;
+      } else {
+        throw new Error(response.data?.message || "OTP not sent, try again");
+      }
+    } catch (error) {
+      console.log("Error in postSignIn:", error);
+      return rejectWithValue(
+        error?.response?.data?.message || "Something went wrong"
+      );
     }
+  }
 );
 
-
-  
 export const postVerifyOtp = createAsyncThunk(
-    "auth/verifyOtp",
-    async (data, { rejectWithValue }) => {
-      try {
-        const response = await verifyOtpAPI(data);
-  
-        if (response.status === 200 || response.status === 201) {
-          const user = {
-            user_key: response.data.data.user.user_key,
-            id: response.data.data.user.id,
-            name: response.data.data.user.owner_legal_name,
-            mobile_number: response.data.data.user.mobile_number,
-            role: response.data.data.user.role,
-            status: response.data.data.user.status,
-          };
-          const token = response.data.data.access_token;
-    
-          
+  "auth/verifyOtp",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await verifyOtpAPI(data);
+      // console.log("response in postVerifyOtp", response);
 
-          return response.data; // Axios automatically parses JSON
-        } else {
-          throw new Error("OTP verification failed");
-        }
-      } catch (error) {
-        return rejectWithValue(error?.response?.data?.message || "OTP verification failed");
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data; // Success, return data
+      } else {
+        // Fail case: return error message
+        return rejectWithValue(
+          response?.message || response?.data?.message || "OTP verification failed"
+        );
       }
+    } catch (error) {
+      console.log("Error in postVerifyOtp:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message || // API sent error message
+        error?.message || // JS error message
+        "OTP verification failed"; // fallback message
+
+      return rejectWithValue(errorMessage);
     }
-  );
-  
-  export const postSignUp = createAsyncThunk(
-    "auth/signUp",
-    async (data, { rejectWithValue }) => {
-      try {
-        const response = await signupAPI(data);
-        
-        if (response.status === 200 || response.status === 201) {
-          return response.data;
-        } else {
-          throw new Error("Signup failed");
-        }
-      } catch (error) {
-        return rejectWithValue(error?.response?.data?.message || "Signup failed");
+  }
+);
+
+export const postSignUp = createAsyncThunk(
+  "auth/signUp",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await signupAPI(data);
+
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(
+          response.data.message || "OTP verification failed"
+        );
       }
+    } catch (error) {
+      console.log("Error in postSignUp:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message || // API sent error message
+        error?.message || // JS error message
+        "OTP verification failed"; // fallback message
+
+      return rejectWithValue(errorMessage);
     }
-  
-  );
+  }
+);
+
+export const postSingleFile = createAsyncThunk(
+  "auth/singleFileUpload",
+  async (data, { rejectWithValue }) => {
+    try {
+      console.log("postSingleFile called with:", data);
+      const response = await postSingleFileAPI(data);
+
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(response?.data?.message || response?.message || "File Upload failed.");
+      }
+    } catch (error) {
+      console.log("Error in postSingleFile:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message || // API sent error message
+        error?.message || // JS error message
+        "Something went wrong. Please try again"; // fallback message
+      console.log("error message : ", errorMessage);
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const patchUpdateVendorProfile = createAsyncThunk(
+  "auth/UpdateVendorProfile",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await updateVendorAPI(data);
+      console.log("response at crud func page", response);
+      if (response?.data?.code === 200 || response?.data?.code === 201) {
+        console.log("return response data in thunk", response.data);
+        return response?.data;
+      } else {
+        return rejectWithValue(
+          response?.data?.message || response?.message || "Profile Update Failed"
+        );
+      }
+    } catch (error) {
+      console.log("Error in patchUpdateVendorProfile:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message || // API sent error message
+        error?.message || // JS error message
+        "Something went wrong. Please try again"; // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const getUserByKey = createAsyncThunk(
+  "auth/getUserByKey",
+  async (user_key, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken");
+      const response = await getUserByKeyApi({ user_key, accessToken });
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(
+          response?.data?.message || response?.message|| "Failed to get user details."
+        );
+      }
+    } catch (error) {
+      console.log("Error in getUserByKey:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message || // API sent error message
+        error?.message || // JS error message
+        "Failed to get user details."; // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);

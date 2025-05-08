@@ -1,9 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import React from "react";
 
-const CompleteDetailProgressBar = ({ completedSteps }) => {
-  const totalSteps = 4;
-
+const CompleteDetailProgressBar = ({ completedSteps, totalSteps }) => {
   return (
     <View style={styles.container}>
       <View style={styles.progressContainer}>
@@ -24,6 +22,7 @@ const CompleteDetailProgressBar = ({ completedSteps }) => {
                   style={[
                     styles.line,
                     {
+                      width: totalSteps==4?55:95,
                       backgroundColor:
                         index < completedSteps - 1 ? "#101942" : "#B0B0B0",
                     },
@@ -66,7 +65,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   line: {
-    width: 55,
+   
     height: 4,
     marginHorizontal: 4,
   },

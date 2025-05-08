@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  Modal,
 } from "react-native";
 import React, { useState } from "react";
 import {
@@ -22,12 +23,24 @@ import { logoutUser } from "../../../../redux/store/userSlice";
 import { selectUser } from "../../../auth/services/selector";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
+import imageURL from "../../../../constants/baseURL";
+import Icon from 'react-native-vector-icons/MaterialIcons';
 const VendorProfile = () => {
   const navigation = useNavigation();
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
 
+
+  const showFullImage = (uri) => {
+    if (!uri) return;
+    setSelectedImage(uri);
+    setModalVisible(true);
+  };
+
+  
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -36,7 +49,7 @@ const VendorProfile = () => {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            marginTop :50,
+            marginTop: 50,
             paddingTop: Sizes.fixPadding,
             paddingBottom: Sizes.fixPadding * 2.0,
           }}
@@ -45,6 +58,18 @@ const VendorProfile = () => {
         </ScrollView>
       </ScrollView>
       {logoutSheet()}
+      {/* Full Image Modal */}
+      <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modalContainer}>
+          <Image source={{ uri: selectedImage }} style={styles.fullImage} />
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 
@@ -94,12 +119,13 @@ const VendorProfile = () => {
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={0.8}
-               onPress={() => {
-                             dispatch(logoutUser());  
-                             console.log("User logged out successfully in profileScreen and navigting to Signin");
-                             setshowLogoutSheet(false);
-                   
-                         }}
+              onPress={() => {
+                dispatch(logoutUser());
+                setshowLogoutSheet(false);
+                console.log(
+                  "User logged out successfully in profileScreen and navigting to Signin"
+                );
+              }}
               style={{
                 ...styles.logoutButtonStyle,
                 ...styles.sheetButtonStyle,
@@ -116,12 +142,27 @@ const VendorProfile = () => {
   function profileInfoWithOptions() {
     return (
       <View style={styles.profileInfoWithOptionsWrapStyle}>
-        <View style={{ alignItems: "center" }}>
-          <Image
-            source={require("../../../../../assets/images/users/user4.png")}
-            style={styles.userImageStyle}
-          />
-        </View>
+     <TouchableOpacity
+  onPress={() => {
+    if (user?.avatar && user.avatar.trim() !== "") {
+      showFullImage(imageURL?.baseURL + user.avatar);
+    }
+  }}
+  style={{ alignItems: "center" }}
+>
+  {user?.avatar && user.avatar.trim() !== "" ? (
+    <Image
+      source={{ uri: imageURL?.baseURL + user.avatar }}
+      style={styles.userImageStyle}
+    />
+  ) : (
+    <View style={styles.userIconStyle}>
+      <Icon name="person-off" size={60} color="#e0e0eb" />
+    </View>
+  )}
+</TouchableOpacity>
+
+
         <View
           style={{
             alignItems: "center",
@@ -130,37 +171,39 @@ const VendorProfile = () => {
           }}
         >
           <Text style={{ ...Fonts.blackColor18SemiBold }}>{user?.name}</Text>
-          <Text style={{ ...Fonts.grayColor16Medium }}>+91{user?.mobile_number}</Text>
+          <Text style={{ ...Fonts.grayColor16Medium }}>
+            +91 {user?.mobile_number}
+          </Text>
         </View>
         <View>
-      {profileOption({
-        option: "Edit Profile",
-        iconName: "person",
-        onPress: () =>  navigation.navigate("EditProfileScreen"),
-      })}
-        
-      {profileOption({
-        option: "Terms & Conditions",
-        iconName: "list-alt",
-        onPress: () => navigation.push("TermsAndConditionsScreen"),
-      })}
-      {profileOption({
+          {profileOption({
+            option: "Edit Profile",
+            iconName: "person",
+            onPress: () => navigation.navigate("EditProfileVendor"),
+          })}
+
+          {profileOption({
+            option: "Terms & Conditions",
+            iconName: "list-alt",
+            onPress: () => navigation.push("TermsAndConditionsScreen"),
+          })}
+          {/* {profileOption({
         option: "FAQ",
         iconName: "help-outline",
         onPress: () => navigation.push("FaqScreen"),
-      })}
-      {profileOption({
-        option: "Privacy Policy",
-        iconName: "privacy-tip",
-        onPress: () => navigation.push("PrivacyPolicyScreen"),
-      })}
-      {profileOption({
-        option: "Help",
-        iconName: "support-agent",
-        onPress: () => navigation.push("HelpScreen"),
-      })}
-      {logoutInfo()}
-    </View>
+      })} */}
+          {profileOption({
+            option: "Privacy Policy",
+            iconName: "privacy-tip",
+            onPress: () => navigation.push("PrivacyPolicyScreen"),
+          })}
+          {/* {profileOption({
+            option: "Help",
+            iconName: "support-agent",
+            onPress: () => navigation.push("HelpScreen"),
+          })} */}
+          {logoutInfo()}
+        </View>
       </View>
     );
   }
@@ -178,9 +221,9 @@ const VendorProfile = () => {
         }}
       >
         <View style={{ ...commonStyles.rowAlignCenter, flex: 1 }}>
-        <View style={styles.optionIconWrapper}>
-        <MaterialIcons name="logout" size={24} color={Colors.redColor} />
-        </View>
+          <View style={styles.optionIconWrapper}>
+            <MaterialIcons name="logout" size={24} color={Colors.redColor} />
+          </View>
           <Text
             numberOfLines={1}
             style={{
@@ -264,6 +307,17 @@ const styles = StyleSheet.create({
     borderColor: Colors.whiteColor,
     borderWidth: 2.0,
   },
+  userIconStyle: {
+    width: screenWidth / 4.0,
+    height: screenWidth / 4.0,
+    borderRadius: screenWidth / 4.0 / 2.0,
+    marginTop: -Sizes.fixPadding * 5.0,
+    borderColor:"#e0e0eb" ,
+    borderWidth: 2.0,
+    backgroundColor:Colors.whiteColor,
+    justifyContent:"center",
+    alignItems:"center",
+  },
   profileInfoWithOptionsWrapStyle: {
     backgroundColor: Colors.whiteColor,
     ...commonStyles.shadow,
@@ -305,5 +359,31 @@ const styles = StyleSheet.create({
     ...Fonts.blackColor20SemiBold,
     textAlign: "center",
     marginHorizontal: Sizes.fixPadding * 2.0,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullImage: {
+    width: "90%",
+    height: "70%",
+    resizeMode: "contain",
+    borderRadius: 10,
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#fff",
+    justifyContent:"center",
+    alignItems:"center",
+    height:50,
+    width:50,
+    borderRadius: 50,
+  },
+  closeText: {
+    color: "#000",
+    fontWeight: "bold",
   },
 });

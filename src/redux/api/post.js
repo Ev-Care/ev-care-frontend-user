@@ -1,33 +1,25 @@
-import axios from "axios";
+import axios from 'axios';
 
-export const apiPostRequest = async (request) => {
-    try {
-        console.log("Calling API:", request.apiUrl);
-        console.log("Headers:", { "content-type": request.content_type });
-        console.log("Request Body:", request.data);
+export const apiPostRequest = async ({ apiUrl, content_type, data, accessToken }) => {
+  try {
+    const headers = {
+      'Content-Type': content_type,
+      'Accept': '*/*',
+    };
 
-        const response = await axios.post(request.apiUrl, request.data, {
-            headers: {
-                "accept": "*/*",
-                "content-type": request.content_type,
-            },
-        });
-
-        // console.log("Raw API Response:", response);
-
-        return response;  // Axios automatically parses JSON
-    } catch (error) {
-        console.log("Error in apiPostRequest:", error?.response?.data || error.message);
-        throw error;
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
     }
-};
 
+    console.log(`POST Request: ${apiUrl}`);
+    console.log('Headers:', headers);
+    console.log('Body:', data);
 
-const apiResponseHandler = async (res) => {
-    if (!res.ok) {
-        const error = await res.json().catch(() => res.status);
-        return Promise.reject(error);
-    } else {
-        return res.json();
-    }
+    const response = await axios.post(apiUrl, data, { headers });
+
+    return response; // axios parses JSON by default
+  } catch (error) {
+    console.error('Error in apiPostRequest:', error?.response?.data || error.message);
+    throw error;
+  }
 };

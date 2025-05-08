@@ -1,18 +1,23 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Colors, Fonts, Sizes, commonStyles } from "../../constants/styles";
 import { View, StyleSheet, Text, BackHandler, Platform } from "react-native";
-import HomeScreen from "../../screens/user/home/homeScreen";
+// import HomeScreen from "../../screens/user/home/homeScreen";
 import ProfileScreen from "../../screens/user/profile/profileScreen";
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import EnrouteScreen from "../../screens/user/enroute/enrouteScreen";
 import FavoriteScreen from "../../screens/user/favorite/favoriteScreen";
-import BookingScreen from "../../screens/user/booking/bookingScreen";
-import ChargingStationsOnMapScreen from "../../screens/user/chargingStationsOnMap/chargingStationsOnMapScreen";
+// import BookingScreen from "../../screens/user/booking/bookingScreen";
+// import ChargingStationsOnMapScreen from "../../screens/user/chargingStationsOnMap/chargingStationsOnMapScreen";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import userHome from "../../screens/user/home/userHome";
+// import EnrouteChargingStationsScreen from "../../screens/user/enrouteChargingStations/enrouteChargingStationsScreen";
+
+
 
 const Tab = createBottomTabNavigator();
+
 const BottomTabBarScreen = ({ navigation }) => {
   const backAction = () => {
     if (Platform.OS === "ios") {
@@ -53,14 +58,19 @@ const BottomTabBarScreen = ({ navigation }) => {
           tabBarInactiveTintColor: Colors.lightGrayColor,
           tabBarHideOnKeyboard: true,
           headerShown: false,
-          tabBarShowLabel: false,
-          tabBarStyle: styles.tabBarStyle,
+          tabBarShowLabel: true, 
+          tabBarLabelStyle: {
+            fontSize: 10, 
+            marginTop: 4, 
+            fontWeight: '400', 
+          },
           tabBarIconStyle: { alignSelf: "center" }, 
+          tabBarStyle: styles.tabBarStyle,
         }}
       >
         <Tab.Screen
           name="Home"
-          component={HomeScreen}
+          component={userHome}
           options={{
             tabBarIcon: ({ focused }) =>
               focused ? (
@@ -78,6 +88,7 @@ const BottomTabBarScreen = ({ navigation }) => {
                   color={Colors.primaryColor}
                 />
               ),
+            tabBarLabel: 'Home', 
           }}
         />
         <Tab.Screen
@@ -100,50 +111,7 @@ const BottomTabBarScreen = ({ navigation }) => {
                   color={Colors.primaryColor}
                 />
               ),
-          }}
-        />
-        {/* <Tab.Screen
-          name="Booking"
-          component={BookingScreen}
-          options={{
-            tabBarIcon: ({ focused }) =>
-              focused ? (
-                <View style={styles.selectedTabCircleStyle}>
-                  <MaterialIcons
-                    name="receipt-long"
-                    size={24}
-                    color={Colors.whiteColor}
-                  />
-                </View>
-              ) : (
-                <MaterialIcons
-                  name="receipt-long"
-                  size={24}
-                  color={Colors.primaryColor}
-                />
-              ),
-          }}
-        /> */}
-          <Tab.Screen
-          name="Map"
-          component={ChargingStationsOnMapScreen}
-          options={{
-            tabBarIcon: ({ focused }) =>
-              focused ? (
-                <View style={styles.selectedTabCircleStyle}>
-                  <MaterialIcons
-                    name="location-on"
-                    size={24}
-                    color={Colors.whiteColor}
-                  />
-                </View>
-              ) : (
-                <MaterialIcons
-                  name="location-on"
-                  size={24}
-                  color={Colors.primaryColor}
-                />
-              ),
+            tabBarLabel: 'Enroute',
           }}
         />
         <Tab.Screen
@@ -166,6 +134,7 @@ const BottomTabBarScreen = ({ navigation }) => {
                   color={Colors.primaryColor}
                 />
               ),
+            tabBarLabel: 'Favorite', 
           }}
         />
         <Tab.Screen
@@ -188,6 +157,7 @@ const BottomTabBarScreen = ({ navigation }) => {
                   color={Colors.primaryColor}
                 />
               ),
+            tabBarLabel: 'Profile', 
           }}
         />
       </Tab.Navigator>
@@ -208,6 +178,7 @@ const BottomTabBarScreen = ({ navigation }) => {
 
 export default BottomTabBarScreen;
 
+
 const styles = StyleSheet.create({
   exitInfoWrapStyle: {
     backgroundColor: Colors.lightBlackColor,
@@ -221,8 +192,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   selectedTabCircleStyle: {
-    width: 45.0,
-    height: 45.0,
+    width: 35.0,
+    height: 35.0,
     borderRadius: 25.0,
     backgroundColor: Colors.primaryColor,
     alignItems: "center",
@@ -235,6 +206,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1.0,
     height: Platform.OS == "ios" ? 100.0 : 70.0,
     paddingTop:10,
-   paddingBottom: Platform.OS === "ios" ? 20 : 10, // 👈 Helps with centering
+   paddingBottom: Platform.OS === "ios" ? 20 : 10, 
   },
 });

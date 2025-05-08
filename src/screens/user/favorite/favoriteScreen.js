@@ -4,10 +4,11 @@ import {
   View,
   Platform,
   Linking,
+  ActivityIndicator,
   Image,
   TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Colors,
   Fonts,
@@ -17,90 +18,171 @@ import {
 } from "../../../constants/styles";
 import MyStatusBar from "../../../components/myStatusBar";
 // import { useNavigation } from "@react-navigation/native";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+// import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { SwipeListView } from "react-native-swipe-list-view";
 import { Snackbar } from "react-native-paper";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectFavoriteStations,
+  selectStations,
+  selectStationsError,
+  selectStationsLoading,
+} from "../service/selector";
+import imageURL from "../../../constants/baseURL";
+import {
+  default as Icon,
+  default as MaterialIcons,
+} from "react-native-vector-icons/MaterialIcons";
+import {
+  unFavoriteStation,
+  getAllFavoriteStations,
+} from "../service/crudFunction";
+import { selectUser } from "../../auth/services/selector";
+import {
+  openHourFormatter,
+  formatDistance,
+  getChargerLabel,
+} from "../../../utils/globalMethods";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import { useFocusEffect } from "@react-navigation/native";
 
-const favoritesList = [
-  {
-    key: "1",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
-    stationName: "BYD Charging Point",
-    stationAddress: "Near shell petrol station",
-    rating: 4.7,
-    totalStations: 8,
-    distance: "4.5 km",
-    isOpen: true,
-  },
-  {
-    key: "2",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station4.png"),
-    stationName: "TATA EStation",
-    stationAddress: "Near orange business hub",
-    rating: 3.9,
-    totalStations: 15,
-    distance: "5.7 km",
-    isOpen: false,
-  },
-  {
-    key: "3",
-    stationImage: require("../../../../assets/images/chargingStations/charging_station5.png"),
-    stationName: "HP Charging Station",
-    stationAddress: "Near ananta business park",
-    rating: 4.9,
-    totalStations: 6,
-    distance: "2.1 km",
-    isOpen: true,
-  },
-];
-
-const FavoriteScreen = ({navigation}) => {
+const FavoriteScreen = ({ navigation }) => {
   const [showSnackBar, setShowSnackBar] = useState(false);
-  const [listData, setListData] = useState(favoritesList);
-const latitude = 28.6139;  
- const longitude = 77.2090;
+  const stations = useSelector(selectStations);
+  const user = useSelector(selectUser);
+  const favStations = useSelector(selectFavoriteStations);
+  const isLoading = useSelector(selectStationsLoading);
+  const dispatch = useDispatch();
+  const [listData, setListData] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const errorMessage = useSelector(selectStationsError);
  
+  // console.log(listData);
+  useEffect(() => {
+    dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
+  }, [user?.user_key, dispatch]);
 
- const openGoogleMaps = () => {
-  const url = Platform.select({
-    ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-    android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`
-  });
-  Linking.openURL(url);
-};
+  useEffect(() => {
+    if (stations?.length && favStations?.length) {
+      console.log(
+        "useeffect in fav called and fav length is ",
+        favStations.length
+      );
+      const filtered = favStations
+        .map((fav) => stations.find((station) => station.id === fav.station.id))
+        .filter(Boolean);
+      setListData(filtered);
+    }
+  }, [favStations, stations]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchFavorites = async () => {
+        const favResponse = await dispatch(
+          getAllFavoriteStations({ user_key: user?.user_key })
+        );
+
+        if (getAllFavoriteStations.rejected.match(favResponse)) {
+          dispatch(
+            showSnackbar({
+              message: errorMessage || "Failed to fetch favorite stations.",
+              type: "error",
+            })
+          );
+          return;
+        }
+
+        // ✅ Get updated favorites from store after dispatch
+        const updatedFavStations = store.getState().favorites.favStations;
+
+        if (stations && updatedFavStations) {
+          const filtered = updatedFavStations
+            .map((fav) =>
+              stations.find((station) => station.id == fav.station.id)
+            )
+            .filter(Boolean);
+
+          setListData(filtered);
+        }
+      };
+
+      fetchFavorites();
+    }, [user?.user_key, dispatch, stations])
+  );
+
+  // console.log("stations in  stations fav screen", stations.length);
+  // console.log("stations in fav stations fav screen", favStations.length);
+  //   console.log("stations in listData fav screen", listData.length);
+
+  const handleRefresh = async () => {
+    const favResponse = await dispatch(
+      getAllFavoriteStations({ user_key: user?.user_key })
+    );
+
+    if (getAllFavoriteStations.fulfilled.match(favResponse)) {
+      // dispatch(showSnackbar({ message: 'Favorite stations found.', type: "success" }));
+    } else if (getAllFavoriteStations.rejected.match(favResponse)) {
+      dispatch(
+        showSnackbar({
+          message: errorMessage || "Failed to fetch favorite stations.",
+          type: "error",
+        })
+      );
+    }
+    if (stations && favStations) {
+      const filtered = favStations
+        .map((fav) => stations.find((station) => station.id == fav.station.id))
+        .filter(Boolean);
+
+      setListData(filtered);
+    }
+  };
+
+  const openGoogleMaps = (latitude, longitude) => {
+    const url = Platform.select({
+      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
+      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
+    });
+    Linking.openURL(url);
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
-      <View style={{ flex: 1 }}>
-        {header()}
-        {listData.length === 0 ? noItemsInfo() : favoriteItems()}
-      </View>
+
+      {header()}
+      {favoriteItems()}
+
       {snackBar()}
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </View>
   );
 
-  function noItemsInfo() {
-    return (
-      <View style={styles.noItemsInfoWrapStyle}>
-        <Image
-          source={require("../../../../assets/images/icons/heart_broken.png")}
-          style={{ width: 100.0, height: 100.0, resizeMode: "contain" }}
-        />
-        <Text
-          style={{
-            ...Fonts.grayColor18Medium,
-            marginTop: Sizes.fixPadding - 5.0,
-          }}
-        >
-          Your favorite list is empty..!
-        </Text>
-      </View>
-    );
-  }
-
   function favoriteItems() {
+    function noItemsInfo() {
+      return (
+        <View style={[styles.noItemsInfoWrapStyle, { paddingVertical: "60%" }]}>
+          <Image
+            source={require("../../../../assets/images/icons/heart_broken.png")}
+            style={{ width: 100.0, height: 100.0, resizeMode: "contain" }}
+          />
+          <Text
+            style={{
+              ...Fonts.grayColor18Medium,
+              marginTop: Sizes.fixPadding - 5.0,
+            }}
+          >
+            Your favorite list is empty..!
+          </Text>
+        </View>
+      );
+    }
     const closeRow = (rowMap, rowKey) => {
-      if (rowMap[rowKey]) {
+      if (rowMap?.[rowKey]) {
         rowMap[rowKey].closeRow();
       }
     };
@@ -110,7 +192,7 @@ const latitude = 28.6139;
         <TouchableOpacity
           activeOpacity={0.8}
           style={{ ...styles.backDeleteContinerStyle }}
-          onPress={() => deleteRow(rowMap, data.item.key)}
+          onPress={() => deleteRow(rowMap, data?.item?.id)}
         >
           <View style={styles.deleteIconWrapper}>
             <MaterialIcons name="delete" size={22} color={Colors.whiteColor} />
@@ -119,13 +201,32 @@ const latitude = 28.6139;
       </View>
     );
 
-    const deleteRow = (rowMap, rowKey) => {
+    const deleteRow = async (rowMap, rowKey) => {
       closeRow(rowMap, rowKey);
       const newData = [...listData];
-      const prevIndex = listData.findIndex((item) => item.key === rowKey);
-      newData.splice(prevIndex, 1);
-      setShowSnackBar(true);
-      setListData(newData);
+      const prevIndex = listData.findIndex((item) => item?.key === rowKey);
+
+      if (prevIndex !== -1) {
+        newData.splice(prevIndex, 1);
+        setShowSnackBar(true);
+        setListData(newData);
+      }
+
+      const unfavResponse = await dispatch(
+        unFavoriteStation({ stationId: rowKey, userId: user.id })
+      );
+
+      if (unFavoriteStation.fulfilled.match(unfavResponse)) {
+        navigation.pop();
+        navigation.navigate("FavoriteScreen");
+      } else {
+        dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to unfavorite station.",
+            type: "error",
+          })
+        );
+      }
     };
 
     const renderItem = (data) => (
@@ -133,60 +234,68 @@ const latitude = 28.6139;
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => {
-            navigation.navigate("ChargingStationDetail");
+            navigation.navigate("ChargingStationDetail", { item: data?.item });
           }}
           style={styles.enrouteChargingStationWrapStyle}
         >
           <Image
-            source={data.item.stationImage}
+            source={
+              data?.item?.station_images
+                ? { uri: imageURL.baseURL + data?.item?.station_images }
+                : require("../../../../assets/images/nullStation.png")
+            }
             style={styles.enrouteChargingStationImage}
           />
           <View style={styles.enrouteStationOpenCloseWrapper}>
-            <Text style={{ ...Fonts.whiteColor18Regular }}>
-              {data.item.isOpen ? "Open" : "Closed"}
+            <Text
+              style={[
+                styles.statusClosed,
+                {
+                  color:
+                    data?.item?.status === "Inactive" ? "#FF5722" : "white",
+                },
+              ]}
+            >
+              {data?.item?.status === "Inactive" ? "Closed" : "Open"}
             </Text>
           </View>
           <View style={{ flex: 1 }}>
             <View style={{ margin: Sizes.fixPadding }}>
               <Text numberOfLines={1} style={{ ...Fonts.blackColor18SemiBold }}>
-                {data.item.stationName}
+                {data?.item?.station_name}
               </Text>
               <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
-                {data.item.stationAddress}
+                {data?.item?.address}
               </Text>
+
               <View
                 style={{
                   marginTop: Sizes.fixPadding,
-                  ...commonStyles.rowAlignCenter,
+                  ...commonStyles.rowSpaceBetween,
                 }}
               >
+                {/* Left Section */}
                 <View style={{ ...commonStyles.rowAlignCenter }}>
-                  <Text style={{ ...Fonts.blackColor18Medium }}>
-                    {data.item.rating}
+                  <Text style={{ ...Fonts.blackColor16Medium }}>
+                    {openHourFormatter(
+                      data?.item?.open_hours_opening_time,
+                      data?.item?.open_hours_closing_time
+                    )}
                   </Text>
-                  <MaterialIcons
-                    name="star"
-                    color={Colors.yellowColor}
-                    size={20}
-                  />
                 </View>
-                <View
-                  style={{
-                    marginLeft: Sizes.fixPadding * 2.0,
-                    ...commonStyles.rowAlignCenter,
-                    flex: 1,
-                  }}
-                >
+
+                {/* Right Section */}
+                <View style={{ ...commonStyles.rowAlignCenter }}>
                   <View style={styles.primaryColorDot} />
                   <Text
                     numberOfLines={1}
                     style={{
                       marginLeft: Sizes.fixPadding,
                       ...Fonts.grayColor14Medium,
-                      flex: 1,
+                      maxWidth: 150, // optional: limit text to prevent overflow
                     }}
                   >
-                    {data.item.totalStations} Charging Points
+                    {getChargerLabel(data?.item?.chargers?.length ?? 0)}
                   </Text>
                 </View>
               </View>
@@ -198,6 +307,7 @@ const latitude = 28.6139;
                 marginTop: Sizes.fixPadding,
               }}
             >
+                
               <Text
                 numberOfLines={1}
                 style={{
@@ -206,11 +316,16 @@ const latitude = 28.6139;
                   marginRight: Sizes.fixPadding - 5.0,
                 }}
               >
-                {data.item.distance}
+                {formatDistance(data?.item?.distance_km)}
               </Text>
+         
               <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={openGoogleMaps}
+                onPress={() =>
+                  openGoogleMaps(
+                    data?.item?.coordinates?.latitude,
+                    data?.item?.coordinates?.longitude
+                  )
+                }
                 style={styles.getDirectionButton}
               >
                 <Text style={{ ...Fonts.whiteColor16Medium }}>
@@ -225,15 +340,20 @@ const latitude = 28.6139;
 
     return (
       <View style={{ flex: 1 }}>
-        <SwipeListView
-          data={listData}
-          renderItem={renderItem}
-          renderHiddenItem={renderHiddenItem}
-          rightOpenValue={-66}
-          useNativeDriver={false}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingTop: Sizes.fixPadding - 5.0 }}
-        />
+        <View style={{ flex: 1 }}>
+          <SwipeListView
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            data={listData}
+            renderItem={renderItem}
+            renderHiddenItem={renderHiddenItem}
+            rightOpenValue={-66}
+            useNativeDriver={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingTop: Sizes.fixPadding - 5.0 }}
+            ListEmptyComponent={noItemsInfo} // for no fav stations
+          />
+        </View>
       </View>
     );
   }
@@ -247,7 +367,7 @@ const latitude = 28.6139;
         onDismiss={() => setShowSnackBar(false)}
       >
         <Text style={{ ...Fonts.whiteColor14Medium }}>
-          Charging station remove from favorite
+          Charging station removed from favorite
         </Text>
       </Snackbar>
     );
@@ -255,14 +375,13 @@ const latitude = 28.6139;
 
   function header() {
     return (
-      <Text
-        style={{
-          ...Fonts.blackColor20SemiBold,
-          margin: Sizes.fixPadding * 2.0,
-        }}
-      >
-        Favorite
-      </Text>
+      <View style={styles.appBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Icon name="arrow-back" size={24} color={Colors.primary} />
+        </TouchableOpacity>
+        <Text style={styles.title}>Favorite Stations</Text>
+        <View style={{ width: 24 }} />
+      </View>
     );
   }
 };
@@ -274,7 +393,30 @@ const styles = StyleSheet.create({
     margin: Sizes.fixPadding * 2.0,
     flex: 1,
     alignItems: "center",
+    absolute: "true",
+
     justifyContent: "center",
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    zIndex: 999,
+  },
+  appBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: Colors.bodyBackColor,
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0eb",
+    elevation: 5,
   },
   deleteIconWrapper: {
     width: 46.0,

@@ -8,12 +8,14 @@ import "react-native-gesture-handler";
 import "react-native-get-random-values";
 import React, { useState, useEffect } from "react";
 import { Provider, useSelector } from "react-redux";
-import  store  from "./redux/store/store";
-import { selectUser } from "./screens/auth/services/selector"; // Ensure correct import
+import store from "./redux/store/store";
+import {
+  selectUser,
+  selectProfileStatus,
+} from "./screens/auth/services/selector"; // Ensure correct import
 
 // Screens
 import LoadingScreen from "./screens/loadingScreen";
-import SecondSplashScreen from "./screens/secondSplashScreen";
 import FirstSplashScreen from "./screens/firstSplashScreen";
 import OnboardingScreen from "./screens/onboardingScreen";
 import SigninScreen from "./screens/auth/signinScreen";
@@ -24,6 +26,9 @@ import VerificationScreen from "./screens/auth/verificationScreen";
 import { AdminStack } from "./roleStack/adminStack";
 import { UserStack } from "./roleStack/userStack";
 import { VendorStack } from "./roleStack/vendorStack";
+import Snackbar from "./components/snackbar"; // Ensure correct import
+import { getLocationPermission } from "./utils/globalMethods";
+import ErrorPage from "./screens/errorPage";
 
 LogBox.ignoreAllLogs();
 
@@ -31,18 +36,32 @@ const Stack = createStackNavigator();
 
 function AppNavigator() {
   const [userType, setUserType] = useState(null);
-  const user = useSelector( selectUser); // Get user data
+  const user = useSelector(selectUser); // Get user data
+  const [hasLocationPermission, setHasLocationPermission] = useState(false);
 
+  // useEffect(() => {
+  //   const initialize = async () => {
+  //     if (user && user.role) {
+  //       setUserType(user.role.toLowerCase());
+  //       const permission = await getLocationPermission();
+  //       setHasLocationPermission(permission);
+  //     } else {
+  //       setUserType(null);
+  //     }
+  //   };
+
+  //   initialize();
+  // }, [user]);
+  
   useEffect(() => {
-    console.log("User in app.js:", user);
-    if (user && user.role) {  // ✅ Ensure user is not null
-        console.log("User role in app.js:", user.role);
+    if (user && user.role) { 
+      // if (true) { 
         setUserType(user.role.toLowerCase());
+      //  setUserType("admin");
     } else {
         setUserType(null);
     }
 }, [user]);
-
 
   // Function to handle role-based navigation
   const renderRoleStack = () => {
@@ -69,19 +88,14 @@ function AppNavigator() {
       >
         {!userType ? (
           <>
+            {/* <Stack.Screen name="Loading" component={LoadingScreen} />  */}
             <Stack.Screen
               name="FirstSplashScreen"
               component={FirstSplashScreen}
               options={{ ...TransitionPresets.DefaultTransition }}
             />
-            <Stack.Screen
-              name="SecondSplashScreen"
-              component={SecondSplashScreen}
-              options={{ ...TransitionPresets.DefaultTransition }}
-            />
-            <Stack.Screen name="Loading" component={LoadingScreen} />
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-            <Stack.Screen name="Signin"  component={SigninScreen} />
+            <Stack.Screen name="Signin" component={SigninScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
             <Stack.Screen name="Verification">
               {(props) => (
@@ -89,9 +103,12 @@ function AppNavigator() {
               )}
             </Stack.Screen>
           </>
-        ) : (
+        ) :  (
           renderRoleStack()
-        )}
+        ) 
+       
+        
+        }
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -100,6 +117,7 @@ function AppNavigator() {
 export default function MyApp() {
   return (
     <Provider store={store}>
+      <Snackbar />
       <AppNavigator />
     </Provider>
   );

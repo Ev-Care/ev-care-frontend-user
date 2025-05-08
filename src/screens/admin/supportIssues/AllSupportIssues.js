@@ -230,7 +230,7 @@ const ViewAllIssuesPage = ({ navigation }) => {
   const allIssues = useSelector(selectAllSupportIssues);
   const dispatch = useDispatch();
   // Filter users based on search query
-  console.log('all Issue = ', allIssues);
+  // console.log('all Issue = ', allIssues);
   const filteredIssues = allIssues.filter(
     (issue) =>
       issue?.user?.owner_legal_name

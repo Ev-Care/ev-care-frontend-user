@@ -12,6 +12,13 @@ export const signInAPI = (data) =>
     content_type: "application/json",
     data: data,
   });
+// API CALLS
+export const loginAPI = (data) =>
+  apiPostRequest({
+    apiUrl: `${API_URL}/auth/signin`,
+    content_type: "application/json",
+    data: data,
+  });
 
 export const verifyOtpAPI = (data) =>
   apiPostRequest({
@@ -22,6 +29,12 @@ export const verifyOtpAPI = (data) =>
 export const signupAPI = (data) =>
   apiPatchRequest({
     apiUrl: `${API_URL}/auth/signup/${data.user_key}`,
+    content_type: "application/json",
+    data: data,
+  });
+export const registerAPI = (data) =>
+  apiPostRequest({
+    apiUrl: `${API_URL}/auth/register`,
     content_type: "application/json",
     data: data,
   });

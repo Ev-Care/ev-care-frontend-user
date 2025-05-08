@@ -23,11 +23,12 @@ import MyStatusBar from "../../components/myStatusBar";
 import { useFocusEffect } from "@react-navigation/native";
 
 import { Overlay } from "@rneui/themed";
-import { postSignIn } from "./services/crudFunction";
+import { login, postSignIn } from "./services/crudFunction";
 import { useDispatch, useSelector } from "react-redux";
-import { selectloader } from "./services/selector";
+import { selectAuthError, selectloader, selectUser } from "./services/selector";
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const SigninScreen = ({ navigation }) => {
   // 
   const [backClickCount, setBackClickCount] = useState(0);
@@ -35,9 +36,10 @@ const SigninScreen = ({ navigation }) => {
   const [emailOrNumber, setEmailOrNumber] = useState(null);
   const [password, setPassword] = useState(null);
   const [secureText, setSecureText] = useState(true);
+  const user = useSelector(selectUser);
+  const authErrorMessage = useSelector(selectAuthError);
 
-
-  const isLoading =useSelector(selectloader);
+  const isLoading = useSelector(selectloader);
   const dispatch = useDispatch();
 
 
@@ -70,42 +72,95 @@ const SigninScreen = ({ navigation }) => {
     }, 1000);
   }
 
-  const handleSignIn =  () => {
+  const handleSignIn = () => {
     console.log(" handle Signin called ");
-    if (!phoneNumber || phoneNumber.length < 10) {
-      Alert.alert("Invalid Phone Number");
+    if (!emailOrNumber || emailOrNumber.length < 3) {
+      dispatch(showSnackbar({ message: 'Invalid Email or Phone' }))
       return;
     }
-   
-    try {
-      const sanitizedPhoneNumber = phoneNumber.replace(/\s+/g, "");
-      // console.log("Calling API with:", sanitizedPhoneNumber);
 
-      // Dispatch the Redux action
-      dispatch(postSignIn({ mobileNumber: sanitizedPhoneNumber })).unwrap();
-      dispatch(showSnackbar({ message: 'OTP Sent Successfuly', type: 'success' }));
-      navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber,handleSignIn });
-      
-    } catch (error) {
-      console.log("Error in handleSignIn:", error);
-      dispatch(showSnackbar({ message: 'Error ocurred', type: 'error' }));
-    } finally {
-      console.log("Signin API call completed");
+    if (!password || password.length < 8) {
+      dispatch(showSnackbar({ message: 'Password must be at least 8 characters long' }));
+      return;
     }
-};
+
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    if (!strongPasswordRegex.test(password)) {
+      dispatch(showSnackbar({
+        message: 'Password must contain uppercase, lowercase, number, and special character',
+      }));
+      return;
+    }
+
+    try {
+      const response = dispatch(login({ identifier: emailOrNumber, password }));
+
+      if (login.fulfilled.match(response)) {
+        // Save user data and token to AsyncStorage
+        AsyncStorage.setItem("user", user?.user_key);
+        AsyncStorage.setItem("accessToken", token);
+
+        console.log(
+          "Access token stored in AsyncStorage:",
+          AsyncStorage.getItem("token")
+        );
+
+        dispatch(
+          showSnackbar({
+            message: authErrorMessage || "Log-In Successfull",
+            type: "success",
+          })
+        );
+      } else if(login.rejected.match(response)){
+       console.log('error occured', authErrorMessage) ;
+        dispatch(showSnackbar({
+          message: authErrorMessage || "Log-In Failed",
+          type: "error",
+        }))
+      }
+    } catch (error) {
+
+      dispatch(showSnackbar({
+        message: authErrorMessage || "Something went wrong, try again",
+        type: "error",
+      }))
+
+    }
 
 
+    /*
+     try {
+       const sanitizedPhoneNumber = phoneNumber.replace(/\s+/g, "");
+       // console.log("Calling API with:", sanitizedPhoneNumber);
  
+       // Dispatch the Redux action
+       dispatch(postSignIn({ mobileNumber: sanitizedPhoneNumber })).unwrap();
+       dispatch(showSnackbar({ message: 'OTP Sent Successfuly', type: 'success' }));
+       navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber,handleSignIn });
+       
+     } catch (error) {
+       console.log("Error in handleSignIn:", error);
+       dispatch(showSnackbar({ message: 'Error ocurred', type: 'error' }));
+     } finally {
+       console.log("Signin API call completed");
+     }
+ 
+     */
+  };
+
+
+
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
-      <View style={{ flex: 1  }}>
+      <View style={{ flex: 1 }}>
         {topImage()}
-        <ScrollView 
-        style={{ padding: 20 }}
-        automaticallyAdjustKeyboardInsets={true}
-         showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={{ padding: 20 }}
+          automaticallyAdjustKeyboardInsets={true}
+          showsVerticalScrollIndicator={false}>
           {emailOrNumberInfo()}
           {passwordField()}
           {forgetPassText()}
@@ -114,7 +169,7 @@ const SigninScreen = ({ navigation }) => {
         </ScrollView>
       </View>
       {exitInfo()}
-      
+
     </View>
   );
 
@@ -134,11 +189,12 @@ const SigninScreen = ({ navigation }) => {
           placeholder="Enter Your Email id  or Mobile Number"
           placeholderTextColor={Colors.grayColor}
           value={emailOrNumber}
-          onChangeText={(text) => setEmailOrNumber(text)}
+          onChangeText={(text) => setEmailOrNumber(text.toLowerCase())}
           style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
           cursorColor={Colors.primaryColor}
           selectionColor={Colors.primaryColor}
           keyboardType="email-address"
+          maxLength={50}
         />
       </View>
     </>
@@ -184,22 +240,22 @@ const SigninScreen = ({ navigation }) => {
       </>
     );
   }
-  
+
   function continueButton() {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handleSignIn}
-        style={{ ...commonStyles.button, borderRadius: Sizes.fixPadding - 5.0,}}
+        style={{ ...commonStyles.button, borderRadius: Sizes.fixPadding - 5.0, }}
       >
-      {isLoading ? (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-              <Text style={{ ...Fonts.whiteColor18Medium }}>Please Wait...</Text>
-            </View>
-          ) : (
-            <Text style={{ ...Fonts.whiteColor18Medium }}>Continue</Text>
-          )}
+        {isLoading ? (
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+            <Text style={{ ...Fonts.whiteColor18Medium }}>Please Wait...</Text>
+          </View>
+        ) : (
+          <Text style={{ ...Fonts.whiteColor18Medium }}>Sign In</Text>
+        )}
       </TouchableOpacity>
     );
   }
@@ -210,7 +266,7 @@ const SigninScreen = ({ navigation }) => {
       <ImageBackground
         source={require("../../../assets/images/authbg.png")}
         style={{ width: screenWidth, height: screenWidth - 150 }}
-        // resizeMode="stretch"
+      // resizeMode="stretch"
       >
         <View style={styles.topImageOverlay}>
           <Text style={{ ...Fonts.whiteColor22SemiBold }}>Sign in</Text>
@@ -229,40 +285,40 @@ const SigninScreen = ({ navigation }) => {
       </View>
     ) : null;
   }
-    function SignUpText() {
-      return (
-        <View style={{ alignItems: "center", justifyContent: "center" ,marginTop:20}}>
-          <Text style={{ textAlign: "center", ...Fonts.grayColor18Medium }}>
-           Are You  New User ? {" "}
-            <Text 
-             onPress={()=>navigation.navigate("Register")}
-            style={{ textAlign: "center", ...Fonts.grayColor18SemiBold, color:"blue" ,fontWeight:"700"}}>
-             Sign Up
-           </Text>
-          </Text>       
-        </View>
-      );
-    }
-    function forgetPassText() {
-      return (
-        <View style={{ alignItems: "flex-end", marginBottom: 20 }}>
-          <Text style={{ ...Fonts.grayColor18Medium, textAlign: "right" }}>
-            Forgot Password?{" "}
-            <Text
-            onPress={()=>navigation.navigate("ForgetPassword")}
-              style={{
-                ...Fonts.grayColor18SemiBold,
-                color: "blue",
-                fontWeight: "700",
-              }}
-            >
-              Click Here
-            </Text>
+  function SignUpText() {
+    return (
+      <View style={{ alignItems: "center", justifyContent: "center", marginTop: 20 }}>
+        <Text style={{ textAlign: "center", ...Fonts.grayColor18Medium }}>
+          Are You  New User ? {" "}
+          <Text
+            onPress={() => navigation.navigate("Register")}
+            style={{ textAlign: "center", ...Fonts.grayColor18SemiBold, color: "blue", fontWeight: "700" }}>
+            Sign Up
           </Text>
-        </View>
-      );
-    }
-    
+        </Text>
+      </View>
+    );
+  }
+  function forgetPassText() {
+    return (
+      <View style={{ alignItems: "flex-end", marginBottom: 20 }}>
+        <Text style={{ ...Fonts.grayColor18Medium, textAlign: "right" }}>
+          Forgot Password?{" "}
+          <Text
+            onPress={() => navigation.navigate("ForgetPassword")}
+            style={{
+              ...Fonts.grayColor18SemiBold,
+              color: "blue",
+              fontWeight: "700",
+            }}
+          >
+            Click Here
+          </Text>
+        </Text>
+      </View>
+    );
+  }
+
 };
 
 export default SigninScreen;

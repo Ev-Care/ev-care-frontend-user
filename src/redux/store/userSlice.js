@@ -7,6 +7,8 @@ import {
   postVerifyOtp,
   patchUpdateVendorProfile,
   getUserByKey,
+  login,
+  register,
 } from "../../screens/auth/services/crudFunction";
 import {
   patchUpdateUserProfile,
@@ -106,6 +108,24 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      // Sign Up
+      .addCase(register.pending, (state) => {
+        state.loading = true;
+        console.log("User signing up...");
+        state.error = null;
+      })
+      .addCase(register.fulfilled, (state, action) => {
+        state.loading = false;
+        console.log("User signed up successfully:", action.payload);
+        // Extract user data from the response
+        state.user = extractUser(action.payload.data?.user);
+        state.accessToken = action.payload.data?.access_token;
+        console.log("User data after signup in slice:", state.user);
+      })
+      .addCase(register.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
       .addCase(postSingleFile.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -149,6 +169,24 @@ const authSlice = createSlice({
       .addCase(patchUpdateUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Profile update failed";
+      })
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        console.log(
+          "User logged in successfully in slice:",
+          action.payload.data
+        );
+        state.user = extractUser(action.payload.data.user); // Extract user data from the response
+        state.accessToken = action.payload.data.access_token
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Profile update failed";
+        console.log(state.error);
       })
       .addCase(getUserDetailsByKey.pending, (state) => {
         state.loading = true;

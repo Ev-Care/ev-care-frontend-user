@@ -16,7 +16,7 @@ export const apiPostRequest = async ({ apiUrl, content_type, data, accessToken }
     console.log('Body:', data);
 
     const response = await axios.post(apiUrl, data, { headers });
-
+    console.log('raw api response = ', response.data);
     return response; // axios parses JSON by default
   } catch (error) {
     console.error('Error in apiPostRequest:', error?.response?.data || error.message);

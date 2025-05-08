@@ -14,20 +14,17 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons, Entypo, Ionicons } from '@expo/vector-icons';
 import {
-    Colors,
-    Sizes,
-    Fonts,
-    commonStyles,
-    screenWidth,
-  } from "../../../constants/styles";
+  Colors,
+  Sizes,
+  Fonts,
+  commonStyles,
+  screenWidth,
+} from '../../../constants/styles';
 import RNModal from 'react-native-modal';
-import { default as Icon } from "react-native-vector-icons/MaterialIcons";
-import imageURL from "../../../constants/baseURL";
-import { color } from '@rneui/base';
-
+import { default as Icon } from 'react-native-vector-icons/MaterialIcons';
+import imageURL from '../../../constants/baseURL';
 
 const CreateUser = ({ route, navigation }) => {
- 
   const [name, setName] = useState(null);
   const [email, setEmail] = useState(null);
   const [mobNumber, setMobNumber] = useState(null);
@@ -36,29 +33,20 @@ const CreateUser = ({ route, navigation }) => {
   const [panNumber, setPanNumber] = useState(null);
   const [gstNumber, setGstNumber] = useState(null);
 
-//   image start
   const [aadhaarFrontImage, setAadhaarFrontImage] = useState(null);
   const [aadhaarBackImage, setAadhaarBackImage] = useState(null);
   const [panImage, setPanImage] = useState(null);
   const [gstImage, setGstImage] = useState(null);
   const [avatar, setAvatar] = useState(null);
-//   image uri
-  const [aadhaarFrontImageURI, setAadhaarFrontImageURI] = useState(null);
-  const [aadhaarBackImageURI, setAadhaarBackImageURI] = useState(null);
-  const [panImageURI, setPanImageURI] = useState(null);
-  const [gstImageURI, setGstImageURI] = useState(null);
-  const [avatarURI, setAvatarURI] = useState(null);
-//   image end
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [currentImageSetter, setCurrentImageSetter] = useState(null);
- 
-  const[selectedRole,setSelectedRole]=useState("user");
- const [imageloading, setImageLoading] = useState("");
 
- 
+  const [selectedRole, setSelectedRole] = useState('user');
+  const [imageloading, setImageLoading] = useState('');
+
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
@@ -91,31 +79,64 @@ const CreateUser = ({ route, navigation }) => {
     setBottomSheetVisible(false);
   };
 
- 
+  const validateInputs = () => {
+    if (!name || !mobNumber || !email) {
+      Alert.alert('Validation Error', 'Name, Mobile Number, and Email are required.');
+      return false;
+    }
+    if (selectedRole === 'vendor') {
+      if (!businessName || !aadharNumber || !panNumber || !gstNumber) {
+        Alert.alert('Validation Error', 'All vendor details must be filled.');
+        return false;
+      }
+      if (!aadhaarFrontImage || !aadhaarBackImage || !panImage || !gstImage) {
+        Alert.alert('Validation Error', 'All vendor images must be uploaded.');
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleSubmit = () => {
+    if (!validateInputs()) return;
+    const formData = {
+      name,
+      email,
+      mobNumber,
+      businessName,
+      aadharNumber,
+      panNumber,
+      gstNumber,
+      avatar,
+      aadhaarFrontImage,
+      aadhaarBackImage,
+      panImage,
+      gstImage,
+      role: selectedRole,
+      createdAt: new Date().toISOString(),
+    };
+
+    console.log('Submitting user:', formData);
+    Alert.alert('Success', 'User created successfully!');
+  };
 
   const renderInput = (label, value, setter, placeholder) => (
     <View style={{ marginBottom: 12 }}>
-      <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>{label}</Text>
-      <TextInput
-        style={styles.input}
-        value={value}
-        onChangeText={setter}
-        placeholder={placeholder}
-      />
+      <Text style={{ marginBottom: 4, fontWeight: 'bold', fontSize: 14 }}>{label}</Text>
+      <TextInput style={styles.input} value={value} onChangeText={setter} placeholder={placeholder} />
     </View>
   );
 
-  const renderImageBox = (label, localURI, setter, apiRespUri) => (
+  const renderImageBox = (label, localURI, setter) => (
     <TouchableOpacity onPress={() => showFullImage(localURI)} style={{ alignItems: 'center', marginBottom: 20 }}>
-      <View style={[styles.imageBox, { borderRadius: label === "avatar" ? 50 : 12 }]}>
-        {imageloading===label ? (
+      <View style={[styles.imageBox, { borderRadius: label === 'avatar' ? 50 : 12 }]}>
+        {imageloading === label ? (
           <ActivityIndicator size={40} color="#ccc" />
         ) : localURI ? (
           <Image source={{ uri: localURI }} style={styles.imageStyle} />
         ) : (
           <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
         )}
-  
         <TouchableOpacity
           style={styles.editIcon}
           onPress={() => {
@@ -129,124 +150,100 @@ const CreateUser = ({ route, navigation }) => {
       <Text style={styles.imageLabel}>{label}</Text>
     </TouchableOpacity>
   );
-  
 
-  return (
-
-    <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
-        <View style={styles.appBar}>
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Icon name="arrow-back" size={24} color={Colors.primary} />
-              </TouchableOpacity>
-              <Text style={[styles.title,{fontSize:16}]}>Create a New User</Text>
-              <View style={{ width: 24 }} />
-            </View>
-    <ScrollView contentContainerStyle={styles.container}>
-   
-    <View style={styles.imageContainerAvatar}>
-      {renderImageBox('avatar', avatar, setAvatar )}     
-    </View>
-    {renderInput('Full Name', name, setName, 'Enter your full name')}
-    {renderInput('Mobile Number', mobNumber, setMobNumber, 'Enter your full name')}
-    {renderInput('Email', email, setEmail, 'Enter your email')}
-    {roleSelector()}
-
-   {selectedRole === "vendor" && (<>
-    {renderInput('Business Name', businessName, setBusinessName, 'Enter business name')}
-    {renderInput('Aadhar Number', aadharNumber, setAadharNumber, 'Enter Aadhar number')}
-    {renderInput('PAN Number', panNumber, setPanNumber, 'Enter PAN number')}
-    {renderInput('GST Number', gstNumber, setGstNumber, 'Enter GST number')}    
-    <View style={styles.imageContainer}>
-      {renderImageBox('Aadhaar front', aadhaarFrontImage, setAadhaarFrontImage)}
-      {renderImageBox('Aadhaar Back', aadhaarBackImage, setAadhaarBackImage)}
-      {renderImageBox('PAN', panImage, setPanImage)}
-      {renderImageBox('GST', gstImage, setGstImage)}   
-    </View>
-  </>)}
-
-
-      <View style={styles.buttonRow}>
-        <TouchableOpacity style={[styles.actionButton, { backgroundColor: Colors.primaryColor }]}>
-          <Text style={styles.buttonText}>Submit</Text>
+  const roleSelector = () => (
+    <View style={{ marginBottom: 12 }}>
+      <Text style={{ marginBottom: 4, fontWeight: 'bold', fontSize: 14 }}>Select Role</Text>
+      <View style={styles.selectorContainer}>
+        <TouchableOpacity
+          onPress={() => setSelectedRole('user')}
+          style={[styles.selectorOption, selectedRole === 'user' && styles.selectedOption]}
+        >
+          <Text style={[styles.dropdownText, selectedRole === 'user' ? { color: 'white' } : { color: 'black' }]}>User</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setSelectedRole('vendor')}
+          style={[styles.selectorOption, selectedRole === 'vendor' && styles.selectedOption]}
+        >
+          <Text style={[styles.dropdownText, selectedRole === 'vendor' ? { color: 'white' } : { color: 'black' }]}>Vendor</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Full Image Modal */}
-      <Modal visible={modalVisible} transparent={true}>
-        <View style={styles.modalContainer}>
-          <Image source={{ uri: selectedImage }} style={styles.fullImage} />
-          <TouchableOpacity
-            style={styles.modalCloseButton}
-            onPress={() => setModalVisible(false)}
-          >
-            <Text style={styles.closeText}>Close</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-
-      {/* Bottom Sheet */}
-      <RNModal
-        isVisible={isBottomSheetVisible}
-        onBackdropPress={() => setBottomSheetVisible(false)}
-        style={{ justifyContent: 'flex-end', margin: 0 }}
-      >
-        <View style={styles.bottomSheet}>
-          <TouchableOpacity
-            style={styles.sheetOption}
-            onPress={() => openCamera(currentImageSetter)}
-          >
-            <Ionicons name="camera" size={22} color="#555" />
-            <Text style={styles.sheetOptionText}>Use Camera</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.sheetOption}
-            onPress={() => openGallery(currentImageSetter)}
-          >
-            <Entypo name="image" size={22} color="#555" />
-            <Text style={styles.sheetOptionText}>Choose from Gallery</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.sheetOption}
-            onPress={() => removeImage(currentImageSetter)}
-          >
-            <MaterialIcons name="delete" size={22} color="red" />
-            <Text style={[styles.sheetOptionText, { color: 'red' }]}>Remove Image</Text>
-          </TouchableOpacity>
-        </View>
-      </RNModal>
-     
-    </ScrollView>
     </View>
   );
-function roleSelector(){
-    return(
-    <View style={{ marginBottom: 12 }}>
-    <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>Select Role</Text>
-    <View style={styles.selectorContainer}>
-      <TouchableOpacity
-        onPress={() => setSelectedRole("user")}
-        style={[
-          styles.selectorOption,
-          selectedRole === "user" && styles.selectedOption,
-        ]}
-      >
-      <Text style={[styles.dropdownText, selectedRole === "user" ? { color: "white" } : {color: "black"}]}>User</Text>
-  
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => setSelectedRole("vendor")}
-        style={[
-          styles.selectorOption,
-          selectedRole === "vendor" && styles.selectedOption,
-        ]}
-      >
-         <Text style={[styles.dropdownText, selectedRole === "vendor" ? { color: "white" } : {color: "black"}]}>Vendor</Text>
-  
-      </TouchableOpacity>
+
+  return (
+    <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
+      <View style={styles.appBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Icon name="arrow-back" size={24} color={Colors.primary} />
+        </TouchableOpacity>
+        <Text style={[styles.title, { fontSize: 16 }]}>Create a New User</Text>
+        <View style={{ width: 24 }} />
+      </View>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.imageContainerAvatar}>{renderImageBox('avatar', avatar, setAvatar)}</View>
+        {renderInput('Full Name', name, setName, 'Enter your full name')}
+        {renderInput('Mobile Number', mobNumber, setMobNumber, 'Enter your mobile number')}
+        {renderInput('Email', email, setEmail, 'Enter your email')}
+        {roleSelector()}
+        {selectedRole === 'vendor' && (
+          <>
+            {renderInput('Business Name', businessName, setBusinessName, 'Enter business name')}
+            {renderInput('Aadhar Number', aadharNumber, setAadharNumber, 'Enter Aadhar number')}
+            {renderInput('PAN Number', panNumber, setPanNumber, 'Enter PAN number')}
+            {renderInput('GST Number', gstNumber, setGstNumber, 'Enter GST number')}
+            <View style={styles.imageContainer}>
+              {renderImageBox('Aadhaar front', aadhaarFrontImage, setAadhaarFrontImage)}
+              {renderImageBox('Aadhaar Back', aadhaarBackImage, setAadhaarBackImage)}
+              {renderImageBox('PAN', panImage, setPanImage)}
+              {renderImageBox('GST', gstImage, setGstImage)}
+            </View>
+          </>
+        )}
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: Colors.primaryColor }]}
+            onPress={handleSubmit}
+          >
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
+        </View>
+        <Modal visible={modalVisible} transparent={true}>
+          <View style={styles.modalContainer}>
+            <Image source={{ uri: selectedImage }} style={styles.fullImage} />
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.closeText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+        <RNModal
+          isVisible={isBottomSheetVisible}
+          onBackdropPress={() => setBottomSheetVisible(false)}
+          style={{ justifyContent: 'flex-end', margin: 0 }}
+        >
+          <View style={styles.bottomSheet}>
+            <TouchableOpacity style={styles.sheetOption} onPress={() => openCamera(currentImageSetter)}>
+              <Ionicons name="camera" size={22} color="#555" />
+              <Text style={styles.sheetOptionText}>Use Camera</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.sheetOption} onPress={() => openGallery(currentImageSetter)}>
+              <Entypo name="image" size={22} color="#555" />
+              <Text style={styles.sheetOptionText}>Choose from Gallery</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.sheetOption} onPress={() => removeImage(currentImageSetter)}>
+              <MaterialIcons name="delete" size={22} color="red" />
+              <Text style={[styles.sheetOptionText, { color: 'red' }]}>Remove Image</Text>
+            </TouchableOpacity>
+          </View>
+        </RNModal>
+      </ScrollView>
     </View>
-  </View>
-)}
+  );
 };
+
 
 const styles = StyleSheet.create({
   container: {

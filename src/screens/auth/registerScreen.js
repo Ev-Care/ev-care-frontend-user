@@ -81,55 +81,68 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const nameRegex = /^[A-Za-z\s]{3,}$/;
     const vehicleNumberRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
-
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  
     if (!data.email || !emailRegex.test(data.email)) {
       return "Invalid email address.";
     }
-
+  
     if (!data.owner_legal_name || !nameRegex.test(data.owner_legal_name)) {
       return "Invalid full name. Only letters and spaces, at least 3 characters.";
     }
-
+  
     if (!data.role || !['user', 'vendor'].includes(data.role.toLowerCase())) {
       return "Role must be either 'user' or 'vendor'.";
     }
+  
+    if (!data.password) {
+      return "Password is required.";
+    }
+  
+    if (!strongPasswordRegex.test(data.password)) {
+      return "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.";
+    }
+  
+    if (!data.confirm_password) {
+      return "Confirm password is required.";
+    }
+  
+    if (data.password !== data.confirm_password) {
+      return "Passwords do not match.";
+    }
+  
     if (data.role === 'user') {
-
-
       if (!data.vehicle_registration_number || !vehicleNumberRegex.test(data.vehicle_registration_number)) {
         return "Invalid vehicle number format (e.g., MH12AB1234).";
       }
-
+  
       if (!data.vehicle_manufacturer || data.vehicle_manufacturer.trim() === "") {
         return "Vehicle manufacturer is required.";
       }
-
+  
       if (!data.vehicle_model || data.vehicle_model.trim() === "") {
         return "Vehicle model is required.";
       }
     }
-
+  
     return null; // all good
   };
+  
 
   const handleSignUp = async () => {
     const userData = {
       email: email,
       owner_legal_name: fullName,
       role: role,
+      password,
+      confirm_password: confirmPassword,
       user_key: userKey,
       vehicle_registration_number: vehicleNumber,
       vehicle_manufacturer: customCompany !== '' ? customCompany : selectedCompany,
       vehicle_model: customModel !== '' ? customModel : selectedModel
     };
 
-    const vendorData = {
-      email: email,
-      owner_legal_name: fullName,
-      role: role,
-      user_key: userKey,
-
-    };
+    
     const error = validateUserData(userData);
     if (error) {
       console.log('error cartched');
@@ -434,7 +447,7 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
           placeholder="Enter Your Vehicle Registration Number"
           placeholderTextColor={Colors.grayColor}
           value={vehicleNumber}
-          onChangeText={(text) => setVehicleNumber(text)}
+          onChangeText={(text) => setVehicleNumber(text.toUpperCase())}
           style={{
             ...Fonts.blackColor16Medium, paddingVertical: 12,
             fontSize: 12,

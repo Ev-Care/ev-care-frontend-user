@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  Pressable,
   Linking,
   TouchableOpacity,
   View,
@@ -22,7 +23,7 @@ import {
 } from "../../constants/styles";
 import MyStatusBar from "../../components/myStatusBar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from "react-redux";
 import { postSignUp } from "./services/crudFunction";
 import { selectAuthError, selectToken, selectUser } from "./services/selector";
@@ -66,6 +67,12 @@ const RegisterScreen = ({ navigation, route }) => {
   const [customCompany, setCustomCompany] = useState(null);
   const [customModel, setCustomModel] = useState(null);
   const [vehicleNumber, setVehicleNumber] = useState(null);
+ 
+  const [mobNumber, setMobNumber] = useState(null);
+  const [password, setPassword] = useState('');
+const [confirmPassword, setConfirmPassword] = useState('');
+const [secureText, setSecureText] = useState(true);
+const [secureConfirmText, setSecureConfirmText] = useState(true);
 
   const models = selectedCompany && vehicleData[selectedCompany] ? vehicleData[selectedCompany] : [];
   // console.log("user key in register : ", userKey);
@@ -196,10 +203,13 @@ const RegisterScreen = ({ navigation, route }) => {
         >
           {selectRole()}
           {fullNameInfo()}
+          {mobNumberInfo()}
           {emailInfo()}
           {role === "user" && (<>{vehicleNumberInfo()}
             {vehicleDataForm()}
           </>)}
+          {passwordField()}
+          {signInText()}
           {continueButton()}
           {agreeInfo()}
         </ScrollView>
@@ -209,24 +219,27 @@ const RegisterScreen = ({ navigation, route }) => {
 
   function selectRole() {
     return (
-      <View style={{ marginTop: 30 }}>
-        <Text style={styles.sectionLabel}>
-          Select Role <Text style={styles.label}>*</Text>
-        </Text>
-        <View style={styles.pickerWrapper}>
-          <Picker
-            selectedValue={selectedModel}
-            onValueChange={(itemValue) => setRole(itemValue)}
-            style={styles.pickerStyle}
-          >
-            <Picker.Item style={{ fontSize: 12 }} label="Select Role" value="" />
-            <Picker.Item style={{ fontSize: 12 }} label="User" value="user" />
-            <Picker.Item style={{ fontSize: 12 }} label="Vendor" value="vendor" />
-          </Picker>
+      <View style={{ flexDirection: "row", justifyContent: "space-around", margin: Sizes.fixPadding * 2 }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <RadioButton
+            value="User"
+            status={role === "user" ? "checked" : "unchecked"}
+            onPress={() => setRole("user")}
+          />
+          <Text>User</Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <RadioButton
+            value="Vendor"
+            status={role === "vendor" ? "checked" : "unchecked"}
+            onPress={() => setRole("vendor")}
+          />
+          <Text>Vendor</Text>
         </View>
       </View>
     );
   }
+  
 
   function agreeInfo() {
     return (
@@ -280,6 +293,110 @@ const RegisterScreen = ({ navigation, route }) => {
     </>
     );
   }
+  function mobNumberInfo() {
+    return (<>
+      <Text style={styles.sectionLabel}>
+        Mobile Number <Text style={styles.label}>*</Text>
+        {/* <Text style={styles.optional}>(Optional)</Text> */}
+      </Text>
+      <View
+        style={{
+          ...styles.textFieldWrapper,
+          marginBottom: Sizes.fixPadding * 2.0,
+        }}
+      >
+        <TextInput
+          placeholder="Enter Your Mobile Number "
+          placeholderTextColor={Colors.grayColor}
+          value={mobNumber}
+          onChangeText={(text) =>setMobNumber(text)}
+          style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
+          cursorColor={Colors.primaryColor}
+          selectionColor={Colors.primaryColor}
+          keyboardType="numeric"
+        />
+      </View>
+    </>
+    );
+  }
+  function passwordField() {
+    return (
+      <>
+        {/* Password Field */}
+        <Text style={styles.sectionLabel}>
+          Password <Text style={styles.label}>*</Text>
+        </Text>
+        <View
+          style={{
+            ...styles.textFieldWrapper,
+            marginBottom: Sizes.fixPadding * 2.0,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
+        >
+          <TextInput
+            placeholder="Enter Your Password"
+            placeholderTextColor={Colors.grayColor}
+            value={password}
+            onChangeText={(text) => setPassword(text)}
+            secureTextEntry={secureText}
+            style={{
+              ...Fonts.blackColor16Medium,
+              paddingVertical: 12,
+              fontSize: 12,
+              flex: 1,
+            }}
+            cursorColor={Colors.primaryColor}
+            selectionColor={Colors.primaryColor}
+          />
+          <Ionicons
+            name={secureText ? 'eye-off' : 'eye'}
+            size={20}
+            color={Colors.grayColor}
+            onPress={() => setSecureText(!secureText)}
+            style={{ marginHorizontal: 10 }}
+          />
+        </View>
+  
+        {/* Confirm Password Field */}
+        <Text style={styles.sectionLabel}>
+          Confirm Password <Text style={styles.label}>*</Text>
+        </Text>
+        <View
+          style={{
+            ...styles.textFieldWrapper,
+            marginBottom: Sizes.fixPadding * 2.0,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
+        >
+          <TextInput
+            placeholder="Re-enter Your Password"
+            placeholderTextColor={Colors.grayColor}
+            value={confirmPassword}
+            onChangeText={(text) => setConfirmPassword(text)}
+            secureTextEntry={secureConfirmText}
+            style={{
+              ...Fonts.blackColor16Medium,
+              paddingVertical: 12,
+              fontSize: 12,
+              flex: 1,
+            }}
+            cursorColor={Colors.primaryColor}
+            selectionColor={Colors.primaryColor}
+          />
+          <Ionicons
+            name={secureConfirmText ? 'eye-off' : 'eye'}
+            size={20}
+            color={Colors.grayColor}
+            onPress={() => setSecureConfirmText(!secureConfirmText)}
+            style={{ marginHorizontal: 10 }}
+          />
+        </View>
+      </>
+    );
+  }
+  
 
   function fullNameInfo() {
     return (<>
@@ -514,6 +631,25 @@ const RegisterScreen = ({ navigation, route }) => {
       </View>
     )
   }
+function signInText() {
+        return (
+          <View style={{ alignItems: "flex-end", marginBottom: 20 }}>
+            <Text style={{ ...Fonts.grayColor18Medium, textAlign: "right" }}>
+             Are You Existing User?{" "}
+              <Text
+               onPress={() => navigation.goBack()}
+                style={{
+                  ...Fonts.grayColor18SemiBold,
+                  color: "blue",
+                  fontWeight: "700",
+                }}
+              >
+                Click Here
+              </Text>
+            </Text>
+          </View>
+        );
+      }
 };
 
 export default RegisterScreen;

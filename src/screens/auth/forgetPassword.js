@@ -21,81 +21,22 @@ import {
 } from "../../constants/styles";
 import MyStatusBar from "../../components/myStatusBar";
 import { useFocusEffect } from "@react-navigation/native";
-
 import { Overlay } from "@rneui/themed";
-import { postSignIn } from "./services/crudFunction";
 import { useDispatch, useSelector } from "react-redux";
 import { selectloader } from "./services/selector";
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 import Ionicons from 'react-native-vector-icons/Ionicons';
-const SigninScreen = ({ navigation }) => {
+const ForgetPassword = ({ navigation }) => {
   // 
   const [backClickCount, setBackClickCount] = useState(0);
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [emailOrNumber, setEmailOrNumber] = useState(null);
-  const [password, setPassword] = useState(null);
-  const [secureText, setSecureText] = useState(true);
-
-
   const isLoading =useSelector(selectloader);
   const dispatch = useDispatch();
 
 
-  const backAction = () => {
-    if (Platform.OS === "ios") {
-      navigation.addListener("beforeRemove", (e) => {
-        e.preventDefault();
-      });
-    } else {
-      backClickCount == 1 ? BackHandler.exitApp() : _spring();
-      return true;
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      BackHandler.addEventListener("hardwareBackPress", backAction);
-      navigation.addListener("gestureEnd", backAction);
-      return () => {
-        BackHandler.removeEventListener("hardwareBackPress", backAction);
-        navigation.removeListener("gestureEnd", backAction);
-      };
-    }, [backAction])
-  );
-
-  function _spring() {
-    setBackClickCount(1);
-    setTimeout(() => {
-      setBackClickCount(0);
-    }, 1000);
+  const handleSubmit =  () => {
+    console.log("submitt button clicked");
   }
-
-  const handleSignIn =  () => {
-    console.log(" handle Signin called ");
-    if (!phoneNumber || phoneNumber.length < 10) {
-      Alert.alert("Invalid Phone Number");
-      return;
-    }
-   
-    try {
-      const sanitizedPhoneNumber = phoneNumber.replace(/\s+/g, "");
-      // console.log("Calling API with:", sanitizedPhoneNumber);
-
-      // Dispatch the Redux action
-      dispatch(postSignIn({ mobileNumber: sanitizedPhoneNumber })).unwrap();
-      dispatch(showSnackbar({ message: 'OTP Sent Successfuly', type: 'success' }));
-      navigation.navigate("Verification", { phoneNumber: sanitizedPhoneNumber,handleSignIn });
-      
-    } catch (error) {
-      console.log("Error in handleSignIn:", error);
-      dispatch(showSnackbar({ message: 'Error ocurred', type: 'error' }));
-    } finally {
-      console.log("Signin API call completed");
-    }
-};
-
-
- 
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
@@ -107,14 +48,12 @@ const SigninScreen = ({ navigation }) => {
         automaticallyAdjustKeyboardInsets={true}
          showsVerticalScrollIndicator={false}>
           {emailOrNumberInfo()}
-          {passwordField()}
-          {forgetPassText()}
-          {continueButton()}
-          {SignUpText()}
+         
+          {submitButton()}
+          {SignInText()}
         </ScrollView>
       </View>
-      {exitInfo()}
-      
+     
     </View>
   );
 
@@ -134,7 +73,7 @@ const SigninScreen = ({ navigation }) => {
           placeholder="Enter Your Email id  or Mobile Number"
           placeholderTextColor={Colors.grayColor}
           value={emailOrNumber}
-          onChangeText={(text) => setEmailOrNumber(text)}
+          onChangeText={(text) => setEmailOrNumber(text.toLowerCase())}
           style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
           cursorColor={Colors.primaryColor}
           selectionColor={Colors.primaryColor}
@@ -144,52 +83,13 @@ const SigninScreen = ({ navigation }) => {
     </>
     );
   }
-  function passwordField() {
-    return (
-      <>
-        <Text style={styles.sectionLabel}>
-          Password <Text style={styles.label}>*</Text>
-        </Text>
-        <View
-          style={{
-            ...styles.textFieldWrapper,
-            marginBottom: Sizes.fixPadding * 2.0,
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}
-        >
-          <TextInput
-            placeholder="Enter Your Password"
-            placeholderTextColor={Colors.grayColor}
-            value={password}
-            onChangeText={(text) => setPassword(text)}
-            secureTextEntry={secureText}
-            style={{
-              ...Fonts.blackColor16Medium,
-              paddingVertical: 12,
-              fontSize: 12,
-              flex: 1,
-            }}
-            cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
-          />
-          <Ionicons
-            name={secureText ? 'eye-off' : 'eye'}
-            size={20}
-            color={Colors.grayColor}
-            onPress={() => setSecureText(!secureText)}
-            style={{ marginHorizontal: 10 }}
-          />
-        </View>
-      </>
-    );
-  }
+
   
-  function continueButton() {
+  function submitButton() {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={handleSignIn}
+        onPress={handleSubmit}
         style={{ ...commonStyles.button, borderRadius: Sizes.fixPadding - 5.0,}}
       >
       {isLoading ? (
@@ -198,7 +98,7 @@ const SigninScreen = ({ navigation }) => {
               <Text style={{ ...Fonts.whiteColor18Medium }}>Please Wait...</Text>
             </View>
           ) : (
-            <Text style={{ ...Fonts.whiteColor18Medium }}>Continue</Text>
+            <Text style={{ ...Fonts.whiteColor18Medium }}>Submit</Text>
           )}
       </TouchableOpacity>
     );
@@ -207,65 +107,64 @@ const SigninScreen = ({ navigation }) => {
 
   function topImage() {
     return (
-      <ImageBackground
+        <ImageBackground
         source={require("../../../assets/images/authbg.png")}
         style={{ width: screenWidth, height: screenWidth - 150 }}
-        // resizeMode="stretch"
       >
+        {/* Back Button */}
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={{
+            position: 'absolute',
+            top: 40,
+            left: 20,
+            backgroundColor: 'white',
+            borderRadius: 20,
+            padding: 8,
+            zIndex: 10,
+            elevation: 4, 
+          }}
+        >
+          <Ionicons name="arrow-back" size={20} color="black" />
+        </TouchableOpacity>
+  
+        {/* Overlay Text */}
         <View style={styles.topImageOverlay}>
-          <Text style={{ ...Fonts.whiteColor22SemiBold }}>Sign in</Text>
-          <Text style={{ ...Fonts.whiteColor16Regular, marginTop: Sizes.fixPadding }}>
-            Sign in to your account
+          <Text style={{ ...Fonts.whiteColor22SemiBold }}>Forget Password</Text>
+          <Text
+            style={{
+              ...Fonts.whiteColor16Regular,
+              marginTop: Sizes.fixPadding,
+            }}
+          >
+            Recover Your Password Easily
           </Text>
         </View>
       </ImageBackground>
     );
+    
   }
 
-  function exitInfo() {
-    return backClickCount == 1 ? (
-      <View style={styles.exitInfoWrapStyle}>
-        <Text style={{ ...Fonts.whiteColor14Medium }}>Press Back Once Again To Exit!</Text>
-      </View>
-    ) : null;
-  }
-    function SignUpText() {
+
+function SignInText() {
       return (
         <View style={{ alignItems: "center", justifyContent: "center" ,marginTop:20}}>
           <Text style={{ textAlign: "center", ...Fonts.grayColor18Medium }}>
-           Are You  New User ? {" "}
-            <Text 
-             onPress={()=>navigation.navigate("Register")}
-            style={{ textAlign: "center", ...Fonts.grayColor18SemiBold, color:"blue" ,fontWeight:"700"}}>
-             Sign Up
+           Do You Want to SignIn ? {" "}
+            <Text  
+            onPress={() => navigation.goBack()}
+             style={{ textAlign: "center", ...Fonts.grayColor18SemiBold, color:"blue" ,fontWeight:"700"}}>
+             Click Here
            </Text>
           </Text>       
         </View>
       );
     }
-    function forgetPassText() {
-      return (
-        <View style={{ alignItems: "flex-end", marginBottom: 20 }}>
-          <Text style={{ ...Fonts.grayColor18Medium, textAlign: "right" }}>
-            Forgot Password?{" "}
-            <Text
-            onPress={()=>navigation.navigate("ForgetPassword")}
-              style={{
-                ...Fonts.grayColor18SemiBold,
-                color: "blue",
-                fontWeight: "700",
-              }}
-            >
-              Click Here
-            </Text>
-          </Text>
-        </View>
-      );
-    }
+ 
     
 };
 
-export default SigninScreen;
+export default ForgetPassword;
 
 const styles = StyleSheet.create({
   exitInfoWrapStyle: {

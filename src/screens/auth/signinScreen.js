@@ -121,7 +121,7 @@ const SigninScreen = ({ navigation }) => {
   function emailOrNumberInfo() {
     return (<>
       <Text style={styles.sectionLabel}>
-        Email or Mob Number <Text style={styles.label}>*</Text>
+        Email or Mobile Number <Text style={styles.label}>*</Text>
         {/* <Text style={styles.optional}>(Optional)</Text> */}
       </Text>
       <View

@@ -1,5 +1,5 @@
 // ViewAllUserPage.js
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -147,7 +147,7 @@ const allIssues1 = [
     "created_at": "2025-05-08T13:30:00Z"
   },
   {
-    "user":  {
+    "user": {
       id: 19,
       user_key: "b2ZB4gFprc",
       owner_legal_name: "Ravi Kumar",
@@ -239,15 +239,12 @@ const ViewAllIssuesPage = ({ navigation }) => {
       issue?.user.mobile_number?.includes(searchQuery)
   );
 
-  useFocusEffect(
-    useCallback(
-      () => {
-        console.log('issues useFocusEffect called');
-        dispatch(getAllSupportIssues());
-      },
-      [user],
-    )
-    
+  useEffect(
+    () => {
+      // console.log('issues useFocusEffect called');
+      dispatch(getAllSupportIssues());
+    },
+    [],
   )
 
   return (

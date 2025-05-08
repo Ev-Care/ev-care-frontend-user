@@ -157,7 +157,7 @@ const SupportIssuesDetail = ({ route, navigation }) => {
         style={{
           fontSize: 14,
           marginLeft: 5,
-          flex: 1,
+          // flex: 1,
           flexWrap: "wrap",
           textAlign: "justify",
         }}
@@ -243,10 +243,10 @@ const SupportIssuesDetail = ({ route, navigation }) => {
         {renderTitleMessage("Title", issue.title)}
         {console.log(issue.title)}
         {renderTitleMessage("Message", issue.description)}
-        <View style={styles.imageContainer}>
+        {/* <View style={styles.imageContainer}>
           {renderImageBox("Reference", imageURL.baseURL + issue.reference_image_url)}
          
-        </View>
+        </View> */}
 
         {/* <View style={styles.buttonRow}>
           <TouchableOpacity

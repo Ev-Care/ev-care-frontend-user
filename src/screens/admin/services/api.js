@@ -51,7 +51,7 @@ export const createUserAPI = (data) =>
     apiUrl: `${API_URL}/users/create-user`,
     content_type: "application/json",
     accessToken: data.accessToken,
-    data: data,
+    data: data.data,
   });
 
 export const addStationByAdminAPI = (data) =>

@@ -32,6 +32,7 @@ import imageURL from "../../../constants/baseURL";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import { createUser } from "../services/crudFunctions";
 
 const CreateUser = ({ route, navigation }) => {
   const [name, setName] = useState(null);
@@ -164,6 +165,9 @@ const CreateUser = ({ route, navigation }) => {
       /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
     const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
+    const nameRegex = /^[A-Za-z\s]{3,}$/;
+    const vehicleNumberRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
+
     if (!name || !mobNumber || !email) {
       dispatch(
         showSnackbar({
@@ -174,6 +178,12 @@ const CreateUser = ({ route, navigation }) => {
       return false;
     }
 
+    if (!nameRegex.test(name)) {
+      dispatch(
+        showSnackbar({ message: "Invalid full name. Only letters and spaces, at least 3 characters.", type: "error" })
+      );
+      return false;
+    }
     if (!emailRegex.test(email)) {
       dispatch(
         showSnackbar({ message: "Invalid Email format.", type: "error" })
@@ -304,12 +314,20 @@ const CreateUser = ({ route, navigation }) => {
         );
         return false;
       }
+      if (!vehicleNumberRegex.test(vehicleNumber)) {
+        dispatch(
+          showSnackbar({
+            message: "Invalid vechile number format.(E.g MH12AB3456)",
+            type: "error",
+          })
+        );
+      }
     }
 
     return true;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateInputs()) return;
 
     let payload = {
@@ -350,9 +368,26 @@ const CreateUser = ({ route, navigation }) => {
       };
     }
     console.log("Submitting payload:", payload);
-    dispatch(
-      showSnackbar({ message: "User created successfully!", type: "success" })
-    );
+
+    try {
+      const response = await dispatch(createUser(payload));
+      if (response.payload.code === 200 || response.payload.code === 201) {
+        dispatch(
+          showSnackbar({ message: "User created successfully!", type: "success" })
+        );
+        navigation.pop();
+      } else {
+          dispatch(
+          showSnackbar({ message: response?.payload?.message || response?.payload || 'Failed to create user', type: "error" })
+        );
+      }
+    } catch (error) {
+      console.log('error in create user', error);
+
+      dispatch(
+        showSnackbar({ message: "Failed to create user!", type: "error" })
+      );
+    }
   };
 
   const renderInput = (label, value, setter, placeholder) => (
@@ -371,7 +406,7 @@ const CreateUser = ({ route, navigation }) => {
             setter(text.toLowerCase());
           } else if (label === "Vehicle Registration Number") {
             setter(text.toUpperCase());
-          }else{
+          } else {
             setter(text);
           }
         }}
@@ -380,17 +415,17 @@ const CreateUser = ({ route, navigation }) => {
           label === "Mobile Number"
             ? "numeric"
             : label === "Email"
-            ? "email-address"
-            : "default"
+              ? "email-address"
+              : "default"
         }
         maxLength={
           label === "Mobile Number" || label === "PAN Number"
             ? 10
             : label === "Aadhar Number"
-            ? 12
-            : label === "GST Number"
-            ? 15
-            : undefined
+              ? 12
+              : label === "GST Number"
+                ? 15
+                : undefined
         }
       />
     </View>

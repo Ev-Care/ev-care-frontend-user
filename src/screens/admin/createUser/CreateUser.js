@@ -80,45 +80,92 @@ const CreateUser = ({ route, navigation }) => {
   };
 
   const validateInputs = () => {
-    if (!name || !mobNumber || !email) {
-      Alert.alert('Validation Error', 'Name, Mobile Number, and Email are required.');
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const mobileRegex = /^[6-9]\d{9}$/;
+  const aadharRegex = /^\d{12}$/;
+  const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
+
+  if (!name || !mobNumber || !email) {
+    dispatch(showSnackbar({ message: 'Name, Mobile Number, and Email are required.', type: 'error' }));
+    return false;
+  }
+
+  if (!emailRegex.test(email)) {
+    dispatch(showSnackbar({ message: 'Invalid Email format.', type: 'error' }));
+    return false;
+  }
+
+  if (!mobileRegex.test(mobNumber)) {
+    dispatch(showSnackbar({ message: 'Invalid Mobile Number. It should be 10 digits and start with 6-9.', type: 'error' }));
+    return false;
+  }
+
+  if (selectedRole === 'vendor') {
+    if (!businessName || !aadharNumber || !panNumber || !gstNumber) {
+      dispatch(showSnackbar({ message: 'All vendor details must be filled.', type: 'error' }));
       return false;
     }
-    if (selectedRole === 'vendor') {
-      if (!businessName || !aadharNumber || !panNumber || !gstNumber) {
-        Alert.alert('Validation Error', 'All vendor details must be filled.');
-        return false;
-      }
-      if (!aadhaarFrontImage || !aadhaarBackImage || !panImage || !gstImage) {
-        Alert.alert('Validation Error', 'All vendor images must be uploaded.');
-        return false;
-      }
+
+    if (!aadharRegex.test(aadharNumber)) {
+      dispatch(showSnackbar({ message: 'Invalid Aadhar number. Must be 12 digits.', type: 'error' }));
+      return false;
     }
-    return true;
-  };
+
+    if (!panRegex.test(panNumber)) {
+      dispatch(showSnackbar({ message: 'Invalid PAN number format.', type: 'error' }));
+      return false;
+    }
+
+    if (!gstRegex.test(gstNumber)) {
+      dispatch(showSnackbar({ message: 'Invalid GST number format.', type: 'error' }));
+      return false;
+    }
+
+    if (!aadhaarFrontImage || !aadhaarBackImage || !panImage || !gstImage) {
+      dispatch(showSnackbar({ message: 'All vendor images must be uploaded.', type: 'error' }));
+      return false;
+    }
+  }
+
+  return true;
+};
 
   const handleSubmit = () => {
-    if (!validateInputs()) return;
-    const formData = {
-      name,
-      email,
-      mobNumber,
-      businessName,
-      aadharNumber,
-      panNumber,
-      gstNumber,
-      avatar,
-      aadhaarFrontImage,
-      aadhaarBackImage,
-      panImage,
-      gstImage,
-      role: selectedRole,
-      createdAt: new Date().toISOString(),
-    };
+  if (!validateInputs()) return;
 
-    console.log('Submitting user:', formData);
-    Alert.alert('Success', 'User created successfully!');
+  const payload = {
+   
+    owner_legal_name: name,
+    business_name: selectedRole === 'vendor' ? businessName : null,
+    mobile_number: mobNumber,
+    email,
+    pan_no: selectedRole === 'vendor' ? panNumber : null,
+    gstin_number: selectedRole === 'vendor' ? gstNumber : null,
+    gstin_image: selectedRole === 'vendor' ? gstImage : null,
+    adhar_no: selectedRole === 'vendor' ? aadharNumber : null,
+    adhar_front_pic: selectedRole === 'vendor' ? aadhaarFrontImage : null,
+    adhar_back_pic: selectedRole === 'vendor' ? aadhaarBackImage : null,
+    pan_pic: selectedRole === 'vendor' ? panImage : null,
+    avatar: avatar || null,
+    address: null,
+    google_id: null,
+    otp: null,
+    tan_no: null,
+    tan_pic: null,
+    // status: 'Active',
+    role: selectedRole,
+    vehicle_registration_number: null,
+    vehicle_manufacturer: null,
+    vehicle_model: null,
+    vendor_type: null,
+    password: generateDummyPassword(), // You can replace this with your actual password logic
   };
+
+  console.log('Submitting user:', payload);
+  dispatch(showSnackbar({ message: 'User created successfully!', type: 'success' }));
+};
+
 
   const renderInput = (label, value, setter, placeholder) => (
     <View style={{ marginBottom: 12 }}>

@@ -79,19 +79,19 @@ const SigninScreen = ({ navigation }) => {
       return;
     }
 
-    if (!password || password.length < 8) {
-      dispatch(showSnackbar({ message: 'Password must be at least 8 characters long', type: 'error' }));
+    if (!password) {
+      dispatch(showSnackbar({ message: 'Password is required', type: 'error' }));
       return;
     }
 
-    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    // const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-    if (!strongPasswordRegex.test(password)) {
-      dispatch(showSnackbar({
-        message: 'Password must contain uppercase, lowercase, number, and special character', type: 'error'
-      }));
-      return;
-    }
+    // if (!strongPasswordRegex.test(password)) {
+    //   dispatch(showSnackbar({
+    //     message: 'Password must contain uppercase, lowercase, number, and special character', type: 'error'
+    //   }));
+    //   return;
+    // }
 
     try {
       const response = await dispatch(login({ identifier: emailOrNumber, password }));

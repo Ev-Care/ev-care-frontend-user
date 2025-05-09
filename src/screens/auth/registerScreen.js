@@ -137,18 +137,18 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
       password,
       mobile_number: mobNumber,
       confirm_password: confirmPassword,
-      // vehicle_registration_number: vehicleNumber,
-      // vehicle_manufacturer: customCompany !== '' ? customCompany : selectedCompany,
-      // vehicle_model: customModel !== '' ? customModel : selectedModel
+      vehicle_registration_number: vehicleNumber,
+      vehicle_manufacturer: customCompany !== '' ? customCompany : selectedCompany,
+      vehicle_model: customModel !== '' ? customModel : selectedModel
     };
 
     
-    // const validationError = validateUserData(userData);
-    // if (validationError) {
-    //   console.log('error cartched');
-    //   dispatch(showSnackbar({ message: validationError, type: 'error' }));
-    //   return;
-    // }
+    const validationError = validateUserData(userData);
+    if (validationError) {
+      console.log('error cartched');
+      dispatch(showSnackbar({ message: validationError, type: 'error' }));
+      return;
+    }
 
     setLoading(true);
 
@@ -162,7 +162,7 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
         );
       } else if (register.rejected.match(response)) {
         dispatch(
-          showSnackbar({ message: error||"Registration Failed", type: "error" })
+          showSnackbar({ message: response.payload ||"Registration Failed", type: "error" })
         );
       }
     } catch (error) {

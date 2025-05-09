@@ -4,6 +4,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
   approveStationAPI,
   approveVendorProfileAPI,
+  createUserAPI,
   getAllPendingStationAPI,
   getAllPendingUsersAPI,
   getAllStationsAPI,

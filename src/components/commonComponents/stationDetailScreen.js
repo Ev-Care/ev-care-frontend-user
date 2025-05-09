@@ -142,7 +142,7 @@ const StationDetailScreen = ({ route, navigation }) => {
           </View>
 
           <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>Public</Text>
+            <Text style={styles.communityText}>{station?.access_type}</Text>
           </View>
         </View>
 

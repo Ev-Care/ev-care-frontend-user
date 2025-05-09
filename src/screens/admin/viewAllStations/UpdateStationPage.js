@@ -72,7 +72,7 @@ const UpdateStationPage = ({ navigation, route }) => {
       ? "24 Hours"
       : "Custom"
   );
- 
+
   const [address, setAddress] = useState(station?.address || "");
   const [openTime, setOpenTime] = useState(
     station?.open_hours_opening_time || ""
@@ -326,13 +326,6 @@ const UpdateStationPage = ({ navigation, route }) => {
     });
   };
   const handlePreview = () => {
-    // Validate required fields
-    // if (!stationName || !address || chargerForms.length === 0)
-    // if(true)
-    //   {
-    //   alert('Please fill in all required fields.');
-    //   return;
-    // }
 
     // Transform amenities into a comma-separated string
     const amenitiesString = selectedAmenities
@@ -357,6 +350,75 @@ const UpdateStationPage = ({ navigation, route }) => {
         openHours === "24 Hours" ? "23:59:59" : closeTime || "23:59:59",
       chargers: chargerForms,
     };
+
+
+
+    if (!stationData?.station_name || stationData?.station_name === "") {
+      dispatch(
+        showSnackbar({
+          message: "Station name cannot be empty.",
+          type: "error",
+        })
+      );
+      return;
+    }
+
+    if (!stationData?.address || stationData.address === "") {
+      dispatch(
+        showSnackbar({
+          message: "Station address cannot be empty.",
+          type: "error",
+        })
+      );
+      return;
+    }
+
+    if (!stationData?.amenities || stationData.amenities === "") {
+      dispatch(
+        showSnackbar({
+          message: "Station Amenities cannot be empty.",
+          type: "error",
+        })
+      );
+      return;
+    }
+
+    if (!stationData?.station_images || stationData.station_images === "") {
+      dispatch(
+        showSnackbar({
+          message: "Please upload Station Images.",
+          type: "error",
+        })
+      );
+      return;
+    }
+
+    if (!stationData?.chargers || stationData?.chargers?.length === 0) {
+      dispatch(
+        showSnackbar({
+          message: "At least one charger must be added.",
+          type: "error",
+        })
+      );
+      return;
+    }
+
+    for (let i = 0; i < stationData?.chargers?.length; i++) {
+      const charger = stationData?.chargers[i];
+      if (
+        !charger?.charger_type ||
+        !charger?.max_power_kw ||
+        !charger?.connector_type
+      ) {
+        dispatch(
+          showSnackbar({
+            message: `Charger ${i + 1} details are incomplete.`,
+            type: "error",
+          })
+        );
+        return;
+      }
+    }
 
     console.log(
       "Transformed Station Data in update:",
@@ -576,7 +638,7 @@ const UpdateStationPage = ({ navigation, route }) => {
                   style={[
                     styles.hoursButton,
                     chargerForms[index]?.charger_type === "AC" &&
-                      styles.selectedButton,
+                    styles.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -592,7 +654,7 @@ const UpdateStationPage = ({ navigation, route }) => {
                     style={[
                       styles.buttonText,
                       chargerForms[index]?.charger_type === "AC" &&
-                        styles.selectedButtonText,
+                      styles.selectedButtonText,
                     ]}
                   >
                     AC
@@ -603,7 +665,7 @@ const UpdateStationPage = ({ navigation, route }) => {
                   style={[
                     styles.hoursButton,
                     chargerForms[index]?.charger_type === "DC" &&
-                      styles.selectedButton,
+                    styles.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -619,7 +681,7 @@ const UpdateStationPage = ({ navigation, route }) => {
                     style={[
                       styles.buttonText,
                       chargerForms[index]?.charger_type === "DC" &&
-                        styles.selectedButtonText,
+                      styles.selectedButtonText,
                     ]}
                   >
                     DC
@@ -779,7 +841,7 @@ const UpdateStationPage = ({ navigation, route }) => {
               style={[
                 styles.amenityItem,
                 selectedAmenities.includes(amenity.id) &&
-                  styles.selectedAmenity,
+                styles.selectedAmenity,
               ]}
               onPress={() => toggleAmenity(amenity.id)}
             >
@@ -796,7 +858,7 @@ const UpdateStationPage = ({ navigation, route }) => {
                 style={[
                   styles.amenityLabel,
                   selectedAmenities.includes(amenity.id) &&
-                    styles.selectedAmenityText,
+                  styles.selectedAmenityText,
                 ]}
               >
                 {amenity.label}
@@ -889,7 +951,7 @@ const UpdateStationPage = ({ navigation, route }) => {
     );
   }
   function uploadPhotoSection() {
-  
+
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>
@@ -898,7 +960,7 @@ const UpdateStationPage = ({ navigation, route }) => {
         <Text style={styles.photoDescription}>
           Contribute to smoother journeys; include a location/charger photo.
         </Text>
-     
+
         <View
           style={{
             flexWrap: "wrap",

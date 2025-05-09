@@ -41,8 +41,6 @@ const ViewAllStationsPage = ({ navigation }) => {
 
   useEffect(() => {
     dispatch(fetchAllStations());
-    console.log('useEffect called');
-    console.log('fetch all stations called');
 
   }, []);
 

@@ -31,48 +31,46 @@ const ForgetPassword = ({ navigation }) => {
   // 
   const [backClickCount, setBackClickCount] = useState(0);
   const [emailOrNumber, setEmailOrNumber] = useState(null);
-  const [isLoading ,setIsLoading]=useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
 
 
-  const handleSubmit =  async() => {
+  const handleSubmit = async () => {
     console.log("submitt button clicked");
     setIsLoading(true);
-    try{
+    try {
+      const response = await dispatch(forgetPassword({ identifier: emailOrNumber }));
+      console.log('response = ', response?.payload);
+      if (response?.payload?.code == 200) {
+        Alert.alert("Success", response?.payload?.message);
+        // dispatch(showSnackbar({message: response?.payload?.message, type: 'success'}));
+      } else {
+        dispatch(showSnackbar({ message: response?.payload, type: 'error' }));
+      }
 
-  
-    const response = await dispatch(forgetPassword({identifier: emailOrNumber}));
-      console.log('response = ',response?.payload);
-    if(response?.payload?.code == 200){
-      Alert.alert("Success" , response?.payload?.message);
-      // dispatch(showSnackbar({message: response?.payload?.message, type: 'success'}));
-    }else{
-      dispatch(showSnackbar({message: response?.payload, type: 'error'}));
+    } catch (error) {
+      dispatch(showSnackbar({ message: 'Something went wrong. Please try again', type: 'error' }));
+    } finally {
+      setIsLoading(false);
     }
-
-  } catch(error){
-    dispatch(showSnackbar({message: 'Something went wrong. Please try again', type: 'error'}));
-  }finally{
-    setIsLoading(false);
-  }
   }
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
-      <View style={{ flex: 1  }}>
+      <View style={{ flex: 1 }}>
         {topImage()}
-        <ScrollView 
-        style={{ padding: 20 }}
-        automaticallyAdjustKeyboardInsets={true}
-         showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={{ padding: 20 }}
+          automaticallyAdjustKeyboardInsets={true}
+          showsVerticalScrollIndicator={false}>
           {emailOrNumberInfo()}
-         
+
           {submitButton()}
           {SignInText()}
         </ScrollView>
       </View>
-     
+
     </View>
   );
 
@@ -103,22 +101,22 @@ const ForgetPassword = ({ navigation }) => {
     );
   }
 
-  
+
   function submitButton() {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handleSubmit}
-        style={{ ...commonStyles.button, borderRadius: Sizes.fixPadding - 5.0,}}
+        style={{ ...commonStyles.button, borderRadius: Sizes.fixPadding - 5.0, }}
       >
-      {isLoading ? (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-              <Text style={{ ...Fonts.whiteColor18Medium }}>Please Wait...</Text>
-            </View>
-          ) : (
-            <Text style={{ ...Fonts.whiteColor18Medium }}>Submit</Text>
-          )}
+        {isLoading ? (
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+            <Text style={{ ...Fonts.whiteColor18Medium }}>Please Wait...</Text>
+          </View>
+        ) : (
+          <Text style={{ ...Fonts.whiteColor18Medium }}>Submit</Text>
+        )}
       </TouchableOpacity>
     );
   }
@@ -126,7 +124,7 @@ const ForgetPassword = ({ navigation }) => {
 
   function topImage() {
     return (
-        <ImageBackground
+      <ImageBackground
         source={require("../../../assets/images/authbg.png")}
         style={{ width: screenWidth, height: screenWidth - 150 }}
       >
@@ -141,12 +139,12 @@ const ForgetPassword = ({ navigation }) => {
             borderRadius: 20,
             padding: 8,
             zIndex: 10,
-            elevation: 4, 
+            elevation: 4,
           }}
         >
           <Ionicons name="arrow-back" size={20} color="black" />
         </TouchableOpacity>
-  
+
         {/* Overlay Text */}
         <View style={styles.topImageOverlay}>
           <Text style={{ ...Fonts.whiteColor22SemiBold }}>Forget Password</Text>
@@ -161,26 +159,26 @@ const ForgetPassword = ({ navigation }) => {
         </View>
       </ImageBackground>
     );
-    
+
   }
 
 
-function SignInText() {
-      return (
-        <View style={{ alignItems: "center", justifyContent: "center" ,marginTop:20}}>
-          <Text style={{ textAlign: "center", ...Fonts.grayColor18Medium }}>
-           Do You Want to SignIn ? {" "}
-            <Text  
+  function SignInText() {
+    return (
+      <View style={{ alignItems: "center", justifyContent: "center", marginTop: 20 }}>
+        <Text style={{ textAlign: "center", ...Fonts.grayColor18Medium }}>
+          Do You Want to SignIn ? {" "}
+          <Text
             onPress={() => navigation.goBack()}
-             style={{ textAlign: "center", ...Fonts.grayColor18SemiBold, color:"blue" ,fontWeight:"700"}}>
-             Click Here
-           </Text>
-          </Text>       
-        </View>
-      );
-    }
- 
-    
+            style={{ textAlign: "center", ...Fonts.grayColor18SemiBold, color: "blue", fontWeight: "700" }}>
+            Click Here
+          </Text>
+        </Text>
+      </View>
+    );
+  }
+
+
 };
 
 export default ForgetPassword;

@@ -1,41 +1,34 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Picker } from '@react-native-picker/picker';
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ImageBackground,
+  Linking,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  Pressable,
-  Linking,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { RadioButton } from "react-native-paper";
-import React, { useState, useEffect } from "react";
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useDispatch, useSelector } from "react-redux";
+import MyStatusBar from "../../components/myStatusBar";
 import {
   Colors,
-  screenWidth,
   Fonts,
   Sizes,
   commonStyles,
+  screenWidth,
 } from "../../constants/styles";
-import MyStatusBar from "../../components/myStatusBar";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useDispatch, useSelector } from "react-redux";
-import { postSignUp, register } from "./services/crudFunction";
-import { selectAuthError, selectToken, selectUser } from "./services/selector";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
-import { Picker } from '@react-native-picker/picker';
-import { Entypo } from '@expo/vector-icons';
+import { register } from "./services/crudFunction";
+import { selectAuthError, selectToken, selectUser } from "./services/selector";
 // import DropDownPicker from 'react-native-dropdown-picker';
-
-
-
-
 
 export const vehicleData = {
   "Tata": ["Ace", "Intra", "Yodha"],
@@ -61,7 +54,6 @@ const RegisterScreen = ({ navigation, route }) => {
   const user = useSelector(selectUser); // Get user data from Redux store
   const token = useSelector(selectToken); // Get user data from Redux store
   const error = useSelector(selectAuthError); // Get error from Redux store
-  const userKey = route?.params?.userKey;
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedModel, setSelectedModel] = useState(null);
   const [customCompany, setCustomCompany] = useState(null);
@@ -69,8 +61,8 @@ const RegisterScreen = ({ navigation, route }) => {
   const [vehicleNumber, setVehicleNumber] = useState(null);
  
   const [mobNumber, setMobNumber] = useState(null);
-  const [password, setPassword] = useState('');
-const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState(null);
+const [confirmPassword, setConfirmPassword] = useState(null);
 const [secureText, setSecureText] = useState(true);
 const [secureConfirmText, setSecureConfirmText] = useState(true);
 
@@ -130,6 +122,7 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
   
 
   const handleSignUp = async () => {
+    
     const userData = {
       email: email,
       owner_legal_name: fullName,
@@ -138,8 +131,8 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
       mobile_number: mobNumber,
       confirm_password: confirmPassword,
       vehicle_registration_number: vehicleNumber,
-      vehicle_manufacturer: customCompany !== '' ? customCompany : selectedCompany,
-      vehicle_model: customModel !== '' ? customModel : selectedModel
+      vehicle_manufacturer: customCompany !== ''||null ? customCompany : selectedCompany,
+      vehicle_model: customModel !== ''||null ? customModel : selectedModel
     };
 
     
@@ -153,7 +146,7 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
     setLoading(true);
 
 
-    console.log("Post signup called");
+ console.log("Post signup called");
     try {
       const response = await dispatch(register(userData));
       if (register.fulfilled.match(response)) {

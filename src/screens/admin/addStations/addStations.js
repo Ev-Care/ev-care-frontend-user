@@ -211,6 +211,7 @@ const AddStationScreen = () => {
     }));
 
     const stationData = {
+      vendor_Number:vendorNumber,
       owner_id: user?.id || null,
       station_name: stationName,
       address,
@@ -232,7 +233,27 @@ const AddStationScreen = () => {
       "Transformed Station Data:",
       JSON.stringify(stationData, null, 2)
     );
-
+    
+    if (!vendorNumber || vendorNumber === "") {
+      dispatch(
+        showSnackbar({
+          message: "Vendor Contact Number cannot be empty.",
+          type: "error",
+        })
+      );
+      return;
+    }
+    
+    if (vendorNumber.length !== 10) {
+      dispatch(
+        showSnackbar({
+          message: "Vendor Contact Number must be 10 digits.",
+          type: "error",
+        })
+      );
+      return;
+    }
+    
     if (!stationData?.station_name || stationData?.station_name === "") {
       dispatch(
         showSnackbar({
@@ -304,6 +325,7 @@ const AddStationScreen = () => {
       clearForm,
     });
   };
+
 
   const handleVisibility = (form) => {
     const formKey = String(form);

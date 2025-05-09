@@ -32,7 +32,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const SigninScreen = ({ navigation }) => {
   // 
   const [backClickCount, setBackClickCount] = useState(0);
-  const [phoneNumber, setPhoneNumber] = useState("");
+ 
   const [emailOrNumber, setEmailOrNumber] = useState(null);
   const [password, setPassword] = useState(null);
   const [secureText, setSecureText] = useState(true);

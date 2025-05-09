@@ -146,8 +146,6 @@ const PreviewPage = ({ navigation, route }) => {
         }
       } else {
 
-
-
         const updateStationResponse = await dispatch(
           updateStation(stationData)
         );

@@ -114,7 +114,7 @@ const AddStationScreen = () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.1,
+        quality: 0.2,
         allowsEditing: true,
         aspect: label === "avatar" ? [1, 1] : undefined,
       });
@@ -211,7 +211,7 @@ const AddStationScreen = () => {
     }));
 
     const stationData = {
-      vendor_Number:vendorNumber,
+      identifier: vendorNumber,
       owner_id: user?.id || null,
       station_name: stationName,
       address,
@@ -263,6 +263,7 @@ const AddStationScreen = () => {
       );
       return;
     }
+
     if (!stationData?.address || stationData.address === "") {
       dispatch(
         showSnackbar({
@@ -272,6 +273,7 @@ const AddStationScreen = () => {
       );
       return;
     }
+
     if (!stationData?.amenities || stationData.amenities === "") {
       dispatch(
         showSnackbar({
@@ -281,6 +283,7 @@ const AddStationScreen = () => {
       );
       return;
     }
+
     if (!stationData?.station_images || stationData.station_images === "") {
       dispatch(
         showSnackbar({
@@ -398,7 +401,7 @@ const AddStationScreen = () => {
       <MyStatusBar />
       <View style={styles.header}>
         <TouchableOpacity
-          // onPress={() => navigation?.navigate("VendorBottomTabBar")}
+          onPress={() => navigation?.goBack()}
         >
           <Icon name="arrow-left" size={24} color={PRIMARY_COLOR} />
         </TouchableOpacity>

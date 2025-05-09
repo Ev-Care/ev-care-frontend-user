@@ -2,6 +2,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
+  addStationByAdminAPI,
   approveStationAPI,
   approveVendorProfileAPI,
   createUserAPI,
@@ -226,6 +227,38 @@ export const createUser = createAsyncThunk(
       }
     } catch (error) {
       console.log("Error in createUser:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message || // API sent error message
+        error?.message || // JS error message
+        "Server error"; // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+export const addStationByAdmin = createAsyncThunk(
+  "admin/addStationByAdmin",
+  async (data, { rejectWithValue }) => {
+    
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
+
+      const response = await addStationByAdminAPI({
+        data,
+        accessToken
+      }); // Call the API to create user station
+
+      if (response?.data?.code === 200 || response?.data?.code === 201) {
+        return response?.data;
+      } else {
+        return rejectWithValue(
+          response?.message || response?.data?.message || "Failed to create new user."
+        );
+      }
+    } catch (error) {
+      console.log("Error in addStationByAdmin:", error);
 
       // Always extract message properly even in catch
       const errorMessage =

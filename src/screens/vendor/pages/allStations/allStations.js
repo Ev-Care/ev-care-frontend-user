@@ -226,9 +226,11 @@ const AllStations = ({ navigation, route }) => {
           ))
         ) : (
           // Fallback UI when stations is undefined or empty
-          <Text style={{ textAlign: "center", marginTop: 20 }}>
-            No stations available.
-          </Text>
+          <View
+            style={{paddingVertical:"80%", justifyContent: "center", alignItems: "center" ,}}
+          >
+            <Text style={{ textAlign: "center" }}>No stations available.</Text>
+          </View>
         )}
       </ScrollView>
       {isLoading && (
@@ -236,14 +238,13 @@ const AllStations = ({ navigation, route }) => {
           <ActivityIndicator size="large" color={Colors.primaryColor} />
         </View>
       )}
-    {addSatationButton()}
+      {addSatationButton()}
     </View>
   );
-  function addSatationButton(){
-    return(
-    
+  function addSatationButton() {
+    return (
       <TouchableOpacity
-        onPress={()=>navigation?.navigate("AddStations")}
+        onPress={() => navigation?.navigate("AddStations")}
         style={{
           justifyContent: "center",
           alignItems: "center",
@@ -264,8 +265,7 @@ const AllStations = ({ navigation, route }) => {
       >
         <MaterialIcons name="add" size={30} color={Colors.whiteColor} />
       </TouchableOpacity>
-     
-    )
+    );
   }
 };
 
@@ -319,8 +319,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 15,
     borderWidth: 1,
-    borderColor: '#e2e2e2 ',
-    backgroundColor: '#f5f5f5' 
+    borderColor: "#e2e2e2 ",
+    backgroundColor: "#f5f5f5",
   },
   infoContainer: {
     flex: 1,

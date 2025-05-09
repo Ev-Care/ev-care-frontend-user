@@ -386,7 +386,7 @@ const EditProfileScreen = ({ route, navigation }) => {
           setMobNumber,
           "Enter your full name"
         )}
-        {renderInput("Email", email, setEmail, "Enter your email")}
+        {renderNonEditableInput("Email", email, setEmail, "Enter your email")}
         {renderInput("Vehicle Number", vehicleNumber, setVehicleNumber, "Enter your Vehicle Number")}
         {renderInput("Vehicle Manufacturer", vehicleCompany, setVehicleCompany, "Enter Vehicle Manufacturer Name")}
         {renderInput("Vehicle Model", vehicleModel, setVehicleModel, "Enter Vehicle Model")}

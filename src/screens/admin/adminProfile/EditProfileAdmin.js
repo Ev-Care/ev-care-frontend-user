@@ -316,7 +316,7 @@ const EditAdminProfile = ({ route, navigation }) => {
           setMobNumber,
           "Enter your full name"
         )}
-        {renderInput("Email", email, setEmail, "Enter your email")}
+        {renderNonEditableInput("Email", email, setEmail, "Enter your email")}
 
         {user?.role === "vendor" && (
           <>

@@ -11,6 +11,7 @@ import {
   getAllStationsAPI,
   getAllSupportIssuesAPI,
 } from "./api";
+import { deleteStationAPI } from "../../vendor/services/api";
 // Async thunk to fetch stations
 export const fetchAllPendingStation = createAsyncThunk(
   "admin/fetchAllPendingStation",
@@ -47,7 +48,7 @@ export const fetchAllStations = createAsyncThunk(
   "admin/fetchAllStations",
   async (_, { rejectWithValue }) => {
     try {
-      console.log("Fetching all pending stations...");
+  
 
       const accessToken = await AsyncStorage.getItem("accessToken");
 
@@ -265,6 +266,33 @@ export const addStationByAdmin = createAsyncThunk(
         error?.response?.data?.message || // API sent error message
         error?.message || // JS error message
         "Server error"; // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+
+// Delete a station By admin
+export const deleteStationByAdmin = createAsyncThunk(
+  'admin/deleteStationByAdmin',
+  async (stationId, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve accessToken inside the thunk
+      const response = await deleteStationAPI({ station_id: stationId, accessToken });
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(response?.message || response?.data?.message || "Failed to delete Stations");
+      }
+    } catch (error) {
+      console.log("Error in deleteStationByAdmin:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message ||  // API sent error message
+        error?.message ||                  // JS error message
+        "Something went wrong. Please try again";          // fallback message
 
       return rejectWithValue(errorMessage);
     }

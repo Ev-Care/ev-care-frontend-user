@@ -90,7 +90,10 @@ const PreviewStation = ({ navigation, route }) => {
   };
 
   const handleSubmit = async () => {
+
   try {
+    setIsLoading(true);
+
     console.log("station data", stationData);
 
     if (type === "add") {
@@ -133,7 +136,8 @@ const PreviewStation = ({ navigation, route }) => {
               type: "success",
             })
           );
-          navigation.pop(2);
+          // navigation.navigate('ViewAllStationsPage');
+          navigation.pop(3);
         } else {
           await dispatch(
             showSnackbar({
@@ -159,6 +163,8 @@ const PreviewStation = ({ navigation, route }) => {
         type: "error",
       })
     );
+  } finally{
+    setIsLoading(false);
   }
 };
 

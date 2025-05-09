@@ -18,11 +18,6 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useDispatch, useSelector } from "react-redux";
 import { Colors, Fonts, Sizes } from "../../../constants/styles";
 
-import {
-  selectVendorError,
-  selectVendorLoading,
-  selectVendorStation,
-} from "../services/selector";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import imageURL from "../../../constants/baseURL";
 import { postSingleFile } from "../../auth/services/crudFunction";
@@ -50,18 +45,17 @@ const PreviewStation = ({ navigation, route }) => {
   const mapRef = useRef(null);
   const dispatch = useDispatch();
   const { stationData, type, stationImage, clearForm } = route?.params || {};
-//   const isLoading = useSelector(selectVendorLoading);
-//   const errorMessage = useSelector(selectVendorError);
-  const [isLoading ,setIsLoading]=useState(null);
-  const errorMessage ="change this with actual error";
-//   const stations = useSelector(selectVendorStation);
+  //   const isLoading = useSelector(selectVendorLoading);
+  //   const errorMessage = useSelector(selectVendorError);
+  const [isLoading, setIsLoading] = useState(false);
+  const errorMessage = "change this with actual error";
+  //   const stations = useSelector(selectVendorStation);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(stationImage || '');
-//   const authToken = useSelector(selectToken);
-//   const station = stations.find(
-//     (station) => station.id === stationData.station_id
-//   );
-
+  const [selectedImage, setSelectedImage] = useState(stationImage || "");
+  //   const authToken = useSelector(selectToken);
+  //   const station = stations.find(
+  //     (station) => station.id === stationData.station_id
+  //   );
 
   useEffect(() => {
     console.log(
@@ -95,8 +89,7 @@ const PreviewStation = ({ navigation, route }) => {
 
   const handleSubmit = async () => {
     try {
-      
-      console.log('station data', stationData);
+      console.log("station data", stationData);
       if (type === "add") {
         const addStationresponse = await dispatch(addStation(stationData));
         if (addStation.fulfilled.match(addStationresponse)) {
@@ -130,9 +123,6 @@ const PreviewStation = ({ navigation, route }) => {
           );
         }
       } else {
-
-
-
         const updateStationResponse = await dispatch(
           updateStation(stationData)
         );
@@ -275,19 +265,15 @@ const PreviewStation = ({ navigation, route }) => {
     return (
       <Modal visible={modalVisible} transparent={true}>
         <View style={styles.modalContainer}>
-          <Image source={{ uri: imageURL.baseURL+selectedImage }} style={styles.fullImage} />
+          <Image
+            source={{ uri: imageURL.baseURL + selectedImage }}
+            style={styles.fullImage}
+          />
           <TouchableOpacity
             style={styles.modalCloseButton}
             onPress={() => setModalVisible(false)}
           >
-
-
-            <MaterialIcons
-              name="close"
-              color={Colors.blackColor}
-              size={26}
-            />
-
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
           </TouchableOpacity>
         </View>
       </Modal>
@@ -321,7 +307,7 @@ const PreviewStation = ({ navigation, route }) => {
                   name={
                     charger?.connector_type
                       ? connectorIcons?.[charger?.connector_type] ||
-                      "ev-plug-type1"
+                        "ev-plug-type1"
                       : "ev-plug-type1"
                   }
                   size={20}
@@ -341,7 +327,7 @@ const PreviewStation = ({ navigation, route }) => {
     }
     //  console.log("station image in preview page upper",stationImage);
     const imageUrl = stationImage
-      ? { uri: imageURL.baseURL+stationImage }
+      ? { uri: imageURL.baseURL + stationImage }
       : require("../../../../assets/images/nullStation.png");
     // console.log("station image in preview page lower",imageUrl);
     return (
@@ -374,10 +360,7 @@ const PreviewStation = ({ navigation, route }) => {
           activeOpacity={0.9}
           style={styles.mapBackground}
           onPress={() => {
-            if (
-              stationImage &&
-              stationImage.trim() !== ""
-            ) {
+            if (stationImage && stationImage.trim() !== "") {
               showFullImage(stationImage);
             }
           }}
@@ -389,9 +372,17 @@ const PreviewStation = ({ navigation, route }) => {
           <Text style={styles.stationName}>
             {trimName(50, stationData?.station_name)}
           </Text>
-          <Text style={styles.stationAddress}>
-            {trimName(50, stationData?.address)}
-          </Text>
+          {type === "add" ? (
+            <Text style={styles.stationAddress}>
+              <Text style={{ fontWeight: "700" }}>Vendor Contact Number:</Text>{" "}
+              {trimName(50, stationData?.vendor_Number)}
+            </Text>
+          ) : (
+            <Text style={styles.stationAddress}>
+              {trimName(50, stationData?.address)}
+            </Text>
+          )}
+
           <View
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
           >
@@ -400,7 +391,8 @@ const PreviewStation = ({ navigation, route }) => {
                 style={[
                   styles.statusClosed,
                   {
-                    color: stationData?.status === "Inactive" ? "#FF5722" : "green",
+                    color:
+                      stationData?.status === "Inactive" ? "#FF5722" : "green",
                   },
                 ]}
               >
@@ -414,11 +406,7 @@ const PreviewStation = ({ navigation, route }) => {
               </Text>
               <View style={styles.newBadge}>
                 <Text style={styles.newText}>
-                  {stationData.status === "Active"
-                    ? "VERIFIED"
-                    :
-                    "New"
-                  }
+                  {stationData.status === "Active" ? "VERIFIED" : "New"}
                 </Text>
               </View>
             </View>
@@ -427,8 +415,6 @@ const PreviewStation = ({ navigation, route }) => {
       </View>
     );
   }
-
- 
 
   function detailTab() {
     return (
@@ -760,7 +746,6 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "bold",
   },
-
 });
 
 export default PreviewStation;

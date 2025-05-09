@@ -69,8 +69,8 @@ const RegisterScreen = ({ navigation, route }) => {
   const [vehicleNumber, setVehicleNumber] = useState(null);
  
   const [mobNumber, setMobNumber] = useState(null);
-  const [password, setPassword] = useState('');
-const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState(null);
+const [confirmPassword, setConfirmPassword] = useState(null);
 const [secureText, setSecureText] = useState(true);
 const [secureConfirmText, setSecureConfirmText] = useState(true);
 
@@ -130,6 +130,7 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
   
 
   const handleSignUp = async () => {
+    
     const userData = {
       email: email,
       owner_legal_name: fullName,
@@ -137,23 +138,23 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
       password,
       mobile_number: mobNumber,
       confirm_password: confirmPassword,
-      // vehicle_registration_number: vehicleNumber,
-      // vehicle_manufacturer: customCompany !== '' ? customCompany : selectedCompany,
-      // vehicle_model: customModel !== '' ? customModel : selectedModel
+      vehicle_registration_number: vehicleNumber,
+      vehicle_manufacturer: customCompany !== ''||null ? customCompany : selectedCompany,
+      vehicle_model: customModel !== ''||null ? customModel : selectedModel
     };
 
     
-    // const validationError = validateUserData(userData);
-    // if (validationError) {
-    //   console.log('error cartched');
-    //   dispatch(showSnackbar({ message: validationError, type: 'error' }));
-    //   return;
-    // }
+    const validationError = validateUserData(userData);
+    if (validationError) {
+      console.log('error cartched');
+      dispatch(showSnackbar({ message: validationError, type: 'error' }));
+      return;
+    }
 
     setLoading(true);
 
 
-    console.log("Post signup called");
+ console.log("Post signup called");
     try {
       const response = await dispatch(register(userData));
       if (register.fulfilled.match(response)) {

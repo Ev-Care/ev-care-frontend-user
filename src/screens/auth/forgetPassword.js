@@ -31,26 +31,29 @@ const ForgetPassword = ({ navigation }) => {
   // 
   const [backClickCount, setBackClickCount] = useState(0);
   const [emailOrNumber, setEmailOrNumber] = useState(null);
-  const isLoading =useSelector(selectloader);
+  const [isLoading ,setIsLoading]=useState(false);
   const dispatch = useDispatch();
 
 
   const handleSubmit =  async() => {
     console.log("submitt button clicked");
-
+    setIsLoading(true);
     try{
 
   
     const response = await dispatch(forgetPassword({identifier: emailOrNumber}));
       console.log('response = ',response?.payload);
     if(response?.payload?.code == 200){
-      dispatch(showSnackbar({message: response?.payload?.message, type: 'success'}));
+      Alert.alert("Success" , response?.payload?.message);
+      // dispatch(showSnackbar({message: response?.payload?.message, type: 'success'}));
     }else{
       dispatch(showSnackbar({message: response?.payload, type: 'error'}));
     }
 
   } catch(error){
     dispatch(showSnackbar({message: 'Something went wrong. Please try again', type: 'error'}));
+  }finally{
+    setIsLoading(false);
   }
   }
 

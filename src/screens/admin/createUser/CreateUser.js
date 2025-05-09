@@ -366,7 +366,15 @@ const CreateUser = ({ route, navigation }) => {
       <TextInput
         style={styles.input}
         value={value}
-        onChangeText={setter}
+        onChangeText={(text) => {
+          if (label === "Email") {
+            setter(text.toLowerCase());
+          } else if (label === "Vehicle Registration Number") {
+            setter(text.toUpperCase());
+          }else{
+            setter(text);
+          }
+        }}
         placeholder={placeholder}
         keyboardType={
           label === "Mobile Number"
@@ -375,7 +383,15 @@ const CreateUser = ({ route, navigation }) => {
             ? "email-address"
             : "default"
         }
-        maxLength={label === "Mobile Number" ? 10 : undefined}
+        maxLength={
+          label === "Mobile Number" || label === "PAN Number"
+            ? 10
+            : label === "Aadhar Number"
+            ? 12
+            : label === "GST Number"
+            ? 15
+            : undefined
+        }
       />
     </View>
   );
@@ -646,6 +662,11 @@ const CreateUser = ({ route, navigation }) => {
           </View>
         </RNModal>
       </ScrollView>
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </View>
   );
   function businessTypeSection() {
@@ -691,11 +712,6 @@ const CreateUser = ({ route, navigation }) => {
             </Text>
           </TouchableOpacity>
         </View>
-        {isLoading && (
-          <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color={Colors.primaryColor} />
-          </View>
-        )}
       </View>
     );
   }
@@ -730,6 +746,17 @@ const styles = StyleSheet.create({
     marginTop: 20,
 
     flexWrap: "wrap",
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
   },
   imageContainerAvatar: {
     flexDirection: "row",

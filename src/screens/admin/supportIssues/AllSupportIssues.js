@@ -8,6 +8,7 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
   SafeAreaView,
   StatusBar,
 } from "react-native";
@@ -42,192 +43,12 @@ const COLORS = {
   divider: "#e1e1ea",
 };
 
-// Sample user data
-const USERS = [
-  {
-    id: 18,
-    user_key: "b2ZB4gFprc",
-    owner_legal_name: "Dummy User",
-    business_name: null,
-    mobile_number: "+916666666666",
-    email: null,
-    otp: "573937",
-    pan_no: null,
-    tan_no: null,
-    adhar_no: null,
-    address: null,
-    avatar: null,
-    adhar_front_pic: null,
-    adhar_back_pic: null,
-    pan_pic: null,
-    tan_pic: null,
-    google_id: null,
-    otp_expiry_date: "2025-04-23T18:41:38.000Z",
-    status: "New",
-    role: "user",
-    login_method: "mobile_otp",
-    created_at: "2025-04-23T18:31:38.000Z",
-    update_at: "2025-04-23T18:31:38.509Z",
-    updated_by: 0,
-    isLoggedIn: true,
-    password: null,
-  },
-  {
-    id: 19,
-    user_key: "b2ZB4gFprc",
-    owner_legal_name: "Dummy User 2",
-    business_name: null,
-    mobile_number: "+9166666666669",
-    email: null,
-    otp: "573937",
-    pan_no: null,
-    tan_no: null,
-    adhar_no: null,
-    address: null,
-    avatar: null,
-    adhar_front_pic: null,
-    adhar_back_pic: null,
-    pan_pic: null,
-    tan_pic: null,
-    google_id: null,
-    otp_expiry_date: "2025-04-23T18:41:38.000Z",
-    status: "New",
-    role: "vendor",
-    login_method: "mobile_otp",
-    created_at: "2025-04-23T18:31:38.000Z",
-    update_at: "2025-04-23T18:31:38.509Z",
-    updated_by: 0,
-    isLoggedIn: true,
-    password: null,
-  },
-];
-
-const allIssues1 = [
-  {
-    "user": {
-      "id": 60,
-      "user_key": "ALdwJF818e",
-      "owner_legal_name": "vendor5",
-      "business_name": "This is business 3466",
-      "mobile_number": "6666666666",
-      "email": "Vendor66@gmail.com",
-      "otp": "264844",
-      "pan_no": "MCNPS2766K",
-      "tan_no": null,
-      "gstin_number": null,
-      "gstin_image": null,
-      "adhar_no": "343934391765",
-      "address": "16, Near Ganesh Garden, Ambegaon Pathar, Pune, Maharashtra 411046, India",
-      "avatar": "/uploads/1746087113689.jpeg",
-      "adhar_front_pic": "/uploads/1746087164706.jpeg",
-      "adhar_back_pic": "/uploads/1746087168841.jpeg",
-      "pan_pic": "/uploads/1746087180925.jpeg",
-      "tan_pic": null,
-      "google_id": null,
-      "otp_expiry_date": "2025-05-07T20:02:48.000Z",
-      "status": "Active",
-      "role": "vendor",
-      "vehicle_registration_number": null,
-      "vehicle_manufacturer": null,
-      "vehicle_model": null,
-      "vendor_type": null,
-      "login_method": "mobile_otp",
-      "created_at": "2025-05-01T07:24:49.453Z",
-      "update_at": "2025-05-07T19:52:47.000Z",
-      "updated_by": 0,
-      "isLoggedIn": true,
-      "password": null
-    },
-    status: "pending",
-    "contact_number": "+916666666666",
-    "contact_email": "dummy.user@example.com",
-    "title": "Unable to update profile",
-    "message": "Every time I try to update my profile, the app crashes.",
-    "reference_image_url": null,
-    "created_at": "2025-05-08T13:30:00Z"
-  },
-  {
-    "user": {
-      id: 19,
-      user_key: "b2ZB4gFprc",
-      owner_legal_name: "Ravi Kumar",
-      business_name: null,
-      mobile_number: "+911234567890",
-      email: null,
-      otp: "573937",
-      pan_no: null,
-      tan_no: null,
-      adhar_no: null,
-      address: null,
-      avatar: null,
-      adhar_front_pic: null,
-      adhar_back_pic: null,
-      pan_pic: null,
-      tan_pic: null,
-      google_id: null,
-      otp_expiry_date: "2025-04-23T18:41:38.000Z",
-      status: "New",
-      role: "vendor",
-      login_method: "mobile_otp",
-      created_at: "2025-04-23T18:31:38.000Z",
-      update_at: "2025-04-23T18:31:38.509Z",
-      updated_by: 0,
-      isLoggedIn: true,
-      password: null,
-    },
-    status: "pending",
-    "contact_number": "+916666666666",
-    "contact_email": "dummy.user@example.com",
-    "title": "App UI issue on support screen",
-    "message": "The image preview is not loading correctly as shown in the screenshot.",
-    "reference_image_url": "https://yourdomain.com/uploads/support/issue_screenshot_123.jpg",
-    "created_at": "2025-05-08T14:05:00Z"
-  },
-  {
-    "user": {
-      id: 19,
-      user_key: "b2ZB4gFprc",
-      owner_legal_name: "Gaurav Chaubey",
-      business_name: null,
-      mobile_number: "+9166666666669",
-      email: null,
-      otp: "573937",
-      pan_no: null,
-      tan_no: null,
-      adhar_no: null,
-      address: null,
-      avatar: null,
-      adhar_front_pic: null,
-      adhar_back_pic: null,
-      pan_pic: null,
-      tan_pic: null,
-      google_id: null,
-      otp_expiry_date: "2025-04-23T18:41:38.000Z",
-      status: "New",
-      role: "vendor",
-      login_method: "mobile_otp",
-      created_at: "2025-04-23T18:31:38.000Z",
-      update_at: "2025-04-23T18:31:38.509Z",
-      updated_by: 0,
-      isLoggedIn: true,
-      password: null,
-    },
-    status: "pending",
-    "contact_number": "+916666666666",
-    "contact_email": null,
-    "title": "Login OTP not received",
-    "message": "Tried multiple times but no OTP was received on my phone.",
-    "reference_image_url": null,
-    "created_at": "2025-05-08T15:00:00Z"
-  }
-];
-
-// User item component - extracted for better code organization
 
 const ViewAllIssuesPage = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const user = useSelector(selectUser);
   const allIssues = useSelector(selectAllSupportIssues);
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   // Filter users based on search query
   // console.log('all Issue = ', allIssues);
@@ -239,13 +60,16 @@ const ViewAllIssuesPage = ({ navigation }) => {
       issue?.user.mobile_number?.includes(searchQuery)
   );
 
-  useEffect(
-    () => {
-      // console.log('issues useFocusEffect called');
-      dispatch(getAllSupportIssues());
-    },
-    [],
-  )
+useEffect(() => {
+  const fetchIssues = async () => {
+    setIsLoading(true);
+    await dispatch(getAllSupportIssues());
+    setIsLoading(false);
+  };
+
+  fetchIssues();
+}, []);
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -265,6 +89,11 @@ const ViewAllIssuesPage = ({ navigation }) => {
           </View>
         }
       />
+       {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </SafeAreaView>
   );
 
@@ -379,6 +208,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
+  },
+    loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
   },
   searchBar: {
     flexDirection: "row",

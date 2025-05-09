@@ -52,8 +52,8 @@ const EditProfileScreen = ({ route, navigation }) => {
   );
   const [panNumber, setPanNumber] = useState(user?.pan_no || "Not found");
   const [gstNumber, setGstNumber] = useState(user?.gstin_number);
+  const [businessType, setBusinessType] = useState(user?.vendor_type);
   //   image start
-
   //   image uri
   const [aadhaarFrontImageURI, setAadhaarFrontImageURI] = useState(
     user?.adhar_front_pic
@@ -73,6 +73,7 @@ const EditProfileScreen = ({ route, navigation }) => {
   const [showDialogue, setshowDialogue] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [imageloading, setImageLoading] = useState("");
+ 
   const errorMessage = useSelector(selectAuthError);
   const showFullImage = (uri) => {
     if (!uri) return;
@@ -206,21 +207,40 @@ const EditProfileScreen = ({ route, navigation }) => {
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         {label}
+        {label === "GST Number" && businessType == "individual" && (
+          <Text style={styles.optional}> (Optional)</Text>
+        )}
       </Text>
       <TextInput
-       style={styles.input}
-       value={value}
-       onChangeText={setter}
-       placeholder={placeholder}
-       keyboardType={
-         label === "Mobile Number"
-           ? "numeric"
-           : label === "Email"
-           ? "email-address"
-           : "default"
-       }
-        maxLength={label === "Mobile Number" ? 10 : undefined}
-     />
+        style={styles.input}
+        value={value}
+        onChangeText={(text) => {
+          if (label === "Email") {
+            setter(text.toLowerCase());
+          } else if (label === "Vehicle Registration Number") {
+            setter(text.toUpperCase());
+          }else{
+            setter(text);
+          }
+        }}
+        placeholder={placeholder}
+        keyboardType={
+          label === "Mobile Number"
+            ? "numeric"
+            : label === "Email"
+            ? "email-address"
+            : "default"
+        }
+        maxLength={
+          label === "Mobile Number" || label === "PAN Number"
+            ? 10
+            : label === "Aadhar Number"
+            ? 12
+            : label === "GST Number"
+            ? 15
+            : undefined
+        }
+      />
     </View>
   );
 

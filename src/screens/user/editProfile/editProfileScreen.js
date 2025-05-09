@@ -90,6 +90,7 @@ const EditProfileScreen = ({ route, navigation }) => {
   const [showDialogue, setshowDialogue] = useState(false);
   const [imageloading, setImageLoading] = useState("");
   const errorMessage = useSelector(selectAuthError);
+
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
@@ -269,12 +270,20 @@ const EditProfileScreen = ({ route, navigation }) => {
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         {label}
       </Text>
-      <TextInput
-        style={styles.input}
-        value={value}
-        onChangeText={setter}
-        placeholder={placeholder}
-      />
+     <TextInput
+      style={styles.input}
+      value={value}
+      onChangeText={setter}
+      placeholder={placeholder}
+      keyboardType={
+        label === "Mobile Number"
+          ? "numeric"
+          : label === "Email"
+          ? "email-address"
+          : "default"
+      }
+       maxLength={label === "Mobile Number" ? 10 : undefined}
+    />
     </View>
   );
   // const renderVehicleInput = (label, value) => (

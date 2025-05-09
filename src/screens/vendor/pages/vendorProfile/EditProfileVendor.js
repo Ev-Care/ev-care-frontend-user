@@ -208,11 +208,19 @@ const EditProfileScreen = ({ route, navigation }) => {
         {label}
       </Text>
       <TextInput
-        style={styles.input}
-        value={value}
-        onChangeText={setter}
-        placeholder={placeholder}
-      />
+       style={styles.input}
+       value={value}
+       onChangeText={setter}
+       placeholder={placeholder}
+       keyboardType={
+         label === "Mobile Number"
+           ? "numeric"
+           : label === "Email"
+           ? "email-address"
+           : "default"
+       }
+        maxLength={label === "Mobile Number" ? 10 : undefined}
+     />
     </View>
   );
 

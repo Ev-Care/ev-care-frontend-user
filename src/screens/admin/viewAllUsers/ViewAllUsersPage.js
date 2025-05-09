@@ -8,6 +8,7 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
   SafeAreaView,
   StatusBar,
 } from "react-native";
@@ -101,6 +102,7 @@ const USERS = [
 const ViewAllUserPage = ({navigation}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState(USERS);
+  const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   // Filter users based on search query
   const filteredUsers = users.filter(
@@ -108,7 +110,13 @@ const ViewAllUserPage = ({navigation}) => {
       user?.owner_legal_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user?.mobile_number?.includes(searchQuery)
   );
-  const handleRefresh = async () => {};
+
+const handleRefresh = async () => {
+  
+};
+
+
+
   return (
     <SafeAreaView style={styles.container}>
       <MyStatusBar/>
@@ -131,6 +139,11 @@ const ViewAllUserPage = ({navigation}) => {
           </View>
         }
       />
+       {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </SafeAreaView>
   );
 
@@ -210,6 +223,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
+  },
+    loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
   },
   searchBar: {
     flexDirection: "row",

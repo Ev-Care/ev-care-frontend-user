@@ -53,3 +53,11 @@ export const createUserAPI = (data) =>
     accessToken: data.accessToken,
     data: data,
   });
+
+export const addStationByAdminAPI = (data) =>
+  apiPostRequest({
+    apiUrl: `${API_URL}/charging-stations/create-station-by-admin`,
+    content_type: "application/json",
+    accessToken: data.accessToken,
+    data: data.data,
+  });

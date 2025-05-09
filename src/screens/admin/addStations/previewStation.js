@@ -23,6 +23,8 @@ import imageURL from "../../../constants/baseURL";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { selectToken } from "../../auth/services/selector";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
+import { addStationByAdmin, fetchAllPendingStation, fetchAllStations } from "../services/crudFunctions";
+import { updateStation } from "../../vendor/services/crudFunction";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -88,89 +90,78 @@ const PreviewStation = ({ navigation, route }) => {
   };
 
   const handleSubmit = async () => {
-    try {
-      console.log("station data", stationData);
-      if (type === "add") {
-        const addStationresponse = await dispatch(addStation(stationData));
-        if (addStation.fulfilled.match(addStationresponse)) {
-          const stationResponse = await dispatch(
-            fetchStations(stationData?.owner_id)
-          );
-          if (fetchStations.fulfilled.match(stationResponse)) {
-            // await dispatch(showSnackbar({ message: "Station fetched Successfully.", type:'success' }));
-            await dispatch(
-              showSnackbar({ message: "New station added.", type: "success" })
-            );
-            if (typeof clearForm === "function") {
-              clearForm();
-            }
-            // navigation.pop();
-            navigation.navigate("VendorBottomTabBar");
-          } else if (fetchStations.rejected.match(stationResponse)) {
-            await dispatch(
-              showSnackbar({
-                message: errorMessage || "Failed to fetch station.",
-                type: "error",
-              })
-            );
-          }
-        } else if (addStation.rejected.match(addStationresponse)) {
+  try {
+    console.log("station data", stationData);
+
+    if (type === "add") {
+      const addStationResponse = await dispatch(addStationByAdmin(stationData));
+
+      if (addStationByAdmin.fulfilled.match(addStationResponse)) {
+        const stationResponse = await dispatch(fetchAllPendingStation());
+
+        if (fetchAllPendingStation.fulfilled.match(stationResponse)) {
+          await dispatch(showSnackbar({ message: "New station added.", type: "success" }));
+          
+          if (typeof clearForm === "function") clearForm();
+          navigation.pop(2);
+        } else {
           await dispatch(
             showSnackbar({
-              message: errorMessage || "Failed to add station.",
+              message: errorMessage || "Failed to fetch station.",
               type: "error",
             })
           );
         }
       } else {
-        const updateStationResponse = await dispatch(
-          updateStation(stationData)
+        await dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to add station.",
+            type: "error",
+          })
         );
-        if (updateStation.fulfilled.match(updateStationResponse)) {
-          const stationResponse = await dispatch(
-            fetchStations(stationData?.owner_id)
-          );
-          if (fetchStations.fulfilled.match(stationResponse)) {
-            console.log("station updated");
+      }
+    } else {
+      const updateStationResponse = await dispatch(updateStation(stationData));
 
-            await dispatch(
-              showSnackbar({
-                message: "Station updated Successfully.",
-                type: "success",
-              })
-            );
+      if (updateStation.fulfilled.match(updateStationResponse)) {
+        const stationResponse = await dispatch(fetchAllStations(stationData?.owner_id));
 
-            navigation.pop(2);
-            // navigation.navigate("StationManagement", { station })
-          } else if (fetchStations.rejected.match(stationResponse)) {
-            console.log("station update failed");
-            await dispatch(
-              showSnackbar({
-                message: errorMessage || "Failed to fetch station.",
-                type: "error",
-              })
-            );
-          }
-        } else if (updateStation.rejected.match(updateStationResponse)) {
+        if (fetchAllStations.fulfilled.match(stationResponse)) {
           await dispatch(
             showSnackbar({
-              message: errorMessage || "Failed to update station.",
+              message: "Station updated successfully.",
+              type: "success",
+            })
+          );
+          navigation.pop(2);
+        } else {
+          await dispatch(
+            showSnackbar({
+              message: errorMessage || "Failed to fetch station.",
               type: "error",
             })
           );
         }
+      } else {
+        await dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to update station.",
+            type: "error",
+          })
+        );
       }
-    } catch (error) {
-      console.error("Error adding station:", error);
-      await dispatch(
-        showSnackbar({
-          message:
-            errorMessage || "Something went wrong. Please try again later.",
-          type: "error",
-        })
-      );
     }
-  };
+  } catch (error) {
+    console.error("Error in admin preview  station:", error);
+    await dispatch(
+      showSnackbar({
+        message: errorMessage || "Something went wrong. Please try again later.",
+        type: "error",
+      })
+    );
+  }
+};
+
 
   const handleTabPress = (index) => {
     setActiveTab(index);
@@ -374,8 +365,8 @@ const PreviewStation = ({ navigation, route }) => {
           </Text>
           {type === "add" ? (
             <Text style={styles.stationAddress}>
-              <Text style={{ fontWeight: "700" }}>Vendor Contact Number:</Text>{" "}
-              {trimName(50, stationData?.vendor_Number)}
+              <Text style={{ fontWeight: "700" }}>Vendor Email or Contact Number:</Text>{" "}
+              {trimName(50, stationData?.identifier)}
             </Text>
           ) : (
             <Text style={styles.stationAddress}>

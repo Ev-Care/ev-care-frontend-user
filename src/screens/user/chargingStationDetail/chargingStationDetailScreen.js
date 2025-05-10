@@ -367,7 +367,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
   function buttons() {
     return (
       <View  style={styles.bottomButtons}>
-        <TouchableOpacity onPress={openGoogleMaps} style={styles.directionButton}>
+        <TouchableOpacity onPress={()=>openGoogleMaps(station?.coordinates.latitude,station?.coordinates.longitude)} style={styles.directionButton}>
           <Text style={styles.directionButtonText}>Get Direction</Text>
         </TouchableOpacity>
  

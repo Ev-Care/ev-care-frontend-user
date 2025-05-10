@@ -163,9 +163,9 @@ const CreateUser = ({ route, navigation }) => {
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     const gstRegex =
       /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
-    const passwordRegex =  /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
     const nameRegex = /^[A-Za-z\s]{3,}$/;
-   const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
+    const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
 
     if (!name || !mobNumber || !email) {
       dispatch(
@@ -179,7 +179,11 @@ const CreateUser = ({ route, navigation }) => {
 
     if (!nameRegex.test(name)) {
       dispatch(
-        showSnackbar({ message: "Invalid full name. Only letters and spaces, at least 3 characters.", type: "error" })
+        showSnackbar({
+          message:
+            "Invalid full name. Only letters and spaces, at least 3 characters.",
+          type: "error",
+        })
       );
       return false;
     }
@@ -372,16 +376,25 @@ const CreateUser = ({ route, navigation }) => {
       const response = await dispatch(createUser(payload));
       if (response.payload.code === 200 || response.payload.code === 201) {
         dispatch(
-          showSnackbar({ message: "User created successfully!", type: "success" })
+          showSnackbar({
+            message: "User created successfully!",
+            type: "success",
+          })
         );
         navigation.pop();
       } else {
-          dispatch(
-          showSnackbar({ message: response?.payload?.message || response?.payload || 'Failed to create user', type: "error" })
+        dispatch(
+          showSnackbar({
+            message:
+              response?.payload?.message ||
+              response?.payload ||
+              "Failed to create user",
+            type: "error",
+          })
         );
       }
     } catch (error) {
-      console.log('error in create user', error);
+      console.log("error in create user", error);
 
       dispatch(
         showSnackbar({ message: "Failed to create user!", type: "error" })
@@ -414,17 +427,17 @@ const CreateUser = ({ route, navigation }) => {
           label === "Mobile Number"
             ? "numeric"
             : label === "Email"
-              ? "email-address"
-              : "default"
+            ? "email-address"
+            : "default"
         }
         maxLength={
           label === "Mobile Number" || label === "PAN Number"
             ? 10
             : label === "Aadhar Number"
-              ? 12
-              : label === "GST Number"
-                ? 15
-                : undefined
+            ? 12
+            : label === "GST Number"
+            ? 15
+            : undefined
         }
       />
     </View>
@@ -573,14 +586,30 @@ const CreateUser = ({ route, navigation }) => {
 
         {roleSelector()}
         {selectedRole === "vendor" ? (
-          <>
-            {renderInput(
-              "Business Name",
-              businessName,
-              setBusinessName,
-              "Enter business name"
-            )}
+          
+           <>
             {businessTypeSection()}
+            {businessType === "individual" ? (
+              <>
+                {" "}
+                {renderInput(
+                  "Full Name",
+                  businessName,
+                  setBusinessName,
+                  "Enter Your Full name"
+                )}
+              </>
+            ) : (
+              <>
+                {renderInput(
+                  "Organization or Legal Name",
+                  businessName,
+                  setBusinessName,
+                  "Enter Organization or Legal Name"
+                )}
+              </>
+            )}
+
             {renderInput(
               "PAN Number",
               panNumber,

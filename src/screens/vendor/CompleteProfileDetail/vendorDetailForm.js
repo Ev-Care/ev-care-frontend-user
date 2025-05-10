@@ -97,8 +97,9 @@ const VendorDetailForm = () => {
 
   const handleSubmit = async () => {
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[A-Z0-9]{1}[A-Z0-9]{1}$/;
-  
+    const gstRegex =
+      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[A-Z0-9]{1}[A-Z0-9]{1}$/;
+
     // Validate required fields
     if (!avatarURI || !businessName || !panNumber || !panImageURI || !address) {
       try {
@@ -114,15 +115,18 @@ const VendorDetailForm = () => {
         return;
       }
     }
-  
+
     // Validate Aadhaar number for individuals
-    if (businessType === "individual" && (aadharNumber.length !== 12 || !/^\d+$/.test(aadharNumber))) {
+    if (
+      businessType === "individual" &&
+      (aadharNumber.length !== 12 || !/^\d+$/.test(aadharNumber))
+    ) {
       await dispatch(
         showSnackbar({ message: "Invalid Aadhaar number.", type: "error" })
       );
       return;
     }
-  
+
     // Validate PAN number
     if (!panRegex.test(panNumber)) {
       await dispatch(
@@ -130,15 +134,18 @@ const VendorDetailForm = () => {
       );
       return;
     }
-  
+
     // Validate GST number if applicable
-    if ((isCheckBoxClicked || businessType === "organization") && (!gstNumber || !gstRegex.test(gstNumber))) {
+    if (
+      (isCheckBoxClicked || businessType === "organization") &&
+      (!gstNumber || !gstRegex.test(gstNumber))
+    ) {
       await dispatch(
         showSnackbar({ message: "Invalid GST number.", type: "error" })
       );
       return;
     }
-  
+
     // Prepare base vendor detail object
     let vendorDetail = {
       business_name: businessName,
@@ -147,7 +154,7 @@ const VendorDetailForm = () => {
       avatar: avatarURI,
       pan_pic: panImageURI,
     };
-  
+
     // Add conditional fields
     if (businessType === "individual") {
       vendorDetail = {
@@ -157,17 +164,16 @@ const VendorDetailForm = () => {
         adhar_front_pic: aadhaarFrontImageURI,
         adhar_back_pic: aadhaarBackImageURI,
       };
-      
+
       if (isCheckBoxClicked) {
         vendorDetail = {
           ...vendorDetail,
-          
+
           gstin_number: gstNumber,
           gstin_image: gstImageURI,
         };
       }
-    } 
-    else if (businessType === "organization") {
+    } else if (businessType === "organization") {
       vendorDetail = {
         ...vendorDetail,
         vendor_type: businessType,
@@ -175,10 +181,10 @@ const VendorDetailForm = () => {
         gstin_image: gstImageURI,
       };
     }
-  
+
     try {
       setIsLoading(true);
-  
+
       const response = await dispatch(
         patchUpdateVendorProfile({
           detail: vendorDetail,
@@ -186,7 +192,7 @@ const VendorDetailForm = () => {
           accessToken: accessToken,
         })
       );
-  
+
       if (patchUpdateVendorProfile.fulfilled.match(response)) {
         dispatch(
           showSnackbar({
@@ -195,7 +201,8 @@ const VendorDetailForm = () => {
           })
         );
       } else if (patchUpdateVendorProfile.rejected.match(response)) {
-        const errorMessage = response?.payload?.message || "Submission failed. Please try again.";
+        const errorMessage =
+          response?.payload?.message || "Submission failed. Please try again.";
         dispatch(showSnackbar({ message: errorMessage, type: "error" }));
       }
     } catch (error) {
@@ -352,7 +359,7 @@ const VendorDetailForm = () => {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.avatarSection}>
           <Text style={styles.sectionLabel}>
-            Upload Your Photo  <Text style={styles.label}>*</Text>
+            Upload Your Photo <Text style={styles.label}>*</Text>
             {/* <Text style={styles.optional}>(Optional)</Text> */}
           </Text>
           <Text style={styles.photoDescription}>
@@ -362,56 +369,12 @@ const VendorDetailForm = () => {
             {renderImageBox("avatar", setAvatarURI, avatarURI)}
           </View>
         </View>
-        {businessNameSection?.()}
         {businessTypeSection?.()}
+        {businessNameSection?.()}
+
         {aadharSection?.()}
-        <Text style={styles.sectionLabel}>
-          Pan Number  <Text style={styles.label}>*</Text>
-            {/* <Text style={styles.optional}>(Optional)</Text> */}
-          </Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter PAN number"
-          placeholderTextColor="gray"
-          value={panNumber}
-          onChangeText={(text) => {
-            const upperText = text.toUpperCase();
-            const validText = upperText.replace(/[^A-Z0-9]/g, ""); // Only letters and numbers
 
-            if (validText.length > 10) {
-              dispatch(
-                showSnackbar({
-                  message: "PAN number cannot exceed 10 characters",
-                  type: "error",
-                })
-              );
-              return; // Don't update if more than 10 characters
-            }
-
-            setPanNumber(validText); // Update normally
-
-            if (panTimer) {
-              clearTimeout(panTimer);
-            }
-
-            // Set a timer: if user stops typing for 500ms, validate
-            const timer = setTimeout(() => {
-              const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
-              if (!panRegex.test(validText)) {
-                dispatch(
-                  showSnackbar({
-                    message: "Invalid PAN format. Example: ABCDE1234F",
-                    type: "error",
-                  })
-                );
-              }
-            }, 3000);
-
-            setPanTimer(timer);
-          }}
-          maxLength={10}
-        />
-
+        {panInfo()}
         {gstSection?.()}
         {addressSection?.()}
         {docImageSection?.()}
@@ -477,16 +440,73 @@ const VendorDetailForm = () => {
       </View>
     );
   }
-  function businessNameSection() {
+  function panInfo() {
     return (
       <>
         <Text style={styles.sectionLabel}>
-            Owner Legal Name  <Text style={styles.label}>*</Text>
-            {/* <Text style={styles.optional}>(Optional)</Text> */}
-          </Text>
+          Pan Number <Text style={styles.label}>*</Text>
+          {/* <Text style={styles.optional}>(Optional)</Text> */}
+        </Text>
         <TextInput
           style={styles.input}
-          placeholder="Enter Your Legal Name"
+          placeholder="Enter PAN number"
+          placeholderTextColor="gray"
+          value={panNumber}
+          onChangeText={(text) => {
+            const upperText = text.toUpperCase();
+            const validText = upperText.replace(/[^A-Z0-9]/g, ""); // Only letters and numbers
+
+            if (validText.length > 10) {
+              dispatch(
+                showSnackbar({
+                  message: "PAN number cannot exceed 10 characters",
+                  type: "error",
+                })
+              );
+              return; // Don't update if more than 10 characters
+            }
+
+            setPanNumber(validText); // Update normally
+
+            if (panTimer) {
+              clearTimeout(panTimer);
+            }
+
+            // Set a timer: if user stops typing for 500ms, validate
+            const timer = setTimeout(() => {
+              const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+              if (!panRegex.test(validText)) {
+                dispatch(
+                  showSnackbar({
+                    message: "Invalid PAN format. Example: ABCDE1234F",
+                    type: "error",
+                  })
+                );
+              }
+            }, 3000);
+
+            setPanTimer(timer);
+          }}
+          maxLength={10}
+        />
+      </>
+    );
+  }
+  function businessNameSection() {
+    return (
+      <>
+        {businessType === "individual" ? (
+          <Text style={styles.sectionLabel}>
+            Full Name <Text style={styles.label}>*</Text>
+          </Text>
+        ) : (
+          <Text style={styles.sectionLabel}>
+            Organization or Legal Name <Text style={styles.label}>*</Text>
+          </Text>
+        )}
+        <TextInput
+          style={styles.input}
+          placeholder={ businessType === "individual"? "Enter Your Full Name":"Enter  Organization or Legal Name"}
           placeholderTextColor="gray"
           value={businessName}
           onChangeText={(text) => {
@@ -509,9 +529,9 @@ const VendorDetailForm = () => {
     return (
       <View style={[styles.section, { marginBottom: 12 }]}>
         <Text style={styles.sectionLabel}>
-            Register As  <Text style={styles.label}>*</Text>
-            {/* <Text style={styles.optional}>(Optional)</Text> */}
-          </Text>
+          Register As <Text style={styles.label}>*</Text>
+          {/* <Text style={styles.optional}>(Optional)</Text> */}
+        </Text>
         <View style={styles.TypeContainer}>
           <TouchableOpacity
             style={[
@@ -561,10 +581,10 @@ const VendorDetailForm = () => {
       <>
         {businessType === "individual" && (
           <>
-             <Text style={styles.sectionLabel}>
-           Aadhaar Number  <Text style={styles.label}>*</Text>
-            {/* <Text style={styles.optional}>(Optional)</Text> */}
-          </Text>
+            <Text style={styles.sectionLabel}>
+              Aadhaar Number <Text style={styles.label}>*</Text>
+              {/* <Text style={styles.optional}>(Optional)</Text> */}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Enter Aadhaar number"
@@ -630,10 +650,10 @@ const VendorDetailForm = () => {
 
         {(isCheckBoxClicked || businessType === "organization") && (
           <>
-           <Text style={styles.sectionLabel}>
-            Gst Number  <Text style={styles.label}>*</Text>
-            {/* <Text style={styles.optional}>(Optional)</Text> */}
-          </Text>
+            <Text style={styles.sectionLabel}>
+              Gst Number <Text style={styles.label}>*</Text>
+              {/* <Text style={styles.optional}>(Optional)</Text> */}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Enter GST number"
@@ -686,9 +706,9 @@ const VendorDetailForm = () => {
     return (
       <>
         <Text style={styles.sectionLabel}>
-            Address  <Text style={styles.label}>*</Text>
-            {/* <Text style={styles.optional}>(Optional)</Text> */}
-          </Text>
+          Address <Text style={styles.label}>*</Text>
+          {/* <Text style={styles.optional}>(Optional)</Text> */}
+        </Text>
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder="Home/Street/Locality, City, State, Pincode"
@@ -721,9 +741,9 @@ const VendorDetailForm = () => {
     return (
       <>
         <Text style={styles.sectionLabel}>
-            Upload These Documents  <Text style={styles.label}>*</Text>
-            {/* <Text style={styles.optional}>(Optional)</Text> */}
-          </Text>
+          Upload These Documents <Text style={styles.label}>*</Text>
+          {/* <Text style={styles.optional}>(Optional)</Text> */}
+        </Text>
         <View style={styles.imageContainer}>
           {businessType === "individual" && (
             <>

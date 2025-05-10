@@ -9,7 +9,7 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#101942"
     },
@@ -38,8 +38,8 @@
       "package": "com.render.evcare",
       "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#101942"
       },
       "config": {
         "googleMaps": {
@@ -52,7 +52,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "47bb854e-4ca3-4aa1-a1ce-9d97a5e404d8"
+        "projectId": "1fa3c777-2f8c-4019-bf38-95115cd725af"
       }
     },
     "plugins": [

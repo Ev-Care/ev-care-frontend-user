@@ -25,19 +25,19 @@ import { default as Icon } from "react-native-vector-icons/MaterialIcons";
 
 const VerifyVendorProfile = ({ route, navigation }) => {
   const { user } = route?.params; // Get the user data from route params
-  const [name, setName] = useState(user?.owner_legal_name || "Not found");
-  const [email, setEmail] = useState(user?.email || "Not found");
+  const [name, setName] = useState(user?.owner_legal_name || "NA");
+  const [email, setEmail] = useState(user?.email || "NA");
   const [mobNumber, setMobNumber] = useState(
-    user?.mobile_number || "Not found"
+    user?.mobile_number || "NA"
   );
   const [businessName, setBusinessName] = useState(
-    user?.business_name || "Not found"
+    user?.business_name || "NA"
   );
   const [aadharNumber, setAadharNumber] = useState(
-    user?.adhar_no || "Not found"
+    user?.adhar_no || "NA"
   );
-  const [panNumber, setPanNumber] = useState(user?.pan_no || "Not found");
-  const [gstNumber, setGstNumber] = useState(user?.gst_no || "--");
+  const [panNumber, setPanNumber] = useState(user?.pan_no || "NA");
+  const [gstNumber, setGstNumber] = useState(user?.gstin_number || "NA");
 
   //   image start
   const [aadhaarFrontImage, setAadhaarFrontImage] = useState(
@@ -47,7 +47,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
     imageURL.baseURL + user?.adhar_back_pic
   );
   const [panImage, setPanImage] = useState(imageURL.baseURL + user?.pan_pic);
-  const [gstImage, setGstImage] = useState(imageURL.baseURL + user?.gst_pic);
+  const [gstImage, setGstImage] = useState(imageURL.baseURL + user?.gstin_image);
   const [avatar, setAvatar] = useState(imageURL.baseURL + user?.avatar);
 
   const [modalVisible, setModalVisible] = useState(false);

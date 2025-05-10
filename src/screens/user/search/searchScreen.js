@@ -20,11 +20,11 @@ import {
   Sizes,
   Fonts,
 } from "../../../constants/styles";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Circle, Marker } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useNavigation } from "@react-navigation/native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectStations } from "../service/selector";
 import Key from "../../../constants/key";
 import imageURL from "../../../constants/baseURL";
@@ -33,6 +33,8 @@ import {
   formatDistance,
   getChargerLabel,
 } from "../../../utils/globalMethods";
+import { fetchStationsByLocation, searchStationsByLocation } from "../service/crudFunction";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 const width = screenWidth;
 const cardWidth = width / 1.15;
@@ -77,12 +79,15 @@ const customMapStyle = [
     featureType: "transit.station",
     elementType: "all",
     stylers: [{ visibility: "on" }],
-  },
+  }, 
 ];
+
 const ChargingStationMap = () => {
   const navigation = useNavigation();
   const mapRef = useRef(null);
-  const stations = useSelector(selectStations);
+  const stateStations = useSelector(selectStations);
+  const [stations, setStations] = useState(stateStations || []);
+  const dispatch = useDispatch();
   console.log("stations", stations?.length);
 
   const [region, setRegion] = useState({
@@ -99,8 +104,30 @@ const ChargingStationMap = () => {
   let mapAnimation = new Animated.Value(0);
   let mapIndex = 0;
 
+  useEffect(() => {
+    console.log('new stations = ', JSON.stringify(stations[0], null, 2));
+  }, [stations]);
 
 
+  const handleSearchedStation = async (data) => {
+    try {
+
+      const response = await dispatch(searchStationsByLocation(data));
+
+      if (searchStationsByLocation.fulfilled.match(response)) {
+        setStations(response?.payload?.data);
+      } else if (searchStationsByLocation.fulfilled.match(response)) {
+        dispatch(showSnackbar({ message: "Location didn't fetched", type: "error" }));
+      }
+    } catch (error) {
+      console.log("error = " + error);
+      dispatch(showSnackbar({ message: "Something went wrong. Please try again later", type: "error" }));
+
+    }
+
+
+
+  }
   const _scrollView = useRef(null);
   useEffect(() => {
     getUserLocation("autoCall");
@@ -136,8 +163,9 @@ const ChargingStationMap = () => {
     });
   }, [mapAnimation, stations]);
 
-const getUserLocation = async (calledBy) => {
+  const getUserLocation = async (calledBy) => {
     try {
+      console.log('user try to fit inmap');
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         Alert.alert("Permission Denied", "Using default location (Delhi).");
@@ -211,7 +239,7 @@ const getUserLocation = async (calledBy) => {
     }
   };
 
-const selectSuggestion = async (placeId, description) => {
+  const selectSuggestion = async (placeId, description) => {
     setSuggestions([]);
     setSearch(description);
     try {
@@ -220,42 +248,47 @@ const selectSuggestion = async (placeId, description) => {
       const data = await response.json();
       if (data.results.length > 0) {
         const { lat, lng } = data.results[0].geometry.location;
-        
+
+        const coords = {
+          latitude: lat,
+          longitude: lng
+        };
+
+        await handleSearchedStation({ coords, radius: 50 });
+
+        const radiusInKm = 50;
+        const oneDegreeOfLatitudeInKm = 111.32;
+        const latitudeDelta = radiusInKm / oneDegreeOfLatitudeInKm;
+        const longitudeDelta = radiusInKm / (oneDegreeOfLatitudeInKm * Math.cos(lat * (Math.PI / 180)));
+
         const newRegion = {
           latitude: lat,
           longitude: lng,
-          latitudeDelta: 0.03,
-          longitudeDelta: 0.03,
+          latitudeDelta,
+          longitudeDelta,
         };
+
         setRegion(newRegion);
         const selectedCoord = { latitude: lat, longitude: lng };
+        
         setSelectedLocation(selectedCoord);
         scrollTo();
+
         if (mapRef.current) {
           mapRef.current.animateCamera(
-            { center: newRegion, zoom: 15 },
+            { center: newRegion, zoom: 10 },
             { duration: 1000 }
           );
         }
+        
 
-        if (mapRef.current && currentLocation && selectedCoord) {
-          mapRef.current.fitToCoordinates(
-            [
-              // currentLocation, // user's current location
-              selectedCoord,
-              stations[0].coordinates,
-            ],
-            {
-              edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-              animated: true,
-            }
-          );
-        }
+        
       }
     } catch (error) {
       console.error("Place details error:", error);
     }
   };
+
 
   const scrollTo = () => {
     if (stations.length > 0 && _scrollView.current) {
@@ -359,6 +392,16 @@ const selectSuggestion = async (placeId, description) => {
         onPress={() => setSuggestions([])}
       >
         {selectedLocation && <Marker coordinate={selectedLocation} />}
+
+        {selectedLocation && (
+          <Circle
+            center={selectedLocation}
+            radius={50000} // 50 km
+            strokeWidth={2}
+            strokeColor="rgba(0, 150, 255, 0.5)"
+            fillColor="rgba(0, 150, 255, 0.1)"
+          />
+        )}
 
         {stations?.map((marker, index) => {
           // Optional chaining to prevent errors if stationsList is undefined or null
@@ -517,18 +560,18 @@ const selectSuggestion = async (placeId, description) => {
                     marginTop: Sizes.fixPadding,
                   }}
                 >
-               
-                    <Text
-                      numberOfLines={1}
-                      style={{
-                        ...Fonts.blackColor16Medium,
-                        flex: 1,
-                        marginRight: Sizes.fixPadding - 5.0,
-                      }}
-                    >
-                      {formatDistance(item?.distance_km)}
-                    </Text>
-              
+
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      ...Fonts.blackColor16Medium,
+                      flex: 1,
+                      marginRight: Sizes.fixPadding - 5.0,
+                    }}
+                  >
+                    {formatDistance(item?.distance_km)}
+                  </Text>
+
                   <TouchableOpacity
                     onPress={() =>
                       openGoogleMaps(

@@ -92,7 +92,7 @@ const StationManagement = ({ navigation, route }) => {
   const [chargerStatusMap, setChargerStatusMap] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  // console.log("StationManagement", JSON.stringify(station, null, 2));
+  console.log("StationManagement", JSON.stringify(station, null, 2));
   const handleTabPress = (index) => {
     setActiveTab(index);
     scrollViewRef.current.scrollTo({ x: index * width, animated: true });
@@ -583,7 +583,7 @@ const StationManagement = ({ navigation, route }) => {
           </View>
 
           <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>Public</Text>
+            <Text style={styles.communityText}>{station?.access_type}</Text>
           </View>
         </View>
         <TouchableOpacity
@@ -634,7 +634,7 @@ const StationManagement = ({ navigation, route }) => {
                     ? "VERIFIED"
                     : station.status === "Planned"
                     ? "PENDING"
-                    : ""}
+                    : "INACTIVE"}
                 </Text>
               </View>
             </View>

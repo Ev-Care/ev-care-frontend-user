@@ -135,6 +135,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
   
         if (postFavoriteStation.fulfilled.match(postFavresponse)) {
+          
           await dispatch(
             showSnackbar({
               message: "Station added to favorite.",
@@ -250,7 +251,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
           </View>
 
           <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>Public</Text>
+            <Text style={styles.communityText}>{station?.access_type}</Text>
           </View>
         </View>
         <TouchableOpacity

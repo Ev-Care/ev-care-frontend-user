@@ -33,10 +33,6 @@ const AdminProfilePage = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
 
-  console.log(
-    "user image on vendor profile screen",
-    imageURL?.baseURL + user?.avatar
-  );
 
   const showFullImage = (uri) => {
     if (!uri) return;
@@ -183,27 +179,24 @@ const AdminProfilePage = () => {
             iconName: "person",
             onPress: () => navigation.navigate("EditAdminProfile"),
           })}
+           {profileOption({
+            option: "Change Password",
+            iconName: "key",
+            onPress: () => navigation.navigate("ChangePassword"),
+          })}
 
           {profileOption({
             option: "Terms & Conditions",
             iconName: "list-alt",
             onPress: () => navigation.push("TermsAndConditionsScreen"),
           })}
-          {/* {profileOption({
-        option: "FAQ",
-        iconName: "help-outline",
-        onPress: () => navigation.push("FaqScreen"),
-      })} */}
+          
           {profileOption({
             option: "Privacy Policy",
             iconName: "privacy-tip",
             onPress: () => navigation.push("PrivacyPolicyScreen"),
           })}
-          {/* {profileOption({
-            option: "Help",
-            iconName: "support-agent",
-            onPress: () => navigation.push("HelpScreen"),
-          })} */}
+       
           {logoutInfo()}
         </View>
       </View>

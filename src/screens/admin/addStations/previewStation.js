@@ -13,25 +13,18 @@ import {
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { openHourFormatter } from "../../../../utils/globalMethods";
+import { openHourFormatter } from "../../../utils/globalMethods";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useDispatch, useSelector } from "react-redux";
-import { Colors, Fonts, Sizes } from "../../../../constants/styles";
-import {
-  addStation,
-  fetchStations,
-  updateStation,
-} from "../../services/crudFunction";
-import {
-  selectVendorError,
-  selectVendorLoading,
-  selectVendorStation,
-} from "../../services/selector";
-import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
-import imageURL from "../../../../constants/baseURL";
-import { postSingleFile } from "../../../auth/services/crudFunction";
-import { setupImagePicker } from "../../CompleteProfileDetail/vendorDetailForm";
-import { selectToken } from "../../../auth/services/selector";
+import { Colors, Fonts, Sizes } from "../../../constants/styles";
+
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import imageURL from "../../../constants/baseURL";
+import { postSingleFile } from "../../auth/services/crudFunction";
+import { selectToken } from "../../auth/services/selector";
+import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
+import { addStationByAdmin, fetchAllPendingStation, fetchAllStations } from "../services/crudFunctions";
+import { updateStation } from "../../vendor/services/crudFunction";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -48,22 +41,23 @@ const COLORS = {
 
 const { width } = Dimensions.get("window");
 
-const PreviewPage = ({ navigation, route }) => {
+const PreviewStation = ({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState(0);
   const scrollViewRef = useRef(null);
   const mapRef = useRef(null);
   const dispatch = useDispatch();
   const { stationData, type, stationImage, clearForm } = route?.params || {};
-  const isLoading = useSelector(selectVendorLoading);
-  const errorMessage = useSelector(selectVendorError);
-  const stations = useSelector(selectVendorStation);
+  //   const isLoading = useSelector(selectVendorLoading);
+  //   const errorMessage = useSelector(selectVendorError);
+  const [isLoading, setIsLoading] = useState(false);
+  const errorMessage = "change this with actual error";
+  //   const stations = useSelector(selectVendorStation);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(stationImage || '');
-  const authToken = useSelector(selectToken);
-  const station = stations.find(
-    (station) => station.id === stationData.station_id
-  );
-
+  const [selectedImage, setSelectedImage] = useState(stationImage || "");
+  //   const authToken = useSelector(selectToken);
+  //   const station = stations.find(
+  //     (station) => station.id === stationData.station_id
+  //   );
 
   useEffect(() => {
     console.log(
@@ -89,19 +83,6 @@ const PreviewPage = ({ navigation, route }) => {
     Lodging: "bed",
   };
 
-  useEffect(() => {
-    if (mapRef.current && stationData?.coordinates) {
-      const { latitude, longitude } = stationData?.coordinates || {};
-      mapRef.current.animateCamera({
-        center: {
-          latitude: latitude || 0,
-          longitude: longitude || 0,
-        },
-        zoom: 15,
-      });
-    }
-  }, [stationData?.coordinates]);
-
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
@@ -109,91 +90,84 @@ const PreviewPage = ({ navigation, route }) => {
   };
 
   const handleSubmit = async () => {
-    try {
-      
-      console.log('station data', stationData);
-      if (type === "add") {
-        const addStationresponse = await dispatch(addStation(stationData));
-        if (addStation.fulfilled.match(addStationresponse)) {
-          const stationResponse = await dispatch(
-            fetchStations(stationData?.owner_id)
-          );
-          if (fetchStations.fulfilled.match(stationResponse)) {
-            // await dispatch(showSnackbar({ message: "Station fetched Successfully.", type:'success' }));
-            await dispatch(
-              showSnackbar({ message: "New station added.", type: "success" })
-            );
-            if (typeof clearForm === "function") {
-              clearForm();
-            }
-            // navigation.pop();
-            navigation.navigate("VendorBottomTabBar");
-          } else if (fetchStations.rejected.match(stationResponse)) {
-            await dispatch(
-              showSnackbar({
-                message: errorMessage || "Failed to fetch station.",
-                type: "error",
-              })
-            );
-          }
-        } else if (addStation.rejected.match(addStationresponse)) {
+
+  try {
+    setIsLoading(true);
+
+    console.log("station data", stationData);
+
+    if (type === "add") {
+      const addStationResponse = await dispatch(addStationByAdmin(stationData));
+
+      if (addStationByAdmin.fulfilled.match(addStationResponse)) {
+        const stationResponse = await dispatch(fetchAllPendingStation());
+
+        if (fetchAllPendingStation.fulfilled.match(stationResponse)) {
+          await dispatch(showSnackbar({ message: "New station added.", type: "success" }));
+          
+          if (typeof clearForm === "function") clearForm();
+          navigation.pop(2);
+        } else {
           await dispatch(
             showSnackbar({
-              message: errorMessage || "Failed to add station.",
+              message: errorMessage || "Failed to fetch station.",
               type: "error",
             })
           );
         }
       } else {
-
-        const updateStationResponse = await dispatch(
-          updateStation(stationData)
+        await dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to add station.",
+            type: "error",
+          })
         );
-        if (updateStation.fulfilled.match(updateStationResponse)) {
-          const stationResponse = await dispatch(
-            fetchStations(stationData?.owner_id)
-          );
-          if (fetchStations.fulfilled.match(stationResponse)) {
-            console.log("station updated");
+      }
+    } else {
+      const updateStationResponse = await dispatch(updateStation(stationData));
 
-            await dispatch(
-              showSnackbar({
-                message: "Station updated Successfully.",
-                type: "success",
-              })
-            );
+      if (updateStation.fulfilled.match(updateStationResponse)) {
+        const stationResponse = await dispatch(fetchAllStations(stationData?.owner_id));
 
-            navigation.pop(2);
-            // navigation.navigate("StationManagement", { station })
-          } else if (fetchStations.rejected.match(stationResponse)) {
-            console.log("station update failed");
-            await dispatch(
-              showSnackbar({
-                message: errorMessage || "Failed to fetch station.",
-                type: "error",
-              })
-            );
-          }
-        } else if (updateStation.rejected.match(updateStationResponse)) {
+        if (fetchAllStations.fulfilled.match(stationResponse)) {
           await dispatch(
             showSnackbar({
-              message: errorMessage || "Failed to update station.",
+              message: "Station updated successfully.",
+              type: "success",
+            })
+          );
+          // navigation.navigate('ViewAllStationsPage');
+          navigation.pop(3);
+        } else {
+          await dispatch(
+            showSnackbar({
+              message: errorMessage || "Failed to fetch station.",
               type: "error",
             })
           );
         }
+      } else {
+        await dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to update station.",
+            type: "error",
+          })
+        );
       }
-    } catch (error) {
-      console.error("Error adding station:", error);
-      await dispatch(
-        showSnackbar({
-          message:
-            errorMessage || "Something went wrong. Please try again later.",
-          type: "error",
-        })
-      );
     }
-  };
+  } catch (error) {
+    console.error("Error in admin preview  station:", error);
+    await dispatch(
+      showSnackbar({
+        message: errorMessage || "Something went wrong. Please try again later.",
+        type: "error",
+      })
+    );
+  } finally{
+    setIsLoading(false);
+  }
+};
+
 
   const handleTabPress = (index) => {
     setActiveTab(index);
@@ -288,19 +262,15 @@ const PreviewPage = ({ navigation, route }) => {
     return (
       <Modal visible={modalVisible} transparent={true}>
         <View style={styles.modalContainer}>
-          <Image source={{ uri: imageURL.baseURL+selectedImage }} style={styles.fullImage} />
+          <Image
+            source={{ uri: imageURL.baseURL + selectedImage }}
+            style={styles.fullImage}
+          />
           <TouchableOpacity
             style={styles.modalCloseButton}
             onPress={() => setModalVisible(false)}
           >
-
-
-            <MaterialIcons
-              name="close"
-              color={Colors.blackColor}
-              size={26}
-            />
-
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
           </TouchableOpacity>
         </View>
       </Modal>
@@ -334,7 +304,7 @@ const PreviewPage = ({ navigation, route }) => {
                   name={
                     charger?.connector_type
                       ? connectorIcons?.[charger?.connector_type] ||
-                      "ev-plug-type1"
+                        "ev-plug-type1"
                       : "ev-plug-type1"
                   }
                   size={20}
@@ -354,8 +324,8 @@ const PreviewPage = ({ navigation, route }) => {
     }
     //  console.log("station image in preview page upper",stationImage);
     const imageUrl = stationImage
-      ? { uri: imageURL.baseURL+stationImage }
-      : require("../../../../../assets/images/nullStation.png");
+      ? { uri: imageURL.baseURL + stationImage }
+      : require("../../../../assets/images/nullStation.png");
     // console.log("station image in preview page lower",imageUrl);
     return (
       <View style={styles.header}>
@@ -387,10 +357,7 @@ const PreviewPage = ({ navigation, route }) => {
           activeOpacity={0.9}
           style={styles.mapBackground}
           onPress={() => {
-            if (
-              stationImage &&
-              stationImage.trim() !== ""
-            ) {
+            if (stationImage && stationImage.trim() !== "") {
               showFullImage(stationImage);
             }
           }}
@@ -402,9 +369,17 @@ const PreviewPage = ({ navigation, route }) => {
           <Text style={styles.stationName}>
             {trimName(50, stationData?.station_name)}
           </Text>
-          <Text style={styles.stationAddress}>
-            {trimName(50, stationData?.address)}
-          </Text>
+          {type === "add" ? (
+            <Text style={styles.stationAddress}>
+              <Text style={{ fontWeight: "700" }}>Vendor Email or Contact Number:</Text>{" "}
+              {trimName(50, stationData?.identifier)}
+            </Text>
+          ) : (
+            <Text style={styles.stationAddress}>
+              {trimName(50, stationData?.address)}
+            </Text>
+          )}
+
           <View
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
           >
@@ -413,7 +388,8 @@ const PreviewPage = ({ navigation, route }) => {
                 style={[
                   styles.statusClosed,
                   {
-                    color: stationData?.status === "Inactive" ? "#FF5722" : "green",
+                    color:
+                      stationData?.status === "Inactive" ? "#FF5722" : "green",
                   },
                 ]}
               >
@@ -427,41 +403,13 @@ const PreviewPage = ({ navigation, route }) => {
               </Text>
               <View style={styles.newBadge}>
                 <Text style={styles.newText}>
-                  {stationData.status === "Active"
-                    ? "VERIFIED"
-                    :
-                    "New"
-                  }
+                  {stationData.status === "Active" ? "VERIFIED" : "New"}
                 </Text>
               </View>
             </View>
           </View>
         </View>
       </View>
-    );
-  }
-
-  // This will be used to show the error dialog in future
-  function errorDialog() {
-    return (
-      <Overlay isVisible={isError} overlayStyle={styles.dialogStyle}>
-        <ActivityIndicator
-          size={50}
-          color={Colors.primaryColor}
-          style={{ alignSelf: "center" }}
-        />
-        <Text
-          style={{
-            marginTop: 16,
-            textAlign: "center",
-            color: Colors.red,
-            fontSize: 16,
-            fontWeight: "bold",
-          }}
-        >
-          {errorMessage || "An error occurred. Please try again."}
-        </Text>
-      </Overlay>
     );
   }
 
@@ -795,7 +743,6 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "bold",
   },
-
 });
 
-export default PreviewPage;
+export default PreviewStation;

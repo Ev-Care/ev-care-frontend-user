@@ -237,7 +237,7 @@ const VendorHome = () => {
           </View>
 
           <Image
-            source={require("../../../../../assets/images/vendorWelcome.png")}
+            source={require("../../../../../assets/icon.png")}
             style={styles.welcomeImage}
             resizeMode="contain"
           />
@@ -289,11 +289,11 @@ const VendorHome = () => {
         <Text style={[styles.featureName, { color: COLORS.white }]}>
           Manage Stations
         </Text>
-        <Text style={{ fontSize: 10, color: COLORS.white, marginTop: 5 }}>
-          Update station and port availability in real-time.
+        <Text style={{ fontSize: 10, color: COLORS.white, marginTop: 5 ,textAlign:"justify" }}>
+          Update Station and Manage Port Availability in Real-time.
         </Text>
 
-        <View style={styles.availabilityContainer}>
+        {/* <View style={styles.availabilityContainer}>
           <Text style={[styles.featureDescription, { color: COLORS.white }]}>
             {isLive ? "Live" : "Offline"}
           </Text>
@@ -303,7 +303,7 @@ const VendorHome = () => {
             trackColor={{ false: COLORS.secondary, true: COLORS.green }}
             thumbColor={COLORS.white}
           />
-        </View>
+        </View> */}
       </TouchableOpacity>
     );
   }
@@ -330,7 +330,7 @@ const VendorHome = () => {
         <Text style={[styles.featureName, { color: COLORS.white }]}>
           Current Bookings
         </Text>
-        <Text style={{ fontSize: 10, color: COLORS.white, marginTop: 5 }}>
+        <Text style={{ fontSize: 10, color: COLORS.white, marginTop: 5 ,textAlign:"justify" }}>
           View, modify, and track all your station booking requests with ease
           and accuracy
         </Text>
@@ -360,7 +360,7 @@ const VendorHome = () => {
         <Text style={[styles.featureName, { color: COLORS.darkGray }]}>
           Bookings History
         </Text>
-        <Text style={{ fontSize: 10, color: COLORS.darkGray, marginTop: 5 }}>
+        <Text style={{ fontSize: 10, color: COLORS.darkGray, marginTop: 5 ,textAlign:"justify" }}>
           Access detailed records of past EV station bookings, charging
           sessions, and payments..
         </Text>
@@ -394,8 +394,8 @@ const VendorHome = () => {
         <Text style={[styles.featureName, { color: COLORS.darkGray }]}>
           Help & Support
         </Text>
-        <Text style={{ fontSize: 10, color: COLORS.darkGray, marginTop: 5 }}>
-          Get 24 x 7 assistance for all your queries with our dedicated support
+        <Text style={{ fontSize: 10, color: COLORS.darkGray, marginTop: 5 ,textAlign:"justify"}}>
+          Get 24x7 assistance for all your queries with our dedicated support
           team, ensuring seamless station management.
         </Text>
       </TouchableOpacity>
@@ -497,6 +497,7 @@ const styles = StyleSheet.create({
   welcomeImage: {
     width: 100,
     height: 100,
+    borderRadius:12,
   },
   sectionHeader: {
     flexDirection: "row",

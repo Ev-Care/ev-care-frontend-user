@@ -78,7 +78,7 @@ const VendorBottomTabBar = ({ navigation }) => {
                 color={focused ? Colors.primaryColor : Colors.grayColor}
               />
             ),
-            tabBarLabel: 'Profile', 
+            tabBarLabel: 'Home', 
           }}
         />
        <Tab.Screen
@@ -92,7 +92,7 @@ const VendorBottomTabBar = ({ navigation }) => {
                 color={focused ? Colors.primaryColor : Colors.grayColor}
               />
             ),
-            tabBarLabel: 'Profile', 
+            tabBarLabel: 'Stations', 
           }}
         />
 

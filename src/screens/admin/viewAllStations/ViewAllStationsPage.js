@@ -6,6 +6,7 @@ import {
   Text,
   Image,
   Platform,
+  ActivityIndicator,
   Linking,
   View,
 } from "react-native";
@@ -30,6 +31,7 @@ const ViewAllStationsPage = ({ navigation }) => {
   const [searchText, setSearchText] = useState("");
   const allStationsList = useSelector(selectAllStations);
   const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(false);
   const filteredStations = allStationsList.filter((station) =>
     station?.station_name?.toLowerCase().includes(searchText.toLowerCase())
   );
@@ -39,14 +41,19 @@ const ViewAllStationsPage = ({ navigation }) => {
   console.log('stations legth', allStationsList.length);
   // Dummy coordinates for the location
 
-  useEffect(() => {
-    dispatch(fetchAllStations());
-    console.log('useEffect called');
-    console.log('fetch all stations called');
+useEffect(() => {
+  const loadStations = async () => {
+    setIsLoading(true);
+    await dispatch(fetchAllStations());
+    setIsLoading(false);
+  };
 
-  }, []);
+  loadStations();
+}, []);
+
 
   const handleRefresh = async () => {
+   
     try {
       setRefreshing(true);
       const response = await dispatch(fetchAllStations());
@@ -61,8 +68,10 @@ const ViewAllStationsPage = ({ navigation }) => {
       await dispatch(showSnackbar({ message: "Something went wrong during refresh.", type: 'error' }));
     } finally {
       setRefreshing(false);
+      
     }
   };
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
@@ -70,6 +79,11 @@ const ViewAllStationsPage = ({ navigation }) => {
         {searchBar()}
         {allStationsInfo()}
       </View>
+       {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </View>
   );
 
@@ -286,4 +300,15 @@ const styles = StyleSheet.create({
       alignItems: "center",
       marginBottom: 5,
     },
+      loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
+  },
 });

@@ -33,7 +33,6 @@ const VendorProfile = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
 
-  console.log("user image on vendor profile screen",imageURL?.baseURL + user?.avatar);
 
   const showFullImage = (uri) => {
     if (!uri) return;
@@ -181,6 +180,11 @@ const VendorProfile = () => {
             option: "Edit Profile",
             iconName: "person",
             onPress: () => navigation.navigate("EditProfileVendor"),
+          })}
+           {profileOption({
+            option: "Change Password",
+            iconName: "key",
+            onPress: () => navigation.navigate("ChangePassword"),
           })}
 
           {profileOption({

@@ -43,6 +43,7 @@ const HelpScreen = ({ navigation }) => {
   const [showEmergencyDialog, setshowEmergencyDialog] = useState(false);
   const [emergencyQuery, setEmergencyQuery] = useState("");
   const [charCount, setCharCount] = useState(120);
+  const time = 2000;
   const handleEmergencyQueryChange = (text) => {
     if (text.length <= 100) {
       setEmergencyQuery(text);
@@ -94,15 +95,17 @@ const HelpScreen = ({ navigation }) => {
       description: description,
       email: email,
       contactNumber: mobileNumber,
-      image: "",
+      
     };
+
+   
     const sendQueryResponse = await dispatch(
       sendQueryAction({
         title: title,
         description: description,
         email: email,
         contactNumber: mobileNumber,
-        image: "",
+        image: null,
       })
     );
     console.log("data - ", data);
@@ -111,7 +114,7 @@ const HelpScreen = ({ navigation }) => {
       dispatch(
         showSnackbar({
           message:
-            "Support ticket is created regarding your query. You will got response withen 24 hours.",
+            "Support ticket is created regarding your query. You will got response within 24 hours.",
           type: "success",
         })
       );
@@ -199,6 +202,7 @@ const HelpScreen = ({ navigation }) => {
           <TextInput
             placeholder="Write your description here.."
             value={description}
+            maxLength={256}
             onChangeText={(text) => {
               setDescription(text);
 
@@ -221,7 +225,7 @@ const HelpScreen = ({ navigation }) => {
                     })
                   );
                 }
-              }, 600);
+              }, time);
             }}
             style={[
               {
@@ -275,7 +279,7 @@ const HelpScreen = ({ navigation }) => {
                     })
                   );
                 }
-              }, 500);
+              }, time);
             }}
             style={[styles.input, { ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
@@ -298,7 +302,7 @@ const HelpScreen = ({ navigation }) => {
             placeholder="Enter your email here"
             value={email}
             onChangeText={(text) => {
-              setEmail(text.trim());
+              setEmail(text.trim().toLowerCase());
 
               // Clear previous validation timer
               if (emailTimer.current) {
@@ -324,7 +328,7 @@ const HelpScreen = ({ navigation }) => {
                     })
                   );
                 }
-              }, 500);
+              }, time);
             }}
             style={[styles.input, { ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
@@ -378,7 +382,7 @@ const HelpScreen = ({ navigation }) => {
                     })
                   );
                 }
-              }, 500);
+              }, time);
               setTitleTimer(timer);
             }}
             style={[styles.input, { ...Fonts.blackColor16Medium }]}
@@ -404,7 +408,7 @@ const HelpScreen = ({ navigation }) => {
         </Text>
         <Text style={{ ...Fonts.grayColor16Regular }}>
           Fill the form below and our support team will be in touch with you
-          shortly. Or In case of Emergency,{" "}
+          shortly. {/*Or In case of Emergency,{" "}
           <Text
             onPress={() => setshowEmergencyDialog(true)}
             style={{
@@ -415,6 +419,7 @@ const HelpScreen = ({ navigation }) => {
           >
             Click Here
           </Text>
+          */}
         </Text>
       </View>
     );

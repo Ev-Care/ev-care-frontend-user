@@ -6,6 +6,7 @@ import {
   Text,
   Image,
   Platform,
+  ActivityIndicator,
   Linking,
   View,
   ScrollView,
@@ -33,17 +34,26 @@ const AllPendingStations = ({ navigation }) => {
   const [searchText, setSearchText] = useState("");
   const allStationsList = useSelector(selectPendingStations);
   const [refreshing, setRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const filteredStations = allStationsList.filter((station) =>
     station?.station_name?.toLowerCase().includes(searchText.toLowerCase())
   );
   const dispatch = useDispatch();
   // Dummy coordinates for the location
   // Called only on first mount
-  useEffect(() => {
-    console.log("pending station fetched from useEffect");
+ useEffect(() => {
+  const loadPendingStations = async () => {
+    setIsLoading(true);
+    // console.log("pending station fetched from useEffect");
+    
+    await dispatch(fetchAllPendingStation());
+    
+    setIsLoading(false);
+  };
 
-    dispatch(fetchAllPendingStation());
-  }, [dispatch]);
+  loadPendingStations();
+}, [dispatch]);
+
 
   const trimText = (text, limit) =>
     text.length > limit ? text.substring(0, limit) + "..." : text;
@@ -171,6 +181,11 @@ const AllPendingStations = ({ navigation }) => {
             No stations available.
           </Text>
         )}
+         {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
       </ScrollView>
     );
   }
@@ -255,6 +270,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+    loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
   },
   stationName: {
     fontSize: 16,

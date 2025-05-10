@@ -8,6 +8,7 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
   SafeAreaView,
   StatusBar,
 } from "react-native";
@@ -48,16 +49,23 @@ const AllPendingVendors = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const users = useSelector(selectPendingUsers);
   const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(false);
   console.log('users length',users?.length);
    const [refreshing, setRefreshing] = useState(false);
 
   // Called every time screen comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      console.log('pending users fetched from useFocusEffect');
-      dispatch(getAllPendingUsers());
-    }, [dispatch])
-  );
+ useFocusEffect(
+  useCallback(() => {
+    const fetchPendingUsers = async () => {
+      setIsLoading(true);
+      await dispatch(getAllPendingUsers());
+      setIsLoading(false);
+    };
+
+    fetchPendingUsers();
+  }, [dispatch])
+);
+
   const handleRefresh = async () => {
     try {
       setRefreshing(true); // start refreshing UI
@@ -107,6 +115,11 @@ const AllPendingVendors = ({ navigation }) => {
           </View>
         }
       />
+       {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </SafeAreaView>
   );
 
@@ -243,6 +256,17 @@ const styles = StyleSheet.create({
     borderWidth: 0.1,
     borderTopWidth: 1.0,
 
+  },
+    loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
   },
   avatar: {
     width: 50,

@@ -35,6 +35,7 @@ import PrivacyPolicyScreen from "../screens/user/privacyPolicy/privacyPolicyScre
 
 import TermsAndConditionsScreen from "../screens/user/termsAndConditions/termsAndConditionsScreen";
 import ProfileScreen from "../screens/user/profile/profileScreen";
+import ChangePassword from "../components/commonComponents/changePassword";
 const Stack = createStackNavigator();
 // UserStack component to manage user-related screens and navigation
 export function UserStack() {
@@ -72,6 +73,7 @@ export function UserStack() {
           <Stack.Screen name="FavoriteScreen" component={FavoriteScreen} />
           <Stack.Screen name="userHome" component={userHome} />
           <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+             <Stack.Screen name="ChangePassword" component={ChangePassword} />
         </>
      
     </Stack.Navigator>

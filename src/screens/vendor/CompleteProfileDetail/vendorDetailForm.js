@@ -61,11 +61,11 @@ export const setupImagePicker = (file) => {
 
 const VendorDetailForm = () => {
   const navigation = useNavigation();
-  const [businessName, setBusinessName] = useState("");
-  const [address, setAddress] = useState("");
+  const [businessName, setBusinessName] = useState(null);
+  const [address, setAddress] = useState(null);
   const [coordinate, setCoordinate] = useState(null);
-  const [aadharNumber, setAadharNumber] = useState("");
-  const [panNumber, setPanNumber] = useState("");
+  const [aadharNumber, setAadharNumber] = useState(null);
+  const [panNumber, setPanNumber] = useState(null);
   const [gstNumber, setGstNumber] = useState(null);
   const [avatar, setAvatar] = useState(null);
 
@@ -152,6 +152,7 @@ const VendorDetailForm = () => {
     if (businessType === "individual") {
       vendorDetail = {
         ...vendorDetail,
+        vendor_type: businessType,
         adhar_no: aadharNumber,
         adhar_front_pic: aadhaarFrontImageURI,
         adhar_back_pic: aadhaarBackImageURI,
@@ -160,6 +161,7 @@ const VendorDetailForm = () => {
       if (isCheckBoxClicked) {
         vendorDetail = {
           ...vendorDetail,
+          
           gstin_number: gstNumber,
           gstin_image: gstImageURI,
         };
@@ -168,6 +170,7 @@ const VendorDetailForm = () => {
     else if (businessType === "organization") {
       vendorDetail = {
         ...vendorDetail,
+        vendor_type: businessType,
         gstin_number: gstNumber,
         gstin_image: gstImageURI,
       };

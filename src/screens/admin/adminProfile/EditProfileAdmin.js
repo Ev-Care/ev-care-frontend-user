@@ -127,7 +127,7 @@ const EditAdminProfile = ({ route, navigation }) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.1,
+        quality: 0.2,
         allowsEditing: true,
         aspect: label === "avatar" ? [1, 1] : undefined,
       });
@@ -213,11 +213,19 @@ const EditAdminProfile = ({ route, navigation }) => {
         {label}
       </Text>
       <TextInput
-        style={styles.input}
-        value={value}
-        onChangeText={setter}
-        placeholder={placeholder}
-      />
+       style={styles.input}
+       value={value}
+       onChangeText={setter}
+       placeholder={placeholder}
+       keyboardType={
+         label === "Mobile Number"
+           ? "numeric"
+           : label === "Email"
+           ? "email-address"
+           : "default"
+       }
+        maxLength={label === "Mobile Number" ? 10 : undefined}
+     />
     </View>
   );
 
@@ -308,7 +316,7 @@ const EditAdminProfile = ({ route, navigation }) => {
           setMobNumber,
           "Enter your full name"
         )}
-        {renderInput("Email", email, setEmail, "Enter your email")}
+        {renderNonEditableInput("Email", email, setEmail, "Enter your email")}
 
         {user?.role === "vendor" && (
           <>

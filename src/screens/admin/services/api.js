@@ -23,6 +23,13 @@ export const getAllPendingUsersAPI = (data) =>
     content_type: "application/json",
     accessToken: data.accessToken,
   });
+export const getAllSupportIssuesAPI = (data) =>
+  apiGetRequest({
+    apiUrl: `${API_URL}/support`,
+    content_type: "application/json",
+    accessToken: data.accessToken,
+  });
+
 
 export const approveStationAPI = (data) =>
   apiPatchRequest({
@@ -44,5 +51,13 @@ export const createUserAPI = (data) =>
     apiUrl: `${API_URL}/users/create-user`,
     content_type: "application/json",
     accessToken: data.accessToken,
-    data: data,
+    data: data.data,
+  });
+
+export const addStationByAdminAPI = (data) =>
+  apiPostRequest({
+    apiUrl: `${API_URL}/charging-stations/create-station-by-admin`,
+    content_type: "application/json",
+    accessToken: data.accessToken,
+    data: data.data,
   });

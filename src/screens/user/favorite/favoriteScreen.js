@@ -60,55 +60,48 @@ const FavoriteScreen = ({ navigation }) => {
   // console.log(listData);
   useEffect(() => {
     dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
-  }, [user?.user_key, dispatch]);
+  }, []);
 
   useEffect(() => {
-    if (stations?.length && favStations?.length) {
-      console.log(
-        "useeffect in fav called and fav length is ",
-        favStations.length
-      );
-      const filtered = favStations
-        .map((fav) => stations.find((station) => station.id === fav.station.id))
-        .filter(Boolean);
-      setListData(filtered);
-    }
-  }, [favStations, stations]);
+  if (!stations || !favStations) return;
 
-  useFocusEffect(
-    useCallback(() => {
-      const fetchFavorites = async () => {
-        const favResponse = await dispatch(
-          getAllFavoriteStations({ user_key: user?.user_key })
-        );
+  console.log("useeffect in fav called and fav length is ", favStations.length);
 
-        if (getAllFavoriteStations.rejected.match(favResponse)) {
-          dispatch(
-            showSnackbar({
-              message: errorMessage || "Failed to fetch favorite stations.",
-              type: "error",
-            })
-          );
-          return;
-        }
+  const filtered = favStations
+    .map((fav) => stations.find((station) => station.id === fav.station.id))
+    .filter(Boolean);
 
-        // ✅ Get updated favorites from store after dispatch
-        const updatedFavStations = store.getState().favorites.favStations;
+  setListData(filtered);
+}, [favStations, stations]);
 
-        if (stations && updatedFavStations) {
-          const filtered = updatedFavStations
-            .map((fav) =>
-              stations.find((station) => station.id == fav.station.id)
-            )
-            .filter(Boolean);
 
-          setListData(filtered);
-        }
-      };
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     console.log('use focus called in fav');
+  //     const fetchFavorites = async () => {
+  //       const favResponse = await dispatch(
+  //         getAllFavoriteStations({ user_key: user?.user_key })
+  //       );
 
-      fetchFavorites();
-    }, [user?.user_key, dispatch, stations])
-  );
+  //       if (getAllFavoriteStations.rejected.match(favResponse)) {
+  //         dispatch(
+  //           showSnackbar({
+  //             message: errorMessage || "Failed to fetch favorite stations.",
+  //             type: "error",
+  //           })
+  //         );
+  //         return;
+  //       }
+
+  //       // ✅ Get updated favorites from store after dispatch
+  //       // const updatedFavStations = store.getState().favorites.favStations;
+
+        
+  //     };
+
+  //     fetchFavorites();
+  //   }, [user?.user_key, dispatch])
+  // );
 
   // console.log("stations in  stations fav screen", stations.length);
   // console.log("stations in fav stations fav screen", favStations.length);
@@ -129,13 +122,7 @@ const FavoriteScreen = ({ navigation }) => {
         })
       );
     }
-    if (stations && favStations) {
-      const filtered = favStations
-        .map((fav) => stations.find((station) => station.id == fav.station.id))
-        .filter(Boolean);
-
-      setListData(filtered);
-    }
+    
   };
 
   const openGoogleMaps = (latitude, longitude) => {
@@ -202,6 +189,7 @@ const FavoriteScreen = ({ navigation }) => {
     );
 
     const deleteRow = async (rowMap, rowKey) => {
+      isLoading
       closeRow(rowMap, rowKey);
       const newData = [...listData];
       const prevIndex = listData.findIndex((item) => item?.key === rowKey);

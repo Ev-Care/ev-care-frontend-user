@@ -25,7 +25,7 @@ const LoadingScreen = ({ navigation }) => {
             <MyStatusBar/>
             <ActivityIndicator
                 size={50}
-                color={Colors.primaryColor}
+                color={Colors.whiteColor}
             />
         </View>
     )
@@ -34,7 +34,7 @@ const LoadingScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     pageStyle: {
         flex: 1,
-        backgroundColor:Colors.whiteColor ,
+        backgroundColor:Colors.primaryColor,
         justifyContent: 'center',
         alignItems: 'center'
     }

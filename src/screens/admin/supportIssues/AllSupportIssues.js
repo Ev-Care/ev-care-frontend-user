@@ -1,5 +1,5 @@
 // ViewAllUserPage.js
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
   SafeAreaView,
   StatusBar,
 } from "react-native";
@@ -22,6 +23,12 @@ import MyStatusBar from "../../../components/myStatusBar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { color } from "@rneui/base";
+import imageURL from "../../../constants/baseURL";
+import { useDispatch, useSelector } from "react-redux";
+import { selectAllSupportIssues } from "../services/selector";
+import { useFocusEffect } from "@react-navigation/native";
+import { getAllSupportIssues } from "../services/crudFunctions";
+import { selectUser } from "../../auth/services/selector";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -36,88 +43,41 @@ const COLORS = {
   divider: "#e1e1ea",
 };
 
-// Sample user data
-const USERS = [
-  {
-    id: 18,
-    user_key: "b2ZB4gFprc",
-    owner_legal_name: "Dummy User",
-    business_name: null,
-    mobile_number: "+916666666666",
-    email: null,
-    otp: "573937",
-    pan_no: null,
-    tan_no: null,
-    adhar_no: null,
-    address: null,
-    avatar: null,
-    adhar_front_pic: null,
-    adhar_back_pic: null,
-    pan_pic: null,
-    tan_pic: null,
-    google_id: null,
-    otp_expiry_date: "2025-04-23T18:41:38.000Z",
-    status: "New",
-    role: "user",
-    login_method: "mobile_otp",
-    created_at: "2025-04-23T18:31:38.000Z",
-    update_at: "2025-04-23T18:31:38.509Z",
-    updated_by: 0,
-    isLoggedIn: true,
-    password: null,
-  },
-  {
-    id: 19,
-    user_key: "b2ZB4gFprc",
-    owner_legal_name: "Dummy User 2",
-    business_name: null,
-    mobile_number: "+9166666666669",
-    email: null,
-    otp: "573937",
-    pan_no: null,
-    tan_no: null,
-    adhar_no: null,
-    address: null,
-    avatar: null,
-    adhar_front_pic: null,
-    adhar_back_pic: null,
-    pan_pic: null,
-    tan_pic: null,
-    google_id: null,
-    otp_expiry_date: "2025-04-23T18:41:38.000Z",
-    status: "New",
-    role: "vendor",
-    login_method: "mobile_otp",
-    created_at: "2025-04-23T18:31:38.000Z",
-    update_at: "2025-04-23T18:31:38.509Z",
-    updated_by: 0,
-    isLoggedIn: true,
-    password: null,
-  },
-];
-
-// User item component - extracted for better code organization
 
 const ViewAllIssuesPage = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState(USERS);
-
+  const user = useSelector(selectUser);
+  const allIssues = useSelector(selectAllSupportIssues);
+  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
   // Filter users based on search query
-  const filteredUsers = users.filter(
-    (user) =>
-      user?.owner_legal_name
+  // console.log('all Issue = ', allIssues);
+  const filteredIssues = allIssues.filter(
+    (issue) =>
+      issue?.user?.owner_legal_name
         ?.toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      user?.mobile_number?.includes(searchQuery)
+      issue?.user.mobile_number?.includes(searchQuery)
   );
+
+useEffect(() => {
+  const fetchIssues = async () => {
+    setIsLoading(true);
+    await dispatch(getAllSupportIssues());
+    setIsLoading(false);
+  };
+
+  fetchIssues();
+}, []);
+
 
   return (
     <SafeAreaView style={styles.container}>
       <MyStatusBar />
       {searchBar()}
       <FlatList
-        data={filteredUsers}
-        renderItem={({ item }) => <UserInfo user={item} />}
+        data={filteredIssues}
+        renderItem={({ item }) => <SupportInfo issue={item} />}
         keyExtractor={(item) => item?.id?.toString()}
         contentContainerStyle={styles.listContainer}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -125,17 +85,22 @@ const ViewAllIssuesPage = ({ navigation }) => {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Icon name="account-search" size={60} color={COLORS.lightGray} />
-            <Text style={styles.emptyText}>No users found</Text>
+            <Text style={styles.emptyText}>No Issues found</Text>
           </View>
         }
       />
+       {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </SafeAreaView>
   );
 
-  function UserInfo({ user }) {
+  function SupportInfo({ issue }) {
     return (
       <TouchableOpacity
-        onPress={() => navigation.navigate("SupportIssuesDetail", { user })}
+        onPress={() => navigation.navigate("SupportIssuesDetail", { issue })}
         style={styles.userItem}
       >
         <View
@@ -148,8 +113,8 @@ const ViewAllIssuesPage = ({ navigation }) => {
             },
           ]}
         >
-          {user?.avatar ? (
-            <Image source={{ uri: user?.avatar }} style={styles.avatar} />
+          {issue?.user?.avatar ? (
+            <Image source={{ uri: imageURL.baseURL + issue?.user?.avatar }} style={styles.avatar} />
           ) : (
             <Icon
               name="account-circle"
@@ -161,10 +126,10 @@ const ViewAllIssuesPage = ({ navigation }) => {
 
           <View style={styles.userNameAndNumber}>
             <Text style={styles.userName}>
-              {user?.owner_legal_name || "N/A"}
+              {issue?.user?.owner_legal_name || "N/A"}
             </Text>
             <Text style={styles.userMobile}>
-              {user?.mobile_number || "N/A"}
+              {issue?.user?.mobile_number || "N/A"}
             </Text>
           </View>
 
@@ -172,25 +137,25 @@ const ViewAllIssuesPage = ({ navigation }) => {
             <Text
               style={[
                 styles.roleText,
-                { color: user?.role === "user" ? COLORS.primary : "orange" },
+                { color: issue?.user?.role === "user" ? COLORS.primary : "orange" },
               ]}
             >
-              {user?.role || "N/A"}
+              {issue?.user?.role || "N/A"}
             </Text>
           </View>
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
           <Text style={[styles.userName, {}]}>Status: </Text>
-          <Text style={[styles.userMobile, { color: "red" }]}>Pending </Text>
+          <Text style={[styles.userMobile, { color: "red" }]}>{issue?.status} </Text>
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
           <Text style={[styles.userName, {}]}>Created at: </Text>
-          <Text style={[styles.userMobile, {}]}>24/04/2025</Text>
+          <Text style={[styles.userMobile, {}]}>{issue?.created_at}</Text>
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
           <Text style={[styles.userName, {}]}>Title: </Text>
           <Text style={[styles.userMobile, {}]}>
-            I'm not able to Post Stations
+            {issue?.title}
           </Text>
         </View>
       </TouchableOpacity>
@@ -243,6 +208,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
+  },
+    loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
   },
   searchBar: {
     flexDirection: "row",

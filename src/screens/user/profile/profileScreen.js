@@ -178,31 +178,23 @@ const ProfileScreen = ({ navigation }) => {
             iconName: "person",
             onPress: () => navigation.push("EditProfile"),
           })}
-          {/* {profileOption({
-            option: "Notifications",
-            iconName: "notifications",
-            onPress: () => navigation.push("Notification"),
-          })} */}
+          {profileOption({
+            option: "Change Password",
+            iconName: "key",
+            onPress: () => navigation.navigate("ChangePassword"),
+          })}
           {profileOption({
             option: "Terms & Conditions",
             iconName: "list-alt",
             onPress: () => navigation.push("TermsAndConditions"),
           })}
-          {/* {profileOption({
-            option: "FAQ",
-            iconName: "help-outline",
-            onPress: () => navigation.push("Faq"),
-          })} */}
+         
           {profileOption({
             option: "Privacy Policy",
             iconName: "privacy-tip",
             onPress: () => navigation.push("PrivacyPolicy"),
           })}
-          {/* {profileOption({
-            option: "Help",
-            iconName: "support-agent",
-            onPress: () => navigation.push("Help"),
-          })} */}
+         
           {logoutInfo()}
         </View>
       </View>

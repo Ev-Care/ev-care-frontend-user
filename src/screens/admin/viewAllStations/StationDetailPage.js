@@ -30,6 +30,8 @@ import imageURL from "../../../constants/baseURL";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { openHourFormatter } from "../../../utils/globalMethods";
+import { deleteStation } from "../../vendor/services/crudFunction";
+import { deleteStationByAdmin, fetchAllStations } from "../services/crudFunctions";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -58,6 +60,8 @@ const StationDetailPage = ({ route, navigation }) => {
 
 
   const station = route?.params?.item;
+
+  console.log('station in detail page = ', JSON.stringify(station,2, null));
 
   if (!station) {
     return <Text>Loading...</Text>; // Handle when station is not available
@@ -93,11 +97,55 @@ const StationDetailPage = ({ route, navigation }) => {
     }
   };
 
-  const handleDelete = async () => {
-    // setIsLoading(true);
+   const handleDelete = async () => {
+    setIsLoading(true);
     console.log("handleDelete Called");
-    // setIsLoading(false);
-  }
+
+    try {
+      const deleteResponse = await dispatch(deleteStationByAdmin(station?.id));
+      if (deleteStationByAdmin.fulfilled.match(deleteResponse)) {
+      
+
+        const stationResponse = await dispatch(fetchAllStations());
+        if (fetchAllStations.fulfilled.match(stationResponse)) {
+          console.log("station updated");
+          await dispatch(
+            showSnackbar({
+              message: "Station deleted successfully.",
+              type: "success",
+            })
+          );
+            navigation.pop();
+        } else if (fetchAllStations.rejected.match(stationResponse)) {
+          console.log("Failed to fetch updated stations.");
+          await dispatch(
+            showSnackbar({
+              message: errorMessage || "Failed to update station list.",
+              type: "error",
+            })
+          );
+        }
+      } else if (deleteStationByAdmin.rejected.match(deleteResponse)) {
+        await dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to delete station.",
+            type: "error",
+          })
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting station:", error);
+      await dispatch(
+        showSnackbar({
+          message: errorMessage || "An error occurred while deleting.",
+          type: "error",
+        })
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   
 
   const trimName = (threshold, str) => {
@@ -170,7 +218,7 @@ const StationDetailPage = ({ route, navigation }) => {
           </View>
 
           <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>Public</Text>
+            <Text style={styles.communityText}>{station?.access_type}</Text>
           </View>
         </View>
         <TouchableOpacity
@@ -290,7 +338,7 @@ const StationDetailPage = ({ route, navigation }) => {
         {/* onPress={() => navigation.navigate("UpdateStation")} */}
         <TouchableOpacity
           style={styles.submitButton}
-          onPress={() => navigation.navigate("UpdateStation", { station })}
+          onPress={() => navigation.navigate("UpdateStationPage", { station })}
         >
           <Text style={styles.submitButtonText}>Update</Text>
         </TouchableOpacity>

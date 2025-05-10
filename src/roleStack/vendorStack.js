@@ -29,7 +29,8 @@ import { selectloader } from "../screens/auth/services/selector"; // Ensure corr
 import UpdateStation from "../screens/vendor/pages/updateStation/UpdateStation";
 import EditProfileVendor from "../screens/vendor/pages/vendorProfile/EditProfileVendor";
 import UploadGst from "../screens/vendor/CompleteProfileDetail/UploadGst";
-// import VendorProfile from "../screens/vendor/pages/vendorProfile/vendorProfile";
+import ChangePassword from "../components/commonComponents/changePassword";
+
 
 const Stack = createStackNavigator();
 
@@ -101,6 +102,7 @@ export function VendorStack() {
           />
           <Stack.Screen name="UpdateStation" component={UpdateStation} />
           <Stack.Screen name="AddStations" component={AddStations} />
+           <Stack.Screen name="ChangePassword" component={ChangePassword} />
 
         </>
       )}

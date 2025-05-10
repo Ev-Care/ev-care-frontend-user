@@ -54,6 +54,7 @@ import {
 } from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import {DottedLoader} from "../../../utils/lottieLoader/loaderView";
+import MyStatusBar from "../../../components/myStatusBar";
 const COLORS = {
   primary: "#101942",
   secondary: "#FF8C00",
@@ -231,7 +232,7 @@ const UserHome = ({ navigation }) => {
   }
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      <MyStatusBar/>
 
       <AnimatedLinearGradient
         colors={["#101942", "#1C2A5A"]}
@@ -297,7 +298,7 @@ const UserHome = ({ navigation }) => {
           </View>
 
           <Image
-            source={require("../../../../assets/images/vendorWelcome.png")}
+            source={require("../../../../assets/icon.png")}
             style={styles.welcomeImage}
             resizeMode="contain"
           />
@@ -627,6 +628,7 @@ const styles = StyleSheet.create({
   welcomeImage: {
     width: 100,
     height: 100,
+    borderRadius:12,
   },
   sectionContainer: {
     marginBottom: 25,

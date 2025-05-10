@@ -43,6 +43,37 @@ export const fetchStationsByLocation = createAsyncThunk(
     }
   }
 );
+export const searchStationsByLocation = createAsyncThunk(
+  "stations/searchStationsByLocation",
+  async (data, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
+
+      const response = await getAllStationsByLocationAPI({
+        ...data,
+        accessToken,
+      }); // Call the API to fetch stations by location
+
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(
+          response.data.message || "OTP verification failed"
+        );
+      }
+    } catch (error) {
+      console.log("Error in postSignUp:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message || // API sent error message
+        error?.message || // JS error message
+        "OTP verification failed"; // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
 
 //Get vendor details by key
 export const getUserDetailsByKey = createAsyncThunk(

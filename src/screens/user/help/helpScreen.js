@@ -43,6 +43,7 @@ const HelpScreen = ({ navigation }) => {
   const [showEmergencyDialog, setshowEmergencyDialog] = useState(false);
   const [emergencyQuery, setEmergencyQuery] = useState("");
   const [charCount, setCharCount] = useState(120);
+  const time = 2000;
   const handleEmergencyQueryChange = (text) => {
     if (text.length <= 100) {
       setEmergencyQuery(text);
@@ -94,8 +95,10 @@ const HelpScreen = ({ navigation }) => {
       description: description,
       email: email,
       contactNumber: mobileNumber,
-      image: "",
+      
     };
+
+   
     const sendQueryResponse = await dispatch(
       sendQueryAction({
         title: title,
@@ -222,7 +225,7 @@ const HelpScreen = ({ navigation }) => {
                     })
                   );
                 }
-              }, 600);
+              }, time);
             }}
             style={[
               {
@@ -276,7 +279,7 @@ const HelpScreen = ({ navigation }) => {
                     })
                   );
                 }
-              }, 500);
+              }, time);
             }}
             style={[styles.input, { ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
@@ -325,7 +328,7 @@ const HelpScreen = ({ navigation }) => {
                     })
                   );
                 }
-              }, 500);
+              }, time);
             }}
             style={[styles.input, { ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
@@ -379,7 +382,7 @@ const HelpScreen = ({ navigation }) => {
                     })
                   );
                 }
-              }, 500);
+              }, time);
               setTitleTimer(timer);
             }}
             style={[styles.input, { ...Fonts.blackColor16Medium }]}
@@ -405,7 +408,7 @@ const HelpScreen = ({ navigation }) => {
         </Text>
         <Text style={{ ...Fonts.grayColor16Regular }}>
           Fill the form below and our support team will be in touch with you
-          shortly. Or In case of Emergency,{" "}
+          shortly. {/*Or In case of Emergency,{" "}
           <Text
             onPress={() => setshowEmergencyDialog(true)}
             style={{
@@ -416,6 +419,7 @@ const HelpScreen = ({ navigation }) => {
           >
             Click Here
           </Text>
+          */}
         </Text>
       </View>
     );

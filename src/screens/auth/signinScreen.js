@@ -109,14 +109,14 @@ const SigninScreen = ({ navigation }) => {
 
         dispatch(
           showSnackbar({
-            message: authErrorMessage || "Log-In Successfull",
+            message: "Log-In Successfull",
             type: "success",
           })
         );
       } else if(login.rejected.match(response)){
    
         dispatch(showSnackbar({
-          message: authErrorMessage || "Log-In Failed",
+          message: response?.payload || authErrorMessage || "Log-In Failed",
           type: "error",
         }))
       }

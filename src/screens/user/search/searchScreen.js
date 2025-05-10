@@ -79,7 +79,7 @@ const customMapStyle = [
     featureType: "transit.station",
     elementType: "all",
     stylers: [{ visibility: "on" }],
-  },
+  }, 
 ];
 
 const ChargingStationMap = () => {

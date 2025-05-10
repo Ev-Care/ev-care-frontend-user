@@ -648,10 +648,10 @@ const UpdateStation = ({ navigation, route }) => {
                   }
 
                   // If input is not empty and > 99, block it
-                  if (numericText && parseInt(numericText, 10) > 99) {
+                  if (numericText && parseInt(numericText, 10) > 1000) {
                     dispatch(
                       showSnackbar({
-                        message: "Power rating cannot exceed 99 kW",
+                        message: "Power rating cannot exceed 1000 kW",
                         type: "error",
                       })
                     );

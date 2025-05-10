@@ -59,12 +59,12 @@ const RegisterScreen = ({ navigation, route }) => {
   const [customCompany, setCustomCompany] = useState(null);
   const [customModel, setCustomModel] = useState(null);
   const [vehicleNumber, setVehicleNumber] = useState(null);
- 
+
   const [mobNumber, setMobNumber] = useState(null);
   const [password, setPassword] = useState(null);
-const [confirmPassword, setConfirmPassword] = useState(null);
-const [secureText, setSecureText] = useState(true);
-const [secureConfirmText, setSecureConfirmText] = useState(true);
+  const [confirmPassword, setConfirmPassword] = useState(null);
+  const [secureText, setSecureText] = useState(true);
+  const [secureConfirmText, setSecureConfirmText] = useState(true);
 
   const models = selectedCompany && vehicleData[selectedCompany] ? vehicleData[selectedCompany] : [];
   // console.log("user key in register : ", userKey);
@@ -74,55 +74,60 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
     const nameRegex = /^[A-Za-z\s]{3,}$/;
     const vehicleNumberRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
     const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-  
+    const phoneRegex = /^[6-9]\d{9}$/;
+
+    if (!phoneRegex.test(mobNumber)) {
+    
+      return "Invalid mobile number";
+    }
     if (!data.email || !emailRegex.test(data.email)) {
       return "Invalid email address.";
     }
-  
+
     if (!data.owner_legal_name || !nameRegex.test(data.owner_legal_name)) {
       return "Invalid full name. Only letters and spaces, at least 3 characters.";
     }
-  
+
     if (!data.role || !['user', 'vendor'].includes(data.role.toLowerCase())) {
       return "Role must be either 'user' or 'vendor'.";
     }
-  
+
     if (!data.password) {
       return "Password is required.";
     }
-  
+
     if (!strongPasswordRegex.test(data.password)) {
       return "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.";
     }
-  
+
     if (!data.confirm_password) {
       return "Confirm password is required.";
     }
-  
+
     if (data.password !== data.confirm_password) {
       return "Passwords do not match.";
     }
-  
+
     if (data.role === 'user') {
       if (!data.vehicle_registration_number || !vehicleNumberRegex.test(data.vehicle_registration_number)) {
         return "Invalid vehicle number format (e.g., MH12AB1234).";
       }
-  
+
       if (!data.vehicle_manufacturer || data.vehicle_manufacturer.trim() === "") {
         return "Vehicle manufacturer is required.";
       }
-  
+
       if (!data.vehicle_model || data.vehicle_model.trim() === "") {
         return "Vehicle model is required.";
       }
     }
-  
+
     return null; // all good
   };
-  
+
 
   const handleSignUp = async () => {
-    
+
     const userData = {
       email: email,
       owner_legal_name: fullName,
@@ -131,11 +136,11 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
       mobile_number: mobNumber,
       confirm_password: confirmPassword,
       vehicle_registration_number: vehicleNumber,
-      vehicle_manufacturer: customCompany !== ''||null ? customCompany : selectedCompany,
-      vehicle_model: customModel !== ''||null ? customModel : selectedModel
+      vehicle_manufacturer: customCompany !== '' || null ? customCompany : selectedCompany,
+      vehicle_model: customModel !== '' || null ? customModel : selectedModel
     };
 
-    
+
     const validationError = validateUserData(userData);
     if (validationError) {
       console.log('error cartched');
@@ -146,7 +151,7 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
     setLoading(true);
 
 
- console.log("Post signup called");
+    console.log("Post signup called");
     try {
       const response = await dispatch(register(userData));
       if (register.fulfilled.match(response)) {
@@ -155,7 +160,7 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
         );
       } else if (register.rejected.match(response)) {
         dispatch(
-          showSnackbar({ message: response.payload ||"Registration Failed", type: "error" })
+          showSnackbar({ message: response.payload || "Registration Failed", type: "error" })
         );
       }
     } catch (error) {
@@ -254,7 +259,7 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
       </View>
     );
   }
-  
+
 
   function agreeInfo() {
     return (
@@ -324,7 +329,7 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
           placeholder="Enter Your Mobile Number "
           placeholderTextColor={Colors.grayColor}
           value={mobNumber}
-          onChangeText={(text) =>setMobNumber(text)}
+          onChangeText={(text) => setMobNumber(text)}
           style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
           cursorColor={Colors.primaryColor}
           selectionColor={Colors.primaryColor}
@@ -372,7 +377,7 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
             style={{ marginHorizontal: 10 }}
           />
         </View>
-  
+
         {/* Confirm Password Field */}
         <Text style={styles.sectionLabel}>
           Confirm Password <Text style={styles.label}>*</Text>
@@ -411,7 +416,7 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
       </>
     );
   }
-  
+
 
   function fullNameInfo() {
     return (<>
@@ -646,25 +651,25 @@ const [secureConfirmText, setSecureConfirmText] = useState(true);
       </View>
     )
   }
-function signInText() {
-        return (
-          <View style={{ alignItems: "flex-end", marginBottom: 20 }}>
-            <Text style={{ ...Fonts.grayColor18Medium, textAlign: "right" }}>
-             Are You Existing User?{" "}
-              <Text
-               onPress={() => navigation.goBack()}
-                style={{
-                  ...Fonts.grayColor18SemiBold,
-                  color: "blue",
-                  fontWeight: "700",
-                }}
-              >
-                Click Here
-              </Text>
-            </Text>
-          </View>
-        );
-      }
+  function signInText() {
+    return (
+      <View style={{ alignItems: "flex-end", marginBottom: 20 }}>
+        <Text style={{ ...Fonts.grayColor18Medium, textAlign: "right" }}>
+          Are You Existing User?{" "}
+          <Text
+            onPress={() => navigation.goBack()}
+            style={{
+              ...Fonts.grayColor18SemiBold,
+              color: "blue",
+              fontWeight: "700",
+            }}
+          >
+            Click Here
+          </Text>
+        </Text>
+      </View>
+    );
+  }
 };
 
 export default RegisterScreen;

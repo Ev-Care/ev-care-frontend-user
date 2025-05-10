@@ -273,7 +273,15 @@ const EditProfileScreen = ({ route, navigation }) => {
      <TextInput
       style={styles.input}
       value={value}
-      onChangeText={setter}
+       onChangeText={(text) => {
+          if (label === "Email") {
+            setter(text.toLowerCase());
+          } else if (label === "Vehicle Registration Number") {
+            setter(text.toUpperCase());
+          } else {
+            setter(text);
+          }
+        }}
       placeholder={placeholder}
       keyboardType={
         label === "Mobile Number"
@@ -387,7 +395,7 @@ const EditProfileScreen = ({ route, navigation }) => {
           "Enter your full name"
         )}
         {renderNonEditableInput("Email", email, setEmail, "Enter your email")}
-        {renderInput("Vehicle Number", vehicleNumber, setVehicleNumber, "Enter your Vehicle Number")}
+        {renderInput("Vehicle Registration Number", vehicleNumber, setVehicleNumber, "Enter your Vehicle Number")}
         {renderInput("Vehicle Manufacturer", vehicleCompany, setVehicleCompany, "Enter Vehicle Manufacturer Name")}
         {renderInput("Vehicle Model", vehicleModel, setVehicleModel, "Enter Vehicle Model")}
      

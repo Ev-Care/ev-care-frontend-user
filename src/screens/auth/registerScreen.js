@@ -74,7 +74,9 @@ const RegisterScreen = ({ navigation, route }) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const nameRegex = /^[A-Za-z\s]{3,}$/;
     const vehicleNumberRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
-    const strongPasswordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    const strongPasswordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+
+
 
     const phoneRegex = /^[6-9]\d{9}$/;
 

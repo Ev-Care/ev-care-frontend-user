@@ -51,7 +51,8 @@ const ChangePassword = ({ route, navigation }) => {
 
 
  const validateInputs = () => {
-   const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+   const passwordRegex =/^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+
 
        if (!newPassword|| !confirmPassword || !currentPassword) {
          dispatch(

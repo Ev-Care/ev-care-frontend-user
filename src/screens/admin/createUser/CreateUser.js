@@ -165,7 +165,7 @@ const CreateUser = ({ route, navigation }) => {
       /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
     const passwordRegex =  /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
     const nameRegex = /^[A-Za-z\s]{3,}$/;
-    const vehicleNumberRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
+    const vehicleNumberRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
     if (!name || !mobNumber || !email) {
       dispatch(

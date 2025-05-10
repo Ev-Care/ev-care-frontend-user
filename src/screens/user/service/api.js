@@ -11,24 +11,33 @@ export const getAllStationsByLocationAPI = (data) =>
     accessToken: data.accessToken,
   });
 
-export const 
-updateUserProfileAPI = (data) =>
-  apiPatchRequest({
-    apiUrl: `${API_URL}/users/edit-user/${data.user_key}`,
-    content_type: "application/json",
-    data: {
-      owner_legal_name: data.owner_legal_name,
-      email: data.email,
-      role: data.role,
-      avatar: data.avatar,
-      vehicle_model:data.vehicle_model,
-      vehicle_manufacturer:data.vehicle_manufacturer,
-      vehicle_registration_number:data.vehicle_registration_number,
-      business_name: data?.business_name || null,
+export const
+  updateUserProfileAPI = (data) =>
+    apiPatchRequest({
+      apiUrl: `${API_URL}/users/edit-user/${data.user_key}`,
+      content_type: "application/json",
+      data: {
+        owner_legal_name: data.owner_legal_name,
+        email: data.email,
+        role: data.role,
+        avatar: data.avatar,
+        vehicle_model: data.vehicle_model,
+        vehicle_manufacturer: data.vehicle_manufacturer,
+        vehicle_registration_number: data.vehicle_registration_number,
+        business_name: data?.business_name || null,
 
-    },
-    accessToken: data.accessToken,
-  });
+      },
+      accessToken: data.accessToken,
+    });
+
+export const
+  updatePasswordAPI = (data) =>
+    apiPostRequest({
+      apiUrl: `${API_URL}/users/reset-password`,
+      content_type: "application/json",
+      data: data.data,
+      accessToken: data.accessToken,
+    });
 
 export const getUserByKeyAPI = (data) =>
   apiGetRequest({

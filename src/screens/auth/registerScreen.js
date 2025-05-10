@@ -147,6 +147,10 @@ const RegisterScreen = ({ navigation, route }) => {
     try {
       const response = await dispatch(register(userData));
       if (register.fulfilled.match(response)) {
+            // Save user data and token to AsyncStorage
+        AsyncStorage.setItem("user", response?.payload?.data?.user?.user_key);
+        // console.log('token in sigin = ', token);
+        AsyncStorage.setItem("accessToken", response?.payload?.data?.access_token);
         dispatch(
           showSnackbar({ message: "Registration Successfull", type: "success" })
         );
@@ -170,43 +174,6 @@ const RegisterScreen = ({ navigation, route }) => {
       setLoading(false);
     }
   };
-
-  // useEffect to handle user and token updates
-  useEffect(() => {
-    if (user && user?.status !== "New" && token) {
-      console.log("User and token updated in useEffect:", user, token);
-
-      try {
-        // Save user data and token to AsyncStorage
-        AsyncStorage.setItem("user", user.user_key);
-        AsyncStorage.setItem("accessToken", token);
-
-        console.log(
-          "Access token stored in AsyncStorage:",
-          AsyncStorage.getItem("token")
-        );
-
-        dispatch(
-          showSnackbar({
-            message: error || "Registration Successfull",
-            type: "success",
-          })
-        );
-
-        navigation.navigate("userHome"); // Navigate to the home screen
-      } catch (error) {
-        console.error("Error saving user data:", error);
-        dispatch(
-          showSnackbar({ message: "Error in saving user data", type: "error" })
-        );
-      }
-    } else if (error) {
-      console.error("Error during registration:", error);
-      dispatch(
-        showSnackbar({ message: error || "Registration Failed", type: "error" })
-      );
-    }
-  }, [user, token, error, navigation]);
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>

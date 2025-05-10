@@ -33,14 +33,14 @@ import {
 } from "../../screens/auth/services/selector";
 
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
+import { postUpdatePassword } from "../../screens/user/service/crudFunction";
 
 
 const ChangePassword = ({ route, navigation }) => {
   const user = useSelector(selectUser);
-  const accessToken = useSelector(selectToken);
   const dispatch = useDispatch();
   const [name, setName] = useState(user?.name || "Not found");
-   const [currentPassword, setCurrentPassword] = useState(null);
+  const [currentPassword, setCurrentPassword] = useState(null);
   const [newPassword, setNewPassword] = useState(null);
   const [confirmPassword, setConfirmPassword] = useState(null);
   const [secureCurrentPass, setSecureCurrentPass] = useState(true);
@@ -49,54 +49,72 @@ const ChangePassword = ({ route, navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showDialogue, setshowDialogue] = useState(false);
 
+  // console.log('user = ', user);
+  const validateInputs = () => {
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
- const validateInputs = () => {
-   const passwordRegex =/^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
+    if (!newPassword || !confirmPassword || !currentPassword) {
+      dispatch(
+        showSnackbar({
+          message: "All fields are required.",
+          type: "error",
+        })
+      );
+      return false;
+    }
 
-       if (!newPassword|| !confirmPassword || !currentPassword) {
-         dispatch(
-           showSnackbar({
-             message: "All fields are required.",
-             type: "error",
-           })
-         );
-         return false;
-       }
-   
-       if (newPassword !== confirmPassword) {
-         dispatch(
-           showSnackbar({ message: "New Password and Confirm Passwords do not match.", type: "error" })
-         );
-         return false;
-       }
-   
-       if (!passwordRegex.test(newPassword)) {
-         dispatch(
-           showSnackbar({
-             message:
-               "Password must be 8–20 characters long and include at least one letter and one number.",
-             type: "error",
-           })
-         );
-         return false;
-       }
- }
+    if (newPassword !== confirmPassword) {
+      dispatch(
+        showSnackbar({ message: "New Password and Confirm Passwords do not match.", type: "error" })
+      );
+      return false;
+    }
+
+    if (!passwordRegex.test(newPassword)) {
+      dispatch(
+        showSnackbar({
+          message:
+            "Password must be 8–20 characters long and include at least one letter and one number.",
+          type: "error",
+        })
+      );
+      return false;
+    }
+    return true;
+  }
 
   const handleSubmit = async () => {
     setIsLoading(true);
-    try{
-    if (!validateInputs()) return;
-   console.log("handle submit called");}
-  catch (error) {
+    console.log('submit called');
+    try {
+      if (!validateInputs()) return;
+      console.log("handle submit called");
+      const payload = {
+        oldPassword: currentPassword,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword
+      }
+      const response = await dispatch(postUpdatePassword(payload));
+      if (response.payload.code == 200) {
+        await dispatch(showSnackbar({message: 'Password Updated Successfully', type: 'success'}));
+        navigation.goBack();
+        
+      } else {
+         await dispatch(showSnackbar({message: response.payload || 'Failed to update password', type: 'error'}));
+      }
+
+    }
+    catch (error) {
       console.log('error in create user', error);
-   }finally{
-   setIsLoading(false);}
+    } finally {
+      setIsLoading(false);
+    }
   };
-  
 
 
-const renderPassword = (label, value, setter, placeholder ,secure ,setSecure) => (
+
+  const renderPassword = (label, value, setter, placeholder, secure, setSecure) => (
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         {label}
@@ -124,20 +142,20 @@ const renderPassword = (label, value, setter, placeholder ,secure ,setSecure) =>
         </TouchableOpacity>
       </View>
     </View>
- );
+  );
 
 
 
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
-       <View style={styles.appBar}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                      <Icon name="arrow-back" size={24} color={Colors.primary} />
-                    </TouchableOpacity>
-                    <Text style={[styles.title,{fontSize:16}]}>Change Password</Text>
-                    <View style={{ width: 24 }} />
-                  </View>
+      <View style={styles.appBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Icon name="arrow-back" size={24} color={Colors.primary} />
+        </TouchableOpacity>
+        <Text style={[styles.title, { fontSize: 16 }]}>Change Password</Text>
+        <View style={{ width: 24 }} />
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
         {renderPassword(
           "Current Password",
@@ -156,7 +174,7 @@ const renderPassword = (label, value, setter, placeholder ,secure ,setSecure) =>
           secureNewpass,
           setSecureNewPass
         )}
-         {renderPassword(
+        {renderPassword(
           "Confirm Password",
           confirmPassword,
           setConfirmPassword,
@@ -164,7 +182,7 @@ const renderPassword = (label, value, setter, placeholder ,secure ,setSecure) =>
           secureConfirmPass,
           setSecureConfirmPass
         )}
-      
+
         <View style={styles.buttonRow}>
           <TouchableOpacity
             onPress={() => {
@@ -179,7 +197,7 @@ const renderPassword = (label, value, setter, placeholder ,secure ,setSecure) =>
           </TouchableOpacity>
         </View>
 
-     
+
         {UpdateOverlay()}
       </ScrollView>
       {isLoading && (
@@ -288,7 +306,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     flexDirection: "row",
-    gap:20,
+    gap: 20,
     marginTop: 20,
 
     flexWrap: "wrap",

@@ -28,20 +28,8 @@ import {
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 import { register } from "./services/crudFunction";
 import { selectAuthError, selectToken, selectUser } from "./services/selector";
+import { vehicleData } from "../../utils/evVehicleData";
 // import DropDownPicker from 'react-native-dropdown-picker';
-
-export const vehicleData = {
-  Tata: ["Ace", "Intra", "Yodha"],
-  Mahindra: ["Bolero", "Jeeto", "Supro"],
-  "Ashok Leyland": ["Dost", "Partner", "Boss"],
-  "Maruti Suzuki": ["Super Carry", "Eeco Cargo", "Omni Cargo"],
-  Piaggio: ["Ape Xtra", "Porter", "Ape Auto"],
-  "Force Motors": ["Kargo King", "Shaktiman", "Traveller Pickup"],
-  Isuzu: ["D-Max", "S-CAB", "Hi-Lander"],
-  Eicher: ["Pro 2049", "Pro 3015", "Pro 2059"],
-  Toyota: ["Hilux", "Innova Crysta Commercial", "LC79 Pickup"],
-  Others: [],
-};
 
 const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setfullName] = useState(null);
@@ -73,10 +61,8 @@ const RegisterScreen = ({ navigation, route }) => {
   const validateUserData = (data) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const nameRegex = /^[A-Za-z\s]{3,}$/;
-    const vehicleNumberRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
+    const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
     const strongPasswordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
-
-
 
     const phoneRegex = /^[6-9]\d{9}$/;
 
@@ -116,7 +102,7 @@ const RegisterScreen = ({ navigation, route }) => {
         !data.vehicle_registration_number ||
         !vehicleNumberRegex.test(data.vehicle_registration_number)
       ) {
-        return "Invalid vehicle number format (e.g., MH12AB1234).";
+        return "Invalid vehicle number format ";
       }
 
       if (

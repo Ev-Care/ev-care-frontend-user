@@ -99,7 +99,7 @@ const EditProfileScreen = ({ route, navigation }) => {
   const validateUserData = (data) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const nameRegex = /^[A-Za-z\s]{3,}$/;
-    const vehicleNumberRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
+   const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
 
     if (!data.email || !emailRegex.test(data.email)) {
       return "Invalid email address.";
@@ -115,7 +115,7 @@ const EditProfileScreen = ({ route, navigation }) => {
     if (data.role === 'user') {
 
       if (!data.vehicle_registration_number || !vehicleNumberRegex.test(data.vehicle_registration_number)) {
-        return "Invalid vehicle number format (e.g., MH12AB1234).";
+        return "Invalid vehicle number format ";
       }
 
       if (!data.vehicle_manufacturer || data.vehicle_manufacturer.trim() === "") {
@@ -130,7 +130,7 @@ const EditProfileScreen = ({ route, navigation }) => {
     return null; // all good
   };
   const handleSubmit = async () => {
-    const vehicleNumberRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
+ 
     setIsLoading(true);
     try {
       const updatedData = {

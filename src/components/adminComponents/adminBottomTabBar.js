@@ -114,7 +114,7 @@ const AdminBottomTabBar = ({ navigation }) => {
             tabBarLabel: 'stations',
           }}
         />
-        <Tab.Screen
+        {/* <Tab.Screen
           name="users"
           component={ViewAllUserPage}
           options={{
@@ -136,7 +136,7 @@ const AdminBottomTabBar = ({ navigation }) => {
               ),
             tabBarLabel: 'users', 
           }}
-        />
+        /> */}
         <Tab.Screen
           name="Profile"
           component={AdminProfilePage}

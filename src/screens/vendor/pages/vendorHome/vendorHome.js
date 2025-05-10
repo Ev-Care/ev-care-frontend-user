@@ -207,9 +207,12 @@ const VendorHome = () => {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.greetingContainer}>
-            <Text style={styles.greeting}>
+           {user?.vendor_type ==="organization"?(<Text style={styles.greeting}>
               Hi {getFirstName(user?.business_name)} !
-            </Text>
+            </Text>):
+             (<Text style={styles.greeting}>
+              Hi {getFirstName(user?.name)} !
+            </Text>)}
             <Text style={styles.subGreeting}>{getGreeting()}</Text>
           </View>
 

@@ -233,15 +233,24 @@ const CreateUser = ({ route, navigation }) => {
     }
 
     if (selectedRole === "vendor") {
-      if (!businessName || !panNumber) {
+      if ( !panNumber) {
         dispatch(
           showSnackbar({
-            message: "Business Name and PAN are required for vendors.",
+            message: " PAN is required for vendors.",
             type: "error",
           })
         );
         return false;
       }
+
+       if (businessType==="organization" && !businessName ) {
+            dispatch(
+                showSnackbar({
+                  message: "Please Enter Organization or Legal Name",
+                  type: "error",
+                }))
+             return false;
+          }
 
       if (!panRegex.test(panNumber)) {
         dispatch(
@@ -345,13 +354,18 @@ const CreateUser = ({ route, navigation }) => {
     if (selectedRole === "vendor") {
       payload = {
         ...payload,
-        business_name: businessName,
         pan_no: panNumber,
         pan_pic: panImage,
         vendor_type: businessType,
         gstin_number: gstNumber || null,
         gstin_image: gstNumber ? gstImage : null,
       };
+      if (businessType === "organization") {
+        payload = {
+          ...payload,
+        business_name: businessName,
+        };
+      }
 
       if (businessType === "individual") {
         payload = {
@@ -589,17 +603,7 @@ const CreateUser = ({ route, navigation }) => {
           
            <>
             {businessTypeSection()}
-            {businessType === "individual" ? (
-              <>
-                {" "}
-                {renderInput(
-                  "Full Name",
-                  businessName,
-                  setBusinessName,
-                  "Enter Your Full name"
-                )}
-              </>
-            ) : (
+            {businessType === "organization" && (
               <>
                 {renderInput(
                   "Organization or Legal Name",

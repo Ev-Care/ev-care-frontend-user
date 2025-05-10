@@ -101,11 +101,25 @@ const VendorDetailForm = () => {
       /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[A-Z0-9]{1}[A-Z0-9]{1}$/;
 
     // Validate required fields
-    if (!avatarURI || !businessName || !panNumber || !panImageURI || !address) {
+    if (!avatarURI || !panNumber || !panImageURI || !address) {
       try {
         await dispatch(
           showSnackbar({
             message: "Oops! You must have missed a required field.",
+            type: "error",
+          })
+        );
+        return;
+      } catch (error) {
+        Alert.alert("Oops! You must have missed a required field.");
+        return;
+      }
+    }
+      if (businessType==="organization" && !businessName ) {
+      try {
+        await dispatch(
+          showSnackbar({
+            message: "Please Enter Organization or Legal Name",
             type: "error",
           })
         );
@@ -148,7 +162,6 @@ const VendorDetailForm = () => {
 
     // Prepare base vendor detail object
     let vendorDetail = {
-      business_name: businessName,
       pan_no: panNumber,
       address: address,
       avatar: avatarURI,
@@ -168,7 +181,6 @@ const VendorDetailForm = () => {
       if (isCheckBoxClicked) {
         vendorDetail = {
           ...vendorDetail,
-
           gstin_number: gstNumber,
           gstin_image: gstImageURI,
         };
@@ -176,6 +188,7 @@ const VendorDetailForm = () => {
     } else if (businessType === "organization") {
       vendorDetail = {
         ...vendorDetail,
+         business_name: businessName,
         vendor_type: businessType,
         gstin_number: gstNumber,
         gstin_image: gstImageURI,
@@ -495,18 +508,15 @@ const VendorDetailForm = () => {
   function businessNameSection() {
     return (
       <>
-        {businessType === "individual" ? (
-          <Text style={styles.sectionLabel}>
-            Full Name <Text style={styles.label}>*</Text>
-          </Text>
-        ) : (
+        {businessType === "organization" && (
+          <>
           <Text style={styles.sectionLabel}>
             Organization or Legal Name <Text style={styles.label}>*</Text>
           </Text>
-        )}
+       
         <TextInput
           style={styles.input}
-          placeholder={ businessType === "individual"? "Enter Your Full Name":"Enter  Organization or Legal Name"}
+          placeholder="Enter Organization or Legal Name"
           placeholderTextColor="gray"
           value={businessName}
           onChangeText={(text) => {
@@ -521,7 +531,7 @@ const VendorDetailForm = () => {
             }
             setBusinessName(text);
           }}
-        />
+        /></> )}
       </>
     );
   }

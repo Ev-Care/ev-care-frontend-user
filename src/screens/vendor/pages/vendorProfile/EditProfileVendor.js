@@ -73,7 +73,7 @@ const EditProfileScreen = ({ route, navigation }) => {
   const [showDialogue, setshowDialogue] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [imageloading, setImageLoading] = useState("");
- 
+
   const errorMessage = useSelector(selectAuthError);
   const showFullImage = (uri) => {
     if (!uri) return;
@@ -219,7 +219,7 @@ const EditProfileScreen = ({ route, navigation }) => {
             setter(text.toLowerCase());
           } else if (label === "Vehicle Registration Number") {
             setter(text.toUpperCase());
-          }else{
+          } else {
             setter(text);
           }
         }}
@@ -323,6 +323,7 @@ const EditProfileScreen = ({ route, navigation }) => {
           {renderImageBox("avatar", setAvatarURI, avatarURI)}
         </View>
         {renderInput("Full Name", name, setName, "Enter your full name")}
+
         {renderNonEditableInput(
           "Mobile Number",
           mobNumber,
@@ -333,12 +334,17 @@ const EditProfileScreen = ({ route, navigation }) => {
 
         {user?.role === "vendor" && (
           <>
-            {renderInput(
-              "Business Name",
-              businessName,
-              setBusinessName,
-              "Enter business name"
+            {user?.vendor_type == "organization" &&( 
+              <>
+                {renderInput(
+                  "Organization or Legal Name",
+                  businessName,
+                  setBusinessName,
+                  "Enter Organization or Legal Name"
+                )}
+              </>
             )}
+
             {renderNonEditableInput(
               "Aadhar Number",
               aadharNumber,
@@ -393,11 +399,11 @@ const EditProfileScreen = ({ route, navigation }) => {
           <View style={styles.modalContainer}>
             <Image source={{ uri: selectedImage }} style={styles.fullImage} />
             <TouchableOpacity
-            style={styles.modalCloseButton}
-            onPress={() => setModalVisible(false)}
-          >
-            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
-          </TouchableOpacity>
+              style={styles.modalCloseButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <MaterialIcons name="close" color={Colors.blackColor} size={26} />
+            </TouchableOpacity>
           </View>
         </Modal>
 
@@ -530,7 +536,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     flexDirection: "row",
-    gap:20,
+    gap: 20,
     marginTop: 20,
 
     flexWrap: "wrap",
@@ -601,10 +607,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 10,
     backgroundColor: "#fff",
-    justifyContent:"center",
-    alignItems:"center",
-    height:50,
-    width:50,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 50,
+    width: 50,
     borderRadius: 50,
   },
   closeText: {
@@ -689,7 +695,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#333",
   },
-  
 });
 
 export default EditProfileScreen;

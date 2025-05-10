@@ -41,14 +41,14 @@ const VerifyVendorProfile = ({ route, navigation }) => {
 
   //   image start
   const [aadhaarFrontImage, setAadhaarFrontImage] = useState(
-    imageURL.baseURL + user?.adhar_front_pic
+   user?.adhar_front_pic
   );
   const [aadhaarBackImage, setAadhaarBackImage] = useState(
-    imageURL.baseURL + user?.adhar_back_pic
+   user?.adhar_back_pic
   );
-  const [panImage, setPanImage] = useState(imageURL.baseURL + user?.pan_pic);
-  const [gstImage, setGstImage] = useState(imageURL.baseURL + user?.gstin_image);
-  const [avatar, setAvatar] = useState(imageURL.baseURL + user?.avatar);
+  const [panImage, setPanImage] = useState( user?.pan_pic);
+  const [gstImage, setGstImage] = useState( user?.gstin_image);
+  const [avatar, setAvatar] = useState(user?.avatar);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -159,9 +159,12 @@ const VerifyVendorProfile = ({ route, navigation }) => {
     </View>
   );
 
-  const renderImageBox = (label, localURI) => (
+const renderImageBox = (label, localURI) => {
+  if ((!localURI || localURI ==="") && label !== "avatar") return null;
+//  console.log("local uri",localURI);
+  return (
     <TouchableOpacity
-      onPress={() => showFullImage(localURI)}
+      onPress={() => showFullImage(imageURL.baseURL+localURI)}
       style={{ alignItems: "center", marginBottom: 20 }}
     >
       <View
@@ -174,7 +177,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
           <ActivityIndicator size={40} color="#ccc" />
         ) : localURI ? (
           <Image
-            source={{ uri: localURI }}
+            source={{ uri: imageURL.baseURL+localURI }}
             style={[
               styles.imageStyle,
               { borderRadius: label === "avatar" ? 50 : 12 },
@@ -187,6 +190,8 @@ const VerifyVendorProfile = ({ route, navigation }) => {
       <Text style={styles.imageLabel}>{label}</Text>
     </TouchableOpacity>
   );
+};
+
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
@@ -205,6 +210,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
         {renderTextData("Full Name", name)}
         {renderTextData("Mobile Number", mobNumber)}
         {renderTextData("Email", email)}
+         {renderTextData("Registered As", user?.vendor_type)}
         {renderTextData("Business Name", businessName)}
         {renderTextData("Aadhar Number", aadharNumber)}
         {renderTextData("PAN Number", panNumber)}

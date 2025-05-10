@@ -55,31 +55,31 @@ const customMapStyle = [
     elementType: "all",
     stylers: [{ visibility: "on" }],
   },
-  {
-    featureType: "poi.park",
-    elementType: "all",
-    stylers: [{ visibility: "on" }],
-  },
-  {
-    featureType: "poi.sports_complex",
-    elementType: "all",
-    stylers: [{ visibility: "on" }],
-  },
-  {
-    featureType: "poi.airport",
-    elementType: "all",
-    stylers: [{ visibility: "on" }],
-  },
-  {
-    featureType: "poi.train_station",
-    elementType: "all",
-    stylers: [{ visibility: "on" }],
-  },
-  {
-    featureType: "transit.station",
-    elementType: "all",
-    stylers: [{ visibility: "on" }],
-  }, 
+  // {
+  //   featureType: "poi.park",
+  //   elementType: "all",
+  //   stylers: [{ visibility: "on" }],
+  // },
+  // {
+  //   featureType: "poi.sports_complex",
+  //   elementType: "all",
+  //   stylers: [{ visibility: "on" }],
+  // },
+  // {
+  //   featureType: "poi.airport",
+  //   elementType: "all",
+  //   stylers: [{ visibility: "on" }],
+  // },
+  // {
+  //   featureType: "poi.train_station",
+  //   elementType: "all",
+  //   stylers: [{ visibility: "on" }],
+  // },
+  // {
+  //   featureType: "transit.station",
+  //   elementType: "all",
+  //   stylers: [{ visibility: "on" }],
+  // }, 
 ];
 
 const ChargingStationMap = () => {

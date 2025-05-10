@@ -71,7 +71,7 @@ const UserHome = ({ navigation }) => {
   const AnimatedLinearGradient =
     Animated.createAnimatedComponent(LinearGradient);
   const user = useSelector(selectUser);
-  const [radius, setRadius] = useState(30000);
+  const [radius, setRadius] = useState(50);
   const [refreshing, setRefreshing] = useState(false);
   const isLoading = useSelector(selectStationsLoading || selectUserLoading);
   const stations = useSelector(selectStations);

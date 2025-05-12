@@ -170,7 +170,7 @@ const AdminHome = ({navigation}) => {
           </View>
             <View style={styles.headerRight}>
             <TouchableOpacity style={styles.notificationButton}>
-              <Icon name="bell-outline" size={24} color={COLORS.primary} />
+              {/* <Icon name="bell-outline" size={24} color={COLORS.primary} /> */}
               {/* <View style={styles.notificationBadge} /> */}
             </TouchableOpacity>
             
@@ -178,10 +178,10 @@ const AdminHome = ({navigation}) => {
         </View>
 
         {/* Today's Report Section */}
-        {todaysReport()}
+        {/* {todaysReport()} */}
 
         {/* Monthly Growth Report */}
-        { monthlyGrowth()}
+        {/* { monthlyGrowth()} */}
 
         {/* Feature Cards */}
        {featureCardsInfo()}

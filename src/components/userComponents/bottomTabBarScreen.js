@@ -1,18 +1,17 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Colors, Fonts, Sizes, commonStyles } from "../../constants/styles";
 import { View, StyleSheet, Text, BackHandler, Platform } from "react-native";
-// import HomeScreen from "../../screens/user/home/homeScreen";
+
 import ProfileScreen from "../../screens/user/profile/profileScreen";
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import EnrouteScreen from "../../screens/user/enroute/enrouteScreen";
 import FavoriteScreen from "../../screens/user/favorite/favoriteScreen";
-// import BookingScreen from "../../screens/user/booking/bookingScreen";
-// import ChargingStationsOnMapScreen from "../../screens/user/chargingStationsOnMap/chargingStationsOnMapScreen";
+
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import userHome from "../../screens/user/home/userHome";
-// import EnrouteChargingStationsScreen from "../../screens/user/enrouteChargingStations/enrouteChargingStationsScreen";
+
 
 
 

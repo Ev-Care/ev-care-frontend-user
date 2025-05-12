@@ -549,6 +549,7 @@ const styles = StyleSheet.create({
     height: screenWidth / 2,
     resizeMode: "contain",
     marginVertical: Sizes.fixPadding,
+    // backgroundColor:"teal"
   },
   loaderContainer: {
     position: "absolute",

@@ -430,7 +430,7 @@ const CreateUser = ({ route, navigation }) => {
         onChangeText={(text) => {
           if (label === "Email") {
             setter(text.toLowerCase());
-          } else if (label === "Vehicle Registration Number") {
+          } else if (label === "Vehicle Registration Number" || label === "GST Number" || label === "PAN Number") {
             setter(text.toUpperCase());
           } else {
             setter(text);

@@ -470,6 +470,7 @@ const CreateUser = ({ route, navigation }) => {
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         {label}
+
       </Text>
       <View
         style={{
@@ -530,7 +531,12 @@ const CreateUser = ({ route, navigation }) => {
           <MaterialIcons name="edit" size={20} color="white" />
         </TouchableOpacity>
       </View>
-      <Text style={styles.imageLabel}>{label}</Text>
+      <Text style={styles.imageLabel}>{label}
+        
+          {label === "GST" && businessType == "individual" && (
+          <Text style={styles.optional}> (Optional)</Text>
+          )}
+      </Text>
     </TouchableOpacity>
   );
 

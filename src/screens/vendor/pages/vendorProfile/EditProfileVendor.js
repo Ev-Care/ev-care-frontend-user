@@ -38,19 +38,14 @@ import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
 const EditProfileScreen = ({ route, navigation }) => {
   const user = useSelector(selectUser);
   const accessToken = useSelector(selectToken);
+   const [coordinate, setCoordinate] = useState(null);
   const dispatch = useDispatch();
-  const [name, setName] = useState(user?.name || "Not found");
-  const [email, setEmail] = useState(user?.email || "Not found");
-  const [mobNumber, setMobNumber] = useState(
-    user?.mobile_number || "Not found"
-  );
-  const [businessName, setBusinessName] = useState(
-    user?.business_name || "Not found"
-  );
-  const [aadharNumber, setAadharNumber] = useState(
-    user?.adhar_no || "Not found"
-  );
-  const [panNumber, setPanNumber] = useState(user?.pan_no || "Not found");
+  const [name, setName] = useState(user?.name);
+  const [email, setEmail] = useState(user?.email);
+  const [mobNumber, setMobNumber] = useState(user?.mobile_number);
+  const [businessName, setBusinessName] = useState(user?.business_name);
+  const [aadharNumber, setAadharNumber] = useState(user?.adhar_no);
+  const [panNumber, setPanNumber] = useState(user?.pan_no);
   const [gstNumber, setGstNumber] = useState(user?.gstin_number);
   const [businessType, setBusinessType] = useState(user?.vendor_type);
   //   image start
@@ -73,6 +68,7 @@ const EditProfileScreen = ({ route, navigation }) => {
   const [showDialogue, setshowDialogue] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [imageloading, setImageLoading] = useState("");
+  const [address, setAddress] = useState(user?.address);
 
   const errorMessage = useSelector(selectAuthError);
   const showFullImage = (uri) => {
@@ -86,6 +82,7 @@ const EditProfileScreen = ({ route, navigation }) => {
     try {
       const updatedData = {
         owner_legal_name: name,
+        address:address,
         email: email,
         avatar: avatarURI,
         business_name: businessName,
@@ -118,7 +115,13 @@ const EditProfileScreen = ({ route, navigation }) => {
       setIsLoading(false);
     }
   };
-
+  const selectOnMap = () => {
+    navigation.push("PickLocation", {
+      addressFor: "stationAddress",
+      setAddress: (newAddress) => setAddress(newAddress),
+      setCoordinate: (newCoordinate) => setCoordinate(newCoordinate),
+    });
+  };
   const openGallery = async (setter, label) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -334,7 +337,7 @@ const EditProfileScreen = ({ route, navigation }) => {
 
         {user?.role === "vendor" && (
           <>
-            {user?.vendor_type == "organization" &&( 
+            {user?.vendor_type == "organization" && (
               <>
                 {renderInput(
                   "Organization or Legal Name",
@@ -363,6 +366,7 @@ const EditProfileScreen = ({ route, navigation }) => {
               setGstNumber,
               "Enter GST number"
             )}
+            {addressInfo()}
             <View style={styles.imageContainer}>
               {renderImageBox(
                 "Aadhaar front",
@@ -449,6 +453,61 @@ const EditProfileScreen = ({ route, navigation }) => {
     </View>
   );
 
+  function addressInfo() {
+    return (
+      <View style={styles.address}>
+         <Text
+          style={{
+            marginBottom: 4,
+            fontWeight: "bold",
+            fontSize: 14,
+            color: Colors.blackColor,
+          }}
+        >
+        Address
+        </Text>
+        <TextInput
+          style={[styles.input, styles.textArea]}
+          placeholder="Home/Street/Locality, City, State, Pincode"
+          placeholderTextColor="gray"
+          multiline
+          value={address}
+          onChangeText={(text) => {
+            if (text.length > 200) {
+              dispatch(
+                showSnackbar({
+                  message: "Address cannot exceed 100 characters",
+                  type: "error",
+                })
+              );
+              return;
+            }
+            setAddress(text);
+          }}
+          // maxLength={100}
+        />
+        <Text
+          style={{
+            marginVertical: 4,
+            fontWeight: "bold",
+            fontSize: 14,
+            color: Colors.darOrangeColor,
+          }}
+        >
+          Or
+        </Text>
+        <TouchableOpacity
+         onPress={selectOnMap}
+          style={[
+            styles.actionButton,
+            { borderWidth: 1, borderColor: Colors.darOrangeColor },
+          ]}
+        >
+          <Text style={styles.mapButtonText}>Select On Map</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
   function UpdateOverlay() {
     return (
       <Overlay
@@ -603,6 +662,10 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
     borderRadius: 10,
   },
+    textArea: {
+    height: 80,
+    textAlignVertical: "top",
+  },
   modalCloseButton: {
     marginTop: 20,
     padding: 10,
@@ -649,7 +712,12 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 14,
+  },
+  mapButtonText: {
+    color: Colors.darOrangeColor,
+    fontWeight: "bold",
+    fontSize: 14,
   },
   /* delete Dialog Styles */
   dialogStyle: {

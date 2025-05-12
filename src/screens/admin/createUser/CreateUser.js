@@ -53,7 +53,8 @@ const CreateUser = ({ route, navigation }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [currentImageSetter, setCurrentImageSetter] = useState(null);
-
+ const [coordinate, setCoordinate] = useState(null);
+  const [address, setAddress] = useState(null);
   const [selectedRole, setSelectedRole] = useState("user");
   const [imageloading, setImageLoading] = useState("");
   const [businessType, setBusinessType] = useState("individual");
@@ -63,7 +64,8 @@ const CreateUser = ({ route, navigation }) => {
   const [vehicleNumber, setVehicleNumber] = useState(null);
   const [password, setPassword] = useState(null);
   const [confirmPassword, setConfirmPassword] = useState(null);
-  const [secure, setSecure] = useState(true);
+  const [securePass, setSecurePass] = useState(true);
+  const [secureConfirmPass, setSecureConfirmPass] = useState(true);
   const accessToken = useSelector(selectToken);
   const dispatch = useDispatch();
   const showFullImage = (uri) => {
@@ -150,7 +152,13 @@ const CreateUser = ({ route, navigation }) => {
       setBottomSheetVisible(false);
     }
   };
-
+  const selectOnMap = () => {
+    navigation.push("PickLocation", {
+      addressFor: "stationAddress",
+      setAddress: (newAddress) => setAddress(newAddress),
+      setCoordinate: (newCoordinate) => setCoordinate(newCoordinate),
+    });
+  };
   const removeImage = (setter) => {
     setter(null);
     setBottomSheetVisible(false);
@@ -355,6 +363,7 @@ const CreateUser = ({ route, navigation }) => {
       payload = {
         ...payload,
         pan_no: panNumber,
+        address: address,
         pan_pic: panImage,
         vendor_type: businessType,
         gstin_number: gstNumber || null,
@@ -457,7 +466,7 @@ const CreateUser = ({ route, navigation }) => {
     </View>
   );
 
-  const renderPassword = (label, value, setter, placeholder) => (
+  const renderPassword = (label, value, setter, placeholder ,secure ,setSecure) => (
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         {label}
@@ -590,12 +599,15 @@ const CreateUser = ({ route, navigation }) => {
           "Enter your mobile number"
         )}
         {renderInput("Email", email, setEmail, "Enter your email")}
-        {renderPassword("Password", password, setPassword, "Enter Password")}
+        {renderPassword("Password", password, setPassword, "Enter Password",securePass,setSecurePass)}
         {renderPassword(
           "Confirm Password",
           confirmPassword,
           setConfirmPassword,
-          "Confirm Your Password"
+          "Confirm Your Password",
+          secureConfirmPass,
+          setSecureConfirmPass
+
         )}
 
         {roleSelector()}
@@ -634,6 +646,7 @@ const CreateUser = ({ route, navigation }) => {
               setGstNumber,
               "Enter GST number"
             )}
+            { addressInfo()}
             <View style={styles.imageContainer}>
               {businessType === "individual" && (
                 <>
@@ -783,6 +796,61 @@ const CreateUser = ({ route, navigation }) => {
       </View>
     );
   }
+  function addressInfo() {
+      return (
+        <View style={styles.address}>
+           <Text
+            style={{
+              marginBottom: 4,
+              fontWeight: "bold",
+              fontSize: 14,
+              color: Colors.blackColor,
+            }}
+          >
+          Address
+          </Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            placeholder="Home/Street/Locality, City, State, Pincode"
+            placeholderTextColor="gray"
+            multiline
+            value={address}
+            onChangeText={(text) => {
+              if (text.length > 200) {
+                dispatch(
+                  showSnackbar({
+                    message: "Address cannot exceed 100 characters",
+                    type: "error",
+                  })
+                );
+                return;
+              }
+              setAddress(text);
+            }}
+            // maxLength={100}
+          />
+          <Text
+            style={{
+              marginVertical: 4,
+              fontWeight: "bold",
+              fontSize: 14,
+              color: Colors.darOrangeColor,
+            }}
+          >
+            Or
+          </Text>
+          <TouchableOpacity
+           onPress={selectOnMap}
+            style={[
+              styles.actionButton,
+              { borderWidth: 1, borderColor: Colors.darOrangeColor },
+            ]}
+          >
+            <Text style={styles.mapButtonText}>Select On Map</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
 };
 
 const styles = StyleSheet.create({
@@ -814,6 +882,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
 
     flexWrap: "wrap",
+  },    textArea: {
+    height: 80,
+    textAlignVertical: "top",
   },
   loaderContainer: {
     position: "absolute",
@@ -963,6 +1034,11 @@ const styles = StyleSheet.create({
   },
   selectedButtonText: {
     color: "white",
+  },
+    mapButtonText: {
+    color: Colors.darOrangeColor,
+    fontWeight: "bold",
+    fontSize: 14,
   },
 });
 

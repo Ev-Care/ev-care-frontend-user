@@ -20,6 +20,7 @@ export const
         owner_legal_name: data.owner_legal_name,
         email: data.email,
         role: data.role,
+        address: data.address,
         avatar: data.avatar,
         vehicle_model: data.vehicle_model,
         vehicle_manufacturer: data.vehicle_manufacturer,

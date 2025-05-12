@@ -215,6 +215,7 @@ const VendorDetailForm = () => {
         );
       } else if (patchUpdateVendorProfile.rejected.match(response)) {
         const errorMessage =
+        response.payload||
           response?.payload?.message || "Submission failed. Please try again.";
         dispatch(showSnackbar({ message: errorMessage, type: "error" }));
       }
@@ -726,7 +727,7 @@ const VendorDetailForm = () => {
           multiline
           value={address}
           onChangeText={(text) => {
-            if (text.length > 100) {
+            if (text.length > 200) {
               dispatch(
                 showSnackbar({
                   message: "Address cannot exceed 100 characters",

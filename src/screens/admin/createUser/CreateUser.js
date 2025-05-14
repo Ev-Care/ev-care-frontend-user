@@ -67,6 +67,8 @@ const CreateUser = ({ route, navigation }) => {
   const [securePass, setSecurePass] = useState(true);
   const [secureConfirmPass, setSecureConfirmPass] = useState(true);
   const accessToken = useSelector(selectToken);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  
   const dispatch = useDispatch();
   const showFullImage = (uri) => {
     if (!uri) return;
@@ -263,8 +265,26 @@ const CreateUser = ({ route, navigation }) => {
       return false;
     }
 
-    if (businessType === "organization") {
-      if (!businessName) {
+    if (password !== confirmPassword) {
+      dispatch(
+        showSnackbar({ message: "Passwords do not match.", type: "error" })
+      );
+      return false;
+    }
+
+    if (!passwordRegex.test(password)) {
+      dispatch(
+        showSnackbar({
+          message:
+            "Password must be 8–20 characters long and include at least one letter and one number.",
+          type: "error",
+        })
+      );
+      return false;
+    }
+
+    if (selectedRole === "vendor") {
+      if (!panNumber) {
         dispatch(
           showSnackbar({
             message: "Please enter Organization or Legal Name.",
@@ -274,7 +294,17 @@ const CreateUser = ({ route, navigation }) => {
         return false;
       }
 
-      if (!gstNumber) {
+      if (businessType === "organization" && !businessName) {
+        dispatch(
+          showSnackbar({
+            message: "Please Enter Organization or Legal Name",
+            type: "error",
+          })
+        );
+        return false;
+      }
+
+      if (!panRegex.test(panNumber)) {
         dispatch(
           showSnackbar({
             message: "GST number is required for vendors with Organization type.",
@@ -351,32 +381,17 @@ const CreateUser = ({ route, navigation }) => {
         }
       }
     }
-  } else {
-    // User role: vehicle info is mandatory
-    if (!vehicleNumber || !vehicleCompany || !vehicleModel) {
-      dispatch(
-        showSnackbar({
-          message: "All vehicle details are required for users.",
-          type: "error",
-        })
-      );
-      return false;
-    }
-
-    if (!vehicleNumberRegex.test(vehicleNumber)) {
-      dispatch(
-        showSnackbar({
-          message: "Invalid vehicle number format.",
-          type: "error",
-        })
-      );
-      return false;
-    }
+  if(selectedStatus === null){
+    dispatch(
+      showSnackbar({
+        message: "Please select a status.",
+        type: "error",
+      })
+    );
+    return false;
   }
-
-  return true;
-};
-
+    return true;
+  };
 
   const handleSubmit = async () => {
     if (!validateInputs()) return;
@@ -463,7 +478,7 @@ const CreateUser = ({ route, navigation }) => {
         {label === "GST Number" && businessType === "individual" ? (
           <Text style={styles.optional}> (Optional)</Text>
         ) : (
-          <Text style={[styles.optional, { color: Colors.darOrangeColor }]}> *</Text>
+          <Text style={{ color: Colors.darOrangeColor }}> *</Text>
         )}
       </Text>
 
@@ -473,7 +488,11 @@ const CreateUser = ({ route, navigation }) => {
         onChangeText={(text) => {
           if (label === "Email") {
             setter(text.toLowerCase());
-          } else if (label === "Vehicle Registration Number" || label === "GST Number" || label === "PAN Number") {
+          } else if (
+            label === "Vehicle Registration Number" ||
+            label === "GST Number" ||
+            label === "PAN Number"
+          ) {
             setter(text.toUpperCase());
           } else {
             setter(text);
@@ -500,11 +519,18 @@ const CreateUser = ({ route, navigation }) => {
     </View>
   );
 
-  const renderPassword = (label, value, setter, placeholder, secure, setSecure) => (
+  const renderPassword = (
+    label,
+    value,
+    setter,
+    placeholder,
+    secure,
+    setSecure
+  ) => (
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         {label}
-        <Text style={[styles.optional, { color: Colors.darOrangeColor }]}> *</Text>
+        <Text style={{ color: Colors.darOrangeColor }}> *</Text>
       </Text>
       <View
         style={{
@@ -565,12 +591,15 @@ const CreateUser = ({ route, navigation }) => {
           <MaterialIcons name="edit" size={20} color="white" />
         </TouchableOpacity>
       </View>
-      <Text style={styles.imageLabel}>{label}
+       {label != "avatar" && <Text style={styles.imageLabel}>
+        {label}
 
-        {label === "GST" && businessType == "individual" && (
+        {label === "GST" && businessType === "individual" ? (
           <Text style={styles.optional}> (Optional)</Text>
+        ) : (
+          <Text style={{ color: Colors.darOrangeColor }}> *</Text>
         )}
-      </Text>
+      </Text>}
     </TouchableOpacity>
   );
 
@@ -578,6 +607,7 @@ const CreateUser = ({ route, navigation }) => {
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         Select Role
+        <Text style={{ color: Colors.darOrangeColor }}> *</Text>
       </Text>
       <View style={styles.selectorContainer}>
         <TouchableOpacity
@@ -639,7 +669,15 @@ const CreateUser = ({ route, navigation }) => {
           "Enter your mobile number"
         )}
         {renderInput("Email", email, setEmail, "Enter your email")}
-        {renderPassword("Password", password, setPassword, "Enter Password", securePass, setSecurePass)}
+        {statusSection()}
+        {renderPassword(
+          "Password",
+          password,
+          setPassword,
+          "Enter Password",
+          securePass,
+          setSecurePass
+        )}
         {renderPassword(
           "Confirm Password",
           confirmPassword,
@@ -647,12 +685,10 @@ const CreateUser = ({ route, navigation }) => {
           "Confirm Your Password",
           secureConfirmPass,
           setSecureConfirmPass
-
         )}
 
         {roleSelector()}
         {selectedRole === "vendor" ? (
-
           <>
             {businessTypeSection()}
             {businessType === "organization" && (
@@ -794,7 +830,7 @@ const CreateUser = ({ route, navigation }) => {
     return (
       <View style={[styles.section, { marginBottom: 12 }]}>
         <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
-          Register As
+          Register As <Text style={{ color: Colors.darOrangeColor }}>*</Text>
         </Text>
 
         <View style={styles.TypeContainer}>
@@ -848,6 +884,7 @@ const CreateUser = ({ route, navigation }) => {
           }}
         >
           Address
+          <Text style={{ color: Colors.darOrangeColor }}> *</Text>
         </Text>
         <TextInput
           style={[styles.input, styles.textArea]}
@@ -867,7 +904,7 @@ const CreateUser = ({ route, navigation }) => {
             }
             setAddress(text);
           }}
-        // maxLength={100}
+          // maxLength={100}
         />
         <Text
           style={{
@@ -888,6 +925,40 @@ const CreateUser = ({ route, navigation }) => {
         >
           <Text style={styles.mapButtonText}>Select On Map</Text>
         </TouchableOpacity>
+      </View>
+    );
+  }
+  function statusSection() {
+    const statuses = ["Pending", "On Hold", "Completed", "Active"];
+
+    return (
+      <View style={[styles.section, { marginBottom: 12 }]}>
+        <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+          Select Status
+          <Text style={{ color: Colors.darOrangeColor }}> *</Text>
+        </Text>
+
+        <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
+          {statuses.map((status) => (
+            <TouchableOpacity
+              key={status}
+              style={[
+                styles.TypeButton,
+                selectedStatus === status && styles.selectedButton,
+              ]}
+              onPress={() => setSelectedStatus(status)}
+            >
+              <Text
+                style={[
+                  styles.TypebuttonText,
+                  selectedStatus === status && styles.selectedButtonText,
+                ]}
+              >
+                {status}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
     );
   }
@@ -922,7 +993,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
 
     flexWrap: "wrap",
-  }, textArea: {
+  },
+  textArea: {
     height: 80,
     textAlignVertical: "top",
   },

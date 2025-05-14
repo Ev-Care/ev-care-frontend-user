@@ -23,6 +23,7 @@ import PickLocationScreen from "../screens/user/pickLocation/pickLocationScreen"
 import AddStationScreen from "../screens/admin/addStations/addStations";
 import UpdateStationPage from "../screens/admin/viewAllStations/UpdateStationPage";
 import ChangePassword from "../components/commonComponents/changePassword";
+import VendorSelector from "../screens/admin/addStations/vendorSelector";
 
 const Stack = createStackNavigator();
 
@@ -52,6 +53,7 @@ export function AdminStack() {
       <Stack.Screen name="PickLocation" component={PickLocationScreen} />
       <Stack.Screen name="UpdateStationPage" component={UpdateStationPage} />
          <Stack.Screen name="ChangePassword" component={ChangePassword} />
+      <Stack.Screen name="VendorSelector" component={VendorSelector} />
     </Stack.Navigator>
   );
 }

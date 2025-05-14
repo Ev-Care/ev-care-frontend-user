@@ -97,7 +97,7 @@ const VendorProfile = () => {
               marginHorizontal: Sizes.fixPadding * 2.0,
             }}
           >
-            Are you sure want to logout?
+           Are you sure you want to log out?
           </Text>
           <View
             style={{

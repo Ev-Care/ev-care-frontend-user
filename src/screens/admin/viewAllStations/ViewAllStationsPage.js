@@ -17,9 +17,10 @@ import {
   commonStyles,
   screenWidth,
 } from "../../../constants/styles";
+import RNModal from "react-native-modal";
 import React, { useEffect, useState } from "react";
 import MyStatusBar from "../../../components/myStatusBar";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
 import imageURL from "../../../constants/baseURL";
 import { openHourFormatter, formatDistance } from "../../../utils/globalMethods";
 import { useDispatch, useSelector } from "react-redux";
@@ -30,7 +31,10 @@ import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 const ViewAllStationsPage = ({ navigation }) => {
   const [searchText, setSearchText] = useState("");
   const allStationsList = useSelector(selectAllStations);
+   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const dispatch = useDispatch();
+  const [selectedStatus, setSelectedStatus] = useState(null);
+   const [selectedRole, setSelectedRole] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const filteredStations = allStationsList.filter((station) =>
     station?.station_name?.toLowerCase().includes(searchText.toLowerCase())
@@ -78,6 +82,7 @@ useEffect(() => {
       <View style={{ flex: 1 }}>
         {searchBar()}
         {allStationsInfo()}
+        {bottonSheet()}
       </View>
        {isLoading && (
         <View style={styles.loaderContainer}>
@@ -157,32 +162,131 @@ useEffect(() => {
     );
   }
 
-  function searchBar() {
-    return (
-      <View style={{ margin: 20.0 }}>
-        <MyStatusBar />
-        <View style={styles.searchBar}>
-          <MaterialIcons
-            name="search"
-            size={24}
-            color="#888"
-            style={{ marginRight: 8 }}
-          />
-          <TextInput
-            placeholder="Search Charging Stations"
-            placeholderTextColor="#888"
-            style={{
-              flex: 1,   
-              padding: 12,
-              fontSize: 12,
-            }}
-            value={searchText}
-            onChangeText={(text) => setSearchText(text)}
-          />
-        </View>
+function searchBar() {
+  return (
+    <View
+      style={{
+        margin: 20,
+        flexDirection: "row",
+        alignItems: "center",
+      }}
+    >
+      <MyStatusBar />
+
+      {/* Wrap SearchBar and give it flex: 1 */}
+      <View style={[styles.searchBar, { flex: 1 }]}>
+        <MaterialIcons
+          name="search"
+          size={24}
+          color="#888"
+          style={{ marginRight: 8 }}
+        />
+        <TextInput
+          placeholder="Search Charging Stations"
+          placeholderTextColor="#888"
+          style={{
+            flex: 1,
+            padding: 12,
+            fontSize: 12,
+          }}
+          value={searchText}
+          onChangeText={(text) => setSearchText(text)}
+        />
       </View>
-    );
-  }
+
+      {/* Filter Icon */}
+      <MaterialIcons
+        name="filter-list"
+        color={Colors.blackColor}
+        size={26}
+        style={{ marginLeft: 12 }} // add some spacing
+        onPress={() =>
+         setBottomSheetVisible(true)
+        }
+      />
+    </View>
+  );
+}
+function bottonSheet(){
+  return (
+    <RNModal
+          isVisible={isBottomSheetVisible}
+          onBackdropPress={() => setBottomSheetVisible(false)}
+          style={{ justifyContent: "flex-end", margin: 0 }}
+        >
+          <View style={styles.bottomSheet}>
+            {roleSelector()}
+           {statusSection()}
+          </View>
+        </RNModal>)
+}
+function roleSelector() {
+  const roles = ["user", "vendor","both"];
+
+  return (
+    <View style={[styles.section, { marginBottom: 12 }]}>
+      <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+        Select Role 
+      </Text>
+
+      <View style={styles.TypeContainer}>
+        {roles.map((role) => (
+          <TouchableOpacity
+            key={role}
+            style={[
+              styles.TypeButton,
+              selectedRole === role && styles.selectedButton,
+            ]}
+            onPress={() => setSelectedRole(role)}
+          >
+            <Text
+              style={[
+                styles.TypebuttonText,
+                selectedRole === role && styles.selectedButtonText,
+              ]}
+            >
+              {role.charAt(0).toUpperCase() + role.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+
+function statusSection() {
+      const statuses = ['All',"Pending", "On Hold", "Completed", "Active"];
+      return (
+        <View style={[styles.section, { marginBottom: 12 }]}>
+          <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+            Select Status
+          </Text>
+  
+          <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
+            {statuses.map((status) => (
+              <TouchableOpacity
+                key={status}
+                style={[
+                  styles.TypeButton,
+                  selectedStatus === status && styles.selectedButton,
+                ]}
+                onPress={() => setSelectedStatus(status)}
+              >
+                <Text
+                  style={[
+                    styles.TypebuttonText,
+                    selectedStatus === status && styles.selectedButtonText,
+                  ]}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      );
+    }
 };
 
 export default ViewAllStationsPage;
@@ -194,6 +298,27 @@ const styles = StyleSheet.create({
     paddingVertical: Sizes.fixPadding - 2.0,
     borderTopLeftRadius: Sizes.fixPadding,
     borderBottomRightRadius: Sizes.fixPadding,
+  },  
+  TypeContainer: {
+    flexDirection: "row",
+    gap: 10,
+  }, TypeButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    borderRadius: 8,
+  },
+  TypebuttonText: {
+    fontSize: 12,
+    color: "#555",
+  },
+  selectedButton: {
+    backgroundColor: Colors.primaryColor,
+    borderColor: Colors.primaryColor,
+  },
+  selectedButtonText: {
+    color: "white",
   },
   enrouteChargingStationWrapStyle: {
     borderRadius: Sizes.fixPadding,
@@ -310,5 +435,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     // backgroundColor: "rgba(182, 206, 232, 0.3)",
     zIndex: 999,
+  },
+    bottomSheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+  }, sheetOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
   },
 });

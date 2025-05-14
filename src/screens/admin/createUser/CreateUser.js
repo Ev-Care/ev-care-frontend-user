@@ -53,7 +53,7 @@ const CreateUser = ({ route, navigation }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [currentImageSetter, setCurrentImageSetter] = useState(null);
- const [coordinate, setCoordinate] = useState(null);
+  const [coordinate, setCoordinate] = useState(null);
   const [address, setAddress] = useState(null);
   const [selectedRole, setSelectedRole] = useState("user");
   const [imageloading, setImageLoading] = useState("");
@@ -165,187 +165,218 @@ const CreateUser = ({ route, navigation }) => {
   };
 
   const validateInputs = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const mobileRegex = /^[6-9]\d{9}$/;
-    const aadharRegex = /^\d{12}$/;
-    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    const gstRegex =
-      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-    const nameRegex = /^[A-Za-z\s]{3,}$/;
-    const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const mobileRegex = /^[6-9]\d{9}$/;
+  const aadharRegex = /^\d{12}$/;
+  const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+  const nameRegex = /^[A-Za-z\s]{3,}$/;
+  const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
 
-    if (!name || !mobNumber || !email) {
+  if (!name || !mobNumber || !email) {
+    dispatch(
+      showSnackbar({
+        message: "Name, Mobile Number, and Email are required.",
+        type: "error",
+      })
+    );
+    return false;
+  }
+
+  if (!nameRegex.test(name)) {
+    dispatch(
+      showSnackbar({
+        message: "Invalid full name. Only letters and spaces, at least 3 characters.",
+        type: "error",
+      })
+    );
+    return false;
+  }
+
+  if (!emailRegex.test(email)) {
+    dispatch(
+      showSnackbar({ message: "Invalid Email format.", type: "error" })
+    );
+    return false;
+  }
+
+  if (!mobileRegex.test(mobNumber)) {
+    dispatch(
+      showSnackbar({
+        message: "Invalid Mobile Number. It should be 10 digits and start with 6-9.",
+        type: "error",
+      })
+    );
+    return false;
+  }
+
+  if (!password || !confirmPassword) {
+    dispatch(
+      showSnackbar({
+        message: "Password and Confirm Password are required.",
+        type: "error",
+      })
+    );
+    return false;
+  }
+
+  if (password !== confirmPassword) {
+    dispatch(
+      showSnackbar({ message: "Passwords do not match.", type: "error" })
+    );
+    return false;
+  }
+
+  if (!passwordRegex.test(password)) {
+    dispatch(
+      showSnackbar({
+        message: "Password must be 8–20 characters long and include at least one letter and one number.",
+        type: "error",
+      })
+    );
+    return false;
+  }
+
+  if (selectedRole === "vendor") {
+    if (!panNumber) {
       dispatch(
         showSnackbar({
-          message: "Name, Mobile Number, and Email are required.",
+          message: "PAN is required for vendors.",
           type: "error",
         })
       );
       return false;
     }
 
-    if (!nameRegex.test(name)) {
+    if (!panRegex.test(panNumber)) {
       dispatch(
-        showSnackbar({
-          message:
-            "Invalid full name. Only letters and spaces, at least 3 characters.",
-          type: "error",
-        })
-      );
-      return false;
-    }
-    if (!emailRegex.test(email)) {
-      dispatch(
-        showSnackbar({ message: "Invalid Email format.", type: "error" })
+        showSnackbar({ message: "Invalid PAN number format.", type: "error" })
       );
       return false;
     }
 
-    if (!mobileRegex.test(mobNumber)) {
+    if (!panImage) {
       dispatch(
-        showSnackbar({
-          message:
-            "Invalid Mobile Number. It should be 10 digits and start with 6-9.",
-          type: "error",
-        })
-      );
-      return false;
-    }
-    if (!password || !confirmPassword) {
-      dispatch(
-        showSnackbar({
-          message: "Password and Confirm Password are required.",
-          type: "error",
-        })
+        showSnackbar({ message: "PAN image is required.", type: "error" })
       );
       return false;
     }
 
-    if (password !== confirmPassword) {
-      dispatch(
-        showSnackbar({ message: "Passwords do not match.", type: "error" })
-      );
-      return false;
-    }
-
-    if (!passwordRegex.test(password)) {
-      dispatch(
-        showSnackbar({
-          message:
-            "Password must be 8–20 characters long and include at least one letter and one number.",
-          type: "error",
-        })
-      );
-      return false;
-    }
-
-    if (selectedRole === "vendor") {
-      if ( !panNumber) {
+    if (businessType === "organization") {
+      if (!businessName) {
         dispatch(
           showSnackbar({
-            message: " PAN is required for vendors.",
+            message: "Please enter Organization or Legal Name.",
             type: "error",
           })
         );
         return false;
       }
 
-       if (businessType==="organization" && !businessName ) {
-            dispatch(
-                showSnackbar({
-                  message: "Please Enter Organization or Legal Name",
-                  type: "error",
-                }))
-             return false;
-          }
-
-      if (!panRegex.test(panNumber)) {
+      if (!gstNumber) {
         dispatch(
-          showSnackbar({ message: "Invalid PAN number format.", type: "error" })
+          showSnackbar({
+            message: "GST number is required for vendors with Organization type.",
+            type: "error",
+          })
         );
         return false;
       }
 
-      if (businessType === "individual") {
-        if (!aadharNumber) {
-          dispatch(
-            showSnackbar({
-              message:
-                "Aadhar Number is required for individual business type.",
-              type: "error",
-            })
-          );
-          return false;
-        }
-
-        if (!aadharRegex.test(aadharNumber)) {
-          dispatch(
-            showSnackbar({
-              message: "Invalid Aadhar number. Must be 12 digits.",
-              type: "error",
-            })
-          );
-          return false;
-        }
-
-        if (!aadhaarFrontImage || !aadhaarBackImage) {
-          dispatch(
-            showSnackbar({
-              message: "Aadhaar front and back images are required.",
-              type: "error",
-            })
-          );
-          return false;
-        }
-      }
-
-      if (!panImage) {
-        dispatch(
-          showSnackbar({ message: "PAN image is required.", type: "error" })
-        );
-        return false;
-      }
-
-      if (gstNumber && !gstRegex.test(gstNumber)) {
+      if (!gstRegex.test(gstNumber)) {
         dispatch(
           showSnackbar({ message: "Invalid GST number format.", type: "error" })
         );
         return false;
       }
 
-      if (gstNumber && !gstImage) {
+      if (!gstImage) {
         dispatch(
           showSnackbar({
-            message: "GST image is required if GST number is provided.",
+            message: "GST image is required for Organization type.",
             type: "error",
           })
         );
         return false;
       }
-    } else {
-      // User role: vehicle info is mandatory
-      if (!vehicleNumber || !vehicleCompany || !vehicleModel) {
+
+    } else if (businessType === "individual") {
+      if (!aadharNumber) {
         dispatch(
           showSnackbar({
-            message: "All vehicle details are required for users.",
+            message: "Aadhar Number is required for individual business type.",
             type: "error",
           })
         );
         return false;
       }
-      if (!vehicleNumberRegex.test(vehicleNumber)) {
+
+      if (!aadharRegex.test(aadharNumber)) {
         dispatch(
           showSnackbar({
-            message: "Invalid vechile number format.",
+            message: "Invalid Aadhar number. Must be 12 digits.",
             type: "error",
           })
         );
+        return false;
+      }
+
+      if (!aadhaarFrontImage || !aadhaarBackImage) {
+        dispatch(
+          showSnackbar({
+            message: "Aadhaar front and back images are required.",
+            type: "error",
+          })
+        );
+        return false;
+      }
+
+      if (gstNumber) {
+        if (!gstRegex.test(gstNumber)) {
+          dispatch(
+            showSnackbar({ message: "Invalid GST number format.", type: "error" })
+          );
+          return false;
+        }
+
+        if (!gstImage) {
+          dispatch(
+            showSnackbar({
+              message: "GST image is required if GST number is provided.",
+              type: "error",
+            })
+          );
+          return false;
+        }
       }
     }
+  } else {
+    // User role: vehicle info is mandatory
+    if (!vehicleNumber || !vehicleCompany || !vehicleModel) {
+      dispatch(
+        showSnackbar({
+          message: "All vehicle details are required for users.",
+          type: "error",
+        })
+      );
+      return false;
+    }
 
-    return true;
-  };
+    if (!vehicleNumberRegex.test(vehicleNumber)) {
+      dispatch(
+        showSnackbar({
+          message: "Invalid vehicle number format.",
+          type: "error",
+        })
+      );
+      return false;
+    }
+  }
+
+  return true;
+};
+
 
   const handleSubmit = async () => {
     if (!validateInputs()) return;
@@ -372,7 +403,7 @@ const CreateUser = ({ route, navigation }) => {
       if (businessType === "organization") {
         payload = {
           ...payload,
-        business_name: businessName,
+          business_name: businessName,
         };
       }
 
@@ -429,10 +460,13 @@ const CreateUser = ({ route, navigation }) => {
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         {label}
-        {label === "GST Number" && businessType == "individual" && (
+        {label === "GST Number" && businessType === "individual" ? (
           <Text style={styles.optional}> (Optional)</Text>
+        ) : (
+          <Text style={[styles.optional, { color: Colors.darOrangeColor }]}> *</Text>
         )}
       </Text>
+
       <TextInput
         style={styles.input}
         value={value}
@@ -450,27 +484,27 @@ const CreateUser = ({ route, navigation }) => {
           label === "Mobile Number"
             ? "numeric"
             : label === "Email"
-            ? "email-address"
-            : "default"
+              ? "email-address"
+              : "default"
         }
         maxLength={
           label === "Mobile Number" || label === "PAN Number"
             ? 10
             : label === "Aadhar Number"
-            ? 12
-            : label === "GST Number"
-            ? 15
-            : undefined
+              ? 12
+              : label === "GST Number"
+                ? 15
+                : undefined
         }
       />
     </View>
   );
 
-  const renderPassword = (label, value, setter, placeholder ,secure ,setSecure) => (
+  const renderPassword = (label, value, setter, placeholder, secure, setSecure) => (
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         {label}
-
+        <Text style={[styles.optional, { color: Colors.darOrangeColor }]}> *</Text>
       </Text>
       <View
         style={{
@@ -532,10 +566,10 @@ const CreateUser = ({ route, navigation }) => {
         </TouchableOpacity>
       </View>
       <Text style={styles.imageLabel}>{label}
-        
-          {label === "GST" && businessType == "individual" && (
+
+        {label === "GST" && businessType == "individual" && (
           <Text style={styles.optional}> (Optional)</Text>
-          )}
+        )}
       </Text>
     </TouchableOpacity>
   );
@@ -605,7 +639,7 @@ const CreateUser = ({ route, navigation }) => {
           "Enter your mobile number"
         )}
         {renderInput("Email", email, setEmail, "Enter your email")}
-        {renderPassword("Password", password, setPassword, "Enter Password",securePass,setSecurePass)}
+        {renderPassword("Password", password, setPassword, "Enter Password", securePass, setSecurePass)}
         {renderPassword(
           "Confirm Password",
           confirmPassword,
@@ -618,8 +652,8 @@ const CreateUser = ({ route, navigation }) => {
 
         {roleSelector()}
         {selectedRole === "vendor" ? (
-          
-           <>
+
+          <>
             {businessTypeSection()}
             {businessType === "organization" && (
               <>
@@ -652,7 +686,7 @@ const CreateUser = ({ route, navigation }) => {
               setGstNumber,
               "Enter GST number"
             )}
-            { addressInfo()}
+            {addressInfo()}
             <View style={styles.imageContainer}>
               {businessType === "individual" && (
                 <>
@@ -803,60 +837,60 @@ const CreateUser = ({ route, navigation }) => {
     );
   }
   function addressInfo() {
-      return (
-        <View style={styles.address}>
-           <Text
-            style={{
-              marginBottom: 4,
-              fontWeight: "bold",
-              fontSize: 14,
-              color: Colors.blackColor,
-            }}
-          >
+    return (
+      <View style={styles.address}>
+        <Text
+          style={{
+            marginBottom: 4,
+            fontWeight: "bold",
+            fontSize: 14,
+            color: Colors.blackColor,
+          }}
+        >
           Address
-          </Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Home/Street/Locality, City, State, Pincode"
-            placeholderTextColor="gray"
-            multiline
-            value={address}
-            onChangeText={(text) => {
-              if (text.length > 200) {
-                dispatch(
-                  showSnackbar({
-                    message: "Address cannot exceed 100 characters",
-                    type: "error",
-                  })
-                );
-                return;
-              }
-              setAddress(text);
-            }}
-            // maxLength={100}
-          />
-          <Text
-            style={{
-              marginVertical: 4,
-              fontWeight: "bold",
-              fontSize: 14,
-              color: Colors.darOrangeColor,
-            }}
-          >
-            Or
-          </Text>
-          <TouchableOpacity
-           onPress={selectOnMap}
-            style={[
-              styles.actionButton,
-              { borderWidth: 1, borderColor: Colors.darOrangeColor },
-            ]}
-          >
-            <Text style={styles.mapButtonText}>Select On Map</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
+        </Text>
+        <TextInput
+          style={[styles.input, styles.textArea]}
+          placeholder="Home/Street/Locality, City, State, Pincode"
+          placeholderTextColor="gray"
+          multiline
+          value={address}
+          onChangeText={(text) => {
+            if (text.length > 200) {
+              dispatch(
+                showSnackbar({
+                  message: "Address cannot exceed 100 characters",
+                  type: "error",
+                })
+              );
+              return;
+            }
+            setAddress(text);
+          }}
+        // maxLength={100}
+        />
+        <Text
+          style={{
+            marginVertical: 4,
+            fontWeight: "bold",
+            fontSize: 14,
+            color: Colors.darOrangeColor,
+          }}
+        >
+          Or
+        </Text>
+        <TouchableOpacity
+          onPress={selectOnMap}
+          style={[
+            styles.actionButton,
+            { borderWidth: 1, borderColor: Colors.darOrangeColor },
+          ]}
+        >
+          <Text style={styles.mapButtonText}>Select On Map</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 };
 
 const styles = StyleSheet.create({
@@ -888,7 +922,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
 
     flexWrap: "wrap",
-  },    textArea: {
+  }, textArea: {
     height: 80,
     textAlignVertical: "top",
   },
@@ -1041,7 +1075,7 @@ const styles = StyleSheet.create({
   selectedButtonText: {
     color: "white",
   },
-    mapButtonText: {
+  mapButtonText: {
     color: Colors.darOrangeColor,
     fontWeight: "bold",
     fontSize: 14,

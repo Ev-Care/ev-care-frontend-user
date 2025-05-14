@@ -101,7 +101,7 @@ const TermsAndConditionsScreen = ({ navigation }) => {
                 {description}
                 {index === array.length - 1 ? (
                   <Text
-                    onPress={() => Linking.openURL("http://evcareindia.com/")}
+                    onPress={() => Linking.openURL("http://evcareindia.com/terms-and-conditions")}
                     style={{ color: "blue", marginLeft: 5 }}
                   >
                     {" "}

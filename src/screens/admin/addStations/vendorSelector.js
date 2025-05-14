@@ -1,5 +1,5 @@
 // ViewAllUserPage.js
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -18,11 +18,17 @@ import {
   commonStyles,
   Sizes,
   Fonts,
-} from "../../../constants/styles";import MyStatusBar from "../../../components/myStatusBar";
+} from "../../../constants/styles"; import MyStatusBar from "../../../components/myStatusBar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { color } from "@rneui/base";
+import { getAllPendingUsers } from "../services/crudFunctions";
+import { useDispatch, useSelector } from "react-redux";
+import {  selectPendingUsers } from "../services/selector";
+import { useFocusEffect } from "@react-navigation/native";
+import imageURL from "../../../constants/baseURL";
 import { RefreshControl } from "react-native";
+import { StackActions } from "@react-navigation/native";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -37,91 +43,67 @@ const COLORS = {
   divider: "#e1e1ea",
 };
 
-// Sample user data
-const USERS = [
-  {
-    id: 18,
-    user_key: "b2ZB4gFprc",
-    owner_legal_name: "Dummy User",
-    business_name: null,
-    mobile_number: "+916666666666",
-    email: null,
-    otp: "573937",
-    pan_no: null,
-    tan_no: null,
-    adhar_no: null,
-    address: null,
-    avatar: null,
-    adhar_front_pic: null,
-    adhar_back_pic: null,
-    pan_pic: null,
-    tan_pic: null,
-    google_id: null,
-    otp_expiry_date: "2025-04-23T18:41:38.000Z",
-    status: "New",
-    role: "user",
-    login_method: "mobile_otp",
-    created_at: "2025-04-23T18:31:38.000Z",
-    update_at: "2025-04-23T18:31:38.509Z",
-    updated_by: 0,
-    isLoggedIn: true,
-    password: null
-  },
-  {
-    id: 19,
-    user_key: "b2ZB4gFprc",
-    owner_legal_name: "Dummy User 2",
-    business_name: null,
-    mobile_number: "+9166666666669",
-    email: null,
-    otp: "573937",
-    pan_no: null,
-    tan_no: null,
-    adhar_no: null,
-    address: null,
-    avatar: null,
-    adhar_front_pic: null,
-    adhar_back_pic: null,
-    pan_pic: null,
-    tan_pic: null,
-    google_id: null,
-    otp_expiry_date: "2025-04-23T18:41:38.000Z",
-    status: "New",
-    role: "vendor",
-    login_method: "mobile_otp",
-    created_at: "2025-04-23T18:31:38.000Z",
-    update_at: "2025-04-23T18:31:38.509Z",
-    updated_by: 0,
-    isLoggedIn: true,
-    password: null
-  }
-];
 
 // User item component - extracted for better code organization
 
-const ViewAllUserPage = ({navigation}) => {
+const VendorSelector = ({ navigation,route }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState(USERS);
+  const users = useSelector(selectPendingUsers);
+  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  console.log('users length',users?.length);
+   const [refreshing, setRefreshing] = useState(false);
+
+  // Called every time screen comes into focus
+ useFocusEffect(
+  useCallback(() => {
+    const fetchPendingUsers = async () => {
+      setIsLoading(true);
+      await dispatch(getAllPendingUsers());
+      setIsLoading(false);
+    };
+
+    fetchPendingUsers();
+  }, [dispatch])
+);
+
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true); // start refreshing UI
+      const response = await dispatch(getAllPendingUsers());
+  
+      if (getAllPendingUsers.fulfilled.match(response)) {
+        console.log('vendors refreshed');
+        // Optional: show a success snackbar
+        // dispatch(showSnackbar({ message: "Vendors refreshed.", type: "success" }));
+      } else {
+        dispatch(showSnackbar({ message: "Failed to refresh vendors.", type: "error" }));
+      }
+    } catch (error) {
+      dispatch(showSnackbar({ message: "Something went wrong.", type: "error" }));
+    } finally {
+      setRefreshing(false); // end refreshing UI
+    }
+  };
+  const handleSelect = (name, number) => {
+  route?.params?.setVendorName(name);
+  route?.params?.setVendorNumber(number);
+  navigation.dispatch(StackActions.pop(1));
+};
+
+
   // Filter users based on search query
-  const filteredUsers = users.filter(
+  const filteredUsers = users?.filter(
     (user) =>
       user?.owner_legal_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user?.mobile_number?.includes(searchQuery)
   );
 
-const handleRefresh = async () => {
-     
-};
-
-
-
   return (
     <SafeAreaView style={styles.container}>
-      <MyStatusBar/>
+      <MyStatusBar />
 
-     {searchBar()}
+    {searchBar()}
 
       <FlatList
        refreshing={refreshing}
@@ -149,32 +131,33 @@ const handleRefresh = async () => {
 
   function UserInfo({ user }) {
     return (
-      <TouchableOpacity onPress={() => navigation.navigate("UpdateUser",{user})} style={styles.userItem}>
-     {user?.avatar ? (
-          <Image source={{ uri: user?.avatar }} style={styles.avatar} />
+      <TouchableOpacity onPress={()=>handleSelect(user?.owner_legal_name,user?.mobile_number)} style={styles.userItem}>
+        {user?.avatar ? (
+          <Image source={{ uri: imageURL.baseURL + user?.avatar }} style={styles.avatar} />
         ) : (
           <Icon name="account-circle" size={50} color="#ccc" style={styles.avatar} />
         )}
-  
+
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{user?.owner_legal_name || "N/A"}</Text>
           <Text style={styles.userMobile}>{user?.mobile_number || "N/A"}</Text>
         </View>
-  
+
         <View style={[styles.roleBadge]}>
           <Text
             style={[
-              styles.roleText,
-              { color: user?.role === "user" ? COLORS.primary : "orange" },
+              styles.roleText, {
+                color: "red",
+              }
             ]}
           >
-            {user?.role || "N/A"}
+            {user?.status === "New" ? "Pending" : user?.status}
           </Text>
         </View>
       </TouchableOpacity>
     );
   }
-  
+
 
   function searchBar() {
     return (
@@ -188,10 +171,10 @@ const handleRefresh = async () => {
             style={{ marginRight: 8 }}
           />
           <TextInput
-            placeholder="Search users here ..."
+            placeholder="Search vendors here ..."
             placeholderTextColor="#888"
             style={{
-              flex: 1,   
+              flex: 1,
               padding: 12,
               fontSize: 12,
             }}
@@ -209,8 +192,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.bodyBackColor,
-    paddingHorizontal: Sizes.fixPadding*0.5,
+    paddingHorizontal: Sizes.fixPadding * 0.5,
   },
+
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -223,17 +207,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-  },
-    loaderContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "center",
-    alignItems: "center",
-    // backgroundColor: "rgba(182, 206, 232, 0.3)",
-    zIndex: 999,
   },
   searchBar: {
     flexDirection: "row",
@@ -288,7 +261,18 @@ const styles = StyleSheet.create({
     borderColor: Colors.extraLightGrayColor,
     borderWidth: 0.1,
     borderTopWidth: 1.0,
-   
+
+  },
+    loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
   },
   avatar: {
     width: 50,
@@ -338,4 +322,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ViewAllUserPage;
+export default VendorSelector;

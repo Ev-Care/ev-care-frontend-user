@@ -53,7 +53,7 @@ const CreateUser = ({ route, navigation }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [currentImageSetter, setCurrentImageSetter] = useState(null);
- const [coordinate, setCoordinate] = useState(null);
+  const [coordinate, setCoordinate] = useState(null);
   const [address, setAddress] = useState(null);
   const [selectedRole, setSelectedRole] = useState("user");
   const [imageloading, setImageLoading] = useState("");
@@ -67,6 +67,8 @@ const CreateUser = ({ route, navigation }) => {
   const [securePass, setSecurePass] = useState(true);
   const [secureConfirmPass, setSecureConfirmPass] = useState(true);
   const accessToken = useSelector(selectToken);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  
   const dispatch = useDispatch();
   const showFullImage = (uri) => {
     if (!uri) return;
@@ -241,7 +243,7 @@ const CreateUser = ({ route, navigation }) => {
     }
 
     if (selectedRole === "vendor") {
-      if ( !panNumber) {
+      if (!panNumber) {
         dispatch(
           showSnackbar({
             message: " PAN is required for vendors.",
@@ -251,14 +253,15 @@ const CreateUser = ({ route, navigation }) => {
         return false;
       }
 
-       if (businessType==="organization" && !businessName ) {
-            dispatch(
-                showSnackbar({
-                  message: "Please Enter Organization or Legal Name",
-                  type: "error",
-                }))
-             return false;
-          }
+      if (businessType === "organization" && !businessName) {
+        dispatch(
+          showSnackbar({
+            message: "Please Enter Organization or Legal Name",
+            type: "error",
+          })
+        );
+        return false;
+      }
 
       if (!panRegex.test(panNumber)) {
         dispatch(
@@ -343,7 +346,15 @@ const CreateUser = ({ route, navigation }) => {
         );
       }
     }
-
+  if(selectedStatus === null){
+    dispatch(
+      showSnackbar({
+        message: "Please select a status.",
+        type: "error",
+      })
+    );
+    return false;
+  }
     return true;
   };
 
@@ -372,7 +383,7 @@ const CreateUser = ({ route, navigation }) => {
       if (businessType === "organization") {
         payload = {
           ...payload,
-        business_name: businessName,
+          business_name: businessName,
         };
       }
 
@@ -429,8 +440,10 @@ const CreateUser = ({ route, navigation }) => {
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         {label}
-        {label === "GST Number" && businessType == "individual" && (
+        {label === "GST Number" && businessType === "individual" ? (
           <Text style={styles.optional}> (Optional)</Text>
+        ) : (
+          <Text style={{ color: Colors.darOrangeColor }}> *</Text>
         )}
       </Text>
       <TextInput
@@ -439,7 +452,11 @@ const CreateUser = ({ route, navigation }) => {
         onChangeText={(text) => {
           if (label === "Email") {
             setter(text.toLowerCase());
-          } else if (label === "Vehicle Registration Number" || label === "GST Number" || label === "PAN Number") {
+          } else if (
+            label === "Vehicle Registration Number" ||
+            label === "GST Number" ||
+            label === "PAN Number"
+          ) {
             setter(text.toUpperCase());
           } else {
             setter(text);
@@ -466,11 +483,18 @@ const CreateUser = ({ route, navigation }) => {
     </View>
   );
 
-  const renderPassword = (label, value, setter, placeholder ,secure ,setSecure) => (
+  const renderPassword = (
+    label,
+    value,
+    setter,
+    placeholder,
+    secure,
+    setSecure
+  ) => (
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         {label}
-
+        <Text style={{ color: Colors.darOrangeColor }}> *</Text>
       </Text>
       <View
         style={{
@@ -531,12 +555,15 @@ const CreateUser = ({ route, navigation }) => {
           <MaterialIcons name="edit" size={20} color="white" />
         </TouchableOpacity>
       </View>
-      <Text style={styles.imageLabel}>{label}
-        
-          {label === "GST" && businessType == "individual" && (
+       {label != "avatar" && <Text style={styles.imageLabel}>
+        {label}
+
+        {label === "GST" && businessType === "individual" ? (
           <Text style={styles.optional}> (Optional)</Text>
-          )}
-      </Text>
+        ) : (
+          <Text style={{ color: Colors.darOrangeColor }}> *</Text>
+        )}
+      </Text>}
     </TouchableOpacity>
   );
 
@@ -544,6 +571,7 @@ const CreateUser = ({ route, navigation }) => {
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         Select Role
+        <Text style={{ color: Colors.darOrangeColor }}> *</Text>
       </Text>
       <View style={styles.selectorContainer}>
         <TouchableOpacity
@@ -605,7 +633,15 @@ const CreateUser = ({ route, navigation }) => {
           "Enter your mobile number"
         )}
         {renderInput("Email", email, setEmail, "Enter your email")}
-        {renderPassword("Password", password, setPassword, "Enter Password",securePass,setSecurePass)}
+        {statusSection()}
+        {renderPassword(
+          "Password",
+          password,
+          setPassword,
+          "Enter Password",
+          securePass,
+          setSecurePass
+        )}
         {renderPassword(
           "Confirm Password",
           confirmPassword,
@@ -613,13 +649,11 @@ const CreateUser = ({ route, navigation }) => {
           "Confirm Your Password",
           secureConfirmPass,
           setSecureConfirmPass
-
         )}
 
         {roleSelector()}
         {selectedRole === "vendor" ? (
-          
-           <>
+          <>
             {businessTypeSection()}
             {businessType === "organization" && (
               <>
@@ -652,7 +686,7 @@ const CreateUser = ({ route, navigation }) => {
               setGstNumber,
               "Enter GST number"
             )}
-            { addressInfo()}
+            {addressInfo()}
             <View style={styles.imageContainer}>
               {businessType === "individual" && (
                 <>
@@ -760,7 +794,7 @@ const CreateUser = ({ route, navigation }) => {
     return (
       <View style={[styles.section, { marginBottom: 12 }]}>
         <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
-          Register As
+          Register As <Text style={{ color: Colors.darOrangeColor }}>*</Text>
         </Text>
 
         <View style={styles.TypeContainer}>
@@ -803,60 +837,95 @@ const CreateUser = ({ route, navigation }) => {
     );
   }
   function addressInfo() {
-      return (
-        <View style={styles.address}>
-           <Text
-            style={{
-              marginBottom: 4,
-              fontWeight: "bold",
-              fontSize: 14,
-              color: Colors.blackColor,
-            }}
-          >
+    return (
+      <View style={styles.address}>
+        <Text
+          style={{
+            marginBottom: 4,
+            fontWeight: "bold",
+            fontSize: 14,
+            color: Colors.blackColor,
+          }}
+        >
           Address
-          </Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Home/Street/Locality, City, State, Pincode"
-            placeholderTextColor="gray"
-            multiline
-            value={address}
-            onChangeText={(text) => {
-              if (text.length > 200) {
-                dispatch(
-                  showSnackbar({
-                    message: "Address cannot exceed 100 characters",
-                    type: "error",
-                  })
-                );
-                return;
-              }
-              setAddress(text);
-            }}
-            // maxLength={100}
-          />
-          <Text
-            style={{
-              marginVertical: 4,
-              fontWeight: "bold",
-              fontSize: 14,
-              color: Colors.darOrangeColor,
-            }}
-          >
-            Or
-          </Text>
-          <TouchableOpacity
-           onPress={selectOnMap}
-            style={[
-              styles.actionButton,
-              { borderWidth: 1, borderColor: Colors.darOrangeColor },
-            ]}
-          >
-            <Text style={styles.mapButtonText}>Select On Map</Text>
-          </TouchableOpacity>
+          <Text style={{ color: Colors.darOrangeColor }}> *</Text>
+        </Text>
+        <TextInput
+          style={[styles.input, styles.textArea]}
+          placeholder="Home/Street/Locality, City, State, Pincode"
+          placeholderTextColor="gray"
+          multiline
+          value={address}
+          onChangeText={(text) => {
+            if (text.length > 200) {
+              dispatch(
+                showSnackbar({
+                  message: "Address cannot exceed 100 characters",
+                  type: "error",
+                })
+              );
+              return;
+            }
+            setAddress(text);
+          }}
+          // maxLength={100}
+        />
+        <Text
+          style={{
+            marginVertical: 4,
+            fontWeight: "bold",
+            fontSize: 14,
+            color: Colors.darOrangeColor,
+          }}
+        >
+          Or
+        </Text>
+        <TouchableOpacity
+          onPress={selectOnMap}
+          style={[
+            styles.actionButton,
+            { borderWidth: 1, borderColor: Colors.darOrangeColor },
+          ]}
+        >
+          <Text style={styles.mapButtonText}>Select On Map</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+  function statusSection() {
+    const statuses = ["Pending", "On Hold", "Completed", "Active"];
+
+    return (
+      <View style={[styles.section, { marginBottom: 12 }]}>
+        <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+          Select Status
+          <Text style={{ color: Colors.darOrangeColor }}> *</Text>
+        </Text>
+
+        <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
+          {statuses.map((status) => (
+            <TouchableOpacity
+              key={status}
+              style={[
+                styles.TypeButton,
+                selectedStatus === status && styles.selectedButton,
+              ]}
+              onPress={() => setSelectedStatus(status)}
+            >
+              <Text
+                style={[
+                  styles.TypebuttonText,
+                  selectedStatus === status && styles.selectedButtonText,
+                ]}
+              >
+                {status}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
-      );
-    }
+      </View>
+    );
+  }
 };
 
 const styles = StyleSheet.create({
@@ -888,7 +957,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
 
     flexWrap: "wrap",
-  },    textArea: {
+  },
+  textArea: {
     height: 80,
     textAlignVertical: "top",
   },
@@ -1041,7 +1111,7 @@ const styles = StyleSheet.create({
   selectedButtonText: {
     color: "white",
   },
-    mapButtonText: {
+  mapButtonText: {
     color: Colors.darOrangeColor,
     fontWeight: "bold",
     fontSize: 14,

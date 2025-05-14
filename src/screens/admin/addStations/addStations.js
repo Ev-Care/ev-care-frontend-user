@@ -25,7 +25,7 @@ import { useNavigation } from "@react-navigation/native";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { selectToken, selectUser } from "../../auth/services/selector";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import { Colors } from "../../../constants/styles";
+import { Colors, commonStyles } from "../../../constants/styles";
 import RNModal from "react-native-modal";
 import imageURL from "../../../constants/baseURL";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
@@ -77,6 +77,7 @@ const AddStationScreen = () => {
   const [currentImageLabel, setCurrentImageLabel] = useState(null);
   const [imageloading, setImageLoading] = useState("");
   const [vendorNumber, setVendorNumber] = useState(null);
+  const [vendorName, setVendorNamer] = useState(null);
 
   const handleTimeChange = (event, selectedDate) => {
     setShowPicker(false);
@@ -196,6 +197,13 @@ const AddStationScreen = () => {
       setCoordinate: (newCoordinate) => setCoordinate(newCoordinate),
     });
   };
+  const handleVendorSelection = () => {
+    console.log("handleVendorSelection called");
+    navigation.push("VendorSelector", {
+      setVendorNumber: (newVendorNumber) => setVendorNumber(newVendorNumber),
+      setVendorName: (newVendorName) => setVendorNamer(newVendorName),
+    });
+  }
 
   const handlePreview = () => {
     console.log("in the preview page");
@@ -233,7 +241,7 @@ const AddStationScreen = () => {
       "Transformed Station Data:",
       JSON.stringify(stationData, null, 2)
     );
-    
+
     if (!vendorNumber || vendorNumber === "") {
       dispatch(
         showSnackbar({
@@ -243,7 +251,7 @@ const AddStationScreen = () => {
       );
       return;
     }
-    
+
     if (vendorNumber.length !== 10) {
       dispatch(
         showSnackbar({
@@ -253,7 +261,7 @@ const AddStationScreen = () => {
       );
       return;
     }
-    
+
     if (!stationData?.station_name || stationData?.station_name === "") {
       dispatch(
         showSnackbar({
@@ -329,7 +337,6 @@ const AddStationScreen = () => {
     });
   };
 
-
   const handleVisibility = (form) => {
     const formKey = String(form);
     if (selectedForm !== formKey) {
@@ -400,9 +407,7 @@ const AddStationScreen = () => {
     <ScrollView style={styles.container}>
       <MyStatusBar />
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation?.goBack()}
-        >
+        <TouchableOpacity onPress={() => navigation?.goBack()}>
           <Icon name="arrow-left" size={24} color={PRIMARY_COLOR} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Add a New Station</Text>
@@ -512,7 +517,7 @@ const AddStationScreen = () => {
         <Text style={styles?.sectionTitle}>Additional Details</Text>
         {selectedForm === "additionaldetail" && (
           <>
-            {vendorNumberSection?.()}
+            {vendorNameSection?.()}
             {stationNameSection?.()}
             {amenitiesSection?.()}
             {openHoursSection?.()}
@@ -901,23 +906,51 @@ const AddStationScreen = () => {
       </View>
     );
   }
-  function vendorNumberSection() {
-    return (
-      <View style={styles.section}>
-       
-        <Text style={styles.sectionLabel}>Vendor Contact Number</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter Vendor Contact Number"
-          value={vendorNumber}
-          onChangeText={setVendorNumber}
-          maxLength={10}
-          keyboardType="numeric"
-        />
+ function vendorNameSection() {
+  return (
+    <View style={styles.section}>
+      <TouchableOpacity
+        onPress={handleVendorSelection}
+        style={{
+          borderWidth: 1,
+          borderColor: Colors.darOrangeColor,
+          borderRadius: 8,
+          padding: 12,
+          fontSize: 12,
+          marginBottom: 12,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 12,
+            color:  Colors.darOrangeColor,
+            textAlign:  "center",
+          }}
+        >
+          Select Vendor (required)
+        </Text>
+      </TouchableOpacity>
+      {(vendorName && vendorNumber) &&<>
+      <Text style={styles.sectionLabel}>Vendor Name</Text>
+      <View
+        style={[styles.input,{backgroundColor: Colors.bodyBackColor}]}
+      >
+        <Text
+          style={{
+            fontSize: 12,
+            color: Colors.blackColor ,
+            textAlign:"left",
+          }}
+        >
+          {vendorName}
+        </Text>
       </View>
-    );
-  }
-  function stationNameSection() {
+      </>}
+    </View>
+  );
+}
+
+function stationNameSection() {
     return (
       <View style={styles.section}>
         {/* <Text style={styles.questionText}>

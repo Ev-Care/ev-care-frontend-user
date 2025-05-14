@@ -10,6 +10,7 @@ import {
   getAllPendingUsersAPI,
   getAllStationsAPI,
   getAllSupportIssuesAPI,
+  getAllUsersAPI,
 } from "./api";
 import { deleteStationAPI } from "../../vendor/services/api";
 // Async thunk to fetch stations
@@ -83,6 +84,38 @@ export const getAllPendingUsers = createAsyncThunk(
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
 
       const response = await getAllPendingUsersAPI({
+        accessToken,
+      }); // Call the API to fetch stations by location
+
+      if (response?.data?.code === 200 || response?.data?.code === 201) {
+        return response?.data;
+      } else {
+        return rejectWithValue(
+          response?.message || response?.data?.message || "User's detail not found"
+        );
+      }
+    } catch (error) {
+      console.log("Error in getAllPendingUsers:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message || // API sent error message
+        error?.message || // JS error message
+        "Server error"; // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+//Get all Users
+export const getAllUsers = createAsyncThunk(
+  "admin/getAllUsers",
+  async (_, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
+
+      const response = await getAllUsersAPI({
         accessToken,
       }); // Call the API to fetch stations by location
 

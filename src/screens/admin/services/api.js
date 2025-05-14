@@ -23,6 +23,13 @@ export const getAllPendingUsersAPI = (data) =>
     content_type: "application/json",
     accessToken: data.accessToken,
   });
+
+export const getAllUsersAPI = (data) =>
+  apiGetRequest({
+    apiUrl: `${API_URL}/users`,
+    content_type: "application/json",
+    accessToken: data.accessToken,
+  });
 export const getAllSupportIssuesAPI = (data) =>
   apiGetRequest({
     apiUrl: `${API_URL}/support`,

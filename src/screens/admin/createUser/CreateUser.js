@@ -963,6 +963,7 @@ const CreateUser = ({ route, navigation }) => {
     );
   }
 };
+}
 
 const styles = StyleSheet.create({
   container: {

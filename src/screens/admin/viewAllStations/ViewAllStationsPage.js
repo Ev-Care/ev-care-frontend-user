@@ -236,6 +236,7 @@ const ViewAllStationsPage = ({ navigation }) => {
         </View>
       </RNModal>)
   }
+
   function roleSelector() {
     const roles = ["user", "vendor", "both"];
 
@@ -457,9 +458,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopRightRadius: 20,
     borderTopLeftRadius: 20,
-  }, sheetOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
   },
+  
 });

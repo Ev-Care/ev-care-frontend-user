@@ -20,6 +20,7 @@ import {
   Fonts,
 } from "../../../constants/styles";import MyStatusBar from "../../../components/myStatusBar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import RNModal from "react-native-modal";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { color } from "@rneui/base";
 import { RefreshControl } from "react-native";
@@ -103,6 +104,9 @@ const ViewAllUserPage = ({navigation}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState(USERS);
   const [isLoading, setIsLoading] = useState(false);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const [selectedRole, setSelectedRole] = useState("user");
+  const [selectedStatus, setSelectedStatus] = useState("All");
   const [refreshing, setRefreshing] = useState(false);
   // Filter users based on search query
   const filteredUsers = users.filter(
@@ -144,12 +148,13 @@ const handleRefresh = async () => {
           <ActivityIndicator size="large" color={Colors.primaryColor} />
         </View>
       )}
+      {bottonSheet()}
     </SafeAreaView>
   );
 
   function UserInfo({ user }) {
     return (
-      <TouchableOpacity onPress={() => navigation.navigate("UpdateUser",{user})} style={styles.userItem}>
+      <TouchableOpacity onPress={() => navigation.navigate("userDetailScreen",{user})} style={styles.userItem}>
      {user?.avatar ? (
           <Image source={{ uri: user?.avatar }} style={styles.avatar} />
         ) : (
@@ -178,9 +183,17 @@ const handleRefresh = async () => {
 
   function searchBar() {
     return (
-      <View style={{ margin: 20.0 }}>
-        <MyStatusBar/>
-        <View style={styles.searchBar}>
+      <View
+        style={{
+          margin: 20,
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        <MyStatusBar />
+
+        {/* Wrap SearchBar and give it flex: 1 */}
+        <View style={[styles.searchBar, { flex: 1 }]}>
           <MaterialIcons
             name="search"
             size={24}
@@ -188,20 +201,112 @@ const handleRefresh = async () => {
             style={{ marginRight: 8 }}
           />
           <TextInput
-            placeholder="Search users here ..."
+            placeholder="Search Users or Vendors...."
             placeholderTextColor="#888"
             style={{
-              flex: 1,   
+              flex: 1,
               padding: 12,
               fontSize: 12,
             }}
             value={searchQuery}
-            onChangeText={(text) => setSearchQuery(text)}
+           onChangeText={(text) => setSearchQuery(text)}
           />
         </View>
+
+        {/* Filter Icon */}
+        <MaterialIcons
+          name="filter-list"
+          color={Colors.blackColor}
+          size={26}
+          style={{ marginLeft: 12 }} // add some spacing
+          onPress={() =>
+            setBottomSheetVisible(true)
+          }
+        />
       </View>
     );
   }
+    function bottonSheet() {
+      return (
+        <RNModal
+          isVisible={isBottomSheetVisible}
+          onBackdropPress={() => setBottomSheetVisible(false)}
+          style={{ justifyContent: "flex-end", margin: 0 }}
+        >
+          <View style={styles.bottomSheet}>
+            {roleSelector()}
+            {statusSection()}
+          </View>
+        </RNModal>)
+    }
+  
+    function roleSelector() {
+      const roles = ["user", "vendor", "both"];
+  
+      return (
+        <View style={[styles.section, { marginBottom: 12 }]}>
+          <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+            Select Role
+          </Text>
+  
+          <View style={styles.TypeContainer}>
+            {roles.map((role) => (
+              <TouchableOpacity
+                key={role}
+                style={[
+                  styles.TypeButton,
+                  selectedRole === role && styles.selectedButton,
+                ]}
+                onPress={() => setSelectedRole(role)}
+              >
+                <Text
+                  style={[
+                    styles.TypebuttonText,
+                    selectedRole === role && styles.selectedButtonText,
+                  ]}
+                >
+                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      );
+    }
+  
+  
+    function statusSection() {
+      const statuses = ['All', "Planned", "Inactive", "Rejected", "Active"];
+      return (
+        <View style={[styles.section, { marginBottom: 12 }]}>
+          <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+            Select Status
+          </Text>
+  
+          <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
+            {statuses.map((status) => (
+              <TouchableOpacity
+                key={status}
+                style={[
+                  styles.TypeButton,
+                  selectedStatus === status && styles.selectedButton,
+                ]}
+                onPress={() => setSelectedStatus(status)}
+              >
+                <Text
+                  style={[
+                    styles.TypebuttonText,
+                    selectedStatus === status && styles.selectedButtonText,
+                  ]}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      );
+    }
 };
 
 
@@ -335,6 +440,33 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.gray,
     marginTop: 12,
+  },
+   bottomSheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+  },
+  TypeContainer: {
+    flexDirection: "row",
+    gap: 10,
+  }, TypeButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    borderRadius: 8,
+  },
+  TypebuttonText: {
+    fontSize: 12,
+    color: "#555",
+  },
+  selectedButton: {
+    backgroundColor: Colors.primaryColor,
+    borderColor: Colors.primaryColor,
+  },
+  selectedButtonText: {
+    color: "white",
   },
 });
 

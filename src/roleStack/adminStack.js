@@ -24,6 +24,7 @@ import AddStationScreen from "../screens/admin/addStations/addStations";
 import UpdateStationPage from "../screens/admin/viewAllStations/UpdateStationPage";
 import ChangePassword from "../components/commonComponents/changePassword";
 import VendorSelector from "../screens/admin/addStations/vendorSelector";
+import userDetailScreen from "../screens/admin/viewAllUsers/userDetailScreen";
 
 const Stack = createStackNavigator();
 
@@ -54,6 +55,7 @@ export function AdminStack() {
       <Stack.Screen name="UpdateStationPage" component={UpdateStationPage} />
          <Stack.Screen name="ChangePassword" component={ChangePassword} />
       <Stack.Screen name="VendorSelector" component={VendorSelector} />
+      <Stack.Screen name="userDetailScreen" component={userDetailScreen} />
     </Stack.Navigator>
   );
 }

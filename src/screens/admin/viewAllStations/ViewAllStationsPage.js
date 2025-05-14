@@ -31,33 +31,40 @@ import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 const ViewAllStationsPage = ({ navigation }) => {
   const [searchText, setSearchText] = useState("");
   const allStationsList = useSelector(selectAllStations);
-   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const dispatch = useDispatch();
-  const [selectedStatus, setSelectedStatus] = useState(null);
-   const [selectedRole, setSelectedRole] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState("All");
+  const [selectedRole, setSelectedRole] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const filteredStations = allStationsList.filter((station) =>
-    station?.station_name?.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const filteredStations = allStationsList.filter((station) => {
+    const matchesText = station?.station_name?.toLowerCase().includes(searchText.toLowerCase());
+    const matchesStatus =
+      selectedStatus === null || selectedStatus === "All"
+        ? true
+        : station?.status === selectedStatus;
+
+    return matchesText && matchesStatus;
+  });
+
   const [refreshing, setRefreshing] = useState(false);
   const trimText = (text, limit) =>
     text.length > limit ? text.substring(0, limit) + "..." : text;
   console.log('stations legth', allStationsList.length);
   // Dummy coordinates for the location
 
-useEffect(() => {
-  const loadStations = async () => {
-    setIsLoading(true);
-    await dispatch(fetchAllStations());
-    setIsLoading(false);
-  };
+  useEffect(() => {
+    const loadStations = async () => {
+      setIsLoading(true);
+      await dispatch(fetchAllStations());
+      setIsLoading(false);
+    };
 
-  loadStations();
-}, []);
+    loadStations();
+  }, []);
 
 
   const handleRefresh = async () => {
-   
+
     try {
       setRefreshing(true);
       const response = await dispatch(fetchAllStations());
@@ -72,7 +79,7 @@ useEffect(() => {
       await dispatch(showSnackbar({ message: "Something went wrong during refresh.", type: 'error' }));
     } finally {
       setRefreshing(false);
-      
+
     }
   };
 
@@ -84,7 +91,7 @@ useEffect(() => {
         {allStationsInfo()}
         {bottonSheet()}
       </View>
-       {isLoading && (
+      {isLoading && (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={Colors.primaryColor} />
         </View>
@@ -114,7 +121,7 @@ useEffect(() => {
               style={styles.card}
             >
               {station?.station_images ? (
-                <Image source={{ uri: imageURL.baseURL + station?.station_images }} style={styles.image } />
+                <Image source={{ uri: imageURL.baseURL + station?.station_images }} style={styles.image} />
               ) : (
                 <View style={[styles.image, { alignItems: "center", justifyContent: "center" }]}>
                   <MaterialIcons
@@ -135,13 +142,22 @@ useEffect(() => {
                 <Text style={styles.statusText}>
                   Status:{" "}
                   <Text
+                    // style={{
+                    //   color: station?.status !== "Active"
+                    //     ? Colors.darOrangeColor
+                    //     : Colors.primaryColor,
+                    // }}
                     style={{
-                      color: station?.status !== "Active"
-                        ? Colors.darOrangeColor
-                        : Colors.primaryColor,
+                      color: station?.status == "Active"
+                        ? Colors.lightGreenColor
+                        : station?.status == "Inactive"
+                          ? Colors.darOrangeColor : station?.status == "Rejected"
+                            ? Colors.redColor : station?.status == "Planned"
+                              ? Colors.yellowColor : Colors.primaryColor,
                     }}
                   >
-                    {station?.status !== "Active" ? "Pending" : "Active"}
+                    {/* {station?.status !== "Active" ? "Pending" : "Active"} */}
+                    {station?.status}
                   </Text>
                 </Text>
 
@@ -162,131 +178,131 @@ useEffect(() => {
     );
   }
 
-function searchBar() {
-  return (
-    <View
-      style={{
-        margin: 20,
-        flexDirection: "row",
-        alignItems: "center",
-      }}
-    >
-      <MyStatusBar />
+  function searchBar() {
+    return (
+      <View
+        style={{
+          margin: 20,
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        <MyStatusBar />
 
-      {/* Wrap SearchBar and give it flex: 1 */}
-      <View style={[styles.searchBar, { flex: 1 }]}>
-        <MaterialIcons
-          name="search"
-          size={24}
-          color="#888"
-          style={{ marginRight: 8 }}
-        />
-        <TextInput
-          placeholder="Search Charging Stations"
-          placeholderTextColor="#888"
-          style={{
-            flex: 1,
-            padding: 12,
-            fontSize: 12,
-          }}
-          value={searchText}
-          onChangeText={(text) => setSearchText(text)}
-        />
-      </View>
-
-      {/* Filter Icon */}
-      <MaterialIcons
-        name="filter-list"
-        color={Colors.blackColor}
-        size={26}
-        style={{ marginLeft: 12 }} // add some spacing
-        onPress={() =>
-         setBottomSheetVisible(true)
-        }
-      />
-    </View>
-  );
-}
-function bottonSheet(){
-  return (
-    <RNModal
-          isVisible={isBottomSheetVisible}
-          onBackdropPress={() => setBottomSheetVisible(false)}
-          style={{ justifyContent: "flex-end", margin: 0 }}
-        >
-          <View style={styles.bottomSheet}>
-            {roleSelector()}
-           {statusSection()}
-          </View>
-        </RNModal>)
-}
-function roleSelector() {
-  const roles = ["user", "vendor","both"];
-
-  return (
-    <View style={[styles.section, { marginBottom: 12 }]}>
-      <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
-        Select Role 
-      </Text>
-
-      <View style={styles.TypeContainer}>
-        {roles.map((role) => (
-          <TouchableOpacity
-            key={role}
-            style={[
-              styles.TypeButton,
-              selectedRole === role && styles.selectedButton,
-            ]}
-            onPress={() => setSelectedRole(role)}
-          >
-            <Text
-              style={[
-                styles.TypebuttonText,
-                selectedRole === role && styles.selectedButtonText,
-              ]}
-            >
-              {role.charAt(0).toUpperCase() + role.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
-  );
-}
-
-
-function statusSection() {
-      const statuses = ['All',"Pending", "On Hold", "Completed", "Active"];
-      return (
-        <View style={[styles.section, { marginBottom: 12 }]}>
-          <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
-            Select Status
-          </Text>
-  
-          <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
-            {statuses.map((status) => (
-              <TouchableOpacity
-                key={status}
-                style={[
-                  styles.TypeButton,
-                  selectedStatus === status && styles.selectedButton,
-                ]}
-                onPress={() => setSelectedStatus(status)}
-              >
-                <Text
-                  style={[
-                    styles.TypebuttonText,
-                    selectedStatus === status && styles.selectedButtonText,
-                  ]}
-                >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        {/* Wrap SearchBar and give it flex: 1 */}
+        <View style={[styles.searchBar, { flex: 1 }]}>
+          <MaterialIcons
+            name="search"
+            size={24}
+            color="#888"
+            style={{ marginRight: 8 }}
+          />
+          <TextInput
+            placeholder="Search Charging Stations"
+            placeholderTextColor="#888"
+            style={{
+              flex: 1,
+              padding: 12,
+              fontSize: 12,
+            }}
+            value={searchText}
+            onChangeText={(text) => setSearchText(text)}
+          />
         </View>
-      );
-    }
+
+        {/* Filter Icon */}
+        <MaterialIcons
+          name="filter-list"
+          color={Colors.blackColor}
+          size={26}
+          style={{ marginLeft: 12 }} // add some spacing
+          onPress={() =>
+            setBottomSheetVisible(true)
+          }
+        />
+      </View>
+    );
+  }
+  function bottonSheet() {
+    return (
+      <RNModal
+        isVisible={isBottomSheetVisible}
+        onBackdropPress={() => setBottomSheetVisible(false)}
+        style={{ justifyContent: "flex-end", margin: 0 }}
+      >
+        <View style={styles.bottomSheet}>
+          {/* {roleSelector()} */}
+          {statusSection()}
+        </View>
+      </RNModal>)
+  }
+  function roleSelector() {
+    const roles = ["user", "vendor", "both"];
+
+    return (
+      <View style={[styles.section, { marginBottom: 12 }]}>
+        <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+          Select Role
+        </Text>
+
+        <View style={styles.TypeContainer}>
+          {roles.map((role) => (
+            <TouchableOpacity
+              key={role}
+              style={[
+                styles.TypeButton,
+                selectedRole === role && styles.selectedButton,
+              ]}
+              onPress={() => setSelectedRole(role)}
+            >
+              <Text
+                style={[
+                  styles.TypebuttonText,
+                  selectedRole === role && styles.selectedButtonText,
+                ]}
+              >
+                {role.charAt(0).toUpperCase() + role.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+  }
+
+
+  function statusSection() {
+    const statuses = ['All', "Planned", "Inactive", "Rejected", "Active"];
+    return (
+      <View style={[styles.section, { marginBottom: 12 }]}>
+        <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+          Select Status
+        </Text>
+
+        <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
+          {statuses.map((status) => (
+            <TouchableOpacity
+              key={status}
+              style={[
+                styles.TypeButton,
+                selectedStatus === status && styles.selectedButton,
+              ]}
+              onPress={() => setSelectedStatus(status)}
+            >
+              <Text
+                style={[
+                  styles.TypebuttonText,
+                  selectedStatus === status && styles.selectedButtonText,
+                ]}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+  }
 };
 
 export default ViewAllStationsPage;
@@ -298,7 +314,7 @@ const styles = StyleSheet.create({
     paddingVertical: Sizes.fixPadding - 2.0,
     borderTopLeftRadius: Sizes.fixPadding,
     borderBottomRightRadius: Sizes.fixPadding,
-  },  
+  },
   TypeContainer: {
     flexDirection: "row",
     gap: 10,
@@ -366,66 +382,66 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   scrollContainer: {
-      padding: 10,
-    },
-    title: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      color: Colors.primary,
-      textAlign: "center",
-    },
-    card: {
-      backgroundColor: Colors.whiteColor,
-      ...commonStyles.shadow,
-      borderColor: Colors.extraLightGrayColor,
-      borderRadius: 10,
-      padding: 15,
-      marginBottom: 15,
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    image: {
-      width: 80,
-      height: 100,
-      borderRadius: 8,
-      marginRight: 15,
-      borderWidth: 1,
-      borderColor: '#e2e2e2 ',
-      backgroundColor: '#f5f5f5' 
-    },
-    infoContainer: {
-      flex: 1,
-    },
-    headerRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-    },
-    stationName: {
-      fontSize: 16,
-      fontWeight: "bold",
-      color: Colors.primary,
-      marginBottom: 5,
-    },
-    statusText: {
-      fontSize: 12,
-      color: Colors.primary,
-      marginBottom: 5,
-    },
-    text: {
-      fontSize: 12,
-      color: Colors.primary,
-    },
-    addressText: {
-      fontSize: 10,
-      color: Colors.grayColor,
-    },
-    row: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: 5,
-    },
-      loaderContainer: {
+    padding: 10,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    textAlign: "center",
+  },
+  card: {
+    backgroundColor: Colors.whiteColor,
+    ...commonStyles.shadow,
+    borderColor: Colors.extraLightGrayColor,
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  image: {
+    width: 80,
+    height: 100,
+    borderRadius: 8,
+    marginRight: 15,
+    borderWidth: 1,
+    borderColor: '#e2e2e2 ',
+    backgroundColor: '#f5f5f5'
+  },
+  infoContainer: {
+    flex: 1,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  stationName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: Colors.primary,
+    marginBottom: 5,
+  },
+  statusText: {
+    fontSize: 12,
+    color: Colors.primary,
+    marginBottom: 5,
+  },
+  text: {
+    fontSize: 12,
+    color: Colors.primary,
+  },
+  addressText: {
+    fontSize: 10,
+    color: Colors.grayColor,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 5,
+  },
+  loaderContainer: {
     position: "absolute",
     top: 0,
     left: 0,
@@ -436,7 +452,7 @@ const styles = StyleSheet.create({
     // backgroundColor: "rgba(182, 206, 232, 0.3)",
     zIndex: 999,
   },
-    bottomSheet: {
+  bottomSheet: {
     backgroundColor: "#fff",
     padding: 20,
     borderTopRightRadius: 20,

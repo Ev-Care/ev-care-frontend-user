@@ -53,18 +53,18 @@ const AllPendingVendors = ({ navigation }) => {
   console.log('users length',users?.length);
    const [refreshing, setRefreshing] = useState(false);
 
-  // Called every time screen comes into focus
- useFocusEffect(
-  useCallback(() => {
-    const fetchPendingUsers = async () => {
-      setIsLoading(true);
-      await dispatch(getAllPendingUsers());
-      setIsLoading(false);
-    };
+//   // Called every time screen comes into focus
+//  useFocusEffect(
+//   useCallback(() => {
+//     const fetchPendingUsers = async () => {
+//       setIsLoading(true);
+//       await dispatch(getAllPendingUsers());
+//       setIsLoading(false);
+//     };
 
-    fetchPendingUsers();
-  }, [dispatch])
-);
+//     fetchPendingUsers();
+//   }, [dispatch])
+// );
 
   const handleRefresh = async () => {
     try {

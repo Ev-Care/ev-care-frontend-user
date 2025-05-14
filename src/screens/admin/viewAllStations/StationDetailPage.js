@@ -264,11 +264,12 @@ const StationDetailPage = ({ route, navigation }) => {
               </Text>
               <View style={styles.newBadge}>
                 <Text style={styles.newText}>
-                  {station.status === "Active"
+                  {String(station?.status).toUpperCase()}
+                  {/* {station.status === "Active"
                     ? "VERIFIED"
                     : station.status === "Planned"
                     ? "PENDING"
-                    : ""}
+                    : ""} */}
                 </Text>
               </View>
             </View>

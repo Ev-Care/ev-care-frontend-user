@@ -167,100 +167,59 @@ const CreateUser = ({ route, navigation }) => {
   };
 
   const validateInputs = () => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const mobileRegex = /^[6-9]\d{9}$/;
-  const aadharRegex = /^\d{12}$/;
-  const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-  const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
-  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-  const nameRegex = /^[A-Za-z\s]{3,}$/;
-  const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const mobileRegex = /^[6-9]\d{9}$/;
+    const aadharRegex = /^\d{12}$/;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    const gstRegex =
+      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    const nameRegex = /^[A-Za-z\s]{3,}$/;
+    const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
 
-  if (!name || !mobNumber || !email) {
-    dispatch(
-      showSnackbar({
-        message: "Name, Mobile Number, and Email are required.",
-        type: "error",
-      })
-    );
-    return false;
-  }
-
-  if (!nameRegex.test(name)) {
-    dispatch(
-      showSnackbar({
-        message: "Invalid full name. Only letters and spaces, at least 3 characters.",
-        type: "error",
-      })
-    );
-    return false;
-  }
-
-  if (!emailRegex.test(email)) {
-    dispatch(
-      showSnackbar({ message: "Invalid Email format.", type: "error" })
-    );
-    return false;
-  }
-
-  if (!mobileRegex.test(mobNumber)) {
-    dispatch(
-      showSnackbar({
-        message: "Invalid Mobile Number. It should be 10 digits and start with 6-9.",
-        type: "error",
-      })
-    );
-    return false;
-  }
-
-  if (!password || !confirmPassword) {
-    dispatch(
-      showSnackbar({
-        message: "Password and Confirm Password are required.",
-        type: "error",
-      })
-    );
-    return false;
-  }
-
-  if (password !== confirmPassword) {
-    dispatch(
-      showSnackbar({ message: "Passwords do not match.", type: "error" })
-    );
-    return false;
-  }
-
-  if (!passwordRegex.test(password)) {
-    dispatch(
-      showSnackbar({
-        message: "Password must be 8–20 characters long and include at least one letter and one number.",
-        type: "error",
-      })
-    );
-    return false;
-  }
-
-  if (selectedRole === "vendor") {
-    if (!panNumber) {
+    if (!name || !mobNumber || !email) {
       dispatch(
         showSnackbar({
-          message: "PAN is required for vendors.",
+          message: "Name, Mobile Number, and Email are required.",
           type: "error",
         })
       );
       return false;
     }
 
-    if (!panRegex.test(panNumber)) {
+    if (!nameRegex.test(name)) {
       dispatch(
-        showSnackbar({ message: "Invalid PAN number format.", type: "error" })
+        showSnackbar({
+          message:
+            "Invalid full name. Only letters and spaces, at least 3 characters.",
+          type: "error",
+        })
+      );
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      dispatch(
+        showSnackbar({ message: "Invalid Email format.", type: "error" })
       );
       return false;
     }
 
-    if (!panImage) {
+    if (!mobileRegex.test(mobNumber)) {
       dispatch(
-        showSnackbar({ message: "PAN image is required.", type: "error" })
+        showSnackbar({
+          message:
+            "Invalid Mobile Number. It should be 10 digits and start with 6-9.",
+          type: "error",
+        })
+      );
+      return false;
+    }
+    if (!password || !confirmPassword) {
+      dispatch(
+        showSnackbar({
+          message: "Password and Confirm Password are required.",
+          type: "error",
+        })
       );
       return false;
     }
@@ -287,7 +246,7 @@ const CreateUser = ({ route, navigation }) => {
       if (!panNumber) {
         dispatch(
           showSnackbar({
-            message: "Please enter Organization or Legal Name.",
+            message: " PAN is required for vendors.",
             type: "error",
           })
         );
@@ -306,79 +265,85 @@ const CreateUser = ({ route, navigation }) => {
 
       if (!panRegex.test(panNumber)) {
         dispatch(
-          showSnackbar({
-            message: "GST number is required for vendors with Organization type.",
-            type: "error",
-          })
+          showSnackbar({ message: "Invalid PAN number format.", type: "error" })
         );
         return false;
       }
 
-      if (!gstRegex.test(gstNumber)) {
+      if (businessType === "individual") {
+        if (!aadharNumber) {
+          dispatch(
+            showSnackbar({
+              message:
+                "Aadhar Number is required for individual business type.",
+              type: "error",
+            })
+          );
+          return false;
+        }
+
+        if (!aadharRegex.test(aadharNumber)) {
+          dispatch(
+            showSnackbar({
+              message: "Invalid Aadhar number. Must be 12 digits.",
+              type: "error",
+            })
+          );
+          return false;
+        }
+
+        if (!aadhaarFrontImage || !aadhaarBackImage) {
+          dispatch(
+            showSnackbar({
+              message: "Aadhaar front and back images are required.",
+              type: "error",
+            })
+          );
+          return false;
+        }
+      }
+
+      if (!panImage) {
+        dispatch(
+          showSnackbar({ message: "PAN image is required.", type: "error" })
+        );
+        return false;
+      }
+
+      if (gstNumber && !gstRegex.test(gstNumber)) {
         dispatch(
           showSnackbar({ message: "Invalid GST number format.", type: "error" })
         );
         return false;
       }
 
-      if (!gstImage) {
+      if (gstNumber && !gstImage) {
         dispatch(
           showSnackbar({
-            message: "GST image is required for Organization type.",
+            message: "GST image is required if GST number is provided.",
             type: "error",
           })
         );
         return false;
       }
-
-    } else if (businessType === "individual") {
-      if (!aadharNumber) {
+    } else {
+      // User role: vehicle info is mandatory
+      if (!vehicleNumber || !vehicleCompany || !vehicleModel) {
         dispatch(
           showSnackbar({
-            message: "Aadhar Number is required for individual business type.",
+            message: "All vehicle details are required for users.",
             type: "error",
           })
         );
         return false;
       }
-
-      if (!aadharRegex.test(aadharNumber)) {
+      if (!vehicleNumberRegex.test(vehicleNumber)) {
         dispatch(
           showSnackbar({
-            message: "Invalid Aadhar number. Must be 12 digits.",
+            message: "Invalid vechile number format.",
             type: "error",
           })
         );
-        return false;
-      }
-
-      if (!aadhaarFrontImage || !aadhaarBackImage) {
-        dispatch(
-          showSnackbar({
-            message: "Aadhaar front and back images are required.",
-            type: "error",
-          })
-        );
-        return false;
-      }
-
-      if (gstNumber) {
-        if (!gstRegex.test(gstNumber)) {
-          dispatch(
-            showSnackbar({ message: "Invalid GST number format.", type: "error" })
-          );
-          return false;
-        }
-
-        if (!gstImage) {
-          dispatch(
-            showSnackbar({
-              message: "GST image is required if GST number is provided.",
-              type: "error",
-            })
-          );
-          return false;
-        }
       }
     }
   if(selectedStatus === null){
@@ -403,6 +368,7 @@ const CreateUser = ({ route, navigation }) => {
       avatar: avatar || null,
       role: selectedRole,
       password: password,
+      status: selectedStatus,
     };
 
     if (selectedRole === "vendor") {
@@ -481,7 +447,6 @@ const CreateUser = ({ route, navigation }) => {
           <Text style={{ color: Colors.darOrangeColor }}> *</Text>
         )}
       </Text>
-
       <TextInput
         style={styles.input}
         value={value}
@@ -503,17 +468,17 @@ const CreateUser = ({ route, navigation }) => {
           label === "Mobile Number"
             ? "numeric"
             : label === "Email"
-              ? "email-address"
-              : "default"
+            ? "email-address"
+            : "default"
         }
         maxLength={
           label === "Mobile Number" || label === "PAN Number"
             ? 10
             : label === "Aadhar Number"
-              ? 12
-              : label === "GST Number"
-                ? 15
-                : undefined
+            ? 12
+            : label === "GST Number"
+            ? 15
+            : undefined
         }
       />
     </View>
@@ -929,7 +894,8 @@ const CreateUser = ({ route, navigation }) => {
     );
   }
   function statusSection() {
-    const statuses = ["Pending", "On Hold", "Completed", "Active"];
+    const vendorStatus = ["Rejected", "Completed", "Active", "Inactive", "New", "Blocked"];
+    const userStatus = ["Active", "Inactive", "Blocked"];
 
     return (
       <View style={[styles.section, { marginBottom: 12 }]}>
@@ -939,7 +905,26 @@ const CreateUser = ({ route, navigation }) => {
         </Text>
 
         <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
-          {statuses.map((status) => (
+          {selectedRole === "user" && userStatus.map((status) => (
+            <TouchableOpacity
+              key={status}
+              style={[
+                styles.TypeButton,
+                selectedStatus === status && styles.selectedButton,
+              ]}
+              onPress={() => setSelectedStatus(status)}
+            >
+              <Text
+                style={[
+                  styles.TypebuttonText,
+                  selectedStatus === status && styles.selectedButtonText,
+                ]}
+              >
+                {status}
+              </Text>
+            </TouchableOpacity>
+          ))}
+          {selectedRole === "vendor" && vendorStatus.map((status) => (
             <TouchableOpacity
               key={status}
               style={[
@@ -963,7 +948,6 @@ const CreateUser = ({ route, navigation }) => {
     );
   }
 };
-}
 
 const styles = StyleSheet.create({
   container: {

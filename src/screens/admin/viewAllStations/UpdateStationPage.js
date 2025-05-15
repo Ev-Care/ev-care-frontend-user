@@ -88,7 +88,7 @@ const UpdateStationPage = ({ navigation, route }) => {
   );
   const [chargerType, setchargerType] = useState("");
   const [accessType, setAccessType] = useState(
-    station?.access_type || "public"
+    station?.access_type || "Public"
   );
   const [powerRating, setPowerRating] = useState("");
   const [chargerForms, setChargerForms] = useState(station?.chargers || [{}]);
@@ -146,91 +146,7 @@ const UpdateStationPage = ({ navigation, route }) => {
     }
   };
 
-  // Function to pick an image
-  // const handleImagePick = async (source, type) => {
-  //   console.log("inside imaoege pick");
-  //   let permissionResult;
-
-  //   if (source === "camera") {
-  //     permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-  //   } else {
-  //     permissionResult =
-  //       await ImagePicker.requestMediaLibraryPermissionsAsync();
-  //   }
-
-  //   if (permissionResult.granted === false) {
-  //     dispatch(
-  //       showSnackbar({ message: "Permission is required!", type: "error" })
-  //     );
-  //     return;
-  //   }
-
-  //   let result;
-  //   if (source === "camera") {
-  //     result = await ImagePicker.launchCameraAsync({
-  //       allowsEditing: true,
-  //       quality: 0.2,
-  //     });
-  //   } else {
-  //     result = await ImagePicker.launchImageLibraryAsync({
-  //       allowsEditing: true,
-  //       quality: 0.2,
-  //     });
-  //   }
-
-  //   if (!result.canceled) {
-  //     const imageUri = result.assets[0].uri;
-  //     await new Promise((resolve) => setTimeout(resolve, 200));
-  //     const file = await setupImagePicker(imageUri);
-
-  //     console.log("image", imageUri);
-  //     // Check for internet connectivity before sending request
-  //     // const netState = await NetInfo.fetch();
-  //     // if (!netState.isConnected) {
-  //     //   dispatch(showSnackbar({ message: "No internet connection.", type: "error" }));
-  //     //   return;
-  //     // }
-
-  //     try {
-  //       console.log("inside try");
-  //       const response = await dispatch(
-  //         postSingleFile({ file: file, accessToken: accessToken })
-  //       );
-
-  //       if (
-  //         response?.payload?.code === 200 ||
-  //         response?.payload?.code === 201
-  //       ) {
-  //         setPhoto(imageUri);
-  //         console.log(
-  //           "photo url in pick image = ",
-  //           response?.payload?.data?.filePathUrl
-  //         );
-  //         setStationImages(response?.payload?.data?.filePathUrl);
-  //       } else {
-  //         dispatch(
-  //           showSnackbar({
-  //             message: authErrorMessage || "File Should be less than 5 MB",
-  //             type: "error",
-  //           })
-  //         );
-
-  //         // Alert.alert("Error", "File Should be less than 5 MB");
-  //       }
-  //     } catch (error) {
-  //       dispatch(
-  //         showSnackbar({
-  //           message: authErrorMessage || "Upload failed. Please try again.",
-  //           type: "error",
-  //         })
-  //       );
-
-  //       // Alert.alert("Error", "Upload failed. Please try again.");
-  //     } finally {
-  //       // 👉 Always stop loader
-  //     }
-  //   }
-  // };
+ 
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
@@ -338,6 +254,7 @@ const UpdateStationPage = ({ navigation, route }) => {
       station_id: station?.id || null,
       station_name: stationName,
       station_images: stationImages,
+      access_type:accessType,
       address,
       coordinates: {
         latitude: coordinate?.latitude || null,
@@ -709,10 +626,10 @@ const UpdateStationPage = ({ navigation, route }) => {
                   }
 
                   // If input is not empty and > 99, block it
-                  if (numericText && parseInt(numericText, 10) > 99) {
+                  if (numericText && parseInt(numericText, 10) > 1000) {
                     dispatch(
                       showSnackbar({
-                        message: "Power rating cannot exceed 99 kW",
+                        message: "Power rating cannot exceed 1000 kW",
                         type: "error",
                       })
                     );
@@ -980,16 +897,16 @@ const UpdateStationPage = ({ navigation, route }) => {
           <TouchableOpacity
             style={[
               styles.hoursButton,
-              accessType === "public" && styles.selectedButton,
+              accessType === "Public" && styles.selectedButton,
             ]}
             onPress={() => {
-              setAccessType("public");
+              setAccessType("Public");
             }}
           >
             <Text
               style={[
                 styles.buttonText,
-                accessType === "public" && styles.selectedButtonText,
+                accessType === "Public" && styles.selectedButtonText,
               ]}
             >
               Public
@@ -998,14 +915,14 @@ const UpdateStationPage = ({ navigation, route }) => {
           <TouchableOpacity
             style={[
               styles.hoursButton,
-              accessType === "private" && styles.selectedButton,
+              accessType === "Private" && styles.selectedButton,
             ]}
-            onPress={() => setAccessType("private")}
+            onPress={() => setAccessType("Private")}
           >
             <Text
               style={[
                 styles.buttonText,
-                accessType === "private" && styles.selectedButtonText,
+                accessType === "Private" && styles.selectedButtonText,
               ]}
             >
               Private

@@ -33,11 +33,12 @@ import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { createUser } from "../services/crudFunctions";
+import { patchUpdateUserProfile } from "../../user/service/crudFunction";
 
 const UpdateUser = ({ route, navigation }) => {
   const { user } = route.params;
 
-const [name, setName] = useState(user?.name || "Not found");
+const [name, setName] = useState(user?.owner_legal_name || "Not found");
 const [email, setEmail] = useState(user?.email || "Not found");
 const [mobNumber, setMobNumber] = useState(user?.mobile_number || "Not found");
 const [businessName, setBusinessName] = useState(user?.business_name || "Not found");
@@ -64,10 +65,10 @@ const [isLoading, setIsLoading] = useState(false);
 const [vehicleCompany, setVehicleCompany] = useState(user?.vehicle_manufacturer || "Not found");
 const [vehicleModel, setVehicleModel] = useState(user?.vehicle_model || "Not found");
 const [vehicleNumber, setVehicleNumber] = useState(user?.vehicle_registration_number || "Not found");
-const [password, setPassword] = useState(null);
-const [confirmPassword, setConfirmPassword] = useState(null);
-const [securePass, setSecurePass] = useState(true);
-const [secureConfirmPass, setSecureConfirmPass] = useState(true);
+// const [password, setPassword] = useState(null);
+// const [confirmPassword, setConfirmPassword] = useState(null);
+// const [securePass, setSecurePass] = useState(true);
+// const [secureConfirmPass, setSecureConfirmPass] = useState(true);
 const accessToken = useSelector(selectToken);
 const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
 
@@ -176,19 +177,10 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     const gstRegex =
       /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    // const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
     const nameRegex = /^[A-Za-z\s]{3,}$/;
     const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
 
-    if (!name || !mobNumber || !email) {
-      dispatch(
-        showSnackbar({
-          message: "Name, Mobile Number, and Email are required.",
-          type: "error",
-        })
-      );
-      return false;
-    }
 
     if (!nameRegex.test(name)) {
       dispatch(
@@ -217,33 +209,9 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
       );
       return false;
     }
-    if (!password || !confirmPassword) {
-      dispatch(
-        showSnackbar({
-          message: "Password and Confirm Password are required.",
-          type: "error",
-        })
-      );
-      return false;
-    }
 
-    if (password !== confirmPassword) {
-      dispatch(
-        showSnackbar({ message: "Passwords do not match.", type: "error" })
-      );
-      return false;
-    }
 
-    if (!passwordRegex.test(password)) {
-      dispatch(
-        showSnackbar({
-          message:
-            "Password must be 8–20 characters long and include at least one letter and one number.",
-          type: "error",
-        })
-      );
-      return false;
-    }
+    
 
     if (selectedRole === "vendor") {
       if (!panNumber) {
@@ -255,8 +223,7 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
         );
         return false;
       }
-
-      if (businessType === "organization" && !businessName) {
+    if (businessType === "organization" && !businessName) {
         dispatch(
           showSnackbar({
             message: "Please Enter Organization or Legal Name",
@@ -265,7 +232,6 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
         );
         return false;
       }
-
       if (!panRegex.test(panNumber)) {
         dispatch(
           showSnackbar({ message: "Invalid PAN number format.", type: "error" })
@@ -370,8 +336,8 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
       email,
       avatar: avatar || null,
       role: selectedRole,
-      password: password,
       status: selectedStatus,
+      user_key:user.user_key
     };
 
     if (selectedRole === "vendor") {
@@ -411,11 +377,11 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
     console.log("Submitting payload:", payload);
 
     try {
-      const response = await dispatch(createUser(payload));
+      const response = await dispatch(patchUpdateUserProfile(payload));
       if (response.payload.code === 200 || response.payload.code === 201) {
         dispatch(
           showSnackbar({
-            message: "User created successfully!",
+            message: "User updated successfully!",
             type: "success",
           })
         );
@@ -426,16 +392,16 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
             message:
               response?.payload?.message ||
               response?.payload ||
-              "Failed to create user",
+              "Failed to update user",
             type: "error",
           })
         );
       }
     } catch (error) {
-      console.log("error in create user", error);
+      console.log("error While Updating user", error);
 
       dispatch(
-        showSnackbar({ message: "Failed to create user!", type: "error" })
+        showSnackbar({ message: "Failed to Update user!", type: "error" })
       );
     }
   };
@@ -638,22 +604,7 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
         )}
         {renderInput("Email", email, setEmail, "Enter your email")}
         {statusSection()}
-        {renderPassword(
-          "Password",
-          password,
-          setPassword,
-          "Enter Password",
-          securePass,
-          setSecurePass
-        )}
-        {renderPassword(
-          "Confirm Password",
-          confirmPassword,
-          setConfirmPassword,
-          "Confirm Your Password",
-          secureConfirmPass,
-          setSecureConfirmPass
-        )}
+       
 
         {roleSelector()}
         {selectedRole === "vendor" ? (

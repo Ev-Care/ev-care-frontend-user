@@ -22,7 +22,7 @@ import React, { useEffect, useState } from "react";
 import MyStatusBar from "../../../components/myStatusBar";
 import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
 import imageURL from "../../../constants/baseURL";
-import { openHourFormatter, formatDistance } from "../../../utils/globalMethods";
+
 import { useDispatch, useSelector } from "react-redux";
 import { selectAllStations } from "../services/selector";
 import { fetchAllStations } from "../services/crudFunctions";
@@ -54,7 +54,8 @@ const filteredStations = allStationsList.filter((station) => {
   const trimText = (text, limit) =>
     text.length > limit ? text.substring(0, limit) + "..." : text;
   console.log('stations legth', allStationsList.length);
-  // Dummy coordinates for the location
+ 
+
 
   useEffect(() => {
     const loadStations = async () => {

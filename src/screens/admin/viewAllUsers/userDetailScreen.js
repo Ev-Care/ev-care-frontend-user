@@ -40,6 +40,7 @@ const UserDetailScreen = ({ route, navigation }) => {
     user?.adhar_no || "Not found"
   );
   const [panNumber, setPanNumber] = useState(user?.pan_no || "Not found");
+  const [status, setStatus] = useState(user?.status || "Not found");
   const [gstNumber, setGstNumber] = useState(user?.gstin_number || "Not found");
   const [vehicleCompany, setVehicleCompany] = useState(
     user?.vehicle_manufacturer || "Not found"
@@ -325,6 +326,7 @@ text.length > limit ? text.substring(0, limit) + "..." : text;
         {renderTextData("Full Name", name)}
         {renderTextData("Mobile Number", mobNumber)}
         {renderTextData("Email", email)}
+        {renderTextData("Status", status)}
         {user?.role === "user" && (
           <>
             {renderTextData("Vehicle Company", vehicleCompany)}

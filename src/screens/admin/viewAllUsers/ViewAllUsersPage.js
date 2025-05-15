@@ -18,7 +18,9 @@ import {
   commonStyles,
   Sizes,
   Fonts,
-} from "../../../constants/styles";import MyStatusBar from "../../../components/myStatusBar";
+} from "../../../constants/styles";
+import MyStatusBar from "../../../components/myStatusBar";
+
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import RNModal from "react-native-modal";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
@@ -41,95 +43,124 @@ const COLORS = {
 // Sample user data
 const USERS = [
   {
-    id: 18,
-    user_key: "b2ZB4gFprc",
-    owner_legal_name: "Dummy User",
-    business_name: null,
-    mobile_number: "+916666666666",
-    email: null,
-    otp: "573937",
-    pan_no: null,
-    tan_no: null,
-    adhar_no: null,
-    address: null,
-    avatar: null,
-    adhar_front_pic: null,
-    adhar_back_pic: null,
-    pan_pic: null,
-    tan_pic: null,
-    google_id: null,
-    otp_expiry_date: "2025-04-23T18:41:38.000Z",
+    id: 1,
+    user_key: "user1key",
+    owner_legal_name: "User One",
+    mobile_number: "+910000000001",
     status: "New",
     role: "user",
-    login_method: "mobile_otp",
-    created_at: "2025-04-23T18:31:38.000Z",
-    update_at: "2025-04-23T18:31:38.509Z",
-    updated_by: 0,
-    isLoggedIn: true,
-    password: null
   },
   {
-    id: 19,
-    user_key: "b2ZB4gFprc",
-    owner_legal_name: "Dummy User 2",
-    business_name: null,
-    mobile_number: "+9166666666669",
-    email: null,
-    otp: "573937",
-    pan_no: null,
-    tan_no: null,
-    adhar_no: null,
-    address: null,
-    avatar: null,
-    adhar_front_pic: null,
-    adhar_back_pic: null,
-    pan_pic: null,
-    tan_pic: null,
-    google_id: null,
-    otp_expiry_date: "2025-04-23T18:41:38.000Z",
-    status: "New",
+    id: 2,
+    user_key: "user2key",
+    owner_legal_name: "User Two",
+    mobile_number: "+910000000002",
+    status: "Active",
+    role: "user",
+  },
+  {
+    id: 3,
+    user_key: "user3key",
+    owner_legal_name: "User Three",
+    mobile_number: "+910000000003",
+    status: "Inactive",
     role: "vendor",
-    login_method: "mobile_otp",
-    created_at: "2025-04-23T18:31:38.000Z",
-    update_at: "2025-04-23T18:31:38.509Z",
-    updated_by: 0,
-    isLoggedIn: true,
-    password: null
-  }
+  },
+  {
+    id: 4,
+    user_key: "user4key",
+    owner_legal_name: "User Four",
+    mobile_number: "+910000000004",
+    status: "Blocked",
+    role: "vendor",
+  },
+  {
+    id: 5,
+    user_key: "user5key",
+    owner_legal_name: "User Five",
+    mobile_number: "+910000000005",
+    status: "New",
+    role: "user",
+  },
+  {
+    id: 6,
+    user_key: "user6key",
+    owner_legal_name: "User Six",
+    mobile_number: "+910000000006",
+    status: "Active",
+    role: "user",
+  },
+  {
+    id: 7,
+    user_key: "user7key",
+    owner_legal_name: "User Seven",
+    mobile_number: "+910000000007",
+    status: "Inactive",
+    role: "vendor",
+  },
+  {
+    id: 8,
+    user_key: "user8key",
+    owner_legal_name: "User Eight",
+    mobile_number: "+910000000008",
+    status: "Blocked",
+    role: "vendor",
+  },
+  {
+    id: 9,
+    user_key: "user9key",
+    owner_legal_name: "User Nine",
+    mobile_number: "+910000000009",
+    status: "New",
+    role: "user",
+  },
+  {
+    id: 10,
+    user_key: "user10key",
+    owner_legal_name: "User Ten",
+    mobile_number: "+910000000010",
+    status: "Active",
+    role: "vendor",
+  },
 ];
 
-// User item component - extracted for better code organization
-
-const ViewAllUserPage = ({navigation}) => {
+const ViewAllUserPage = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState(USERS);
   const [isLoading, setIsLoading] = useState(false);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
-  const [selectedRole, setSelectedRole] = useState("user");
-  const [selectedStatuses, setSelectedStatuses] = useState([]);
+  const [selectedRole, setSelectedRole] = useState("both");
   const [refreshing, setRefreshing] = useState(false);
   // Filter users based on search query
-  const filteredUsers = users.filter(
-    (user) =>
-      user?.owner_legal_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user?.mobile_number?.includes(searchQuery)
-  );
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
 
-const handleRefresh = async () => {
-     
-};
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user?.owner_legal_name
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      user?.mobile_number?.includes(searchQuery);
+
+    const matchesRole = selectedRole === "both" || user?.role === selectedRole;
+
+    const matchesStatus =
+      selectedStatuses.length === 0 || selectedStatuses.includes(user?.status);
+
+    return matchesSearch && matchesRole && matchesStatus;
+  });
 
 
+  const handleRefresh = async () => {};
 
   return (
     <SafeAreaView style={styles.container}>
-      <MyStatusBar/>
+      <MyStatusBar />
 
-     {searchBar()}
+      {searchBar()}
 
       <FlatList
-       refreshing={refreshing}
-       onRefresh={handleRefresh}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
         data={filteredUsers}
         renderItem={({ item }) => <UserInfo user={item} />}
         keyExtractor={(item) => item?.id?.toString()}
@@ -143,7 +174,7 @@ const handleRefresh = async () => {
           </View>
         }
       />
-       {isLoading && (
+      {isLoading && (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={Colors.primaryColor} />
         </View>
@@ -154,18 +185,42 @@ const handleRefresh = async () => {
 
   function UserInfo({ user }) {
     return (
-      <TouchableOpacity onPress={() => navigation.navigate("userDetailScreen",{user})} style={styles.userItem}>
-     {user?.avatar ? (
+      <TouchableOpacity
+        onPress={() => navigation.navigate("userDetailScreen", { user })}
+        style={styles.userItem}
+      >
+        {user?.avatar ? (
           <Image source={{ uri: user?.avatar }} style={styles.avatar} />
         ) : (
-          <Icon name="account-circle" size={50} color="#ccc" style={styles.avatar} />
+          <Icon
+            name="account-circle"
+            size={50}
+            color="#ccc"
+            style={styles.avatar}
+          />
         )}
-  
+
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{user?.owner_legal_name || "N/A"}</Text>
           <Text style={styles.userMobile}>{user?.mobile_number || "N/A"}</Text>
+          <Text style={styles.roleText}>
+            Status :{" "}
+            <Text
+              style={{
+                fontWeight: "bold",
+                color:
+                  user?.status === "Active"
+                    ? "green"
+                    : user?.status === "Blocked"
+                    ? "red"
+                    : COLORS.accent, 
+              }}
+             >
+              {user?.status || "N/A"}
+            </Text>
+          </Text>
         </View>
-  
+
         <View style={[styles.roleBadge]}>
           <Text
             style={[
@@ -179,7 +234,6 @@ const handleRefresh = async () => {
       </TouchableOpacity>
     );
   }
-  
 
   function searchBar() {
     return (
@@ -209,7 +263,7 @@ const handleRefresh = async () => {
               fontSize: 12,
             }}
             value={searchQuery}
-           onChangeText={(text) => setSearchQuery(text)}
+            onChangeText={(text) => setSearchQuery(text)}
           />
         </View>
 
@@ -219,111 +273,109 @@ const handleRefresh = async () => {
           color={Colors.blackColor}
           size={26}
           style={{ marginLeft: 12 }} // add some spacing
-          onPress={() =>
-            setBottomSheetVisible(true)
-          }
+          onPress={() => setBottomSheetVisible(true)}
         />
       </View>
     );
   }
-    function bottonSheet() {
-      return (
-        <RNModal
-          isVisible={isBottomSheetVisible}
-          onBackdropPress={() => setBottomSheetVisible(false)}
-          style={{ justifyContent: "flex-end", margin: 0 }}
-        >
-          <View style={styles.bottomSheet}>
-            {roleSelector()}
-            {statusSection()}
-          </View>
-        </RNModal>)
-    }
-  
-    function roleSelector() {
-      const roles = ["user", "vendor", "both"];
-  
-      return (
-        <View style={[styles.section, { marginBottom: 12 }]}>
-          <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
-            Select Role
-          </Text>
-  
-          <View style={styles.TypeContainer}>
-            {roles.map((role) => (
-              <TouchableOpacity
-                key={role}
-                style={[
-                  styles.TypeButton,
-                  selectedRole === role && styles.selectedButton,
-                ]}
-                onPress={() => setSelectedRole(role)}
-              >
-                <Text
-                  style={[
-                    styles.TypebuttonText,
-                    selectedRole === role && styles.selectedButtonText,
-                  ]}
-                >
-                  {role.charAt(0).toUpperCase() + role.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+  function bottonSheet() {
+    return (
+      <RNModal
+        isVisible={isBottomSheetVisible}
+        onBackdropPress={() => setBottomSheetVisible(false)}
+        style={{ justifyContent: "flex-end", margin: 0 }}
+      >
+        <View style={styles.bottomSheet}>
+          {roleSelector()}
+          {statusSection()}
         </View>
-      );
-    }
-  
-  
-function statusSection() {
-  const statuses = ['All', 'Active', 'Inactive', 'Rejected', 'Hold'];
+      </RNModal>
+    );
+  }
 
-  const toggleStatus = (status) => {
-    if (selectedStatuses.includes(status)) {
-      setSelectedStatuses(selectedStatuses.filter((s) => s !== status));
-    } else {
-      setSelectedStatuses([...selectedStatuses, status]);
-    }
-  };
+  function roleSelector() {
+    const roles = ["user", "vendor", "both"];
 
-  return (
-    <View style={[styles.section, { marginBottom: 12 }]}>
-      <Text style={{ marginBottom: 4, fontWeight: 'bold', fontSize: 14 }}>
-        Select Status
-      </Text>
+    return (
+      <View style={[styles.section, { marginBottom: 12 }]}>
+        <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+          Select Role
+        </Text>
 
-      <View style={[styles.TypeContainer, { flexWrap: 'wrap' }]}>
-        {statuses.map((status) => (
-          <TouchableOpacity
-            key={status}
-            style={[
-              styles.TypeButton,
-              selectedStatuses.includes(status) && styles.selectedButton,
-            ]}
-            onPress={() => toggleStatus(status)}
-          >
-            <Text
+        <View style={styles.TypeContainer}>
+          {roles.map((role) => (
+            <TouchableOpacity
+              key={role}
               style={[
-                styles.TypebuttonText,
-                selectedStatuses.includes(status) && styles.selectedButtonText,
+                styles.TypeButton,
+                selectedRole === role && styles.selectedButton,
               ]}
+              onPress={() => setSelectedRole(role)}
             >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  styles.TypebuttonText,
+                  selectedRole === role && styles.selectedButtonText,
+                ]}
+              >
+                {role.charAt(0).toUpperCase() + role.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
-    </View>
-  );
-}
-};
+    );
+  }
 
+  function statusSection() {
+    const statuses = ["New", "Active", "Inactive", "Blocked"];
+
+    const toggleStatus = (status) => {
+      if (selectedStatuses.includes(status)) {
+        setSelectedStatuses(selectedStatuses.filter((s) => s !== status));
+      } else {
+        setSelectedStatuses([...selectedStatuses, status]);
+      }
+    };
+
+    return (
+      <View style={[styles.section, { marginBottom: 12 }]}>
+        <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+          Select Status
+        </Text>
+
+        <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
+          {statuses.map((status) => (
+            <TouchableOpacity
+              key={status}
+              style={[
+                styles.TypeButton,
+                selectedStatuses.includes(status) && styles.selectedButton,
+              ]}
+              onPress={() => toggleStatus(status)}
+            >
+              <Text
+                style={[
+                  styles.TypebuttonText,
+                  selectedStatuses.includes(status) &&
+                    styles.selectedButtonText,
+                ]}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+  }
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.bodyBackColor,
-    paddingHorizontal: Sizes.fixPadding*0.5,
+    paddingHorizontal: Sizes.fixPadding * 0.5,
   },
   header: {
     flexDirection: "row",
@@ -338,7 +390,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
   },
-    loaderContainer: {
+  loaderContainer: {
     position: "absolute",
     top: 0,
     left: 0,
@@ -402,7 +454,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.extraLightGrayColor,
     borderWidth: 0.1,
     borderTopWidth: 1.0,
-   
   },
   avatar: {
     width: 50,
@@ -450,7 +501,7 @@ const styles = StyleSheet.create({
     color: COLORS.gray,
     marginTop: 12,
   },
-   bottomSheet: {
+  bottomSheet: {
     backgroundColor: "#fff",
     padding: 20,
     borderTopRightRadius: 20,
@@ -459,7 +510,8 @@ const styles = StyleSheet.create({
   TypeContainer: {
     flexDirection: "row",
     gap: 10,
-  }, TypeButton: {
+  },
+  TypeButton: {
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderWidth: 1,

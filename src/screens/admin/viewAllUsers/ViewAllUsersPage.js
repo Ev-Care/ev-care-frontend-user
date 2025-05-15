@@ -106,7 +106,7 @@ const ViewAllUserPage = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [selectedRole, setSelectedRole] = useState("user");
-  const [selectedStatus, setSelectedStatus] = useState("All");
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   // Filter users based on search query
   const filteredUsers = users.filter(
@@ -275,38 +275,47 @@ const handleRefresh = async () => {
     }
   
   
-    function statusSection() {
-      const statuses = ['All', "Planned", "Inactive", "Rejected", "Active"];
-      return (
-        <View style={[styles.section, { marginBottom: 12 }]}>
-          <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
-            Select Status
-          </Text>
-  
-          <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
-            {statuses.map((status) => (
-              <TouchableOpacity
-                key={status}
-                style={[
-                  styles.TypeButton,
-                  selectedStatus === status && styles.selectedButton,
-                ]}
-                onPress={() => setSelectedStatus(status)}
-              >
-                <Text
-                  style={[
-                    styles.TypebuttonText,
-                    selectedStatus === status && styles.selectedButtonText,
-                  ]}
-                >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      );
+function statusSection() {
+  const statuses = ['All', 'Active', 'Inactive', 'Rejected', 'Hold'];
+
+  const toggleStatus = (status) => {
+    if (selectedStatuses.includes(status)) {
+      setSelectedStatuses(selectedStatuses.filter((s) => s !== status));
+    } else {
+      setSelectedStatuses([...selectedStatuses, status]);
     }
+  };
+
+  return (
+    <View style={[styles.section, { marginBottom: 12 }]}>
+      <Text style={{ marginBottom: 4, fontWeight: 'bold', fontSize: 14 }}>
+        Select Status
+      </Text>
+
+      <View style={[styles.TypeContainer, { flexWrap: 'wrap' }]}>
+        {statuses.map((status) => (
+          <TouchableOpacity
+            key={status}
+            style={[
+              styles.TypeButton,
+              selectedStatuses.includes(status) && styles.selectedButton,
+            ]}
+            onPress={() => toggleStatus(status)}
+          >
+            <Text
+              style={[
+                styles.TypebuttonText,
+                selectedStatuses.includes(status) && styles.selectedButtonText,
+              ]}
+            >
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+}
 };
 
 

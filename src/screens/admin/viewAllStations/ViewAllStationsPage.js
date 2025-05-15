@@ -33,18 +33,22 @@ const ViewAllStationsPage = ({ navigation }) => {
   const allStationsList = useSelector(selectAllStations);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const dispatch = useDispatch();
-  const [selectedStatus, setSelectedStatus] = useState("All");
+const [selectedStatuses, setSelectedStatuses] = useState([]);
+
   const [selectedRole, setSelectedRole] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const filteredStations = allStationsList.filter((station) => {
-    const matchesText = station?.station_name?.toLowerCase().includes(searchText.toLowerCase());
-    const matchesStatus =
-      selectedStatus === null || selectedStatus === "All"
-        ? true
-        : station?.status === selectedStatus;
 
-    return matchesText && matchesStatus;
-  });
+const filteredStations = allStationsList.filter((station) => {
+  const matchesText = station?.station_name?.toLowerCase().includes(searchText.toLowerCase());
+
+  const matchesStatus =
+    selectedStatuses.length === 0 || selectedStatuses.includes("All")
+      ? true
+      : selectedStatuses.includes(station?.status);
+
+  return matchesText && matchesStatus;
+});
+
 
   const [refreshing, setRefreshing] = useState(false);
   const trimText = (text, limit) =>
@@ -272,38 +276,48 @@ const ViewAllStationsPage = ({ navigation }) => {
   }
 
 
-  function statusSection() {
-    const statuses = ['All', "Planned", "Inactive", "Rejected", "Active"];
-    return (
-      <View style={[styles.section, { marginBottom: 12 }]}>
-        <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
-          Select Status
-        </Text>
+function statusSection() {
+  const statuses = ['All', 'Planned', 'Inactive', 'Rejected', 'Active'];
 
-        <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
-          {statuses.map((status) => (
-            <TouchableOpacity
-              key={status}
+  const toggleStatus = (status) => {
+    if (selectedStatuses.includes(status)) {
+      setSelectedStatuses(selectedStatuses.filter((s) => s !== status));
+    } else {
+      setSelectedStatuses([...selectedStatuses, status]);
+    }
+  };
+
+  return (
+    <View style={[styles.section, { marginBottom: 12 }]}>
+      <Text style={{ marginBottom: 4, fontWeight: 'bold', fontSize: 14 }}>
+        Select Status
+      </Text>
+
+      <View style={[styles.TypeContainer, { flexWrap: 'wrap' }]}>
+        {statuses.map((status) => (
+          <TouchableOpacity
+            key={status}
+            style={[
+              styles.TypeButton,
+              selectedStatuses.includes(status) && styles.selectedButton,
+            ]}
+            onPress={() => toggleStatus(status)}
+          >
+            <Text
               style={[
-                styles.TypeButton,
-                selectedStatus === status && styles.selectedButton,
+                styles.TypebuttonText,
+                selectedStatuses.includes(status) && styles.selectedButtonText,
               ]}
-              onPress={() => setSelectedStatus(status)}
             >
-              <Text
-                style={[
-                  styles.TypebuttonText,
-                  selectedStatus === status && styles.selectedButtonText,
-                ]}
-              >
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
-    );
-  }
+    </View>
+  );
+}
+
 };
 
 export default ViewAllStationsPage;

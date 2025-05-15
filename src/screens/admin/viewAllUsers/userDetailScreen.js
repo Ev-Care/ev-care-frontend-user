@@ -25,7 +25,7 @@ import { RefreshControl } from "react-native-gesture-handler";
 const { width } = Dimensions.get("window");
 
 
-const userDetailScreen = ({ route, navigation }) => {
+const UserDetailScreen = ({ route, navigation }) => {
   const scrollViewRef = useRef(null);
   const { user } = route?.params; // Get the user data from route params
   const [name, setName] = useState(user?.owner_legal_name || "Not found");
@@ -675,4 +675,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default userDetailScreen;
+export default UserDetailScreen;

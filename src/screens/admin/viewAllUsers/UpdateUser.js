@@ -38,13 +38,13 @@ import { patchUpdateUserProfile } from "../../user/service/crudFunction";
 const UpdateUser = ({ route, navigation }) => {
   const { user } = route.params;
 
-const [name, setName] = useState(user?.owner_legal_name || "Not found");
-const [email, setEmail] = useState(user?.email || "Not found");
-const [mobNumber, setMobNumber] = useState(user?.mobile_number || "Not found");
-const [businessName, setBusinessName] = useState(user?.business_name || "Not found");
-const [aadharNumber, setAadharNumber] = useState(user?.adhar_no || "Not found");
-const [panNumber, setPanNumber] = useState(user?.pan_no || "Not found");
-const [gstNumber, setGstNumber] = useState(user?.gstin_number || "Not found");
+const [name, setName] = useState(user?.owner_legal_name);
+const [email, setEmail] = useState(user?.email);
+const [mobNumber, setMobNumber] = useState(user?.mobile_number);
+const [businessName, setBusinessName] = useState(user?.business_name);
+const [aadharNumber, setAadharNumber] = useState(user?.adhar_no);
+const [panNumber, setPanNumber] = useState(user?.pan_no);
+const [gstNumber, setGstNumber] = useState(user?.gstin_number);
 
 const [aadhaarFrontImage, setAadhaarFrontImage] = useState(user?.adhar_front_pic || null);
 const [aadhaarBackImage, setAadhaarBackImage] = useState(user?.adhar_back_pic || null);
@@ -57,14 +57,14 @@ const [selectedImage, setSelectedImage] = useState(null);
 const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
 const [currentImageSetter, setCurrentImageSetter] = useState(null);
 const [coordinate, setCoordinate] = useState(null);
-const [address, setAddress] = useState(user?.address || "Not found");
+const [address, setAddress] = useState(user?.address);
 const [selectedRole, setSelectedRole] = useState(user?.role || "user");
 const [imageloading, setImageLoading] = useState("");
 const [businessType, setBusinessType] = useState(user?.vendor_type || "individual");
 const [isLoading, setIsLoading] = useState(false);
-const [vehicleCompany, setVehicleCompany] = useState(user?.vehicle_manufacturer || "Not found");
-const [vehicleModel, setVehicleModel] = useState(user?.vehicle_model || "Not found");
-const [vehicleNumber, setVehicleNumber] = useState(user?.vehicle_registration_number || "Not found");
+const [vehicleCompany, setVehicleCompany] = useState(user?.vehicle_manufacturer);
+const [vehicleModel, setVehicleModel] = useState(user?.vehicle_model);
+const [vehicleNumber, setVehicleNumber] = useState(user?.vehicle_registration_number);
 // const [password, setPassword] = useState(null);
 // const [confirmPassword, setConfirmPassword] = useState(null);
 // const [securePass, setSecurePass] = useState(true);
@@ -385,7 +385,7 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
             type: "success",
           })
         );
-        navigation.pop();
+        navigation.navigate("ViewAllUserPage");
       } else {
         dispatch(
           showSnackbar({

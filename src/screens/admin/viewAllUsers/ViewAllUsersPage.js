@@ -203,11 +203,11 @@ const ViewAllUserPage = ({ navigation }) => {
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{user?.owner_legal_name || "N/A"}</Text>
           <Text style={styles.userMobile}>{user?.mobile_number || "N/A"}</Text>
-          <Text style={styles.roleText}>
+          <Text style={[styles.userMobile,{color: COLORS.blackColor}]}>
             Status :{" "}
             <Text
               style={{
-                fontWeight: "bold",
+        
                 color:
                   user?.status === "Active"
                     ? "green"

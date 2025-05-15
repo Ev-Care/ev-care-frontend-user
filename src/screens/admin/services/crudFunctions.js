@@ -78,15 +78,13 @@ export const fetchAllStations = createAsyncThunk(
   }
 );
 
-export const getAllPendingUsers = createAsyncThunk(
-  "admin/getAllPendingUsers",
+export const getAllVendors = createAsyncThunk(
+  "admin/getAllVendors",
   async (_, { rejectWithValue }) => {
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
 
-      const response = await getAllPendingUsersAPI({
-        accessToken,
-      }); // Call the API to fetch stations by location
+      const response = await getAllUsersAPI({status: "", userType: "vendor", accessToken}); // Call the API to fetch stations by location
 
       if (response?.data?.code === 200 || response?.data?.code === 201) {
         return response?.data;
@@ -96,7 +94,7 @@ export const getAllPendingUsers = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in getAllPendingUsers:", error);
+      console.log("Error in getAllvendors:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -117,7 +115,7 @@ export const getAllUsers = createAsyncThunk(
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
 
       const response = await getAllUsersAPI({
-        accessToken,
+        accessToken, status: '', userType: '',
       }); // Call the API to fetch stations by location
 
       if (response?.data?.code === 200 || response?.data?.code === 201) {

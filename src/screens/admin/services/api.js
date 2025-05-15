@@ -26,14 +26,14 @@ export const getAllStationsByUserIdAPI = (data) =>
 
 export const getAllPendingUsersAPI = (data) =>
   apiGetRequest({
-    apiUrl: `${API_URL}/users/get-all-pending-users`,
+    apiUrl: `${API_URL}/users/get-all-users?status=completed&userType=vendor`,
     content_type: "application/json",
     accessToken: data.accessToken,
   });
 
 export const getAllUsersAPI = (data) =>
   apiGetRequest({
-    apiUrl: `${API_URL}/users/get-all-users?status=&userType=`,
+    apiUrl: `${API_URL}/users/get-all-users?status=${data.status}&userType=${data.userType}`,
     content_type: "application/json",
     accessToken: data.accessToken,
   });

@@ -256,7 +256,7 @@ const ViewAllUserPage = ({ navigation }) => {
 
   function statusSection() {
     // const statuses = ["New", "Active", "Inactive", "Blocked"];
-    const vendorStatuses = ["New", "Completed", "Active", "Inactive", "Blocked"];
+    const vendorStatuses = ["New", "Completed", 'Rejected', "Active", "Inactive", "Blocked"];
     const userStatuses = ["Active", "Inactive", "Blocked"];
    
 

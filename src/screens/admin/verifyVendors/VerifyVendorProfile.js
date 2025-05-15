@@ -20,7 +20,7 @@ import {
   commonStyles
 } from "../../../constants/styles";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import { approveVendorProfile, getAllPendingUsers } from "../services/crudFunctions";
+import { approveVendorProfile, getAllPendingUsers, getAllVendors } from "../services/crudFunctions";
 import { default as Icon } from "react-native-vector-icons/MaterialIcons";
 
 const VerifyVendorProfile = ({ route, navigation }) => {
@@ -41,13 +41,13 @@ const VerifyVendorProfile = ({ route, navigation }) => {
 
   //   image start
   const [aadhaarFrontImage, setAadhaarFrontImage] = useState(
-   user?.adhar_front_pic
+    user?.adhar_front_pic
   );
   const [aadhaarBackImage, setAadhaarBackImage] = useState(
-   user?.adhar_back_pic
+    user?.adhar_back_pic
   );
-  const [panImage, setPanImage] = useState( user?.pan_pic);
-  const [gstImage, setGstImage] = useState( user?.gstin_image);
+  const [panImage, setPanImage] = useState(user?.pan_pic);
+  const [gstImage, setGstImage] = useState(user?.gstin_image);
   const [avatar, setAvatar] = useState(user?.avatar);
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -75,9 +75,9 @@ const VerifyVendorProfile = ({ route, navigation }) => {
       console.log({ rejectResponse });
 
       if (approveVendorProfile.fulfilled.match(rejectResponse)) {
-        const pendingVendorResponse = await dispatch(getAllPendingUsers());
+        const vendorResponse = await dispatch(getAllVendors());
 
-        if (getAllPendingUsers.fulfilled.match(pendingVendorResponse)) {
+        if (getAllVendors.fulfilled.match(vendorResponse)) {
           await dispatch(
             showSnackbar({
               message: "Vendor profile rejected.",
@@ -85,7 +85,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
             })
           );
           navigation.goBack();
-        } else if (getAllPendingUsers.rejected.match(pendingVendorResponse)) {
+        } else if (getAllVendors.rejected.match(vendorResponse)) {
           dispatch(
             showSnackbar({
               message: "Failed to reject vendor.",
@@ -93,7 +93,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
             })
           );
         }
-      } else if (approveVendorProfile.rejected.match(approvedResponse)) {
+      } else if (approveVendorProfile.rejected.match(rejectResponse)) {
         dispatch(
           showSnackbar({ message: "Failed to reject vendor.", type: "error" })
         );
@@ -101,12 +101,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
     } finally {
       setIsLoading(false);
     }
-    // dispatch(
-    //   showSnackbar({
-    //     message: "Currently this service is under development.",
-    //     type: "error",
-    //   })
-    // );
+
   };
   const handleApprove = async () => {
     setIsLoading(true);
@@ -116,9 +111,9 @@ const VerifyVendorProfile = ({ route, navigation }) => {
       );
 
       if (approveVendorProfile.fulfilled.match(approvedResponse)) {
-        const pendingVendorResponse = await dispatch(getAllPendingUsers());
+        const vendorResponse = await dispatch(getAllVendors());
 
-        if (getAllPendingUsers.fulfilled.match(pendingVendorResponse)) {
+        if (getAllVendors.fulfilled.match(vendorResponse)) {
           await dispatch(
             showSnackbar({
               message: "Vendor profile approved.",
@@ -126,7 +121,7 @@ const VerifyVendorProfile = ({ route, navigation }) => {
             })
           );
           navigation.goBack();
-        } else if (getAllPendingUsers.rejected.match(pendingVendorResponse)) {
+        } else if (getAllVendors.rejected.match(vendorResponse)) {
           dispatch(
             showSnackbar({
               message: "Failed to approve vendor.",
@@ -159,58 +154,58 @@ const VerifyVendorProfile = ({ route, navigation }) => {
     </View>
   );
 
-const renderImageBox = (label, localURI) => {
-  if ((!localURI || localURI ==="") && label !== "avatar") return null;
-//  console.log("local uri",localURI);
-  return (
-    <TouchableOpacity
-      onPress={() => showFullImage(imageURL.baseURL+localURI)}
-      style={{ alignItems: "center", marginBottom: 20 }}
-    >
-      <View
-        style={[
-          styles.imageBox,
-          { borderRadius: label === "avatar" ? 50 : 12 },
-        ]}
+  const renderImageBox = (label, localURI) => {
+    if ((!localURI || localURI === "") && label !== "avatar") return null;
+    //  console.log("local uri",localURI);
+    return (
+      <TouchableOpacity
+        onPress={() => showFullImage(imageURL.baseURL + localURI)}
+        style={{ alignItems: "center", marginBottom: 20 }}
       >
-        {imageloading === label ? (
-          <ActivityIndicator size={40} color="#ccc" />
-        ) : localURI ? (
-          <Image
-            source={{ uri: imageURL.baseURL+localURI }}
-            style={[
-              styles.imageStyle,
-              { borderRadius: label === "avatar" ? 50 : 12 },
-            ]}
-          />
-        ) : (
-          <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
-        )}
-      </View>
-      <Text style={styles.imageLabel}>{label}</Text>
-    </TouchableOpacity>
-  );
-};
+        <View
+          style={[
+            styles.imageBox,
+            { borderRadius: label === "avatar" ? 50 : 12 },
+          ]}
+        >
+          {imageloading === label ? (
+            <ActivityIndicator size={40} color="#ccc" />
+          ) : localURI ? (
+            <Image
+              source={{ uri: imageURL.baseURL + localURI }}
+              style={[
+                styles.imageStyle,
+                { borderRadius: label === "avatar" ? 50 : 12 },
+              ]}
+            />
+          ) : (
+            <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
+          )}
+        </View>
+        <Text style={styles.imageLabel}>{label}</Text>
+      </TouchableOpacity>
+    );
+  };
 
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
-          <View style={styles.appBar}>
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Icon name="arrow-back" size={24} color={Colors.primary} />
-              </TouchableOpacity>
-              <Text style={[styles.title,{fontSize:16}]}>Verify Vendor Profile</Text>
-              <View style={{ width: 24 }} />
-            </View>
+      <View style={styles.appBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Icon name="arrow-back" size={24} color={Colors.primary} />
+        </TouchableOpacity>
+        <Text style={[styles.title, { fontSize: 16 }]}>Verify Vendor Profile</Text>
+        <View style={{ width: 24 }} />
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
-     
+
         <View style={styles.imageContainerAvatar}>
           {renderImageBox("avatar", avatar, setAvatar)}
         </View>
         {renderTextData("Full Name", name)}
         {renderTextData("Mobile Number", mobNumber)}
         {renderTextData("Email", email)}
-         {renderTextData("Registered As", user?.vendor_type)}
+        {renderTextData("Registered As", user?.vendor_type)}
         {renderTextData("Business Name", businessName)}
         {renderTextData("Aadhar Number", aadharNumber)}
         {renderTextData("PAN Number", panNumber)}
@@ -262,11 +257,11 @@ const renderImageBox = (label, localURI) => {
         {rejectDialogue()}
         {approveDialogue()}
       </ScrollView>
-        {isLoading && (
-             <View style={styles.loaderContainer}>
-               <ActivityIndicator size="large" color={Colors.primaryColor} />
-             </View>
-           )}
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </View>
   );
 
@@ -394,7 +389,7 @@ const styles = StyleSheet.create({
     // backgroundColor: Colors.bodyBackColor,
     backgroundColor: "#fff",
     paddingBottom: 50,
-  },  
+  },
   loaderContainer: {
     position: "absolute",
     top: 0,
@@ -420,7 +415,7 @@ const styles = StyleSheet.create({
 
   imageContainer: {
     flexDirection: "row",
-    gap:20,
+    gap: 20,
     marginTop: 20,
 
     flexWrap: "wrap",
@@ -485,7 +480,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
     gap: 10,
   },
-   actionButton: {
+  actionButton: {
     flex: 1,
     paddingVertical: 10,
     borderRadius: 6,

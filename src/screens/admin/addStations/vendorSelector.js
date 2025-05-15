@@ -1,34 +1,29 @@
 // ViewAllUserPage.js
-import React, { useCallback, useState } from "react";
+import { StackActions, useFocusEffect } from "@react-navigation/native";
+import { useCallback, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
+  ActivityIndicator,
   FlatList,
   Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
-  SafeAreaView,
-  StatusBar,
+  View
 } from "react-native";
-import {
-  Colors,
-  screenWidth,
-  commonStyles,
-  Sizes,
-  Fonts,
-} from "../../../constants/styles"; import MyStatusBar from "../../../components/myStatusBar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { color } from "@rneui/base";
-import { getAllPendingUsers } from "../services/crudFunctions";
 import { useDispatch, useSelector } from "react-redux";
-import {  selectPendingUsers } from "../services/selector";
-import { useFocusEffect } from "@react-navigation/native";
+import MyStatusBar from "../../../components/myStatusBar";
 import imageURL from "../../../constants/baseURL";
-import { RefreshControl } from "react-native";
-import { StackActions } from "@react-navigation/native";
+import {
+  Colors,
+  commonStyles,
+  Sizes
+} from "../../../constants/styles";
+import { getAllPendingUsers, getAllVendors } from "../services/crudFunctions";
+import { selectActiveVendors } from "../services/selector";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -48,31 +43,19 @@ const COLORS = {
 
 const VendorSelector = ({ navigation,route }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const users = useSelector(selectPendingUsers);
+  const users = useSelector(selectActiveVendors);
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   console.log('users length',users?.length);
    const [refreshing, setRefreshing] = useState(false);
 
-  // Called every time screen comes into focus
- useFocusEffect(
-  useCallback(() => {
-    const fetchPendingUsers = async () => {
-      setIsLoading(true);
-      await dispatch(getAllPendingUsers());
-      setIsLoading(false);
-    };
-
-    fetchPendingUsers();
-  }, [dispatch])
-);
 
   const handleRefresh = async () => {
     try {
       setRefreshing(true); // start refreshing UI
-      const response = await dispatch(getAllPendingUsers());
+      const response = await dispatch(getAllVendors());
   
-      if (getAllPendingUsers.fulfilled.match(response)) {
+      if (getAllVendors.fulfilled.match(response)) {
         console.log('vendors refreshed');
         // Optional: show a success snackbar
         // dispatch(showSnackbar({ message: "Vendors refreshed.", type: "success" }));

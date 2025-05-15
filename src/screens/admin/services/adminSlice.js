@@ -1,15 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { approveStation, approveVendorProfile, fetchAllPendingStation, fetchAllStations, getAllPendingUsers, getAllSupportIssues, getAllUsers } from "./crudFunctions";
-
-
+import { approveStation, approveVendorProfile, fetchAllPendingStation, fetchAllStations, getAllSupportIssues, getAllUsers, getAllVendors } from "./crudFunctions";
 
 const initialState = {
     allUsers: [],
+    allVendors: [],
     allStations: [],
     pendingStations: [],
-    pendingUsers: [],
     rejectedStations: [],
-    rejectedUsers: [],
     supportIssues: [],
     loading: false,
     error: null,
@@ -38,18 +35,6 @@ const adminSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload?.message || action.payload;
             })
-            .addCase(getAllPendingUsers.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(getAllPendingUsers.fulfilled, (state, action) => {
-                state.pendingUsers = action.payload.data;
-                state.loading = false;
-            })
-            .addCase(getAllPendingUsers.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload.message;
-            })
             .addCase(getAllUsers.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -59,6 +44,18 @@ const adminSlice = createSlice({
                 state.loading = false;
             })
             .addCase(getAllUsers.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload.message;
+            })
+            .addCase(getAllVendors.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getAllVendors.fulfilled, (state, action) => {
+                state.allVendors = action.payload.data;
+                state.loading = false;
+            })
+            .addCase(getAllVendors.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload.message;
             })

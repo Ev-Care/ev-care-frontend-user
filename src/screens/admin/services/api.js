@@ -106,3 +106,9 @@ export const addStationByAdminAPI = (data) =>
     accessToken: data.accessToken,
     data: data.data,
   });
+export const getEntityCountAPI = (data) =>
+    apiGetRequest({
+    apiUrl: `${API_URL}/users/get-all-count`,
+    content_type: "application/json",
+    accessToken: data.accessToken,
+  });

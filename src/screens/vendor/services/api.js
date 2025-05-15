@@ -41,12 +41,7 @@ export const deleteStationAPI = (data) =>
     content_type: "application/json",
     accessToken: data.accessToken,
   });
-export const getEntityCountAPI = (data) =>
-    apiGetRequest({
-    apiUrl: `${API_URL}/users/get-all-count`,
-    content_type: "application/json",
-    accessToken: data.accessToken,
-  });
+
 
 export const updateAllStationStatusAPI = (data) =>
     apiPostRequest({

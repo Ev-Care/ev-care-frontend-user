@@ -45,12 +45,13 @@ const COLORS = {
 };
 
 
-const ViewAllUserPage = ({ navigation }) => {
+const ViewAllUserPage = ({ navigation,route }) => {
+  
   const [searchQuery, setSearchQuery] = useState("");
   const users = useSelector(selectAllUsers);
   const isLoading = useSelector(selectAdminLoading);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
-  const [selectedRole, setSelectedRole] = useState("both");
+  const [selectedRole, setSelectedRole] = useState(route?.params?.role||"both");
   const [refreshing, setRefreshing] = useState(false);
   const dispatch = useDispatch();
   // Filter users based on search query

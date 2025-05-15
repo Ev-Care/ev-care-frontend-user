@@ -1,5 +1,5 @@
 // EVCareAdminDashboard.js
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -22,8 +22,10 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import MyStatusBar from '../../../components/myStatusBar';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { selectUser } from '../../auth/services/selector';
+import { useFocusEffect } from '@react-navigation/native';
+import { getEntityCount } from '../services/crudFunctions';
 
 // Define root colors at the top
 const COLORS = {
@@ -43,24 +45,50 @@ const { width } = Dimensions.get('window');
 
 const AdminHome = ({navigation}) => {
 
+  const [entityCount ,setEntityCount]=useState(null);
+
   const user = useSelector(selectUser);
+ const dispatch = useDispatch();
+
+useFocusEffect(
+  useCallback(() => {
+    let isActive = true;
+
+    const fetchEntityCount = async () => {
+      const response = await dispatch(getEntityCount());
+      if (isActive && response.payload.code === 200) {
+        console.log("response ",response.payload)
+        setEntityCount(response.payload.data);
+      }
+    };
+
+    fetchEntityCount();
+
+    return () => {
+      isActive = false; 
+    };
+  }, [user])
+);
+
+
+
   // Dummy data for today's metrics
   const todayData = {
     users: {
-      count: 245,
-      percentage: 68,
+      count: entityCount?.totalUsers,
+      percentage: 100,
       icon: 'account-group',
       color: COLORS.accent,
     },
     vendors: {
-      count: 87,
-      percentage: 42,
+      count: entityCount?.totalVendors,
+      percentage:100,
       icon: 'store',
       color: COLORS.secondary,
     },
     stations: {
-      count: 156,
-      percentage: 75,
+      count: entityCount?.totalStations,
+      percentage: 100,
       icon: 'ev-station',
       color: COLORS.tertiary,
     },
@@ -178,7 +206,7 @@ const AdminHome = ({navigation}) => {
         </View>
 
         {/* Today's Report Section */}
-        {/* {todaysReport()} */}
+        {todaysReport()}
 
         {/* Monthly Growth Report */}
         {/* { monthlyGrowth()} */}
@@ -191,10 +219,10 @@ const AdminHome = ({navigation}) => {
 
 function todaysReport(){
     return(<View style={styles.section}>
-      <Text style={styles.sectionTitle}>Today's Report</Text>
+      <Text style={styles.sectionTitle}>Overall Report </Text>
       <View style={styles.metricsContainer}>
         {/* Users Today */}
-        <View style={styles.metricCard}>
+        <TouchableOpacity onPress={()=>navigation.navigate("ViewAllUserPage",{role:"user"})} style={styles.metricCard}>
           <AnimatedCircularProgress
             size={80}
             width={8}
@@ -210,17 +238,17 @@ function todaysReport(){
               </View>
             )}
           </AnimatedCircularProgress>
-          <View style={styles.metricTextContainer}>
+          <View  style={styles.metricTextContainer}>
             <Text style={styles.metricCount}>{todayData.users.count}</Text>
-            <Text style={styles.metricLabel}>Users Today</Text>
-            <View style={[styles.percentageBadge, { backgroundColor: todayData.users.color }]}>
+            <Text style={styles.metricLabel}>Total Users</Text>
+            {/* <View style={[styles.percentageBadge, { backgroundColor: todayData.users.color }]}>
               <Text style={styles.percentageText}>{todayData.users.percentage}%</Text>
-            </View>
+            </View> */}
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Vendors Today */}
-        <View style={styles.metricCard}>
+         <TouchableOpacity onPress={()=>navigation.navigate("ViewAllUserPage",{role:"vendor"})} style={styles.metricCard}>
           <AnimatedCircularProgress
             size={80}
             width={8}
@@ -238,15 +266,15 @@ function todaysReport(){
           </AnimatedCircularProgress>
           <View style={styles.metricTextContainer}>
             <Text style={styles.metricCount}>{todayData.vendors.count}</Text>
-            <Text style={styles.metricLabel}>Vendors Today</Text>
-            <View style={[styles.percentageBadge, { backgroundColor: todayData.vendors.color }]}>
+            <Text style={styles.metricLabel}>Total Vendors</Text>
+            {/* <View style={[styles.percentageBadge, { backgroundColor: todayData.vendors.color }]}>
               <Text style={styles.percentageText}>{todayData.vendors.percentage}%</Text>
-            </View>
+            </View> */}
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Stations Today */}
-        <View style={styles.metricCard}>
+          <TouchableOpacity onPress={()=>navigation.navigate("ViewAllStationsPage")} style={styles.metricCard}>
           <AnimatedCircularProgress
             size={80}
             width={8}
@@ -264,12 +292,12 @@ function todaysReport(){
           </AnimatedCircularProgress>
           <View style={styles.metricTextContainer}>
             <Text style={styles.metricCount}>{todayData.stations.count}</Text>
-            <Text style={styles.metricLabel}>Stations Today</Text>
-            <View style={[styles.percentageBadge, { backgroundColor: todayData.stations.color }]}>
+            <Text style={styles.metricLabel}>Total Stations</Text>
+            {/* <View style={[styles.percentageBadge, { backgroundColor: todayData.stations.color }]}>
               <Text style={styles.percentageText}>{todayData.stations.percentage}%</Text>
-            </View>
+            </View> */}
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>);
   }

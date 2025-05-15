@@ -12,9 +12,10 @@ import {
   getAllStationsByUserIdAPI,
   getAllSupportIssuesAPI,
   getAllUsersAPI,
+  getEntityCountAPI,
   updateUserProfileAPI,
 } from "./api";
-import { deleteStationAPI } from "../../vendor/services/api";
+import { deleteStationAPI, } from "../../vendor/services/api";
 // Async thunk to fetch stations
 export const fetchAllPendingStation = createAsyncThunk(
   "admin/fetchAllPendingStation",
@@ -388,7 +389,7 @@ export const deleteStationByAdmin = createAsyncThunk(
 // Get Count of entity
 export const getEntityCount = createAsyncThunk(
   'admin/getEntityCount',
-  async (stationId, { rejectWithValue }) => {
+  async ( _ ,{ rejectWithValue }) => {
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve accessToken inside the thunk
       const response = await getEntityCountAPI({ accessToken });

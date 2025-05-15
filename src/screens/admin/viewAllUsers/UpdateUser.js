@@ -32,7 +32,7 @@ import imageURL from "../../../constants/baseURL";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import { createUser } from "../services/crudFunctions";
+import { createUser, updateUserProfile } from "../services/crudFunctions";
 import { patchUpdateUserProfile } from "../../user/service/crudFunction";
 
 const UpdateUser = ({ route, navigation }) => {
@@ -377,7 +377,7 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
     console.log("Submitting payload:", payload);
 
     try {
-      const response = await dispatch(patchUpdateUserProfile(payload));
+      const response = await dispatch(updateUserProfile(payload));
       if (response.payload.code === 200 || response.payload.code === 201) {
         dispatch(
           showSnackbar({

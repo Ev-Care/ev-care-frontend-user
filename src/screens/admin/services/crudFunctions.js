@@ -12,6 +12,7 @@ import {
   getAllStationsByUserIdAPI,
   getAllSupportIssuesAPI,
   getAllUsersAPI,
+  updateUserProfileAPI,
 } from "./api";
 import { deleteStationAPI } from "../../vendor/services/api";
 // Async thunk to fetch stations
@@ -231,7 +232,33 @@ export const approveStation = createAsyncThunk(
   }
 );
 
+export const updateUserProfile = createAsyncThunk(
+  "userSlice/profileUpdate",
+  async (data, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
+      // console.log("data:",  {...data, accessToken}); // Log the access token for debugging
+      const response = await updateUserProfileAPI({ ...data, accessToken }); // Call the API to fetch stations by location
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(
+          response.data.message || "Failed to update user details"
+        );
+      }
+    } catch (error) {
+      console.log("Error in patchUpdateUserProfile:", error);
 
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message || // API sent error message
+        error?.message || // JS error message
+        "Failed to update user details"; // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
 export const approveVendorProfile = createAsyncThunk(
   "admin/approveVendorProfile",
   async (data, { rejectWithValue }) => {
@@ -340,6 +367,31 @@ export const deleteStationByAdmin = createAsyncThunk(
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve accessToken inside the thunk
       const response = await deleteStationAPI({ station_id: stationId, accessToken });
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(response?.message || response?.data?.message || "Failed to delete Stations");
+      }
+    } catch (error) {
+      console.log("Error in deleteStationByAdmin:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message ||  // API sent error message
+        error?.message ||                  // JS error message
+        "Something went wrong. Please try again";          // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+// Get Count of entity
+export const getEntityCount = createAsyncThunk(
+  'admin/getEntityCount',
+  async (stationId, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve accessToken inside the thunk
+      const response = await getEntityCountAPI({ accessToken });
       if (response.data.code === 200 || response.data.code === 201) {
         return response.data;
       } else {

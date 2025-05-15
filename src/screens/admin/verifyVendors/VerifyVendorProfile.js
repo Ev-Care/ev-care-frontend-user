@@ -485,11 +485,10 @@ const styles = StyleSheet.create({
     marginTop: 30,
     gap: 10,
   },
-  actionButton: {
+   actionButton: {
     flex: 1,
-    // marginHorizontal: 10,
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingVertical: 10,
+    borderRadius: 6,
     alignItems: "center",
   },
   buttonText: {

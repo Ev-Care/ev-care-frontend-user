@@ -78,6 +78,7 @@ const AddStationScreen = () => {
   const [imageloading, setImageLoading] = useState("");
   const [vendorNumber, setVendorNumber] = useState(null);
   const [vendorName, setVendorNamer] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState("Planned");
 
   const handleTimeChange = (event, selectedDate) => {
     setShowPicker(false);
@@ -522,13 +523,46 @@ const AddStationScreen = () => {
             {amenitiesSection?.()}
             {openHoursSection?.()}
             {uploadPhotoSection?.()}
+            {/* {statusSelector()} */}
             {accessTypeSection?.()}
+
           </>
         )}
       </TouchableOpacity>
     );
   }
+function statusSelector() {
+    const statuses = ["Planned", "Active", "Inactive","Rejected"];
+    return (
+      <View style={[styles.section, { marginBottom: 12 }]}>
+        <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+          Select Status
+        </Text>
 
+        <View style={styles.hoursContainer}>
+          {statuses.map((role) => (
+            <TouchableOpacity
+              key={role}
+              style={[
+                styles.hoursButton,
+                selectedStatus === role && styles.selectedButton,
+              ]}
+              onPress={() => setSelectedStatus(role)}
+            >
+              <Text
+                style={[
+                  styles.buttonText,
+                  selectedStatus === role && styles.selectedButtonText,
+                ]}
+              >
+                {role.charAt(0).toUpperCase() + role.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+}
   function chargerDetail(index) {
     return (
       <TouchableOpacity
@@ -1115,6 +1149,7 @@ const styles = StyleSheet.create({
   },
   hoursContainer: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
   },
   hoursButton: {

@@ -554,9 +554,8 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    // marginHorizontal: 10,
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingVertical: 10,
+    borderRadius: 6,
     alignItems: "center",
   },
   buttonText: {

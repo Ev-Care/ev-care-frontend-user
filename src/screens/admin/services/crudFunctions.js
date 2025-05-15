@@ -9,6 +9,7 @@ import {
   getAllPendingStationAPI,
   getAllPendingUsersAPI,
   getAllStationsAPI,
+  getAllStationsByUserIdAPI,
   getAllSupportIssuesAPI,
   getAllUsersAPI,
 } from "./api";
@@ -134,6 +135,34 @@ export const getAllUsers = createAsyncThunk(
         error?.response?.data?.message || // API sent error message
         error?.message || // JS error message
         "Server error"; // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Fetch all stations for a vendor
+export const fetchStationsByUserId = createAsyncThunk(
+  'admin/fetchStationsByUserId',
+  async (vendorId, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken");
+      // const accessToken = await useSelector(selectToken);
+      console.log("vendorId", vendorId);
+      const response = await getAllStationsByUserIdAPI({ owner_id: vendorId, accessToken });
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data.message || "Failed to fetch Stations");
+      }
+    } catch (error) {
+      console.log("Error in fetchStations:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message ||  // API sent error message
+        error?.message ||                  // JS error message
+        "Something went wrong. Please try again";          // fallback message
 
       return rejectWithValue(errorMessage);
     }

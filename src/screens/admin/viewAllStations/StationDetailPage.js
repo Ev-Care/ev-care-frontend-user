@@ -31,7 +31,10 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { openHourFormatter } from "../../../utils/globalMethods";
 import { deleteStation } from "../../vendor/services/crudFunction";
-import { deleteStationByAdmin, fetchAllStations } from "../services/crudFunctions";
+import {
+  deleteStationByAdmin,
+  fetchAllStations,
+} from "../services/crudFunctions";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -51,24 +54,20 @@ const { width } = Dimensions.get("window");
 const StationDetailPage = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [showDeleteDialogue, setshowDeleteDialogue] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const scrollViewRef = useRef(null);
   const dispatch = useDispatch();
 
-
   const station = route?.params?.item;
 
-  console.log('station in detail page = ', JSON.stringify(station,2, null));
+  console.log("station in detail page = ", JSON.stringify(station, 2, null));
 
   if (!station) {
     return <Text>Loading...</Text>; // Handle when station is not available
   }
-
-
-
 
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",
@@ -97,15 +96,13 @@ const StationDetailPage = ({ route, navigation }) => {
     }
   };
 
-   const handleDelete = async () => {
+  const handleDelete = async () => {
     setIsLoading(true);
     console.log("handleDelete Called");
 
     try {
       const deleteResponse = await dispatch(deleteStationByAdmin(station?.id));
       if (deleteStationByAdmin.fulfilled.match(deleteResponse)) {
-      
-
         const stationResponse = await dispatch(fetchAllStations());
         if (fetchAllStations.fulfilled.match(stationResponse)) {
           console.log("station updated");
@@ -115,7 +112,7 @@ const StationDetailPage = ({ route, navigation }) => {
               type: "success",
             })
           );
-            navigation.pop();
+          navigation.pop();
         } else if (fetchAllStations.rejected.match(stationResponse)) {
           console.log("Failed to fetch updated stations.");
           await dispatch(
@@ -146,8 +143,6 @@ const StationDetailPage = ({ route, navigation }) => {
     }
   };
 
-  
-
   const trimName = (threshold, str) => {
     if (str?.length <= threshold) {
       return str;
@@ -167,7 +162,7 @@ const StationDetailPage = ({ route, navigation }) => {
       {/* Bottom Buttons */}
       {buttons()}
       {deleteDialogue()}
-       <Modal visible={modalVisible} transparent={true}>
+      <Modal visible={modalVisible} transparent={true}>
         <View style={styles.modalContainer}>
           <Image source={{ uri: selectedImage }} style={styles.fullImage} />
           <TouchableOpacity
@@ -198,11 +193,11 @@ const StationDetailPage = ({ route, navigation }) => {
     return (
       <View style={styles.header}>
         <View style={styles.communityBadgeAndBack}>
-        <View
+          <View
             style={{
               backgroundColor: Colors.primaryColor,
               borderRadius: 20,
-              padding: 6, 
+              padding: 6,
               alignItems: "center",
               justifyContent: "center",
               width: 40,
@@ -222,26 +217,47 @@ const StationDetailPage = ({ route, navigation }) => {
           </View>
         </View>
         <TouchableOpacity
-  activeOpacity={0.9}
-  style={styles.mapBackground}
-  onPress={() => {
-   if ( station?.station_images &&  station?.station_images.trim() !== "") {
-        showFullImage(imageURL.baseURL + station.station_images);
-      }
-    }}
->
-  <Image source={imageUrl} style={styles.mapBackground} />
-</TouchableOpacity>
-
-        
+          activeOpacity={0.9}
+          style={styles.mapBackground}
+          onPress={() => {
+            if (
+              station?.station_images &&
+              station?.station_images.trim() !== ""
+            ) {
+              showFullImage(imageURL.baseURL + station.station_images);
+            }
+          }}
+        >
+          <Image source={imageUrl} style={styles.mapBackground} />
+        </TouchableOpacity>
 
         <View style={styles.overlay}>
           <Text style={styles.stationName}>
             {trimName(50, station?.station_name)}
           </Text>
-          <Text style={styles.stationAddress}>
-            {trimName(50, station?.address)}
-          </Text>
+          {station?.user?.vendor_type === "individual" ? (
+            <>
+              <Text style={styles.stationAddress}>
+                Vendor Name : {station?.user?.owner_legal_name}
+              </Text>
+              <Text style={styles.stationAddress}>
+                Contact Number : {station?.user?.mobile_number}
+              </Text>
+            </>
+          ) : station?.user?.vendor_type === "organization" ? (
+            <>
+              <Text style={styles.stationAddress}>
+                Organization Name: {station?.user?.business_name}
+              </Text>
+              <Text style={styles.stationAddress}>
+                Contact Number : {station?.user?.mobile_number}
+              </Text>
+            </>
+          ) : (
+            <Text style={styles.stationAddress}>
+              {trimName(50, station?.address)}
+            </Text>
+          )}
           <View
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
           >
@@ -273,7 +289,6 @@ const StationDetailPage = ({ route, navigation }) => {
                 </Text>
               </View>
             </View>
-          
           </View>
         </View>
       </View>
@@ -346,7 +361,7 @@ const StationDetailPage = ({ route, navigation }) => {
       </View>
     );
   }
- function deleteDialogue() {
+  function deleteDialogue() {
     return (
       <Overlay
         isVisible={showDeleteDialogue}
@@ -422,7 +437,7 @@ const StationDetailPage = ({ route, navigation }) => {
         </View>
       </Overlay>
     );
-}
+  }
   function chargerTab() {
     return (
       <ScrollView style={styles.tabContent}>
@@ -561,7 +576,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center", 
+    alignItems: "center",
     top: 26,
     paddingLeft: 15,
     paddingRight: 25,
@@ -569,10 +584,8 @@ const styles = StyleSheet.create({
     width: "100%",
     zIndex: 9999,
   },
-  
 
   communityBadge: {
-  
     backgroundColor: COLORS.white,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -818,10 +831,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 10,
     backgroundColor: "#fff",
-    justifyContent:"center",
-    alignItems:"center",
-    height:50,
-    width:50,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 50,
+    width: 50,
     borderRadius: 50,
   },
   closeText: {
@@ -829,32 +842,31 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   dialogStyle: {
-      backgroundColor: Colors.whiteColor,
-      borderRadius: Sizes.fixPadding - 5.0,
-      width: "85%",
-      padding: 0.0,
-      elevation: 0,
-    },
- 
+    backgroundColor: Colors.whiteColor,
+    borderRadius: Sizes.fixPadding - 5.0,
+    width: "85%",
+    padding: 0.0,
+    elevation: 0,
+  },
 
-    dialogYesNoButtonStyle: {
-      flex: 1,
-      ...commonStyles.shadow,
-  
-      padding: Sizes.fixPadding,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    noButtonStyle: {
-      backgroundColor: Colors.whiteColor,
-      borderTopColor: Colors.extraLightGrayColor,
-      borderBottomLeftRadius: Sizes.fixPadding - 5.0,
-    },
-    yesButtonStyle: {
-      borderTopColor: Colors.primaryColor,
-      backgroundColor: Colors.primaryColor,
-      borderBottomRightRadius: Sizes.fixPadding - 5.0,
-    },
+  dialogYesNoButtonStyle: {
+    flex: 1,
+    ...commonStyles.shadow,
+
+    padding: Sizes.fixPadding,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noButtonStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderTopColor: Colors.extraLightGrayColor,
+    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+  },
+  yesButtonStyle: {
+    borderTopColor: Colors.primaryColor,
+    backgroundColor: Colors.primaryColor,
+    borderBottomRightRadius: Sizes.fixPadding - 5.0,
+  },
 });
 
 export default StationDetailPage;

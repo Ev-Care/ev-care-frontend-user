@@ -100,7 +100,7 @@ const UpdateStationPage = ({ navigation, route }) => {
   const [currentImageSetter, setCurrentImageSetter] = useState(null);
   const [currentImageLabel, setCurrentImageLabel] = useState(null);
   const [imageloading, setImageLoading] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState(station.status);
   const [isLoading, setIsLoading] = useState(false);
   const accessToken = useSelector(selectToken);
   // Initialize selectedConnectors with chargerIndex as key and connector_type as value
@@ -257,6 +257,7 @@ const UpdateStationPage = ({ navigation, route }) => {
       station_images: stationImages,
       access_type:accessType,
       address,
+      status:selectedStatus,
       coordinates: {
         latitude: coordinate?.latitude || null,
         longitude: coordinate?.longitude || null,
@@ -533,7 +534,7 @@ const UpdateStationPage = ({ navigation, route }) => {
     const statuses = ["Planned", "Active", "Inactive", "Rejected"];
     return (
       <View style={[styles.section, { marginBottom: 12 }]}>
-        <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+        <Text style={styles.sectionLabel}>
           Select Status
         </Text>
 
@@ -641,7 +642,6 @@ const UpdateStationPage = ({ navigation, route }) => {
                 </TouchableOpacity>
               </View>
             </View>
-
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>
                 Power Rating <Text style={styles.optional}>(in kW)</Text>
@@ -1105,6 +1105,7 @@ const styles = StyleSheet.create({
   },
   hoursContainer: {
     flexDirection: "row",
+    flexWrap:"wrap",
     gap: 10,
   },
   hoursButton: {

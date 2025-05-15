@@ -59,8 +59,8 @@ const StationDetailToVerify = ({ route, navigation }) => {
   const [showSnackBar, setshowSnackBar] = useState(false);
   const [showRejectDialogue, setshowRejectDialogue] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-   const [modalVisible, setModalVisible] = useState(false);
-      const [selectedImage, setSelectedImage] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [showApproveDialogue, setshowApproveDialogue] = useState(false);
   const scrollViewRef = useRef(null);
   const station = route?.params?.item;
@@ -253,24 +253,37 @@ const StationDetailToVerify = ({ route, navigation }) => {
           <Text style={styles.stationName}>
             {trimName(50, station?.station_name)}
           </Text>
-          <Text style={styles.stationAddress}>
+          {station?.user?.vendor_type === "individual" ? (
+            <>
+            <Text style={styles.stationAddress}>
+             Vendor Name :{" "}{station?.user?.owner_legal_name}
+            </Text>
+            <Text style={styles.stationAddress}>
+             Contact Number :{" "}{station?.user?.mobile_number}
+            </Text>
+            </>
+          ) : station?.user?.vendor_type === "organization" ? (
+            <>
+            <Text style={styles.stationAddress}>
+            Organization Name:{" "}{station?.user?.business_name}
+            </Text>
+             <Text style={styles.stationAddress}>
+            Contact Number :{" "}{station?.user?.mobile_number}
+            </Text>
+            </>
+          ) : (
+            <Text style={styles.stationAddress}>
             {trimName(50, station?.address)}
-          </Text>
+            </Text>
+            
+          )}
+
           <View
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
           >
             <View style={styles.statusContainer}>
-              <Text
-                style={[
-                  styles.statusClosed,
-                  {
-                    color: station?.status === "Inactive" ? "#FF5722" : "green",
-                  },
-                ]}
-              >
-                {station?.status === "Inactive" ? "Closed" : "Open"}
-              </Text>
               <Text style={styles.statusTime}>
+                Open Hours :{" "}
                 {openHourFormatter(
                   station?.open_hours_opening_time,
                   station?.open_hours_closing_time
@@ -715,7 +728,7 @@ const styles = StyleSheet.create({
   statusTime: {
     color: COLORS.black,
     fontSize: 12,
-    marginLeft: 4,
+    // marginLeft: 4,
   },
   newBadge: {
     backgroundColor: COLORS.primary,
@@ -939,10 +952,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 10,
     backgroundColor: "#fff",
-    justifyContent:"center",
-    alignItems:"center",
-    height:50,
-    width:50,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 50,
+    width: 50,
     borderRadius: 50,
   },
   closeText: {

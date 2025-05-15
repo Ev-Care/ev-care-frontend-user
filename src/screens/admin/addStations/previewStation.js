@@ -23,7 +23,11 @@ import imageURL from "../../../constants/baseURL";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { selectToken } from "../../auth/services/selector";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
-import { addStationByAdmin, fetchAllPendingStation, fetchAllStations } from "../services/crudFunctions";
+import {
+  addStationByAdmin,
+  fetchAllPendingStation,
+  fetchAllStations,
+} from "../services/crudFunctions";
 import { updateStation } from "../../vendor/services/crudFunction";
 // Define colors at the top for easy customization
 const COLORS = {
@@ -90,84 +94,91 @@ const PreviewStation = ({ navigation, route }) => {
   };
 
   const handleSubmit = async () => {
+    try {
+      setIsLoading(true);
 
-  try {
-    setIsLoading(true);
+      console.log("station data", stationData);
 
-    console.log("station data", stationData);
+      if (type === "add") {
+        const addStationResponse = await dispatch(
+          addStationByAdmin(stationData)
+        );
 
-    if (type === "add") {
-      const addStationResponse = await dispatch(addStationByAdmin(stationData));
+        if (addStationByAdmin.fulfilled.match(addStationResponse)) {
+          const stationResponse = await dispatch(fetchAllPendingStation());
 
-      if (addStationByAdmin.fulfilled.match(addStationResponse)) {
-        const stationResponse = await dispatch(fetchAllPendingStation());
+          if (fetchAllPendingStation.fulfilled.match(stationResponse)) {
+            await dispatch(
+              showSnackbar({ message: "New station added.", type: "success" })
+            );
 
-        if (fetchAllPendingStation.fulfilled.match(stationResponse)) {
-          await dispatch(showSnackbar({ message: "New station added.", type: "success" }));
-          
-          if (typeof clearForm === "function") clearForm();
-          navigation.pop(2);
+            if (typeof clearForm === "function") clearForm();
+            navigation.pop(2);
+          } else {
+            await dispatch(
+              showSnackbar({
+                message: errorMessage || "Failed to fetch station.",
+                type: "error",
+              })
+            );
+          }
         } else {
           await dispatch(
             showSnackbar({
-              message: errorMessage || "Failed to fetch station.",
+              message: errorMessage || "Failed to add station.",
               type: "error",
             })
           );
         }
       } else {
-        await dispatch(
-          showSnackbar({
-            message: errorMessage || "Failed to add station.",
-            type: "error",
-          })
+        const updateStationResponse = await dispatch(
+          updateStation(stationData)
         );
-      }
-    } else {
-      const updateStationResponse = await dispatch(updateStation(stationData));
 
-      if (updateStation.fulfilled.match(updateStationResponse)) {
-        const stationResponse = await dispatch(fetchAllStations(stationData?.owner_id));
-
-        if (fetchAllStations.fulfilled.match(stationResponse)) {
-          await dispatch(
-            showSnackbar({
-              message: "Station updated successfully.",
-              type: "success",
-            })
+        if (updateStation.fulfilled.match(updateStationResponse)) {
+          const stationResponse = await dispatch(
+            fetchAllStations(stationData?.owner_id)
           );
-          // navigation.navigate('ViewAllStationsPage');
-          navigation.pop(3);
+
+          if (fetchAllStations.fulfilled.match(stationResponse)) {
+            await dispatch(
+              showSnackbar({
+                message: "Station updated successfully.",
+                type: "success",
+              })
+            );
+            // navigation.navigate('ViewAllStationsPage');
+            navigation.pop(3);
+          } else {
+            await dispatch(
+              showSnackbar({
+                message: errorMessage || "Failed to fetch station.",
+                type: "error",
+              })
+            );
+          }
         } else {
           await dispatch(
             showSnackbar({
-              message: errorMessage || "Failed to fetch station.",
+              message: errorMessage || "Failed to update station.",
               type: "error",
             })
           );
         }
-      } else {
-        await dispatch(
-          showSnackbar({
-            message: errorMessage || "Failed to update station.",
-            type: "error",
-          })
-        );
       }
+    } catch (error) {
+      console.error("Error in admin preview  station:", error);
+      await dispatch(
+        showSnackbar({
+          message:
+            errorMessage || "Something went wrong. Please try again later.",
+          type: "error",
+        })
+      );
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    console.error("Error in admin preview  station:", error);
-    await dispatch(
-      showSnackbar({
-        message: errorMessage || "Something went wrong. Please try again later.",
-        type: "error",
-      })
-    );
-  } finally{
-    setIsLoading(false);
-  }
-};
-
+  };
 
   const handleTabPress = (index) => {
     setActiveTab(index);
@@ -371,13 +382,37 @@ const PreviewStation = ({ navigation, route }) => {
           </Text>
           {type === "add" ? (
             <Text style={styles.stationAddress}>
-              <Text style={{ fontWeight: "700" }}>Vendor Email or Contact Number:</Text>{" "}
+              <Text style={{ fontWeight: "700" }}>
+                Vendor Email or Contact Number:
+              </Text>{" "}
               {trimName(50, stationData?.identifier)}
             </Text>
           ) : (
-            <Text style={styles.stationAddress}>
-              {trimName(50, stationData?.address)}
-            </Text>
+            <>
+              {stationData?.user?.vendor_type === "individual" ? (
+                <>
+                  <Text style={styles.stationAddress}>
+                    Vendor Name : {stationData?.user?.owner_legal_name}
+                  </Text>
+                  <Text style={styles.stationAddress}>
+                    Contact Number : {stationData?.user?.mobile_number}
+                  </Text>
+                </>
+              ) : stationData?.user?.vendor_type === "organization" ? (
+                <>
+                  <Text style={styles.stationAddress}>
+                    Organization Name: {stationData?.user?.business_name}
+                  </Text>
+                  <Text style={styles.stationAddress}>
+                    Contact Number : {stationData?.user?.mobile_number}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.stationAddress}>
+                  {trimName(50, stationData?.address)}
+                </Text>
+              )}
+            </>
           )}
 
           <View
@@ -385,26 +420,20 @@ const PreviewStation = ({ navigation, route }) => {
           >
             <View style={styles.statusContainer}>
               <Text
-                style={[
-                  styles.statusClosed,
-                  {
-                    color:
-                      stationData?.status === "Inactive" ? "#FF5722" : "green",
-                  },
-                ]}
+                style={{
+                  fontSize: 12,
+                  color: Colors.primaryColor,
+                }}
               >
-                {stationData?.status === "Inactive" ? "Closed" : "Open"}
-              </Text>
-              <Text style={styles.statusTime}>
+                Open Hours :{" "}
                 {openHourFormatter(
                   stationData?.open_hours_opening_time,
                   stationData?.open_hours_closing_time
                 )}
               </Text>
+
               <View style={styles.newBadge}>
-                <Text style={styles.newText}>
-                  {stationData.status === "Active" ? "VERIFIED" : "New"}
-                </Text>
+                <Text style={styles.newText}>{stationData?.status}</Text>
               </View>
             </View>
           </View>

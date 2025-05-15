@@ -68,7 +68,7 @@ const CreateUser = ({ route, navigation }) => {
   const [secureConfirmPass, setSecureConfirmPass] = useState(true);
   const accessToken = useSelector(selectToken);
   const [selectedStatus, setSelectedStatus] = useState(null);
-  
+
   const dispatch = useDispatch();
   const showFullImage = (uri) => {
     if (!uri) return;
@@ -173,7 +173,7 @@ const CreateUser = ({ route, navigation }) => {
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     const gstRegex =
       /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&.+-]{8,}$/;
     const nameRegex = /^[A-Za-z\s]{3,}$/;
     const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
 
@@ -346,15 +346,15 @@ const CreateUser = ({ route, navigation }) => {
         );
       }
     }
-  if(selectedStatus === null){
-    dispatch(
-      showSnackbar({
-        message: "Please select a status.",
-        type: "error",
-      })
-    );
-    return false;
-  }
+    if (selectedStatus === null) {
+      dispatch(
+        showSnackbar({
+          message: "Please select a status.",
+          type: "error",
+        })
+      );
+      return false;
+    }
     return true;
   };
 
@@ -468,17 +468,17 @@ const CreateUser = ({ route, navigation }) => {
           label === "Mobile Number"
             ? "numeric"
             : label === "Email"
-            ? "email-address"
-            : "default"
+              ? "email-address"
+              : "default"
         }
         maxLength={
           label === "Mobile Number" || label === "PAN Number"
             ? 10
             : label === "Aadhar Number"
-            ? 12
-            : label === "GST Number"
-            ? 15
-            : undefined
+              ? 12
+              : label === "GST Number"
+                ? 15
+                : undefined
         }
       />
     </View>
@@ -556,7 +556,7 @@ const CreateUser = ({ route, navigation }) => {
           <MaterialIcons name="edit" size={20} color="white" />
         </TouchableOpacity>
       </View>
-       {label != "avatar" && <Text style={styles.imageLabel}>
+      {label != "avatar" && <Text style={styles.imageLabel}>
         {label}
 
         {label === "GST" && businessType === "individual" ? (
@@ -869,7 +869,7 @@ const CreateUser = ({ route, navigation }) => {
             }
             setAddress(text);
           }}
-          // maxLength={100}
+        // maxLength={100}
         />
         <Text
           style={{

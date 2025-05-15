@@ -172,7 +172,7 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
 
   const validateInputs = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const mobileRegex = /^[6-9]\d{9}$/;
+    const mobileRegex = /^[6-9]\d{10}$/;
     const aadharRegex = /^\d{12}$/;
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     const gstRegex =

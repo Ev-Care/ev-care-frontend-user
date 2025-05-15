@@ -1,5 +1,5 @@
 // ViewAllUserPage.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -26,6 +26,10 @@ import RNModal from "react-native-modal";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { color } from "@rneui/base";
 import { RefreshControl } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { selectAdminLoading, selectAllUsers } from "../services/selector";
+import { getAllUsers } from "../services/crudFunctions";
+import imageURL from "../../../constants/baseURL";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -40,100 +44,23 @@ const COLORS = {
   divider: "#e1e1ea",
 };
 
-// Sample user data
-const USERS = [
-  {
-    id: 1,
-    user_key: "user1key",
-    owner_legal_name: "User One",
-    mobile_number: "+910000000001",
-    status: "New",
-    role: "user",
-  },
-  {
-    id: 2,
-    user_key: "user2key",
-    owner_legal_name: "User Two",
-    mobile_number: "+910000000002",
-    status: "Active",
-    role: "user",
-  },
-  {
-    id: 3,
-    user_key: "user3key",
-    owner_legal_name: "User Three",
-    mobile_number: "+910000000003",
-    status: "Inactive",
-    role: "vendor",
-  },
-  {
-    id: 4,
-    user_key: "user4key",
-    owner_legal_name: "User Four",
-    mobile_number: "+910000000004",
-    status: "Blocked",
-    role: "vendor",
-  },
-  {
-    id: 5,
-    user_key: "user5key",
-    owner_legal_name: "User Five",
-    mobile_number: "+910000000005",
-    status: "New",
-    role: "user",
-  },
-  {
-    id: 6,
-    user_key: "user6key",
-    owner_legal_name: "User Six",
-    mobile_number: "+910000000006",
-    status: "Active",
-    role: "user",
-  },
-  {
-    id: 7,
-    user_key: "user7key",
-    owner_legal_name: "User Seven",
-    mobile_number: "+910000000007",
-    status: "Inactive",
-    role: "vendor",
-  },
-  {
-    id: 8,
-    user_key: "user8key",
-    owner_legal_name: "User Eight",
-    mobile_number: "+910000000008",
-    status: "Blocked",
-    role: "vendor",
-  },
-  {
-    id: 9,
-    user_key: "user9key",
-    owner_legal_name: "User Nine",
-    mobile_number: "+910000000009",
-    status: "New",
-    role: "user",
-  },
-  {
-    id: 10,
-    user_key: "user10key",
-    owner_legal_name: "User Ten",
-    mobile_number: "+910000000010",
-    status: "Active",
-    role: "vendor",
-  },
-];
 
 const ViewAllUserPage = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState(USERS);
-  const [isLoading, setIsLoading] = useState(false);
+  const users = useSelector(selectAllUsers);
+  const isLoading = useSelector(selectAdminLoading);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [selectedRole, setSelectedRole] = useState("both");
   const [refreshing, setRefreshing] = useState(false);
+  const dispatch = useDispatch();
   // Filter users based on search query
   const [selectedStatuses, setSelectedStatuses] = useState([]);
 
+  useEffect(() => {
+    dispatch(getAllUsers());
+  }, []);
+  const handleRefresh = async () => {};
+  
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user?.owner_legal_name
@@ -150,7 +77,7 @@ const ViewAllUserPage = ({ navigation }) => {
   });
 
 
-  const handleRefresh = async () => {};
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -190,7 +117,7 @@ const ViewAllUserPage = ({ navigation }) => {
         style={styles.userItem}
       >
         {user?.avatar ? (
-          <Image source={{ uri: user?.avatar }} style={styles.avatar} />
+          <Image source={{ uri: imageURL.baseURL+ user?.avatar }} style={styles.avatar} />
         ) : (
           <Icon
             name="account-circle"
@@ -328,7 +255,10 @@ const ViewAllUserPage = ({ navigation }) => {
   }
 
   function statusSection() {
-    const statuses = ["New", "Active", "Inactive", "Blocked"];
+    // const statuses = ["New", "Active", "Inactive", "Blocked"];
+    const vendorStatuses = ["New", "Completed", "Active", "Inactive", "Blocked"];
+    const userStatuses = ["Active", "Inactive", "Blocked"];
+   
 
     const toggleStatus = (status) => {
       if (selectedStatuses.includes(status)) {
@@ -345,7 +275,7 @@ const ViewAllUserPage = ({ navigation }) => {
         </Text>
 
         <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
-          {statuses.map((status) => (
+          {selectedRole==="user" && userStatuses.map((status) => (
             <TouchableOpacity
               key={status}
               style={[
@@ -365,6 +295,27 @@ const ViewAllUserPage = ({ navigation }) => {
               </Text>
             </TouchableOpacity>
           ))}
+          {(selectedRole==="vendor" ||  selectedRole === 'both') && vendorStatuses.map((status) => (
+            <TouchableOpacity
+              key={status}
+              style={[
+                styles.TypeButton,
+                selectedStatuses.includes(status) && styles.selectedButton,
+              ]}
+              onPress={() => toggleStatus(status)}
+            >
+              <Text
+                style={[
+                  styles.TypebuttonText,
+                  selectedStatuses.includes(status) &&
+                    styles.selectedButtonText,
+                ]}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+          
         </View>
       </View>
     );

@@ -100,7 +100,8 @@ const UpdateStationPage = ({ navigation, route }) => {
   const [currentImageSetter, setCurrentImageSetter] = useState(null);
   const [currentImageLabel, setCurrentImageLabel] = useState(null);
   const [imageloading, setImageLoading] = useState("");
-
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const accessToken = useSelector(selectToken);
   // Initialize selectedConnectors with chargerIndex as key and connector_type as value
   const [selectedConnectors, setSelectedConnectors] = useState(() => {
@@ -603,10 +604,44 @@ const UpdateStationPage = ({ navigation, route }) => {
 
             {/* Upload Photo Section */}
             {uploadPhotoSection()}
+            {statusSelector()}
             {accessTypeSection()}
           </>
         )}
       </TouchableOpacity>
+    );
+  }
+
+  function statusSelector() {
+    const statuses = ["Planned", "Active", "Inactive", "Rejected"];
+    return (
+      <View style={[styles.section, { marginBottom: 12 }]}>
+        <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+          Select Status
+        </Text>
+
+        <View style={styles.hoursContainer}>
+          {statuses.map((role) => (
+            <TouchableOpacity
+              key={role}
+              style={[
+                styles.hoursButton,
+                selectedStatus === role && styles.selectedButton,
+              ]}
+              onPress={() => setSelectedStatus(role)}
+            >
+              <Text
+                style={[
+                  styles.buttonText,
+                  selectedStatus === role && styles.selectedButtonText,
+                ]}
+              >
+                {role.charAt(0).toUpperCase() + role.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
     );
   }
   function chargerDetail(charger, index) {

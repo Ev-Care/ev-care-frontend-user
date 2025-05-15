@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Overlay } from "@rneui/themed";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -18,10 +18,12 @@ import { Colors, Fonts, Sizes, commonStyles } from "../../../constants/styles";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import {
   approveVendorProfile,
+  fetchStationsByUserId,
   getAllPendingUsers,
 } from "../services/crudFunctions";
 import { default as Icon } from "react-native-vector-icons/MaterialIcons";
 import { RefreshControl } from "react-native-gesture-handler";
+import { fetchStations } from "../../vendor/services/crudFunction";
 const { width } = Dimensions.get("window");
 
 
@@ -61,7 +63,7 @@ const UserDetailScreen = ({ route, navigation }) => {
   const [panImage, setPanImage] = useState(user?.pan_pic);
   const [gstImage, setGstImage] = useState(user?.gstin_image);
   const [avatar, setAvatar] = useState(user?.avatar);
-const [refreshing, setRefreshing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -71,32 +73,61 @@ const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
 
-const [stations, setStations] = useState([
-  {
-    id: 1,
-    station_name: "GreenCharge Station",
-    status: "Active",
-    station_images: "https://cdn.pixabay.com/photo/2025/03/31/21/18/tiber-river-9505401_1280.jpg", 
-    chargers: [{ id: 101 }, { id: 102 }],
-    address: "123 Green Street, Eco City, Maharashtra",
-  },
-  {
-    id: 2,
-    station_name: "City EV Hub",
-    status: "Inactive",
-    station_images: "", 
-    chargers: [],
-    address: "456 Urban Plaza, Smart City, Karnataka",
-  },
-  {
-    id: 3,
-    station_name: "PowerUp Charging Point",
-    status: "Active",
-    station_images: "https://cdn.pixabay.com/photo/2025/03/31/21/18/tiber-river-9505401_1280.jpg",
-    chargers: [{ id: 103 }],
-    address: "789 Energy Road, CleanTown, Gujarat",
-  },
-]);
+  const dispatch = useDispatch();
+  // const [stations, setStations] = useState([
+  //   {
+  //     id: 1,
+  //     station_name: "GreenCharge Station",
+  //     status: "Active",
+  //     station_images: "https://cdn.pixabay.com/photo/2025/03/31/21/18/tiber-river-9505401_1280.jpg", 
+  //     chargers: [{ id: 101 }, { id: 102 }],
+  //     address: "123 Green Street, Eco City, Maharashtra",
+  //   },
+  //   {
+  //     id: 2,
+  //     station_name: "City EV Hub",
+  //     status: "Inactive",
+  //     station_images: "", 
+  //     chargers: [],
+  //     address: "456 Urban Plaza, Smart City, Karnataka",
+  //   },
+  //   {
+  //     id: 3,
+  //     station_name: "PowerUp Charging Point",
+  //     status: "Active",
+  //     station_images: "https://cdn.pixabay.com/photo/2025/03/31/21/18/tiber-river-9505401_1280.jpg",
+  //     chargers: [{ id: 103 }],
+  //     address: "789 Energy Road, CleanTown, Gujarat",
+  //   },
+  // ]);
+  const [stations, setStations] = useState([]);
+
+useEffect(() => {
+  console.log("Station changed = ", stations);
+}, [stations]);
+
+
+useEffect(() => {
+  const fetchData = async () => {
+    if (user?.role === "user") {
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const response = await dispatch(fetchStationsByUserId(user?.id));
+      console.log("response in user detail", response?.payload);
+      setStations(response?.payload?.data?.chargingStations);
+    } catch (error) {
+      dispatch(
+        showSnackbar({ message: error.message || 'Failed to fetch stations', type: 'error' })
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchData();
+}, [user]);
 
 
 
@@ -106,10 +137,9 @@ const [stations, setStations] = useState([
     setModalVisible(true);
   };
 
-  const dispatch = useDispatch();
- const handleRefresh = async () => {
+  const handleRefresh = async () => {
 
- }
+  }
   const handleReject = async () => {
 
   };
@@ -125,8 +155,8 @@ const [stations, setStations] = useState([
     scrollViewRef.current.scrollTo({ x: index * width, animated: true });
   };
 
-const trimText = (text, limit) =>
-text.length > limit ? text.substring(0, limit) + "..." : text;
+  const trimText = (text, limit) =>
+    text.length > limit ? text.substring(0, limit) + "..." : text;
 
   const renderTextData = (key, value) => (
     <View
@@ -274,7 +304,7 @@ text.length > limit ? text.substring(0, limit) + "..." : text;
               marginVertical: Sizes.fixPadding * 2.0,
             }}
           >
-           Are you sure you want to delete?
+            Are you sure you want to delete?
           </Text>
 
           <View
@@ -362,7 +392,7 @@ text.length > limit ? text.substring(0, limit) + "..." : text;
             <Text style={styles.buttonText}>Delete</Text>
           </TouchableOpacity>
           <TouchableOpacity
-          onPress={() => navigation.navigate("UpdateUser", { user })}
+            onPress={() => navigation.navigate("UpdateUser", { user })}
             style={[
               styles.actionButton,
               { backgroundColor: Colors.primaryColor },
@@ -373,85 +403,87 @@ text.length > limit ? text.substring(0, limit) + "..." : text;
         </View>
 
         {deleteDialogue()}
-        
+
       </ScrollView>
     );
   }
   function stationDetail() {
-  return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          colors={['#9Bd35A', '#101942']}
-          tintColor="#101942"
-        />
-      }
-    >
-      {stations?.length > 0 ? (
-        stations.map((station) => (
-          <TouchableOpacity
-            onPress={() =>
-              navigation?.navigate("StationDetailPage", { item: station })
-            }
-            key={station.id}
-            style={styles.card}
-          >
-            {station?.station_images ? (
-              <Image
-                // source={{ uri: imageURL.baseURL + station?.station_images }}
-                source={{ uri: station?.station_images }}
-                style={styles.stationImage}
-              />
-            ) : (
-              <View
-                style={[
-                  styles. stationImage,
-                  { alignItems: "center", justifyContent: "center" },
-                ]}
-              >
-                <MaterialIcons name="ev-station" size={50} color="#8f8f8f" />
-              </View>
-            )}
-
-            <View style={styles.infoContainer}>
-              <View style={styles.headerRow}>
-                <Text style={styles.stationName}>
-                  {trimText(station?.station_name, 25)}
-                </Text>
-              </View>
-              <Text style={styles.statusText}>
-                Status:{" "}
-                <Text
-                  style={{
-                    color:
-                      station?.status !== "Active"
-                        ? Colors.darOrangeColor
-                        : Colors.primaryColor,
-                  }}
+    return (
+      <ScrollView
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#9Bd35A', '#101942']}
+            tintColor="#101942"
+          />
+        }
+      >
+        {stations?.length > 0 ? (
+          stations.map((station) => (
+            <TouchableOpacity
+              onPress={() =>
+                navigation?.navigate("StationDetailPage", { item: station })
+              }
+              key={station.id}
+              style={styles.card}
+            >
+              {station?.station_images ? (
+                <Image
+                  // source={{ uri: imageURL.baseURL + station?.station_images }}
+                  source={{ uri: station?.station_images }}
+                  style={styles.stationImage}
+                />
+              ) : (
+                <View
+                  style={[
+                    styles.stationImage,
+                    { alignItems: "center", justifyContent: "center" },
+                  ]}
                 >
-                  {station?.status !== "Active" ? "Pending" : "Active"}
+                  <MaterialIcons name="ev-station" size={50} color="#8f8f8f" />
+                </View>
+              )}
+
+              <View style={styles.infoContainer}>
+                <View style={styles.headerRow}>
+                  <Text style={styles.stationName}>
+                    {trimText(station?.station_name, 25)}
+                  </Text>
+                </View>
+                <Text style={styles.statusText}>
+                  Status:{" "}
+                  <Text
+                    style={{
+                                          color: station?.status == "Active"
+                                            ? Colors.lightGreenColor
+                                            : station?.status == "Inactive"
+                                              ? Colors.darOrangeColor : station?.status == "Rejected"
+                                                ? Colors.redColor : station?.status == "Planned"
+                                                  ? Colors.yellowColor : Colors.primaryColor,
+                                        }}
+                  >
+                    {station?.status }
+                  </Text>
                 </Text>
-              </Text>
-              <Text style={styles.text}>
-                Chargers: {station?.chargers?.length || 0}
-              </Text>
-              <Text style={styles.addressText}>
-                {trimText(station?.address, 100)}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))
-      ) : (
-        <Text style={{ textAlign: "center", marginTop: 20 }}>
-          No stations available.
-        </Text>
-      )}
-    </ScrollView>
-  );
-}
+                <Text style={styles.text}>
+                  Chargers: {station?.chargers?.length || 0}
+                </Text>
+                <Text style={styles.addressText}>
+                  {trimText(station?.address, 100)}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={{ textAlign: "center", marginTop: 20 }}>
+            No stations available.
+          </Text>
+        )}
+      </ScrollView>
+    );
+  }
 
 
 };
@@ -627,52 +659,52 @@ const styles = StyleSheet.create({
     width,
     padding: 16,
   },
-    card: {
-      backgroundColor: Colors.whiteColor,
-      ...commonStyles.shadow,
-      borderColor: Colors.extraLightGrayColor,
-      borderRadius: 10,
-      padding: 15,
-      marginBottom: 15,
-      flexDirection: "row",
-      alignItems: "center",
-    },
-      stationImage: {
-      width: 80,
-      height: 100,
-      borderRadius: 8,
-      marginRight: 15,
-      borderWidth: 1,
-      borderColor: '#e2e2e2 ',
-      backgroundColor: '#f5f5f5' 
-    },
-     infoContainer: {
-      flex: 1,
-    },
-    headerRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-    },
-    stationName: {
-      fontSize: 16,
-      fontWeight: "bold",
-      color: Colors.primary,
-      marginBottom: 5,
-    },
-      statusText: {
-      fontSize: 12,
-      color: Colors.primary,
-      marginBottom: 5,
-    },
-    text: {
-      fontSize: 12,
-      color: Colors.primary,
-    },
-    addressText: {
-      fontSize: 10,
-      color: Colors.grayColor,
-    },
+  card: {
+    backgroundColor: Colors.whiteColor,
+    ...commonStyles.shadow,
+    borderColor: Colors.extraLightGrayColor,
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  stationImage: {
+    width: 80,
+    height: 100,
+    borderRadius: 8,
+    marginRight: 15,
+    borderWidth: 1,
+    borderColor: '#e2e2e2 ',
+    backgroundColor: '#f5f5f5'
+  },
+  infoContainer: {
+    flex: 1,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  stationName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: Colors.primary,
+    marginBottom: 5,
+  },
+  statusText: {
+    fontSize: 12,
+    color: Colors.primary,
+    marginBottom: 5,
+  },
+  text: {
+    fontSize: 12,
+    color: Colors.primary,
+  },
+  addressText: {
+    fontSize: 10,
+    color: Colors.grayColor,
+  },
 
 });
 

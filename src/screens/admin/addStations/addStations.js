@@ -523,7 +523,7 @@ const AddStationScreen = () => {
             {amenitiesSection?.()}
             {openHoursSection?.()}
             {uploadPhotoSection?.()}
-            {/* {statusSelector()} */}
+            {statusSelector()}
             {accessTypeSection?.()}
 
           </>
@@ -531,8 +531,8 @@ const AddStationScreen = () => {
       </TouchableOpacity>
     );
   }
-function statusSelector() {
-    const statuses = ["Planned", "Active", "Inactive","Rejected"];
+  function statusSelector() {
+    const statuses = ["Planned", "Active", "Inactive", "Rejected"];
     return (
       <View style={[styles.section, { marginBottom: 12 }]}>
         <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
@@ -562,7 +562,7 @@ function statusSelector() {
         </View>
       </View>
     );
-}
+  }
   function chargerDetail(index) {
     return (
       <TouchableOpacity
@@ -591,7 +591,7 @@ function statusSelector() {
                   style={[
                     styles?.hoursButton,
                     chargerForms?.[index]?.chargerType === "AC" &&
-                      styles?.selectedButton,
+                    styles?.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -607,7 +607,7 @@ function statusSelector() {
                     style={[
                       styles?.buttonText,
                       chargerForms?.[index]?.chargerType === "AC" &&
-                        styles?.selectedButtonText,
+                      styles?.selectedButtonText,
                     ]}
                   >
                     AC
@@ -618,7 +618,7 @@ function statusSelector() {
                   style={[
                     styles?.hoursButton,
                     chargerForms?.[index]?.chargerType === "DC" &&
-                      styles?.selectedButton,
+                    styles?.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -634,7 +634,7 @@ function statusSelector() {
                     style={[
                       styles?.buttonText,
                       chargerForms?.[index]?.chargerType === "DC" &&
-                        styles?.selectedButtonText,
+                      styles?.selectedButtonText,
                     ]}
                   >
                     DC
@@ -669,9 +669,9 @@ function statusSelector() {
                     prev.map((charger, i) =>
                       i === index
                         ? {
-                            ...charger,
-                            powerRating: numericText,
-                          }
+                          ...charger,
+                          powerRating: numericText,
+                        }
                         : charger
                     )
                   );
@@ -788,7 +788,7 @@ function statusSelector() {
               style={[
                 styles.amenityItem,
                 selectedAmenities.includes(amenity.id) &&
-                  styles.selectedAmenity,
+                styles.selectedAmenity,
               ]}
               onPress={() => toggleAmenity(amenity.id)}
             >
@@ -805,7 +805,7 @@ function statusSelector() {
                 style={[
                   styles.amenityLabel,
                   selectedAmenities.includes(amenity.id) &&
-                    styles.selectedAmenityText,
+                  styles.selectedAmenityText,
                 ]}
               >
                 {amenity.label}
@@ -940,51 +940,51 @@ function statusSelector() {
       </View>
     );
   }
- function vendorNameSection() {
-  return (
-    <View style={styles.section}>
-      <TouchableOpacity
-        onPress={handleVendorSelection}
-        style={{
-          borderWidth: 1,
-          borderColor: Colors.darOrangeColor,
-          borderRadius: 8,
-          padding: 12,
-          fontSize: 12,
-          marginBottom: 12,
-        }}
-      >
-        <Text
+  function vendorNameSection() {
+    return (
+      <View style={styles.section}>
+        <TouchableOpacity
+          onPress={handleVendorSelection}
           style={{
+            borderWidth: 1,
+            borderColor: Colors.darOrangeColor,
+            borderRadius: 8,
+            padding: 12,
             fontSize: 12,
-            color:  Colors.darOrangeColor,
-            textAlign:  "center",
+            marginBottom: 12,
           }}
         >
-          Select Vendor (required)
-        </Text>
-      </TouchableOpacity>
-      {(vendorName && vendorNumber) &&<>
-      <Text style={styles.sectionLabel}>Vendor Name</Text>
-      <View
-        style={[styles.input,{backgroundColor: Colors.bodyBackColor}]}
-      >
-        <Text
-          style={{
-            fontSize: 12,
-            color: Colors.blackColor ,
-            textAlign:"left",
-          }}
-        >
-          {vendorName}
-        </Text>
+          <Text
+            style={{
+              fontSize: 12,
+              color: Colors.darOrangeColor,
+              textAlign: "center",
+            }}
+          >
+            Select Vendor (required)
+          </Text>
+        </TouchableOpacity>
+        {(vendorName && vendorNumber) && <>
+          <Text style={styles.sectionLabel}>Vendor Name</Text>
+          <View
+            style={[styles.input, { backgroundColor: Colors.bodyBackColor }]}
+          >
+            <Text
+              style={{
+                fontSize: 12,
+                color: Colors.blackColor,
+                textAlign: "left",
+              }}
+            >
+              {vendorName}
+            </Text>
+          </View>
+        </>}
       </View>
-      </>}
-    </View>
-  );
-}
+    );
+  }
 
-function stationNameSection() {
+  function stationNameSection() {
     return (
       <View style={styles.section}>
         {/* <Text style={styles.questionText}>

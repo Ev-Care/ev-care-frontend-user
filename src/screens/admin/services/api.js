@@ -17,6 +17,13 @@ export const getAllStationsAPI = (data) =>
     accessToken: data.accessToken,
   });
 
+export const getAllStationsByUserIdAPI = (data) =>
+    apiGetRequest({
+    apiUrl: `${API_URL}/charging-stations?owner_id=${data.owner_id}`,
+    content_type: "application/json",
+    accessToken: data.accessToken,
+  });
+
 export const getAllPendingUsersAPI = (data) =>
   apiGetRequest({
     apiUrl: `${API_URL}/users/get-all-pending-users`,
@@ -26,7 +33,7 @@ export const getAllPendingUsersAPI = (data) =>
 
 export const getAllUsersAPI = (data) =>
   apiGetRequest({
-    apiUrl: `${API_URL}/users`,
+    apiUrl: `${API_URL}/users/get-all-users?status=&userType=`,
     content_type: "application/json",
     accessToken: data.accessToken,
   });

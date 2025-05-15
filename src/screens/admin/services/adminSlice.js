@@ -43,10 +43,8 @@ const adminSlice = createSlice({
                 state.error = null;
             })
             .addCase(getAllPendingUsers.fulfilled, (state, action) => {
-                state.loading = false;
-                console.log('in users fulfilled.', action.payload.data[0]);
                 state.pendingUsers = action.payload.data;
-
+                state.loading = false;
             })
             .addCase(getAllPendingUsers.rejected, (state, action) => {
                 state.loading = false;
@@ -57,10 +55,8 @@ const adminSlice = createSlice({
                 state.error = null;
             })
             .addCase(getAllUsers.fulfilled, (state, action) => {
-                state.loading = false;
-                console.log('in users fulfilled.', action.payload.data[0]);
                 state.allUsers = action.payload.data;
-
+                state.loading = false;
             })
             .addCase(getAllUsers.rejected, (state, action) => {
                 state.loading = false;

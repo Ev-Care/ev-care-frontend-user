@@ -567,6 +567,7 @@ const styles = StyleSheet.create({
   statusTime: {
     color: COLORS.black,
     fontSize: 12,
+    fontWeight:"700"
   },
   newBadge: {
     backgroundColor: COLORS.primary,

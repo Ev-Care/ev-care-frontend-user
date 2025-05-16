@@ -279,18 +279,9 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
           >
             <View style={styles.statusContainer}>
-              <Text
-                style={[
-                  styles.statusClosed,
-                  {
-                    color: station?.status === "Inactive" ? "#FF5722" : "green",
-                  },
-                ]}
-              >
-                {station?.status === "Inactive" ? "Closed" : "Open"}
-              </Text>
+             
               <Text style={styles.statusTime}>
-                {openHourFormatter(
+               Open Hours : {openHourFormatter(
                   station?.open_hours_opening_time,
                   station?.open_hours_closing_time
                 )}
@@ -301,7 +292,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
                     ? "VERIFIED"
                     : station.status === "Planned"
                     ? "PENDING"
-                    : ""}
+                    : station.status}
                 </Text>
               </View>
             </View>
@@ -568,7 +559,7 @@ const styles = StyleSheet.create({
   statusTime: {
     color: COLORS.black,
     fontSize: 12,
-    marginLeft: 4,
+   fontWeight:"700"
   },
   newBadge: {
     backgroundColor: COLORS.primary,

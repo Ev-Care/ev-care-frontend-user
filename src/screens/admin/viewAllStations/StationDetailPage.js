@@ -262,18 +262,9 @@ const StationDetailPage = ({ route, navigation }) => {
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
           >
             <View style={styles.statusContainer}>
-              <Text
-                style={[
-                  styles.statusClosed,
-                  {
-                    color: station?.status === "Active" ? "green" : "#FF5722",
-                  },
-                ]}
-              >
-                {station?.status === "Active" ? "Open" : "Closed"}
-              </Text>
+             
               <Text style={styles.statusTime}>
-                {openHourFormatter(
+               Open Hours : {openHourFormatter(
                   station?.open_hours_opening_time,
                   station?.open_hours_closing_time
                 )}
@@ -281,11 +272,6 @@ const StationDetailPage = ({ route, navigation }) => {
               <View style={styles.newBadge}>
                 <Text style={styles.newText}>
                   {String(station?.status).toUpperCase()}
-                  {/* {station.status === "Active"
-                    ? "VERIFIED"
-                    : station.status === "Planned"
-                    ? "PENDING"
-                    : ""} */}
                 </Text>
               </View>
             </View>
@@ -630,7 +616,7 @@ const styles = StyleSheet.create({
   statusTime: {
     color: COLORS.black,
     fontSize: 12,
-    marginLeft: 4,
+   fontWeight:"700"
   },
   newBadge: {
     backgroundColor: COLORS.primary,

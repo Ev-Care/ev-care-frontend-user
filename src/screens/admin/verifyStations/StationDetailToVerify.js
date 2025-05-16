@@ -328,11 +328,7 @@ const StationDetailToVerify = ({ route, navigation }) => {
               </Text>
               <View style={styles.newBadge}>
                 <Text style={styles.newText}>
-                  {station.status === "Active"
-                    ? "VERIFIED"
-                    : station.status === "Planned"
-                    ? "PENDING"
-                    : station.status}
+                  {station?.status === "Active" ? "VERIFIED" : station?.status}
                 </Text>
               </View>
             </View>
@@ -765,7 +761,7 @@ const styles = StyleSheet.create({
   statusTime: {
     color: COLORS.black,
     fontSize: 12,
-    // marginLeft: 4,
+   fontWeight:"700"
   },
   newBadge: {
     backgroundColor: COLORS.primary,

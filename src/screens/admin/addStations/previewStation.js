@@ -422,6 +422,7 @@ const PreviewStation = ({ navigation, route }) => {
               <Text
                 style={{
                   fontSize: 12,
+                  fontWeight:"700",
                   color: Colors.primaryColor,
                 }}
               >

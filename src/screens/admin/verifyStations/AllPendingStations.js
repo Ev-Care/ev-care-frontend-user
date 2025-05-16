@@ -41,6 +41,9 @@ const AllPendingStations = ({ navigation }) => {
   useEffect(() => {
     const loadStations = async () => {
 
+      if (allStationsList?.length > 0) {
+        return;
+      }
       try {
         setIsLoading(true);
         const response = await dispatch(fetchAllStations());

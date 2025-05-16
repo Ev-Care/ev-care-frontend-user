@@ -225,6 +225,7 @@ const AddStationScreen = () => {
       station_name: stationName,
       address,
       access_type: accessType,
+      status: selectedStatus,
       coordinates: {
         latitude: coordinate?.latitude || null,
         longitude: coordinate?.longitude || null,

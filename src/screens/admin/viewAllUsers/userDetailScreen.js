@@ -432,7 +432,7 @@ useEffect(() => {
               {station?.station_images ? (
                 <Image
                   // source={{ uri: imageURL.baseURL + station?.station_images }}
-                  source={{ uri: station?.station_images }}
+                  source={{ uri: imageURL.baseURL + station?.station_images }}
                   style={styles.stationImage}
                 />
               ) : (

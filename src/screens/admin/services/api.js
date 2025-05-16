@@ -83,6 +83,13 @@ export const approveStationAPI = (data) =>
     content_type: "application/json",
     accessToken: data.accessToken,
   });
+  
+export const rejectStationAPI = (data) =>
+  apiPatchRequest({
+    apiUrl: `${API_URL}/charging-stations/reject/${data.station_id}`,
+    content_type: "application/json",
+    accessToken: data.accessToken,
+  });
 
 export const approveVendorProfileAPI = (data) =>
   apiPostRequest({

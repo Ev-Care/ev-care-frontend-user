@@ -13,6 +13,7 @@ import {
   getAllSupportIssuesAPI,
   getAllUsersAPI,
   getEntityCountAPI,
+  rejectStationAPI,
   updateUserProfileAPI,
 } from "./api";
 import { deleteStationAPI, } from "../../vendor/services/api";
@@ -221,6 +222,37 @@ export const approveStation = createAsyncThunk(
       }
     } catch (error) {
       console.log("Error in approveStation:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message || // API sent error message
+        error?.message || // JS error message
+        "Server error"; // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+export const rejectStation = createAsyncThunk(
+  "admin/rejectStation",
+  async (station_id, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
+
+      const response = await rejectStationAPI({
+        station_id,
+        accessToken,
+      }); // Call the API to fetch stations by location
+
+      if (response?.data?.code === 200 || response?.data?.code === 201) {
+        return response?.data;
+      } else {
+        return rejectWithValue(
+          response?.message || response?.data?.message || "Failed to reject station"
+        );
+      }
+    } catch (error) {
+      console.log("Error in reject station:", error);
 
       // Always extract message properly even in catch
       const errorMessage =

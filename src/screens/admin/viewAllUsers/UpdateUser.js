@@ -217,6 +217,15 @@ const UpdateUser = ({ route, navigation }) => {
         );
         return false;
       }
+      if (!address) {
+        dispatch(
+          showSnackbar({
+            message: " Address field is required for vendor.",
+            type: "error",
+          })
+        );
+        return false;
+      }
       if (businessType === "organization" && !businessName) {
         dispatch(
           showSnackbar({
@@ -307,6 +316,7 @@ const UpdateUser = ({ route, navigation }) => {
             type: "error",
           })
         );
+        return false;
       }
     }
     if (selectedStatus === null) {

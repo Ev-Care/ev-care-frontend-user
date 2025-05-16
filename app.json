@@ -2,7 +2,7 @@
   "expo": {
     "name": "EV Care",
     "slug": "ev-care",
-    "version": "1.0.0",
+    "version": "1.0.0", 
     "orientation": "portrait",
     "owner": "",
     "icon": "./assets/icon.png",

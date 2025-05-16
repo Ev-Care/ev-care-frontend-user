@@ -1,34 +1,28 @@
+import { useEffect, useState } from "react";
 import {
-  FlatList,
+  ActivityIndicator,
+  Image,
+  Linking,
+  Platform,
+  ScrollView,
   StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  Text,
-  Image,
-  Platform,
-  ActivityIndicator,
-  Linking,
-  View,
-  ScrollView,
+  View
 } from "react-native";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import MyStatusBar from "../../../components/myStatusBar";
+import imageURL from "../../../constants/baseURL";
 import {
   Colors,
-  Fonts,
-  Sizes,
-  Switch,
-  commonStyles,
-  screenWidth,
+  commonStyles
 } from "../../../constants/styles";
-import React, { useCallback, useEffect, useState } from "react";
-import MyStatusBar from "../../../components/myStatusBar";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import imageURL from "../../../constants/baseURL";
 
-import { useDispatch, useSelector } from "react-redux";
-import { selectPendingStations } from "../services/selector";
-import { useFocusEffect } from "@react-navigation/native";
-import { fetchAllPendingStation } from "../services/crudFunctions";
 import { RefreshControl } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAllPendingStation, fetchAllStations } from "../services/crudFunctions";
+import { selectPendingStations } from "../services/selector";
 
 const AllPendingStations = ({ navigation }) => {
   const [searchText, setSearchText] = useState("");
@@ -39,30 +33,50 @@ const AllPendingStations = ({ navigation }) => {
     station?.station_name?.toLowerCase().includes(searchText.toLowerCase())
   );
   const dispatch = useDispatch();
-  // Dummy coordinates for the location
-  // Called only on first mount
- useEffect(() => {
-  const loadPendingStations = async () => {
-    setIsLoading(true);
-    // console.log("pending station fetched from useEffect");
-    
-    await dispatch(fetchAllPendingStation());
-    
-    setIsLoading(false);
-  };
-
-  loadPendingStations();
-}, [dispatch]);
 
 
   const trimText = (text, limit) =>
     text.length > limit ? text.substring(0, limit) + "..." : text;
 
+  useEffect(() => {
+    const loadStations = async () => {
+
+      try {
+        setIsLoading(true);
+        const response = await dispatch(fetchAllStations());
+        if (fetchAllStations.fulfilled.match(response)) {
+          // Optional: Show success snackbar or log
+          console.log("Pending stations refreshed successfully.");
+        } else {
+          await dispatch(
+            showSnackbar({
+              message: "Failed to refresh pending stations.",
+              type: "error",
+            })
+          );
+        }
+      } catch (error) {
+        console.error("Error refreshing stations:", error);
+        await dispatch(
+          showSnackbar({
+            message: "Something went wrong during refresh.",
+            type: "error",
+          })
+        );
+      } finally {
+        setIsLoading(false);
+      }
+
+    };
+
+    loadStations();
+  }, []);
+
   const handleRefresh = async () => {
     try {
       setRefreshing(true);
-      const response = await dispatch(fetchAllPendingStation());
-      if (fetchAllPendingStation.fulfilled.match(response)) {
+      const response = await dispatch(fetchAllStations());
+      if (fetchAllStations.fulfilled.match(response)) {
         // Optional: Show success snackbar or log
         console.log("Pending stations refreshed successfully.");
       } else {
@@ -181,11 +195,11 @@ const AllPendingStations = ({ navigation }) => {
             No stations available.
           </Text>
         )}
-         {isLoading && (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color={Colors.primaryColor} />
-        </View>
-      )}
+        {isLoading && (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color={Colors.primaryColor} />
+          </View>
+        )}
       </ScrollView>
     );
   }
@@ -205,7 +219,7 @@ const AllPendingStations = ({ navigation }) => {
             placeholder="Search Pending Stations...."
             placeholderTextColor="#888"
             style={{
-              flex: 1,   
+              flex: 1,
               padding: 12,
               fontSize: 12,
             }}
@@ -261,7 +275,7 @@ const styles = StyleSheet.create({
     marginRight: 15,
     borderWidth: 1,
     borderColor: '#e2e2e2 ',
-    backgroundColor: '#f5f5f5' 
+    backgroundColor: '#f5f5f5'
   },
   infoContainer: {
     flex: 1,
@@ -271,7 +285,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-    loaderContainer: {
+  loaderContainer: {
     position: "absolute",
     top: 0,
     left: 0,

@@ -344,6 +344,7 @@ const CreateUser = ({ route, navigation }) => {
             type: "error",
           })
         );
+        return false;
       }
     }
     if (selectedStatus === null) {

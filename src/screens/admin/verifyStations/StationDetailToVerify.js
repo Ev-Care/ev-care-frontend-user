@@ -30,6 +30,8 @@ import imageURL from "../../../constants/baseURL";
 import {
   approveStation,
   fetchAllPendingStation,
+  fetchAllStations,
+  rejectStation,
 } from "../services/crudFunctions";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { useDispatch } from "react-redux";
@@ -118,30 +120,70 @@ const StationDetailToVerify = ({ route, navigation }) => {
     return str?.substring(0, threshold) + ".....";
   };
 
-  const handleReject = async () => {
-    console.log("handle Reject Called");
+ const handleReject = async () => {
+  console.log("in reject");
+  setIsLoading(true);
+
+  try {
+    const rejectResponse = await dispatch(rejectStation(station?.id));
+
+    if (rejectStation.fulfilled.match(rejectResponse)) {
+      console.log("Reject fulfilled");
+
+      const fetchResponse = await dispatch(fetchAllStations());
+
+      if (fetchAllStations.fulfilled.match(fetchResponse)) {
+        await dispatch(
+          showSnackbar({
+            message: "Station rejected successfully.",
+            type: "success",
+          })
+        );
+        navigation.goBack();
+      } else {
+        await dispatch(
+          showSnackbar({
+            message: "Failed to fetch updated station list.",
+            type: "error",
+          })
+        );
+      }
+    } else {
+      await dispatch(
+        showSnackbar({
+          message: "Failed to reject station.",
+          type: "error",
+        })
+      );
+    }
+  } catch (error) {
+    console.error("Error in reject handler:", error);
     await dispatch(
       showSnackbar({
-        message: "This service is in under development.",
+        message: "Something went wrong while rejecting the station.",
         type: "error",
       })
     );
-  };
+  } finally {
+    setIsLoading(false);
+  }
+};
+
   const handleApprove = async () => {
     console.log("in approve");
     setIsLoading(true);
 
     try {
       const approvedResponse = await dispatch(approveStation(station?.id));
-      console.log("in approve fff");
+
 
       if (approveStation.fulfilled.match(approvedResponse)) {
         console.log("in approve fulfill");
 
-        const pendingStationResponse = await dispatch(fetchAllPendingStation());
-        console.log("in approve fulfill");
+        const stationResponse = await dispatch(fetchAllStations());
 
-        if (fetchAllPendingStation.fulfilled.match(pendingStationResponse)) {
+
+        if (fetchAllStations.fulfilled.match(stationResponse)) {
           await dispatch(
             showSnackbar({
               message: "Station approved successfully.",
@@ -255,27 +297,27 @@ const StationDetailToVerify = ({ route, navigation }) => {
           </Text>
           {station?.user?.vendor_type === "individual" ? (
             <>
-            <Text style={styles.stationAddress}>
-             Vendor Name :{" "}{station?.user?.owner_legal_name}
-            </Text>
-            <Text style={styles.stationAddress}>
-             Contact Number :{" "}{station?.user?.mobile_number}
-            </Text>
+              <Text style={styles.stationAddress}>
+                Vendor Name :{" "}{station?.user?.owner_legal_name}
+              </Text>
+              <Text style={styles.stationAddress}>
+                Contact Number :{" "}{station?.user?.mobile_number}
+              </Text>
             </>
           ) : station?.user?.vendor_type === "organization" ? (
             <>
-            <Text style={styles.stationAddress}>
-            Organization Name:{" "}{station?.user?.business_name}
-            </Text>
-             <Text style={styles.stationAddress}>
-            Contact Number :{" "}{station?.user?.mobile_number}
-            </Text>
+              <Text style={styles.stationAddress}>
+                Organization Name:{" "}{station?.user?.business_name}
+              </Text>
+              <Text style={styles.stationAddress}>
+                Contact Number :{" "}{station?.user?.mobile_number}
+              </Text>
             </>
           ) : (
             <Text style={styles.stationAddress}>
-            {trimName(50, station?.address)}
+              {trimName(50, station?.address)}
             </Text>
-            
+
           )}
 
           <View
@@ -294,8 +336,8 @@ const StationDetailToVerify = ({ route, navigation }) => {
                   {station.status === "Active"
                     ? "VERIFIED"
                     : station.status === "Planned"
-                    ? "PENDING"
-                    : ""}
+                      ? "PENDING"
+                      : ""}
                 </Text>
               </View>
             </View>

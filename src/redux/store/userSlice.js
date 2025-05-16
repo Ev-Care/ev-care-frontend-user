@@ -38,9 +38,9 @@ const authSlice = createSlice({
       AsyncStorage.removeItem("user");
       AsyncStorage.removeItem("accessToken");
       // console.log("User logged out successfully");
-      clearAdminState();
-      clearVendorState();
-      clearUserStationsState();
+      // clearAdminState();
+      // clearVendorState();
+      // clearUserStationsState();
     },
     restoreUser: (state, action) => {
       // state.user = extractUser(action.payload.user);

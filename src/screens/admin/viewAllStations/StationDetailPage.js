@@ -266,11 +266,11 @@ const StationDetailPage = ({ route, navigation }) => {
                 style={[
                   styles.statusClosed,
                   {
-                    color: station?.status === "Inactive" ? "#FF5722" : "green",
+                    color: station?.status === "Active" ? "green" : "#FF5722",
                   },
                 ]}
               >
-                {station?.status === "Inactive" ? "Closed" : "Open"}
+                {station?.status === "Active" ? "Open" : "Closed"}
               </Text>
               <Text style={styles.statusTime}>
                 {openHourFormatter(

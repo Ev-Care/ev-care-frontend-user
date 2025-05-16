@@ -107,9 +107,9 @@ function AppNavigator() {
           )}
         </Stack.Screen>
       </>
-    ) : user?.status === "Active" ? (
+    ) : (user?.status === "Active" ||user?.status === "Completed" ) ? (
       renderRoleStack()
-    ) : (<>
+    ) : (  <>
       <Stack.Screen name="BlockedUserScreen" component={BlockedUserScreen} />
       <Stack.Screen name="Help" component={HelpScreen} />
       </>

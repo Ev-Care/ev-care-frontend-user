@@ -347,6 +347,7 @@ const UpdateStation = ({ navigation, route }) => {
       station_name: stationName,
       station_images: stationImages,
       address,
+      status:station?.status,
       coordinates: {
         latitude: coordinate?.latitude || null,
         longitude: coordinate?.longitude || null,

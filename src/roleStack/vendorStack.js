@@ -57,10 +57,13 @@ export function VendorStack() {
       )}
 
       {user && isVendor && isCompleted && (
+        <>
         <Stack.Screen
           name="PendingApprovalScreen"
           component={PendingApprovalScreen}
         />
+        <Stack.Screen name="HelpScreen" component={HelpScreen} />
+        </>
       )}
 
       {user && isVendor && isActive && isKYCComplete && (

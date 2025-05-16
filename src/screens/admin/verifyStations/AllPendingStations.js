@@ -176,7 +176,7 @@ const AllPendingStations = ({ navigation }) => {
                           : Colors.primaryColor,
                     }}
                   >
-                    {station?.status !== "Active" ? "Pending" : "Active"}
+                    {station?.status !== "Active" ? "Pending" : station?.status}
                   </Text>
                 </Text>
 

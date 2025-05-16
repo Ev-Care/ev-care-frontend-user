@@ -1,44 +1,39 @@
-import React, { useState, useRef, useEffect } from "react";
+import { Overlay } from "@rneui/themed";
+import { useRef, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions,
   ActivityIndicator,
-  Platform,
-  Snackbar,
-  Modal,
-  TextInput,
+  Dimensions,
+  Image,
   Linking,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
+import MapView, { Marker } from "react-native-maps";
+import { default as Icon, default as MaterialCommunityIcons } from "react-native-vector-icons/MaterialCommunityIcons";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useDispatch } from "react-redux";
+import imageURL from "../../../constants/baseURL";
 import {
   Colors,
-  Sizes,
   Fonts,
-  commonStyles,
-  screenWidth,
+  Sizes,
+  commonStyles
 } from "../../../constants/styles";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import MapView, { Marker } from "react-native-maps";
-import { Overlay } from "@rneui/themed";
-import imageURL from "../../../constants/baseURL";
+import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import {
+  openHourFormatter
+} from "../../../utils/globalMethods";
 import {
   approveStation,
   fetchAllPendingStation,
   fetchAllStations,
   rejectStation,
 } from "../services/crudFunctions";
-import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import { useDispatch } from "react-redux";
-import {
-  formatDistance,
-  openHourFormatter,
-} from "../../../utils/globalMethods";
 
 // import imageURL from "../../../constants/baseURL";
 const COLORS = {
@@ -336,8 +331,8 @@ const StationDetailToVerify = ({ route, navigation }) => {
                   {station.status === "Active"
                     ? "VERIFIED"
                     : station.status === "Planned"
-                      ? "PENDING"
-                      : ""}
+                    ? "PENDING"
+                    : station.status}
                 </Text>
               </View>
             </View>

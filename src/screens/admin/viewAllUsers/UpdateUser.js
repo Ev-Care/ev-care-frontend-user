@@ -417,7 +417,11 @@ const UpdateUser = ({ route, navigation }) => {
     }
   };
 
-  const renderInput = (label, value, setter, placeholder) => (
+const renderInput = (label, value, setter, placeholder) => {
+  const isNonEditable =
+    label === "Email" || label === "Mobile Number";
+
+  return (
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         {label}
@@ -428,9 +432,13 @@ const UpdateUser = ({ route, navigation }) => {
         )}
       </Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          isNonEditable && { backgroundColor: "#f0f0f0" },
+        ]}
         value={value}
         onChangeText={(text) => {
+          if (isNonEditable) return;
           if (label === "Email") {
             setter(text.toLowerCase());
           } else if (
@@ -444,6 +452,7 @@ const UpdateUser = ({ route, navigation }) => {
           }
         }}
         placeholder={placeholder}
+        editable={!isNonEditable}
         keyboardType={
           label === "Mobile Number"
             ? "numeric"
@@ -463,6 +472,9 @@ const UpdateUser = ({ route, navigation }) => {
       />
     </View>
   );
+};
+
+
 
   const renderPassword = (
     label,

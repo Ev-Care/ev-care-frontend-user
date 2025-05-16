@@ -105,9 +105,9 @@ const PreviewStation = ({ navigation, route }) => {
         );
 
         if (addStationByAdmin.fulfilled.match(addStationResponse)) {
-          const stationResponse = await dispatch(fetchAllPendingStation());
+          const stationResponse = await dispatch(fetchAllStations());
 
-          if (fetchAllPendingStation.fulfilled.match(stationResponse)) {
+          if (fetchAllStations.fulfilled.match(stationResponse)) {
             await dispatch(
               showSnackbar({ message: "New station added.", type: "success" })
             );

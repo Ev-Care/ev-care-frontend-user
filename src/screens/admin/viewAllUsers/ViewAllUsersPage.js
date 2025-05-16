@@ -60,7 +60,7 @@ const ViewAllUserPage = ({ navigation,route }) => {
   useEffect(() => {
     dispatch(getAllUsers());
   }, []);
-  const handleRefresh = async () => {};
+  const handleRefresh = async () => await dispatch(getAllUsers());
   
   const filteredUsers = users.filter((user) => {
     const matchesSearch =

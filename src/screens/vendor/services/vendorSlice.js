@@ -13,23 +13,7 @@ const vendorSlice = createSlice({
   name: 'vendorStations',
   initialState,
   reducers: {
-    // Optional: Add any synchronous reducers if needed
-    toggleStationStatus: (state, action) => {
-      const { id } = action.payload;
-      const stationIndex = state.stations.findIndex((station) => station.id === id);
-      if (stationIndex !== -1) {
-        const updatedStation = {
-          ...state.stations[stationIndex],
-          status: state.stations[stationIndex].status !== 'Inactive' ? 'Inactive' : 'Active',
-        };
-        state.stations[stationIndex] = updatedStation;
-      }
-      console.log("toggle station availability success",state.stations[stationIndex] );
-    },
-    setStations(state, action) {
-      state.stations = action.payload.stations;
-    }
-
+     clearVendorState: () => initialState,
   },
   extraReducers: (builder) => {
     // Fetch Stations
@@ -144,5 +128,5 @@ const vendorSlice = createSlice({
       })
   },
 });
-export const { toggleStationStatus,setStations } = vendorSlice.actions; // Export the action
+export const { clearVendorState } = vendorSlice.actions; // Export the action
 export default vendorSlice.reducer;

@@ -17,7 +17,7 @@ const adminSlice = createSlice({
     name: 'admin',
     initialState,
     reducers: {
-
+        clearAdminState: () => initialState,
     },
     extraReducers: (builder) => {
         builder
@@ -111,6 +111,6 @@ const adminSlice = createSlice({
             });
     }
 });
-
+export const { clearAdminState } = adminSlice.actions;
 // export default adminSlice.actions;
 export default adminSlice.reducer;

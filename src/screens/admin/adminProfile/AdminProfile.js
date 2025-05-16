@@ -25,6 +25,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import imageURL from "../../../constants/baseURL";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { clearAdminState } from "../services/adminSlice";
 const AdminProfilePage = () => {
   const navigation = useNavigation();
   const user = useSelector(selectUser);
@@ -118,8 +119,9 @@ const AdminProfilePage = () => {
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => {
-                dispatch(logoutUser());
+              onPress={async() => {
+                await dispatch(logoutUser());
+         
                 setshowLogoutSheet(false);
                 console.log(
                   "User logged out successfully in profileScreen and navigting to Signin"

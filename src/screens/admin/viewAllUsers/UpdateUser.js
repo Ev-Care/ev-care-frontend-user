@@ -1,78 +1,71 @@
-import React, { useState } from "react";
+import { Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
-  ActivityIndicator,
-  StyleSheet,
-  Alert,
-  Modal,
-  ScrollView,
+  View,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
-import {
-  Colors,
-  Sizes,
-  Fonts,
-  commonStyles,
-  screenWidth,
-} from "../../../constants/styles";
-import {
-  selectAuthError,
-  selectToken,
-  selectUser,
-} from "../../auth/services/selector";
-import { useSelector, useDispatch } from "react-redux";
 import RNModal from "react-native-modal";
 import { default as Icon } from "react-native-vector-icons/MaterialIcons";
+import { useDispatch, useSelector } from "react-redux";
 import imageURL from "../../../constants/baseURL";
-import { postSingleFile } from "../../auth/services/crudFunction";
-import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
+import {
+  Colors
+} from "../../../constants/styles";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import { createUser, updateUserProfile } from "../services/crudFunctions";
-import { patchUpdateUserProfile } from "../../user/service/crudFunction";
+import { postSingleFile } from "../../auth/services/crudFunction";
+import {
+  selectToken
+} from "../../auth/services/selector";
+import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
+import { getAllUsers, updateUserProfile } from "../services/crudFunctions";
 
 const UpdateUser = ({ route, navigation }) => {
   const { user } = route.params;
 
-const [name, setName] = useState(user?.owner_legal_name);
-const [email, setEmail] = useState(user?.email);
-const [mobNumber, setMobNumber] = useState(user?.mobile_number);
-const [businessName, setBusinessName] = useState(user?.business_name);
-const [aadharNumber, setAadharNumber] = useState(user?.adhar_no);
-const [panNumber, setPanNumber] = useState(user?.pan_no);
-const [gstNumber, setGstNumber] = useState(user?.gstin_number);
+  const [name, setName] = useState(user?.owner_legal_name);
+  const [email, setEmail] = useState(user?.email);
+  const [mobNumber, setMobNumber] = useState(user?.mobile_number);
+  const [businessName, setBusinessName] = useState(user?.business_name);
+  const [aadharNumber, setAadharNumber] = useState(user?.adhar_no);
+  const [panNumber, setPanNumber] = useState(user?.pan_no);
+  const [gstNumber, setGstNumber] = useState(user?.gstin_number);
 
-const [aadhaarFrontImage, setAadhaarFrontImage] = useState(user?.adhar_front_pic || null);
-const [aadhaarBackImage, setAadhaarBackImage] = useState(user?.adhar_back_pic || null);
-const [panImage, setPanImage] = useState(user?.pan_pic || null);
-const [gstImage, setGstImage] = useState(user?.gstin_image || null);
-const [avatar, setAvatar] = useState(user?.avatar || null);
+  const [aadhaarFrontImage, setAadhaarFrontImage] = useState(user?.adhar_front_pic || null);
+  const [aadhaarBackImage, setAadhaarBackImage] = useState(user?.adhar_back_pic || null);
+  const [panImage, setPanImage] = useState(user?.pan_pic || null);
+  const [gstImage, setGstImage] = useState(user?.gstin_image || null);
+  const [avatar, setAvatar] = useState(user?.avatar || null);
 
-const [modalVisible, setModalVisible] = useState(false);
-const [selectedImage, setSelectedImage] = useState(null);
-const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
-const [currentImageSetter, setCurrentImageSetter] = useState(null);
-const [coordinate, setCoordinate] = useState(null);
-const [address, setAddress] = useState(user?.address);
-const [selectedRole, setSelectedRole] = useState(user?.role || "user");
-const [imageloading, setImageLoading] = useState("");
-const [businessType, setBusinessType] = useState(user?.vendor_type || "individual");
-const [isLoading, setIsLoading] = useState(false);
-const [vehicleCompany, setVehicleCompany] = useState(user?.vehicle_manufacturer);
-const [vehicleModel, setVehicleModel] = useState(user?.vehicle_model);
-const [vehicleNumber, setVehicleNumber] = useState(user?.vehicle_registration_number);
-// const [password, setPassword] = useState(null);
-// const [confirmPassword, setConfirmPassword] = useState(null);
-// const [securePass, setSecurePass] = useState(true);
-// const [secureConfirmPass, setSecureConfirmPass] = useState(true);
-const accessToken = useSelector(selectToken);
-const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const [currentImageSetter, setCurrentImageSetter] = useState(null);
+  const [coordinate, setCoordinate] = useState(null);
+  const [address, setAddress] = useState(user?.address);
+  const [selectedRole, setSelectedRole] = useState(user?.role || "user");
+  const [imageloading, setImageLoading] = useState("");
+  const [businessType, setBusinessType] = useState(user?.vendor_type || "individual");
+  const [isLoading, setIsLoading] = useState(false);
+  const [vehicleCompany, setVehicleCompany] = useState(user?.vehicle_manufacturer);
+  const [vehicleModel, setVehicleModel] = useState(user?.vehicle_model);
+  const [vehicleNumber, setVehicleNumber] = useState(user?.vehicle_registration_number);
+  // const [password, setPassword] = useState(null);
+  // const [confirmPassword, setConfirmPassword] = useState(null);
+  // const [securePass, setSecurePass] = useState(true);
+  // const [secureConfirmPass, setSecureConfirmPass] = useState(true);
+  const accessToken = useSelector(selectToken);
+  const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
 
-  
+
   const dispatch = useDispatch();
   const showFullImage = (uri) => {
     if (!uri) return;
@@ -172,7 +165,8 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
 
   const validateInputs = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const mobileRegex = /^[6-9]\d{10}$/;
+    const mobileRegex = /^[6-9]\d{9}$/;
+
     const aadharRegex = /^\d{12}$/;
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     const gstRegex =
@@ -211,7 +205,7 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
     }
 
 
-    
+
 
     if (selectedRole === "vendor") {
       if (!panNumber) {
@@ -223,7 +217,7 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
         );
         return false;
       }
-    if (businessType === "organization" && !businessName) {
+      if (businessType === "organization" && !businessName) {
         dispatch(
           showSnackbar({
             message: "Please Enter Organization or Legal Name",
@@ -315,15 +309,15 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
         );
       }
     }
-  if(selectedStatus === null){
-    dispatch(
-      showSnackbar({
-        message: "Please select a status.",
-        type: "error",
-      })
-    );
-    return false;
-  }
+    if (selectedStatus === null) {
+      dispatch(
+        showSnackbar({
+          message: "Please select a status.",
+          type: "error",
+        })
+      );
+      return false;
+    }
     return true;
   };
 
@@ -337,7 +331,7 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
       avatar: avatar || null,
       role: selectedRole,
       status: selectedStatus,
-      user_key:user.user_key
+      user_key: user.user_key
     };
 
     if (selectedRole === "vendor") {
@@ -377,15 +371,30 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
     console.log("Submitting payload:", payload);
 
     try {
+      setIsLoading(true);
       const response = await dispatch(updateUserProfile(payload));
-      if (response.payload.code === 200 || response.payload.code === 201) {
-        dispatch(
-          showSnackbar({
-            message: "User updated successfully!",
-            type: "success",
-          })
-        );
-        navigation.navigate("ViewAllUserPage");
+      if (response?.payload?.code === 200 || response?.payload?.code === 201) {
+
+        const userResponse = await dispatch(getAllUsers());
+        if (getAllUsers.fulfilled.match(userResponse)) {
+          console.log("User updated successfully:");
+          dispatch(
+            showSnackbar({
+              message: "User updated successfully!",
+              type: "success",
+            })
+          );
+
+        } else {
+            dispatch(
+            showSnackbar({
+              message: userResponse?.payload ||userResponse?.payload?.message || "Failed to update user!",
+              type: "error",
+            })
+          );
+        }
+
+        navigation.pop(2);
       } else {
         dispatch(
           showSnackbar({
@@ -403,6 +412,8 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
       dispatch(
         showSnackbar({ message: "Failed to Update user!", type: "error" })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -437,17 +448,17 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
           label === "Mobile Number"
             ? "numeric"
             : label === "Email"
-            ? "email-address"
-            : "default"
+              ? "email-address"
+              : "default"
         }
         maxLength={
           label === "Mobile Number" || label === "PAN Number"
             ? 10
             : label === "Aadhar Number"
-            ? 12
-            : label === "GST Number"
-            ? 15
-            : undefined
+              ? 12
+              : label === "GST Number"
+                ? 15
+                : undefined
         }
       />
     </View>
@@ -525,7 +536,7 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
           <MaterialIcons name="edit" size={20} color="white" />
         </TouchableOpacity>
       </View>
-       {label != "avatar" && <Text style={styles.imageLabel}>
+      {label != "avatar" && <Text style={styles.imageLabel}>
         {label}
 
         {label === "GST" && businessType === "individual" ? (
@@ -604,7 +615,7 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
         )}
         {renderInput("Email", email, setEmail, "Enter your email")}
         {statusSection()}
-       
+
 
         {roleSelector()}
         {selectedRole === "vendor" ? (
@@ -823,7 +834,7 @@ const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
             }
             setAddress(text);
           }}
-          // maxLength={100}
+        // maxLength={100}
         />
         <Text
           style={{

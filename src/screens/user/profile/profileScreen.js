@@ -24,6 +24,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectUser } from "../../auth/services/selector";
 import { logoutUser } from "../../../redux/store/userSlice";
 import imageURL from "../../../constants/baseURL";
+import { clearVendorState } from "../../vendor/services/vendorSlice";
+import { clearAdminState } from "../../admin/services/adminSlice";
 
 const ProfileScreen = ({ navigation }) => {
   const user = useSelector(selectUser);
@@ -117,8 +119,9 @@ const ProfileScreen = ({ navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => {
-                dispatch(logoutUser());
+              onPress={async() => {
+                await dispatch(logoutUser());
+             
                 console.log(
                   "User logged out successfully in profileScreen and navigting to Signin"
                 );

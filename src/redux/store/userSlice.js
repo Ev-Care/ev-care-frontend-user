@@ -14,6 +14,8 @@ import {
   patchUpdateUserProfile,
   getUserDetailsByKey,
 } from "../../screens/user/service/crudFunction";
+import { clearAdminState } from "../../screens/admin/services/adminSlice";
+import { clearVendorState } from "../../screens/vendor/services/vendorSlice";
 
 const initialState = {
   user: null,
@@ -36,6 +38,9 @@ const authSlice = createSlice({
       AsyncStorage.removeItem("user");
       AsyncStorage.removeItem("accessToken");
       // console.log("User logged out successfully");
+      clearAdminState();
+      clearVendorState();
+      clearUserStationsState();
     },
     restoreUser: (state, action) => {
       // state.user = extractUser(action.payload.user);

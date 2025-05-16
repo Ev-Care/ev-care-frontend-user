@@ -234,9 +234,10 @@ export const approveStation = createAsyncThunk(
 );
 
 export const updateUserProfile = createAsyncThunk(
-  "userSlice/profileUpdate",
+  "admin/updateUserProfile",
   async (data, { rejectWithValue }) => {
     try {
+      console.log("data in updateUserProfile", data);
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
       // console.log("data:",  {...data, accessToken}); // Log the access token for debugging
       const response = await updateUserProfileAPI({ ...data, accessToken }); // Call the API to fetch stations by location
@@ -248,7 +249,7 @@ export const updateUserProfile = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in patchUpdateUserProfile:", error);
+      console.log("Error in updateUserProfile:", error);
 
       // Always extract message properly even in catch
       const errorMessage =

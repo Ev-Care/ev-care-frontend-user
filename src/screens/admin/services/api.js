@@ -49,6 +49,7 @@ export const updateUserProfileAPI = (data) =>
       address: data?.address,
       // password:data?.password,
       avatar: data?.avatar,
+      status: data?.status,
       vehicle_model: data?.vehicle_model,
       vehicle_manufacturer: data?.vehicle_manufacturer,
       vehicle_registration_number: data?.vehicle_registration_number,

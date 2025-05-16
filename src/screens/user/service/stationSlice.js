@@ -3,13 +3,10 @@ import { enableMapSet } from "immer";
 import { fetchStationsByLocation, getAllFavoriteStations } from "./crudFunction";
 
 
-// Enable support for Set and Map in Immer
-enableMapSet();
-// Initial state
+
 const initialState = {
   stations: [],
   favorite: [],
-  recent: new Set(),
   loading: false,
   error: null,
 };
@@ -19,23 +16,7 @@ const stationSlice = createSlice({
   name: "stations",
   initialState,
   reducers: {
-    // Reducer to reset the state
-    resetStationsState: (state) => {
-      state.stations = [];
-      state.favorite = new Set();
-      state.recent = new Set();
-      state.loading = false;
-      state.error = null;
-    },
-    
-    
-    addToRecent: (state, action) => {
-      var item = {
-        id: action.payload.id,
-        time: Date.now(),
-      }
-      state.recent.push(stationId);
-    },
+     clearUserStationsState: () => initialState,
 
   },
   extraReducers: (builder) => {
@@ -79,7 +60,7 @@ const stationSlice = createSlice({
 });
 
 // Export actions
-export const { resetStationsState, addToFavorite, removeFromFavorite, addToRecent } = stationSlice.actions;
+export const { clearUserStationsState } = stationSlice.actions;
 
 
 

@@ -58,12 +58,11 @@ const PreviewPage = ({ navigation, route }) => {
   const errorMessage = useSelector(selectVendorError);
   const stations = useSelector(selectVendorStation);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(stationImage || '');
+  const [selectedImage, setSelectedImage] = useState(stationImage || "");
   const authToken = useSelector(selectToken);
   const station = stations.find(
     (station) => station.id === stationData.station_id
   );
-
 
   useEffect(() => {
     console.log(
@@ -110,8 +109,7 @@ const PreviewPage = ({ navigation, route }) => {
 
   const handleSubmit = async () => {
     try {
-      
-      console.log('station data', stationData);
+      console.log("station data", stationData);
       if (type === "add") {
         const addStationresponse = await dispatch(addStation(stationData));
         if (addStation.fulfilled.match(addStationresponse)) {
@@ -145,7 +143,6 @@ const PreviewPage = ({ navigation, route }) => {
           );
         }
       } else {
-
         const updateStationResponse = await dispatch(
           updateStation(stationData)
         );
@@ -288,19 +285,15 @@ const PreviewPage = ({ navigation, route }) => {
     return (
       <Modal visible={modalVisible} transparent={true}>
         <View style={styles.modalContainer}>
-          <Image source={{ uri: imageURL.baseURL+selectedImage }} style={styles.fullImage} />
+          <Image
+            source={{ uri: imageURL.baseURL + selectedImage }}
+            style={styles.fullImage}
+          />
           <TouchableOpacity
             style={styles.modalCloseButton}
             onPress={() => setModalVisible(false)}
           >
-
-
-            <MaterialIcons
-              name="close"
-              color={Colors.blackColor}
-              size={26}
-            />
-
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
           </TouchableOpacity>
         </View>
       </Modal>
@@ -334,7 +327,7 @@ const PreviewPage = ({ navigation, route }) => {
                   name={
                     charger?.connector_type
                       ? connectorIcons?.[charger?.connector_type] ||
-                      "ev-plug-type1"
+                        "ev-plug-type1"
                       : "ev-plug-type1"
                   }
                   size={20}
@@ -354,7 +347,7 @@ const PreviewPage = ({ navigation, route }) => {
     }
     //  console.log("station image in preview page upper",stationImage);
     const imageUrl = stationImage
-      ? { uri: imageURL.baseURL+stationImage }
+      ? { uri: imageURL.baseURL + stationImage }
       : require("../../../../../assets/images/nullStation.png");
     // console.log("station image in preview page lower",imageUrl);
     return (
@@ -387,10 +380,7 @@ const PreviewPage = ({ navigation, route }) => {
           activeOpacity={0.9}
           style={styles.mapBackground}
           onPress={() => {
-            if (
-              stationImage &&
-              stationImage.trim() !== ""
-            ) {
+            if (stationImage && stationImage.trim() !== "") {
               showFullImage(stationImage);
             }
           }}
@@ -409,17 +399,8 @@ const PreviewPage = ({ navigation, route }) => {
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
           >
             <View style={styles.statusContainer}>
-              <Text
-                style={[
-                  styles.statusClosed,
-                  {
-                    color: stationData?.status === "Inactive" ? "#FF5722" : "green",
-                  },
-                ]}
-              >
-                {stationData?.status === "Inactive" ? "Closed" : "Open"}
-              </Text>
               <Text style={styles.statusTime}>
+                Open Hours :{" "}
                 {openHourFormatter(
                   stationData?.open_hours_opening_time,
                   stationData?.open_hours_closing_time
@@ -429,9 +410,7 @@ const PreviewPage = ({ navigation, route }) => {
                 <Text style={styles.newText}>
                   {stationData.status === "Active"
                     ? "VERIFIED"
-                    :
-                    "New"
-                  }
+                    : stationData.status}
                 </Text>
               </View>
             </View>
@@ -588,7 +567,6 @@ const styles = StyleSheet.create({
   statusTime: {
     color: COLORS.black,
     fontSize: 12,
-    marginLeft: 4,
   },
   newBadge: {
     backgroundColor: COLORS.primary,
@@ -795,7 +773,6 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "bold",
   },
-
 });
 
 export default PreviewPage;

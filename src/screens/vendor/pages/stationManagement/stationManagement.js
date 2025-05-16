@@ -616,11 +616,11 @@ const StationManagement = ({ navigation, route }) => {
                 style={[
                   styles.statusClosed,
                   {
-                    color: station?.status === "Inactive" ? "#FF5722" : "green",
+                    color: station?.status === "Active" ? "green" : "#FF5722",
                   },
                 ]}
               >
-                {station?.status === "Inactive" ? "Closed" : "Open"}
+                {station?.status === "Active" ? "Open" : "Pending"}
               </Text>
               <Text style={styles.statusTime}>
                 {openHourFormatter(
@@ -630,11 +630,11 @@ const StationManagement = ({ navigation, route }) => {
               </Text>
               <View style={styles.newBadge}>
                 <Text style={styles.newText}>
-                  {station.status === "Active"
+                  {station?.status === "Active"
                     ? "VERIFIED"
-                    : station.status === "Planned"
+                    : station?.status === "Planned"
                     ? "PENDING"
-                    : "INACTIVE"}
+                    : station?.status}
                 </Text>
               </View>
             </View>

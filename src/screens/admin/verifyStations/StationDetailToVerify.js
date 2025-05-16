@@ -295,7 +295,7 @@ const StationDetailToVerify = ({ route, navigation }) => {
                     ? "VERIFIED"
                     : station.status === "Planned"
                     ? "PENDING"
-                    : ""}
+                    : station.status}
                 </Text>
               </View>
             </View>

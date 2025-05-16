@@ -204,14 +204,14 @@ const AllStations = ({ navigation, route }) => {
                           ? station?.status === "Active"
                             ? COLORS.green
                             : COLORS.darkGray
-                          : COLORS.secondary,
+                          : Colors.darOrangeColor,
                     }}
                   >
                     {station?.status !== "Inactive"
                       ? station?.status === "Active"
                         ? "Live"
                         : "Not Published"
-                      : "Offline"}
+                      : station?.status}
                   </Text>
                 </Text>
 

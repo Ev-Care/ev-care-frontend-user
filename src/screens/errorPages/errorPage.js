@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { getLocationPermission } from "../utils/globalMethods";
+import { getLocationPermission } from "../../utils/globalMethods";
 
 const ErrorPage = ({ setHasLocationPermission }) => {
   const navigation = useNavigation();
@@ -9,7 +9,7 @@ const ErrorPage = ({ setHasLocationPermission }) => {
   return (
     <View style={styles.container}>
       <Image
-        source={require("../../assets/images/error.png")}
+        source={require("../../../assets/images/error.png")}
         style={styles.image}
       />
       <Text style={styles.title}>Unable to  fetch Your{"\n"}Location</Text>

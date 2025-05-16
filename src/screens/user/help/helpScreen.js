@@ -546,7 +546,7 @@ export default HelpScreen;
 const styles = StyleSheet.create({
   helpImageStyle: {
     width: "100%",
-    height: screenWidth / 2,
+    height: screenWidth /1.5,
     resizeMode: "contain",
     marginVertical: Sizes.fixPadding,
     // backgroundColor:"teal"

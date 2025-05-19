@@ -32,6 +32,7 @@ import {
   openHourFormatter,
   formatDistance,
   getChargerLabel,
+  openGoogleMaps,
 } from "../../../utils/globalMethods";
 import { fetchStationsByLocation, searchStationsByLocation } from "../service/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
@@ -300,13 +301,7 @@ const ChargingStationMap = () => {
     }
   };
 
-  const openGoogleMaps = (latitude, longitude) => {
-    const url = Platform.select({
-      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
-    });
-    Linking.openURL(url);
-  };
+ 
 
   const onMarkerPress = (mapEventData) => {
     const markerID = mapEventData?._targetInst?.return?.key; // Optional chaining
@@ -576,7 +571,8 @@ const ChargingStationMap = () => {
                     onPress={() =>
                       openGoogleMaps(
                         item?.coordinates?.latitude,
-                        item?.coordinates?.longitude
+                        item?.coordinates?.longitude,
+                        item?.station_name
                       )
                     }
                     style={styles.getDirectionButton}

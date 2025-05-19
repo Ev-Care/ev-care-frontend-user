@@ -105,3 +105,21 @@ export const getLocationPermission = async () => {
 export const TimeDelay = (seconds) => {
   return new Promise(resolve => setTimeout(resolve, seconds));
 };
+export  const openGoogleMaps = (latitude, longitude, label = 'EV Care') => {
+  const encodedLabel = encodeURIComponent(label);
+  const url = Platform.select({
+    ios: `maps://?q=${encodedLabel}&ll=${latitude},${longitude}`,
+    android: `geo:${latitude},${longitude}?q=${latitude},${longitude}(${encodedLabel})`,
+  });
+  Linking.openURL(url);
+};
+// export const openGoogleMaps = (latitude, longitude, label = 'Selected Location') => {
+//   const encodedLabel = encodeURIComponent(label);
+
+//   const url = Platform.select({
+//     ios: `maps://?q=${encodedLabel}&ll=${latitude},${longitude}`,
+//     android: `geo:${latitude},${longitude}?q=${latitude},${longitude}(${encodedLabel})`,
+//   });
+
+//   Linking.openURL(url);
+// };

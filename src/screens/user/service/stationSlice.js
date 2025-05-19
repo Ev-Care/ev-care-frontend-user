@@ -49,7 +49,7 @@ const stationSlice = createSlice({
         // console.log("Favorite stations fetched successfully:", action.payload);
         state.loading = false;
         state.favorite = action.payload.data; // Update the favorite stations list
-        console.log("favorite stations:", state.favorite); // Log the favorite stations for debugging
+        console.log("favorite stations:", JSON.stringify(state.favorite, null, 2)); // Log the favorite stations for debugging
       })
       .addCase(getAllFavoriteStations.rejected, (state, action) => {
         // console.log("Error fetching favorite stations:", action.payload);

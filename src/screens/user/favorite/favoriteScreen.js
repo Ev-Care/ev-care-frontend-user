@@ -42,6 +42,7 @@ import {
   openHourFormatter,
   formatDistance,
   getChargerLabel,
+  openGoogleMaps,
 } from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { useFocusEffect } from "@react-navigation/native";
@@ -64,49 +65,13 @@ const FavoriteScreen = ({ navigation }) => {
 
   useEffect(() => {
   if (!stations || !favStations) return;
-
-  console.log("useeffect in fav called and fav length is ", favStations.length);
-
   const filtered = favStations
-    .map((fav) => stations.find((station) => station.id === fav.station.id))
-    .filter(Boolean);
+  .map((fav) => fav.station)  // Directly access the station object
+  .filter(Boolean);           // Filter out any undefined/null values
 
-  setListData(filtered);
+setListData(filtered);
 }, [favStations, stations]);
-
-
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     console.log('use focus called in fav');
-  //     const fetchFavorites = async () => {
-  //       const favResponse = await dispatch(
-  //         getAllFavoriteStations({ user_key: user?.user_key })
-  //       );
-
-  //       if (getAllFavoriteStations.rejected.match(favResponse)) {
-  //         dispatch(
-  //           showSnackbar({
-  //             message: errorMessage || "Failed to fetch favorite stations.",
-  //             type: "error",
-  //           })
-  //         );
-  //         return;
-  //       }
-
-  //       // ✅ Get updated favorites from store after dispatch
-  //       // const updatedFavStations = store.getState().favorites.favStations;
-
-        
-  //     };
-
-  //     fetchFavorites();
-  //   }, [user?.user_key, dispatch])
-  // );
-
-  // console.log("stations in  stations fav screen", stations.length);
-  // console.log("stations in fav stations fav screen", favStations.length);
-  //   console.log("stations in listData fav screen", listData.length);
-
+ 
   const handleRefresh = async () => {
     const favResponse = await dispatch(
       getAllFavoriteStations({ user_key: user?.user_key })
@@ -123,14 +88,6 @@ const FavoriteScreen = ({ navigation }) => {
       );
     }
     
-  };
-
-  const openGoogleMaps = (latitude, longitude) => {
-    const url = Platform.select({
-      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
-    });
-    Linking.openURL(url);
   };
 
   return (
@@ -311,7 +268,8 @@ const FavoriteScreen = ({ navigation }) => {
                 onPress={() =>
                   openGoogleMaps(
                     data?.item?.coordinates?.latitude,
-                    data?.item?.coordinates?.longitude
+                    data?.item?.coordinates?.longitude,
+                    data?.item?.station_name
                   )
                 }
                 style={styles.getDirectionButton}

@@ -51,6 +51,7 @@ import {
   openHourFormatter,
   formatDistance,
   getChargerLabel,
+  openGoogleMaps,
 } from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import {DottedLoader} from "../../../utils/lottieLoader/loaderView";
@@ -200,13 +201,7 @@ const UserHome = ({ navigation }) => {
     }
   };
 
-  const openGoogleMaps = (latitude, longitude) => {
-    const url = Platform.select({
-      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
-    });
-    Linking.openURL(url);
-  };
+
 
   const animatedHeaderStyle = {
     paddingBottom: scrollY.interpolate({
@@ -506,7 +501,8 @@ const UserHome = ({ navigation }) => {
               onPress={() =>
                 openGoogleMaps(
                   item?.coordinates?.latitude ?? 0,
-                  item?.coordinates?.longitude ?? 0
+                  item?.coordinates?.longitude ?? 0,
+                  item?.station_name
                 )
               }
               style={styles.getDirectionButton}
@@ -727,7 +723,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1.0,
     flexDirection: "row",
 
-    marginBottom: Sizes.fixPadding * 2.0,
+    marginBottom: Sizes.fixPadding * 1.0,
   },
   enrouteChargingStationImage: {
     width: screenWidth / 3.2,

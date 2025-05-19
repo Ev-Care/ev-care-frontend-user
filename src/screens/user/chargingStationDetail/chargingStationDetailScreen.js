@@ -35,7 +35,7 @@ import {
   unFavoriteStation,
 } from "../service/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import { openHourFormatter } from "../../../utils/globalMethods";
+import { openGoogleMaps, openHourFormatter } from "../../../utils/globalMethods";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -114,14 +114,8 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     }
   };
 
-  const openGoogleMaps = (latitude, longitude) => {
-    // console.log("called")
-    const url = Platform.select({
-      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
-    });
-    Linking.openURL(url);
-  };
+  
+
 
   const handleAddToFavorite = async (station) => {
     setIsLoading(true);
@@ -358,7 +352,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
   function buttons() {
     return (
       <View  style={styles.bottomButtons}>
-        <TouchableOpacity onPress={()=>openGoogleMaps(station?.coordinates.latitude,station?.coordinates.longitude)} style={styles.directionButton}>
+        <TouchableOpacity onPress={()=>openGoogleMaps(station?.coordinates.latitude,station?.coordinates.longitude ,station?.station_name)} style={styles.directionButton}>
           <Text style={styles.directionButtonText}>Get Direction</Text>
         </TouchableOpacity>
  

@@ -361,7 +361,7 @@ const PreviewStation = ({ navigation, route }) => {
           </View>
 
           <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>{stationData?.access_type}</Text>
+            <Text style={styles.communityText}>{stationData?.access_type.charAt(0).toUpperCase() + stationData?.access_type.slice(1)}</Text>
           </View>
         </View>
         <TouchableOpacity
@@ -383,7 +383,7 @@ const PreviewStation = ({ navigation, route }) => {
           {type === "add" ? (
             <Text style={styles.stationAddress}>
               <Text style={{ fontWeight: "700" }}>
-                Vendor Email or Contact Number:
+                Vendor Contact Number:
               </Text>{" "}
               {trimName(50, stationData?.identifier)}
             </Text>

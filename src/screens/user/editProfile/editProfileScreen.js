@@ -184,12 +184,12 @@ const EditProfileScreen = ({ route, navigation }) => {
 
   const openGallery = async (setter, label) => {
     try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.2,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
+     const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+      quality: 0.2,
+    });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -225,10 +225,10 @@ const EditProfileScreen = ({ route, navigation }) => {
   const openCamera = async (setter, label) => {
     try {
       const result = await ImagePicker.launchCameraAsync({
-        quality: 0.2,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
+      quality: 0.2,
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+    });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;

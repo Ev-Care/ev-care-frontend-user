@@ -18,21 +18,23 @@ import { Colors, Fonts, commonStyles } from "../../../constants/styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, StackActions } from "@react-navigation/native";
 import * as Location from "expo-location";
-import {DottedLoader2} from "../../../utils/lottieLoader/loaderView";
+import { DottedLoader2 } from "../../../utils/lottieLoader/loaderView";
+import { selectUserCoordinate } from "../service/selector";
+import { useSelector } from "react-redux";
 
 const PickLocationScreen = ({ navigation, route }) => {
-  // const navigation = useNavigation();
+  
   const mapRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
+  const userCurrentRegion = useSelector(selectUserCoordinate);
   const [address, setAddress] = useState(""); // Store address
   const [region, setRegion] = useState({
-    latitude: 28.6139, // Default to Delhi
-    longitude: 77.209,
-    latitudeDelta: 0.03,
-    longitudeDelta: 0.03,
+    latitude: userCurrentRegion?.latitude || 28.6139,
+    longitude: userCurrentRegion?.longitude || 77.209,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
   });
   const [errorMsg, setErrorMsg] = useState(null);
   useEffect(() => {
@@ -67,7 +69,7 @@ const PickLocationScreen = ({ navigation, route }) => {
       let location = await Location.getCurrentPositionAsync({});
 
       const { latitude, longitude } = location.coords;
-    
+
       setRegion({
         latitude,
         longitude,
@@ -97,8 +99,7 @@ const PickLocationScreen = ({ navigation, route }) => {
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
       });
-    }
-    finally{ 
+    } finally {
       setIsLoading(false);
     }
   };
@@ -116,8 +117,7 @@ const PickLocationScreen = ({ navigation, route }) => {
       }
     } catch (error) {
       console.error("Error fetching address:", error);
-    }
-    finally{
+    } finally {
       setIsLoading(false);
     }
   };
@@ -126,7 +126,7 @@ const PickLocationScreen = ({ navigation, route }) => {
   const handleMapPress = async (event) => {
     setIsLoading(true);
     const { latitude, longitude } = event.nativeEvent.coordinate;
-  
+
     try {
       setSelectedLocation({ latitude, longitude });
       await fetchAddressFromCoordinates(latitude, longitude);
@@ -136,12 +136,11 @@ const PickLocationScreen = ({ navigation, route }) => {
       setIsLoading(false); // <- fix: set to false, not true
     }
   };
-  
 
   // Handle search selection
   const handleSearchSelect = async (data, details) => {
     setIsLoading(true);
-  
+
     try {
       const { lat, lng } = details.geometry.location;
       const newRegion = {
@@ -150,11 +149,11 @@ const PickLocationScreen = ({ navigation, route }) => {
         latitudeDelta: 0.03,
         longitudeDelta: 0.03,
       };
-  
+
       setRegion(newRegion);
       setSelectedLocation({ latitude: lat, longitude: lng });
       await fetchAddressFromCoordinates(lat, lng); // Assuming this is async
-  
+
       if (mapRef.current) {
         mapRef.current.animateCamera(
           { center: newRegion, zoom: 15 },
@@ -167,7 +166,6 @@ const PickLocationScreen = ({ navigation, route }) => {
       setIsLoading(false);
     }
   };
-  
 
   // Submit function
   const handleSubmit = () => {
@@ -253,11 +251,11 @@ const PickLocationScreen = ({ navigation, route }) => {
         <Text style={Fonts.whiteColor18Medium}>Select Location</Text>
       </TouchableOpacity>
       {isLoading && (
-              <View style={styles.loaderContainer}>
-                <DottedLoader2/>
-                {/* <ActivityIndicator size="large" color={Colors.primaryColor} /> */}
-              </View>
-            )}
+        <View style={styles.loaderContainer}>
+          <DottedLoader2 />
+          {/* <ActivityIndicator size="large" color={Colors.primaryColor} /> */}
+        </View>
+      )}
     </View>
   );
 };
@@ -272,7 +270,8 @@ const styles = StyleSheet.create({
     left: 10,
     right: 10,
     zIndex: 1,
-  }, loaderContainer: {
+  },
+  loaderContainer: {
     position: "absolute",
     top: 0,
     left: 0,
@@ -280,7 +279,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
     zIndex: 999,
   },
   searchInput: {

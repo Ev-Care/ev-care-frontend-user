@@ -2,7 +2,8 @@
 
 export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-export const NAME_REGEX = /^[a-zA-Z]+(?:[\s.'-][a-zA-Z]+)*$/;
+export  const NAME_REGEX = /^[A-Za-z ]+$/;
+
 
 export const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 

@@ -53,13 +53,6 @@ const HelpScreen = ({ navigation }) => {
   };
 
 
-  const handleContentSizeChange = (event) => {
-    const newHeight = event.nativeEvent.contentSize.height;
-    const minHeight = 160;
-    const maxHeight = 300;
-    setInputHeight(Math.max(minHeight, Math.min(newHeight, maxHeight)));
-  };
-
   const dispatch = useDispatch();
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>

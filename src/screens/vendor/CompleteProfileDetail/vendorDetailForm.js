@@ -240,84 +240,73 @@ const VendorDetailForm = () => {
     });
   };
 
-  const openGallery = async (setter, label) => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.2,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
 
-      if (!result.canceled) {
-        const imageUri = result.assets[0].uri;
-        setImageLoading(label);
-        const file = await setupImagePicker(imageUri);
 
-        const response = await dispatch(
-          postSingleFile({ file: file, accessToken: accessToken })
-        );
+const openGallery = async (setter, label) => {
+  try {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+      quality: 0.2,
+    });
 
-        if (
-          response?.payload?.code === 200 ||
-          response?.payload?.code === 201
-        ) {
-          setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
-        } else {
-          Alert.alert("Error", "File should be less than 5 MB");
-        }
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+      setImageLoading(label);
+      const file = await setupImagePicker(imageUri);
+
+      const response = await dispatch(
+        postSingleFile({ file: file, accessToken: accessToken })
+      );
+
+      if (response?.payload?.code === 200 || response?.payload?.code === 201) {
+        setter(response?.payload?.data?.filePathUrl);
+        console.log("Profile Image URI set successfully:", response?.payload?.data?.filePathUrl);
+      } else {
+        Alert.alert("Error", "File should be less than 5 MB");
       }
-    } catch (error) {
-      console.log("Error uploading file:", error);
-      Alert.alert("Error", "Upload failed. Please try again.");
-    } finally {
-      setImageLoading("");
-      setBottomSheetVisible(false);
     }
-  };
+  } catch (error) {
+    console.log("Error uploading file:", error);
+    Alert.alert("Error", "Upload failed. Please try again.");
+  } finally {
+    setImageLoading("");
+    setBottomSheetVisible(false);
+  }
+};
+const openCamera = async (setter, label) => {
+  try {
+    const result = await ImagePicker.launchCameraAsync({
+      quality: 0.2,
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+    });
 
-  const openCamera = async (setter, label) => {
-    try {
-      const result = await ImagePicker.launchCameraAsync({
-        quality: 0.2,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+      setImageLoading(label);
+      const file = await setupImagePicker(imageUri);
 
-      if (!result.canceled) {
-        const imageUri = result.assets[0].uri;
-        setImageLoading(label);
-        const file = await setupImagePicker(imageUri);
+      const response = await dispatch(
+        postSingleFile({ file: file, accessToken: accessToken })
+      );
 
-        const response = await dispatch(
-          postSingleFile({ file: file, accessToken: accessToken })
-        );
-
-        if (
-          response?.payload?.code === 200 ||
-          response?.payload?.code === 201
-        ) {
-          setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
-        } else {
-          Alert.alert("Error", "File should be less than 5 MB");
-        }
+      if (response?.payload?.code === 200 || response?.payload?.code === 201) {
+        setter(response?.payload?.data?.filePathUrl);
+        console.log("Profile Image URI set successfully:", response?.payload?.data?.filePathUrl);
+      } else {
+        Alert.alert("Error", "File should be less than 5 MB");
       }
-    } catch (error) {
-      console.log("Error uploading file:", error);
-      Alert.alert("Error", "Upload failed. Please try again.");
-    } finally {
-      setImageLoading("");
-      setBottomSheetVisible(false);
     }
-  };
+  } catch (error) {
+    console.log("Error uploading file:", error);
+    Alert.alert("Error", "Upload failed. Please try again.");
+  } finally {
+    setImageLoading("");
+    setBottomSheetVisible(false);
+  }
+};
 
   const renderImageBox = (label, setter, apiRespUri) => {
     return (

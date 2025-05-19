@@ -16,16 +16,22 @@ import * as Location from "expo-location";
 import Key from "../../../constants/key";
 import { Colors, Fonts, commonStyles } from "../../../constants/styles";
 import { useNavigation } from "@react-navigation/native";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getEnrouteStations } from "../service/crudFunction";
 import { DottedLoader2 } from "../../../utils/lottieLoader/loaderView";
+import { selectUserCoordinate } from "../service/selector";
 const EnRouteScreen = () => {
+
   const mapRef = useRef(null);
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  
+  const userCurrentRegion = useSelector(selectUserCoordinate);
+  //  console.log('user current region ', userCurrentRegion);
+
   const [region, setRegion] = useState({
-    latitude: 28.6139,
-    longitude: 77.209,
+    latitude: userCurrentRegion?.latitude || 28.6139,
+    longitude: userCurrentRegion?.longitude || 77.209,
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   });

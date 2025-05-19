@@ -80,11 +80,11 @@ const CreateUser = ({ route, navigation }) => {
   const openGallery = async (setter, label) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.2,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+      quality: 0.2,
+    });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -120,10 +120,10 @@ const CreateUser = ({ route, navigation }) => {
   const openCamera = async (setter, label) => {
     try {
       const result = await ImagePicker.launchCameraAsync({
-        quality: 0.1,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
+      quality: 0.2,
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+    });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -225,9 +225,9 @@ const CreateUser = ({ route, navigation }) => {
       return false;
     }
 
-    if (password !== confirmPassword) {
+    if ((password || "").trim() !== (confirmPassword || "").trim()) {
       dispatch(
-        showSnackbar({ message: "Passwords do not match.", type: "error" })
+        showSnackbar({ message: "Password and Confirm Password do not match.", type: "error" })
       );
       return false;
     }
@@ -369,7 +369,7 @@ const CreateUser = ({ route, navigation }) => {
       email,
       avatar: avatar || null,
       role: selectedRole,
-      password: password,
+      password: password.trim(),
       status: selectedStatus,
     };
 

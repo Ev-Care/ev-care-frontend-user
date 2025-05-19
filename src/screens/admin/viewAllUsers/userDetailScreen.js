@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Overlay } from "@rneui/themed";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -24,8 +24,8 @@ import {
 import { default as Icon } from "react-native-vector-icons/MaterialIcons";
 import { RefreshControl } from "react-native-gesture-handler";
 import { fetchStations } from "../../vendor/services/crudFunction";
+import { useFocusEffect } from "@react-navigation/native";
 const { width } = Dimensions.get("window");
-
 
 const UserDetailScreen = ({ route, navigation }) => {
   const scrollViewRef = useRef(null);
@@ -74,37 +74,40 @@ const UserDetailScreen = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
 
   const dispatch = useDispatch();
- 
+
   const [stations, setStations] = useState([]);
 
-useEffect(() => {
-  console.log("Station changed = ", stations);
-}, [stations]);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        if (user?.role === "user") {
+          return;
+        }
+        try {
+          setIsLoading(true);
+          const response = await dispatch(fetchStationsByUserId(user?.id));
+          console.log("response in user detail", response?.payload);
+          setStations(response?.payload?.data?.chargingStations);
+        } catch (error) {
+          dispatch(
+            showSnackbar({
+              message: error.message || "Failed to fetch stations",
+              type: "error",
+            })
+          );
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
+      fetchData();
 
-useEffect(() => {
-  const fetchData = async () => {
-    if (user?.role === "user") {
-      return;
-    }
-    try {
-      setIsLoading(true);
-      const response = await dispatch(fetchStationsByUserId(user?.id));
-      console.log("response in user detail", response?.payload);
-      setStations(response?.payload?.data?.chargingStations);
-    } catch (error) {
-      dispatch(
-        showSnackbar({ message: error.message || 'Failed to fetch stations', type: 'error' })
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  fetchData();
-}, [user]);
-
-
+      // Optional: Cleanup function if needed
+      return () => {
+        // Any cleanup code when the screen loses focus
+      };
+    }, [user]) // Dependencies array
+  );
 
   const showFullImage = (uri) => {
     if (!uri) return;
@@ -113,11 +116,32 @@ useEffect(() => {
   };
 
   const handleRefresh = async () => {
+    const fetchData = async () => {
+      if (user?.role === "user") {
+        return;
+      }
+      try {
+        setIsLoading(true);
+        const response = await dispatch(fetchStationsByUserId(user?.id));
+        console.log("response in user detail", response?.payload);
+        setStations(response?.payload?.data?.chargingStations);
+      } catch (error) {
+        dispatch(
+          showSnackbar({
+            message: error.message || "Failed to fetch stations",
+            type: "error",
+          })
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  }
-  const handleReject = async () => {
-
+    fetchData();
   };
+
+  
+  const handleReject = async () => {};
   const handleScroll = (event) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollPosition / width);
@@ -378,7 +402,6 @@ useEffect(() => {
         </View>
 
         {deleteDialogue()}
-
       </ScrollView>
     );
   }
@@ -390,7 +413,7 @@ useEffect(() => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={['#9Bd35A', '#101942']}
+            colors={["#9Bd35A", "#101942"]}
             tintColor="#101942"
           />
         }
@@ -431,15 +454,19 @@ useEffect(() => {
                   Status:{" "}
                   <Text
                     style={{
-                                          color: station?.status == "Active"
-                                            ? Colors.lightGreenColor
-                                            : station?.status == "Inactive"
-                                              ? Colors.darOrangeColor : station?.status == "Rejected"
-                                                ? Colors.redColor : station?.status == "Planned"
-                                                  ? Colors.yellowColor : Colors.primaryColor,
-                                        }}
+                      color:
+                        station?.status == "Active"
+                          ? Colors.lightGreenColor
+                          : station?.status == "Inactive"
+                          ? Colors.darOrangeColor
+                          : station?.status == "Rejected"
+                          ? Colors.redColor
+                          : station?.status == "Planned"
+                          ? Colors.yellowColor
+                          : Colors.primaryColor,
+                    }}
                   >
-                    {station?.status }
+                    {station?.status}
                   </Text>
                 </Text>
                 <Text style={styles.text}>
@@ -459,8 +486,6 @@ useEffect(() => {
       </ScrollView>
     );
   }
-
-
 };
 
 const styles = StyleSheet.create({
@@ -650,8 +675,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 15,
     borderWidth: 1,
-    borderColor: '#e2e2e2 ',
-    backgroundColor: '#f5f5f5'
+    borderColor: "#e2e2e2 ",
+    backgroundColor: "#f5f5f5",
   },
   infoContainer: {
     flex: 1,
@@ -680,7 +705,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: Colors.grayColor,
   },
-
 });
 
 export default UserDetailScreen;

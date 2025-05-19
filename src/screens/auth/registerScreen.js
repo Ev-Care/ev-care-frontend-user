@@ -126,9 +126,9 @@ const RegisterScreen = ({ navigation, route }) => {
       email: email,
       owner_legal_name: fullName,
       role: role,
-      password,
+      password:password.trim(),
       mobile_number: mobNumber,
-      confirm_password: confirmPassword,
+      confirm_password: confirmPassword.trim(),
       vehicle_registration_number: vehicleNumber,
       vehicle_manufacturer:
         customCompany !== "" || null ? customCompany : selectedCompany,

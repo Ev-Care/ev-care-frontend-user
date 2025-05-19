@@ -406,13 +406,13 @@ const PreviewPage = ({ navigation, route }) => {
                   stationData?.open_hours_closing_time
                 )}
               </Text>
-              <View style={styles.newBadge}>
-                <Text style={styles.newText}>
+              {stationData.status&& <View style={styles.newBadge}>
+               <Text style={styles.newText}>
                   {stationData.status === "Active"
                     ? "VERIFIED"
                     : stationData.status}
                 </Text>
-              </View>
+              </View>}
             </View>
           </View>
         </View>

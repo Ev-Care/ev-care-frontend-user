@@ -36,7 +36,6 @@ import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 import { postUpdatePassword } from "../../screens/user/service/crudFunction";
 import { PASSWORD_REGEX } from "../../constants/regex";
 
-
 const ChangePassword = ({ route, navigation }) => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
@@ -54,7 +53,6 @@ const ChangePassword = ({ route, navigation }) => {
   const validateInputs = () => {
     // const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
-
     if (!newPassword || !confirmPassword || !currentPassword) {
       dispatch(
         showSnackbar({
@@ -65,9 +63,18 @@ const ChangePassword = ({ route, navigation }) => {
       return false;
     }
 
-    if (newPassword !== confirmPassword) {
+    if ((newPassword || "").trim() !== (confirmPassword || "").trim()) {
+      console.log(
+        "new and confirm password ",
+        newPassword,
+        " ---> ",
+        confirmPassword
+      );
       dispatch(
-        showSnackbar({ message: "New Password and Confirm Passwords do not match.", type: "error" })
+        showSnackbar({
+          message: "New Password and Confirm Passwords do not match.",
+          type: "error",
+        })
       );
       return false;
     }
@@ -83,39 +90,51 @@ const ChangePassword = ({ route, navigation }) => {
       return false;
     }
     return true;
-  }
+  };
 
   const handleSubmit = async () => {
     setIsLoading(true);
-    console.log('submit called');
+    console.log("submit called");
     try {
       if (!validateInputs()) return;
       console.log("handle submit called");
       const payload = {
-        oldPassword: currentPassword,
-        newPassword: newPassword,
-        confirmPassword: confirmPassword
-      }
+        oldPassword: currentPassword.trim(),
+        newPassword: newPassword.trim(),
+        confirmPassword: confirmPassword.trim(),
+      };
       const response = await dispatch(postUpdatePassword(payload));
       if (response.payload.code == 200) {
-        await dispatch(showSnackbar({message: 'Password Updated Successfully', type: 'success'}));
+        await dispatch(
+          showSnackbar({
+            message: "Password Updated Successfully",
+            type: "success",
+          })
+        );
         navigation.goBack();
-        
       } else {
-         await dispatch(showSnackbar({message: response.payload || 'Failed to update password', type: 'error'}));
+        await dispatch(
+          showSnackbar({
+            message: response.payload || "Failed to update password",
+            type: "error",
+          })
+        );
       }
-
-    }
-    catch (error) {
-      console.log('error in create user', error);
+    } catch (error) {
+      console.log("error in create user", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-
-
-  const renderPassword = (label, value, setter, placeholder, secure, setSecure) => (
+  const renderPassword = (
+    label,
+    value,
+    setter,
+    placeholder,
+    secure,
+    setSecure
+  ) => (
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         {label}
@@ -145,9 +164,6 @@ const ChangePassword = ({ route, navigation }) => {
     </View>
   );
 
-
-
-
   return (
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
       <View style={styles.appBar}>
@@ -165,7 +181,6 @@ const ChangePassword = ({ route, navigation }) => {
           "Enter Your Current Password",
           secureCurrentPass,
           setSecureCurrentPass
-
         )}
         {renderPassword(
           "New Password",
@@ -197,7 +212,6 @@ const ChangePassword = ({ route, navigation }) => {
             <Text style={styles.buttonText}>Update</Text>
           </TouchableOpacity>
         </View>
-
 
         {UpdateOverlay()}
       </ScrollView>
@@ -273,7 +287,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     // backgroundColor: "#fff",
-    flex:1,
+    flex: 1,
     backgroundColor: Colors.whiteColor,
     paddingBottom: 50,
   },
@@ -302,7 +316,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
     zIndex: 999,
   },
   imageContainer: {

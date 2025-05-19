@@ -60,7 +60,7 @@ const mapAmenitiesToIds = (amenitiesLabelString) => {
 };
 const UpdateStationPage = ({ navigation, route }) => {
   const station = route?.params?.station;
-  const user = useSelector(selectUser);
+  // const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const [selectedAmenities, setSelectedAmenities] = useState(
     mapAmenitiesToIds(station?.amenities || "")
@@ -160,11 +160,11 @@ const UpdateStationPage = ({ navigation, route }) => {
   const openGallery = async (setter, label) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.2,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+      quality: 0.2,
+    });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -200,10 +200,10 @@ const UpdateStationPage = ({ navigation, route }) => {
   const openCamera = async (setter, label) => {
     try {
       const result = await ImagePicker.launchCameraAsync({
-        quality: 0.1,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
+      quality: 0.2,
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+    });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -251,7 +251,7 @@ const UpdateStationPage = ({ navigation, route }) => {
 
     // Prepare the final station data
     const stationData = {
-      owner_id: user.id, // Replace with the actual owner ID if available
+      owner_id: station?.owner_id, // Replace with the actual owner ID if available
       station_id: station?.id || null,
       station_name: stationName,
       station_images: stationImages,

@@ -25,7 +25,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
-import { selectStations } from "../service/selector";
+import { selectStations, selectUserCoordinate } from "../service/selector";
 import Key from "../../../constants/key";
 import imageURL from "../../../constants/baseURL";
 import {
@@ -90,10 +90,10 @@ const ChargingStationMap = () => {
   const [stations, setStations] = useState(stateStations || []);
   const dispatch = useDispatch();
   console.log("stations", stations?.length);
-
-  const [region, setRegion] = useState({
-    latitude: 28.6139,
-    longitude: 77.209,
+const userCurrentRegion = useSelector(selectUserCoordinate);
+   const [region, setRegion] = useState({
+    latitude: userCurrentRegion?.latitude || 28.6139,
+    longitude: userCurrentRegion?.longitude || 77.209,
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   });

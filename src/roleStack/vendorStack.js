@@ -27,12 +27,14 @@ import { selectloader } from "../screens/auth/services/selector"; // Ensure corr
 import UpdateStation from "../screens/vendor/pages/updateStation/UpdateStation";
 import EditProfileVendor from "../screens/vendor/pages/vendorProfile/EditProfileVendor";
 import ChangePassword from "../components/commonComponents/changePassword";
+import BlockedUserScreen from "../screens/errorPages/blockedUserScreen";
 
 
 const Stack = createStackNavigator();
 
+
 export function VendorStack() {
-  const user = useSelector(selectUser); // Get user data
+  const user = useSelector(selectUser);
   const status = user?.status;
   const role = user?.role?.toLowerCase();
 
@@ -41,14 +43,15 @@ export function VendorStack() {
   }
 
   const isVendor = role === "vendor";
-  const isActive = user?.status === "Active";
-  const isCompleted = user?.status === "Completed";
+  const isActive = status === "Active";
+  const isNew = status === "New";
+  const isCompleted = status === "Completed";
   const isKYCIncomplete = !user?.pan_no;
-  const isKYCComplete = user?.pan_no;
+  const isKYCComplete = !!user?.pan_no;
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {user && isVendor && !isActive && isKYCIncomplete && (
+      {isVendor && isKYCIncomplete && isNew && (
         <>
           <Stack.Screen name="Instruction" component={Instruction} />
           <Stack.Screen name="VendorDetailForm" component={VendorDetailForm} />
@@ -56,49 +59,38 @@ export function VendorStack() {
         </>
       )}
 
-      {user && isVendor && isCompleted && (
+      {isVendor && isCompleted && (
         <>
-        <Stack.Screen
-          name="PendingApprovalScreen"
-          component={PendingApprovalScreen}
-        />
-        <Stack.Screen name="HelpScreen" component={HelpScreen} />
+          <Stack.Screen name="PendingApprovalScreen" component={PendingApprovalScreen} />
+          <Stack.Screen name="HelpScreen" component={HelpScreen} />
         </>
       )}
 
-      {user && isVendor && isActive && isKYCComplete && (
+      {isVendor && isActive && isKYCComplete && (
         <>
-          <Stack.Screen
-            name="VendorBottomTabBar"
-            component={VendorBottomTabBar}
-          />
+          <Stack.Screen name="VendorBottomTabBar" component={VendorBottomTabBar} />
           <Stack.Screen name="VendorHome" component={VendorHome} />
           <Stack.Screen name="AllStations" component={AllStations} />
-          <Stack.Screen
-            name="EditProfileVendor"
-            component={EditProfileVendor}
-          />
-          <Stack.Screen
-            name="TermsAndConditionsScreen"
-            component={TermsAndConditionsScreen}
-          />
+          <Stack.Screen name="EditProfileVendor" component={EditProfileVendor} />
+          <Stack.Screen name="TermsAndConditionsScreen" component={TermsAndConditionsScreen} />
           <Stack.Screen name="FaqScreen" component={FaqScreen} />
-          <Stack.Screen
-            name="PrivacyPolicyScreen"
-            component={PrivacyPolicyScreen}
-          />
+          <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
           <Stack.Screen name="HelpScreen" component={HelpScreen} />
           <Stack.Screen name="VendorProfile" component={VendorProfile} />
           <Stack.Screen name="PickLocation" component={PickLocationScreen} />
           <Stack.Screen name="PreviewPage" component={PreviewPage} />
-          <Stack.Screen
-            name="StationManagement"
-            component={StationManagement}
-          />
+          <Stack.Screen name="StationManagement" component={StationManagement} />
           <Stack.Screen name="UpdateStation" component={UpdateStation} />
           <Stack.Screen name="AddStations" component={AddStations} />
-           <Stack.Screen name="ChangePassword" component={ChangePassword} />
+          <Stack.Screen name="ChangePassword" component={ChangePassword} />
+        </>
+      )}
 
+      {/* ELSE Block for blocked or unrecognized status */}
+      {isVendor && !(isNew || isCompleted || isActive) && (
+        <>
+          <Stack.Screen name="BlockedUserScreen" component={BlockedUserScreen} />
+          <Stack.Screen name="Help" component={HelpScreen} />
         </>
       )}
     </Stack.Navigator>

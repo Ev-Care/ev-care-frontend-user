@@ -34,6 +34,7 @@ import {
 
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 import { postUpdatePassword } from "../../screens/user/service/crudFunction";
+import { PASSWORD_REGEX } from "../../constants/regex";
 
 
 const ChangePassword = ({ route, navigation }) => {
@@ -51,7 +52,7 @@ const ChangePassword = ({ route, navigation }) => {
 
   // console.log('user = ', user);
   const validateInputs = () => {
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+    // const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
 
     if (!newPassword || !confirmPassword || !currentPassword) {
@@ -71,7 +72,7 @@ const ChangePassword = ({ route, navigation }) => {
       return false;
     }
 
-    if (!passwordRegex.test(newPassword)) {
+    if (!PASSWORD_REGEX.test(newPassword)) {
       dispatch(
         showSnackbar({
           message:
@@ -272,8 +273,8 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     // backgroundColor: "#fff",
-    // flex:1,
-    backgroundColor: Colors.bodyBackColor,
+    flex:1,
+    backgroundColor: Colors.whiteColor,
     paddingBottom: 50,
   },
   appBar: {

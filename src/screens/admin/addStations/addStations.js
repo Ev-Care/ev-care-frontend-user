@@ -415,7 +415,6 @@ const AddStationScreen = () => {
         <Text style={styles.headerTitle}>Add a New Station</Text>
         <View style={{ width: 24 }} />
       </View>
-
       {locationDetail()}
       {additionalDetail()}
       {bottomSheet()}

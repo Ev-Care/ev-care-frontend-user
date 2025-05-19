@@ -28,6 +28,7 @@ import { sendQuery } from "../service/api";
 import { sendQueryAction } from "../service/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { Overlay } from "@rneui/themed";
+import { EMAIL_REGEX, PHONE_REGEX } from "../../../constants/regex";
 
 const HelpScreen = ({ navigation }) => {
   const [title, setTitle] = useState("");
@@ -146,16 +147,16 @@ const HelpScreen = ({ navigation }) => {
         return;
       }
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!EMAIL_REGEX.test(email)) {
         dispatch(
           showSnackbar({ message: "Invalid email format", type: "error" })
         );
         return;
       }
 
-      const phoneRegex = /^[0-9]{10}$/;
-      if (!phoneRegex.test(mobileNumber)) {
+      // const phoneRegex = /^[0-9]{10}$/;
+      if (!PHONE_REGEX.test(mobileNumber)) {
         dispatch(
           showSnackbar({
             message: "Mobile number must be exactly 10 digits",
@@ -239,7 +240,7 @@ const HelpScreen = ({ navigation }) => {
             ]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
+         
             multiline
           />
         </View>
@@ -284,7 +285,7 @@ const HelpScreen = ({ navigation }) => {
             style={[styles.input, { ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
+           
             keyboardType="phone-pad"
             maxLength={10}
           />
@@ -333,7 +334,7 @@ const HelpScreen = ({ navigation }) => {
             style={[styles.input, { ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
+          
             keyboardType="email-address"
           />
         </View>
@@ -388,7 +389,7 @@ const HelpScreen = ({ navigation }) => {
             style={[styles.input, { ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
+           
           />
         </View>
       </View>
@@ -499,7 +500,7 @@ const HelpScreen = ({ navigation }) => {
               ]}
               placeholderTextColor={Colors.grayColor}
               cursorColor={Colors.primaryColor}
-              selectionColor={Colors.primaryColor}
+             
               multiline
             />
           </View>

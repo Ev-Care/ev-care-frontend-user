@@ -84,14 +84,6 @@ const SigninScreen = ({ navigation }) => {
       return;
     }
 
-    // const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
-    // if (!strongPasswordRegex.test(password)) {
-    //   dispatch(showSnackbar({
-    //     message: 'Password must contain uppercase, lowercase, number, and special character', type: 'error'
-    //   }));
-    //   return;
-    // }
 
     try {
       const response = await dispatch(login({ identifier: emailOrNumber, password }));
@@ -175,7 +167,7 @@ const SigninScreen = ({ navigation }) => {
           onChangeText={(text) => setEmailOrNumber(text.toLowerCase())}
           style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
           cursorColor={Colors.primaryColor}
-          selectionColor={Colors.primaryColor}
+         
           keyboardType="email-address"
           maxLength={50}
         />
@@ -210,7 +202,7 @@ const SigninScreen = ({ navigation }) => {
               flex: 1,
             }}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
+         
           />
           <Ionicons
             name={secureText ? 'eye-off' : 'eye'}

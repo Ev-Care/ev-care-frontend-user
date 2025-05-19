@@ -33,6 +33,7 @@ import {
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import RNModal from "react-native-modal";
 import imageURL from "../../../constants/baseURL";
+import { GST_REGEX, PAN_REGEX } from "../../../constants/regex";
 
 export const setupImagePicker = (file) => {
   // console.log("inside setup image");
@@ -96,10 +97,9 @@ const VendorDetailForm = () => {
   let vendorDetail = {};
 
   const handleSubmit = async () => {
-    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    const gstRegex =
-      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[A-Z0-9]{1}[A-Z0-9]{1}$/;
-
+    // const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    // const gstRegex =
+    //   /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[A-Z0-9]{1}[A-Z0-9]{1}$/;
     // Validate required fields
     if (!avatarURI || !panNumber || !panImageURI || !address) {
       try {
@@ -142,7 +142,7 @@ const VendorDetailForm = () => {
     }
 
     // Validate PAN number
-    if (!panRegex.test(panNumber)) {
+    if (!PAN_REGEX.test(panNumber)) {
       await dispatch(
         showSnackbar({ message: "Invalid PAN number", type: "error" })
       );
@@ -152,7 +152,7 @@ const VendorDetailForm = () => {
     // Validate GST number if applicable
     if (
       (isCheckBoxClicked || businessType === "organization") &&
-      (!gstNumber || !gstRegex.test(gstNumber))
+      (!gstNumber || !GST_REGEX.test(gstNumber))
     ) {
       await dispatch(
         showSnackbar({ message: "Invalid GST number.", type: "error" })

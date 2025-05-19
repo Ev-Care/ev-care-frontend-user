@@ -37,6 +37,7 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { vehicleData } from "../../auth/registerScreen";
+import { EMAIL_REGEX, NAME_REGEX, VEHICLE_NUMBER_REGEX } from "../../../constants/regex";
 
 const EditProfileScreen = ({ route, navigation }) => {
   const user = useSelector(selectUser);
@@ -97,15 +98,15 @@ const EditProfileScreen = ({ route, navigation }) => {
     setModalVisible(true);
   };
   const validateUserData = (data) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const nameRegex = /^[A-Za-z\s]{3,}$/;
-   const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
+  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  //   const nameRegex = /^[A-Za-z\s]{3,}$/;
+  //  const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
 
-    if (!data.email || !emailRegex.test(data.email)) {
+    if (!data.email || !EMAIL_REGEX.test(data.email)) {
       return "Invalid email address.";
     }
 
-    if (!data.owner_legal_name || !nameRegex.test(data.owner_legal_name)) {
+    if (!data.owner_legal_name || !NAME_REGEX.test(data.owner_legal_name)) {
       return "Invalid full name. Only letters and spaces, at least 3 characters.";
     }
 
@@ -114,7 +115,7 @@ const EditProfileScreen = ({ route, navigation }) => {
     }
     if (data.role === 'user') {
 
-      if (!data.vehicle_registration_number || !vehicleNumberRegex.test(data.vehicle_registration_number)) {
+      if (!data.vehicle_registration_number || !VEHICLE_NUMBER_REGEX.test(data.vehicle_registration_number)) {
         return "Invalid vehicle number format ";
       }
 

@@ -74,32 +74,7 @@ const UserDetailScreen = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
 
   const dispatch = useDispatch();
-  // const [stations, setStations] = useState([
-  //   {
-  //     id: 1,
-  //     station_name: "GreenCharge Station",
-  //     status: "Active",
-  //     station_images: "https://cdn.pixabay.com/photo/2025/03/31/21/18/tiber-river-9505401_1280.jpg", 
-  //     chargers: [{ id: 101 }, { id: 102 }],
-  //     address: "123 Green Street, Eco City, Maharashtra",
-  //   },
-  //   {
-  //     id: 2,
-  //     station_name: "City EV Hub",
-  //     status: "Inactive",
-  //     station_images: "", 
-  //     chargers: [],
-  //     address: "456 Urban Plaza, Smart City, Karnataka",
-  //   },
-  //   {
-  //     id: 3,
-  //     station_name: "PowerUp Charging Point",
-  //     status: "Active",
-  //     station_images: "https://cdn.pixabay.com/photo/2025/03/31/21/18/tiber-river-9505401_1280.jpg",
-  //     chargers: [{ id: 103 }],
-  //     address: "789 Energy Road, CleanTown, Gujarat",
-  //   },
-  // ]);
+ 
   const [stations, setStations] = useState([]);
 
 useEffect(() => {

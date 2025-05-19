@@ -29,7 +29,6 @@ import { selectAllSupportIssues } from "../services/selector";
 import { useFocusEffect } from "@react-navigation/native";
 import { getAllSupportIssues } from "../services/crudFunctions";
 import { selectUser } from "../../auth/services/selector";
-// Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
   accent: "#FF5722",
@@ -83,8 +82,8 @@ useEffect(() => {
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Icon name="account-search" size={60} color={COLORS.lightGray} />
+           <View style={styles.emptyContainer}>
+            <MaterialIcons name="confirmation-number" size={60} color={COLORS.lightGray} />
             <Text style={styles.emptyText}>No Issues found</Text>
           </View>
         }

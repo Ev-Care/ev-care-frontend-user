@@ -33,6 +33,7 @@ import { postSingleFile } from "../../auth/services/crudFunction";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { createUser } from "../services/crudFunctions";
+import { AADHAR_REGEX, EMAIL_REGEX, GST_REGEX, NAME_REGEX, PAN_REGEX, PASSWORD_REGEX, PHONE_REGEX, VEHICLE_NUMBER_REGEX } from "../../../constants/regex";
 
 const CreateUser = ({ route, navigation }) => {
   const [name, setName] = useState(null);
@@ -167,15 +168,15 @@ const CreateUser = ({ route, navigation }) => {
   };
 
   const validateInputs = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const mobileRegex = /^[6-9]\d{9}$/;
-    const aadharRegex = /^\d{12}$/;
-    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    const gstRegex =
-      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&.+-]{8,}$/;
-    const nameRegex = /^[A-Za-z\s]{3,}$/;
-    const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // const mobileRegex = /^[6-9]\d{9}$/;
+    // const aadharRegex = /^\d{12}$/;
+    // const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    // const gstRegex =
+    //   /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
+    // const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&.+-]{8,}$/;
+    // const nameRegex = /^[A-Za-z\s]{3,}$/;
+    // const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
 
     if (!name || !mobNumber || !email) {
       dispatch(
@@ -187,7 +188,7 @@ const CreateUser = ({ route, navigation }) => {
       return false;
     }
 
-    if (!nameRegex.test(name)) {
+    if (!NAME_REGEX.test(name)) {
       dispatch(
         showSnackbar({
           message:
@@ -197,14 +198,14 @@ const CreateUser = ({ route, navigation }) => {
       );
       return false;
     }
-    if (!emailRegex.test(email)) {
+    if (!EMAIL_REGEX.test(email)) {
       dispatch(
         showSnackbar({ message: "Invalid Email format.", type: "error" })
       );
       return false;
     }
 
-    if (!mobileRegex.test(mobNumber)) {
+    if (!PHONE_REGEX.test(mobNumber)) {
       dispatch(
         showSnackbar({
           message:
@@ -231,7 +232,7 @@ const CreateUser = ({ route, navigation }) => {
       return false;
     }
 
-    if (!passwordRegex.test(password)) {
+    if (!PASSWORD_REGEX.test(password)) {
       dispatch(
         showSnackbar({
           message:
@@ -263,7 +264,7 @@ const CreateUser = ({ route, navigation }) => {
         return false;
       }
 
-      if (!panRegex.test(panNumber)) {
+      if (!PAN_REGEX.test(panNumber)) {
         dispatch(
           showSnackbar({ message: "Invalid PAN number format.", type: "error" })
         );
@@ -282,7 +283,7 @@ const CreateUser = ({ route, navigation }) => {
           return false;
         }
 
-        if (!aadharRegex.test(aadharNumber)) {
+        if (!AADHAR_REGEX.test(aadharNumber)) {
           dispatch(
             showSnackbar({
               message: "Invalid Aadhar number. Must be 12 digits.",
@@ -310,7 +311,7 @@ const CreateUser = ({ route, navigation }) => {
         return false;
       }
 
-      if (gstNumber && !gstRegex.test(gstNumber)) {
+      if (gstNumber && !GST_REGEX.test(gstNumber)) {
         dispatch(
           showSnackbar({ message: "Invalid GST number format.", type: "error" })
         );
@@ -337,7 +338,7 @@ const CreateUser = ({ route, navigation }) => {
         );
         return false;
       }
-      if (!vehicleNumberRegex.test(vehicleNumber)) {
+      if (!VEHICLE_NUMBER_REGEX.test(vehicleNumber)) {
         dispatch(
           showSnackbar({
             message: "Invalid vechile number format.",

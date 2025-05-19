@@ -29,6 +29,7 @@ import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
 import { register } from "./services/crudFunction";
 import { selectAuthError, selectToken, selectUser } from "./services/selector";
 import { vehicleData } from "../../utils/evVehicleData";
+import { EMAIL_REGEX, NAME_REGEX, PASSWORD_REGEX, PHONE_REGEX, VEHICLE_NUMBER_REGEX } from "../../constants/regex";
 // import DropDownPicker from 'react-native-dropdown-picker';
 
 const RegisterScreen = ({ navigation, route }) => {
@@ -59,21 +60,21 @@ const RegisterScreen = ({ navigation, route }) => {
   // console.log("user key in register : ", userKey);
 
   const validateUserData = (data) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const nameRegex = /^[A-Za-z\s]{3,}$/;
-    const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
-    const strongPasswordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // const nameRegex = /^[A-Za-z\s]{3,}$/;
+    // const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
+    // const strongPasswordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
-    const phoneRegex = /^[6-9]\d{9}$/;
+    // const phoneRegex = /^[6-9]\d{9}$/;
 
-    if (!phoneRegex.test(mobNumber)) {
+    if (!PHONE_REGEX.test(mobNumber)) {
       return "Invalid mobile number";
     }
-    if (!data.email || !emailRegex.test(data.email)) {
+    if (!data.email || !EMAIL_REGEX.test(data.email)) {
       return "Invalid email address.";
     }
 
-    if (!data.owner_legal_name || !nameRegex.test(data.owner_legal_name)) {
+    if (!data.owner_legal_name || !NAME_REGEX.test(data.owner_legal_name)) {
       return "Invalid full name. Only letters and spaces, at least 3 characters.";
     }
 
@@ -85,7 +86,7 @@ const RegisterScreen = ({ navigation, route }) => {
       return "Password is required.";
     }
 
-    if (!strongPasswordRegex.test(data.password)) {
+    if (!PASSWORD_REGEX.test(data.password)) {
       return "Password must be 8–20 characters long and include at least one letter and one number.";
     }
 
@@ -100,7 +101,7 @@ const RegisterScreen = ({ navigation, route }) => {
     if (data.role === "user") {
       if (
         !data.vehicle_registration_number ||
-        !vehicleNumberRegex.test(data.vehicle_registration_number)
+        !VEHICLE_NUMBER_REGEX.test(data.vehicle_registration_number)
       ) {
         return "Invalid vehicle number format ";
       }
@@ -282,7 +283,7 @@ const RegisterScreen = ({ navigation, route }) => {
               fontSize: 12,
             }}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
+           
             keyboardType="email-address"
           />
         </View>
@@ -313,7 +314,7 @@ const RegisterScreen = ({ navigation, route }) => {
               fontSize: 12,
             }}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
+         
             maxLength={10}
             keyboardType="numeric"
           />
@@ -350,7 +351,7 @@ const RegisterScreen = ({ navigation, route }) => {
               flex: 1,
             }}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
+          
           />
           <Ionicons
             name={secureText ? "eye-off" : "eye"}
@@ -387,7 +388,7 @@ const RegisterScreen = ({ navigation, route }) => {
               flex: 1,
             }}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
+        
           />
           <Ionicons
             name={secureConfirmText ? "eye-off" : "eye"}
@@ -420,7 +421,7 @@ const RegisterScreen = ({ navigation, route }) => {
               fontSize: 12,
             }}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
+          
           />
         </View>
       </>
@@ -445,7 +446,7 @@ const RegisterScreen = ({ navigation, route }) => {
               fontSize: 12,
             }}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
+        
           />
         </View>
       </>
@@ -568,7 +569,7 @@ const RegisterScreen = ({ navigation, route }) => {
                   fontSize: 12,
                 }}
                 cursorColor={Colors.primaryColor}
-                selectionColor={Colors.primaryColor}
+             
               />
             </View>
             <Text style={styles.sectionLabel}>
@@ -591,7 +592,7 @@ const RegisterScreen = ({ navigation, route }) => {
                   fontSize: 12,
                 }}
                 cursorColor={Colors.primaryColor}
-                selectionColor={Colors.primaryColor}
+            
               />
             </View>
           </>
@@ -655,7 +656,7 @@ const RegisterScreen = ({ navigation, route }) => {
                   fontSize: 12,
                 }}
                 cursorColor={Colors.primaryColor}
-                selectionColor={Colors.primaryColor}
+             
               />
             </View>
           </>

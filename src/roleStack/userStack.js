@@ -29,14 +29,19 @@ import PrivacyPolicyScreen from "../screens/user/privacyPolicy/privacyPolicyScre
 import TermsAndConditionsScreen from "../screens/user/termsAndConditions/termsAndConditionsScreen";
 import ProfileScreen from "../screens/user/profile/profileScreen";
 import ChangePassword from "../components/commonComponents/changePassword";
+import BlockedUserScreen from "../screens/errorPages/blockedUserScreen";
 const Stack = createStackNavigator();
-// UserStack component to manage user-related screens and navigation
+
 export function UserStack() {
-  const user = useSelector(selectUser); // Get user data
+  const user = useSelector(selectUser);
+  const status = user?.status;
+
+  const isActive = status === "Active";
+  const isNew = status === "New";
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      
+      {(isActive || isNew) ? (
         <>
           <Stack.Screen
             name="BottomTabBar"
@@ -59,9 +64,14 @@ export function UserStack() {
           <Stack.Screen name="FavoriteScreen" component={FavoriteScreen} />
           <Stack.Screen name="userHome" component={userHome} />
           <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
-             <Stack.Screen name="ChangePassword" component={ChangePassword} />
+          <Stack.Screen name="ChangePassword" component={ChangePassword} />
         </>
-     
+      ) : (
+        <>
+          <Stack.Screen name="BlockedUserScreen" component={BlockedUserScreen} />
+          <Stack.Screen name="Help" component={HelpScreen} />
+        </>
+      )}
     </Stack.Navigator>
   );
 }

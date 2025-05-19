@@ -25,37 +25,52 @@ import UpdateStationPage from "../screens/admin/viewAllStations/UpdateStationPag
 import ChangePassword from "../components/commonComponents/changePassword";
 import VendorSelector from "../screens/admin/addStations/vendorSelector";
 import userDetailScreen from "../screens/admin/viewAllUsers/userDetailScreen";
-
+import BlockedUserScreen from "../screens/errorPages/blockedUserScreen";
+import HelpScreen from "../screens/user/help/helpScreen";
 const Stack = createStackNavigator();
 
 export function AdminStack() {
+  const user = useSelector(selectUser);
+  const status = user?.status;
+
+  const isActive = status === "Active";
+  const isNew = status === "New";
+
   return (
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-       <Stack.Screen name="AdminBottomTabBar" component={AdminBottomTabBar} />
-      <Stack.Screen name="AdminHome" component={AdminHome} />
-      <Stack.Screen name="AdminProfilePage" component={AdminProfilePage} />
-      <Stack.Screen name="ViewAllStationsPage" component={ViewAllStationsPage} />
-      <Stack.Screen name="ViewAllUserPage" component={ViewAllUserPage} />
-      <Stack.Screen name="AllPendingVendors" component={AllPendingVendors} />
-      <Stack.Screen name="AllPendingStations" component={AllPendingStations} />
-      <Stack.Screen name="StationDetailToVerify" component={StationDetailToVerify} />
-      <Stack.Screen name="StationDetailPage" component={StationDetailPage} />
-      <Stack.Screen name="UpdateUser" component={UpdateUser} />
-      <Stack.Screen name="VerifyVendorProfile" component={VerifyVendorProfile} />
-      <Stack.Screen name="CreateUser" component={CreateUser} />
-      <Stack.Screen name="ViewAllIssuesPage" component={ViewAllIssuesPage} />
-      <Stack.Screen name="CreateStation" component={AddStationScreen} />
-      <Stack.Screen name="EditAdminProfile" component={EditAdminProfile} />
-      <Stack.Screen name="TermsAndConditionsScreen" component={TermsAndConditionsScreen} />
-      <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
-      <Stack.Screen name="SupportIssuesDetail" component={SupportIssuesDetail} />
-    
-      <Stack.Screen name="PreviewPage" component={PreviewStation} />
-      <Stack.Screen name="PickLocation" component={PickLocationScreen} />
-      <Stack.Screen name="UpdateStationPage" component={UpdateStationPage} />
-         <Stack.Screen name="ChangePassword" component={ChangePassword} />
-      <Stack.Screen name="VendorSelector" component={VendorSelector} />
-      <Stack.Screen name="userDetailScreen" component={userDetailScreen} />
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {(isActive || isNew) ? (
+        <>
+          <Stack.Screen name="AdminBottomTabBar" component={AdminBottomTabBar} />
+          <Stack.Screen name="AdminHome" component={AdminHome} />
+          <Stack.Screen name="AdminProfilePage" component={AdminProfilePage} />
+          <Stack.Screen name="ViewAllStationsPage" component={ViewAllStationsPage} />
+          <Stack.Screen name="ViewAllUserPage" component={ViewAllUserPage} />
+          <Stack.Screen name="AllPendingVendors" component={AllPendingVendors} />
+          <Stack.Screen name="AllPendingStations" component={AllPendingStations} />
+          <Stack.Screen name="StationDetailToVerify" component={StationDetailToVerify} />
+          <Stack.Screen name="StationDetailPage" component={StationDetailPage} />
+          <Stack.Screen name="UpdateUser" component={UpdateUser} />
+          <Stack.Screen name="VerifyVendorProfile" component={VerifyVendorProfile} />
+          <Stack.Screen name="CreateUser" component={CreateUser} />
+          <Stack.Screen name="ViewAllIssuesPage" component={ViewAllIssuesPage} />
+          <Stack.Screen name="CreateStation" component={AddStationScreen} />
+          <Stack.Screen name="EditAdminProfile" component={EditAdminProfile} />
+          <Stack.Screen name="TermsAndConditionsScreen" component={TermsAndConditionsScreen} />
+          <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
+          <Stack.Screen name="SupportIssuesDetail" component={SupportIssuesDetail} />
+          <Stack.Screen name="PreviewPage" component={PreviewStation} />
+          <Stack.Screen name="PickLocation" component={PickLocationScreen} />
+          <Stack.Screen name="UpdateStationPage" component={UpdateStationPage} />
+          <Stack.Screen name="ChangePassword" component={ChangePassword} />
+          <Stack.Screen name="VendorSelector" component={VendorSelector} />
+          <Stack.Screen name="userDetailScreen" component={userDetailScreen} />
+        </>
+      ) : (
+        <>
+          <Stack.Screen name="BlockedUserScreen" component={BlockedUserScreen} />
+          <Stack.Screen name="Help" component={HelpScreen} />
+        </>
+      )}
     </Stack.Navigator>
   );
 }

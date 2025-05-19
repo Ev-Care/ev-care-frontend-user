@@ -93,7 +93,7 @@ const ForgetPassword = ({ navigation }) => {
           onChangeText={(text) => setEmailOrNumber(text.toLowerCase())}
           style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
           cursorColor={Colors.primaryColor}
-          selectionColor={Colors.primaryColor}
+        
           keyboardType="email-address"
         />
       </View>

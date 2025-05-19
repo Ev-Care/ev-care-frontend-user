@@ -26,7 +26,8 @@ import {
   selectToken
 } from "../../auth/services/selector";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
-import { getAllUsers, updateUserProfile } from "../services/crudFunctions";
+import { getAllUsers, getAllVendors, updateUserProfile } from "../services/crudFunctions";
+import { AADHAR_REGEX, EMAIL_REGEX, GST_REGEX, NAME_REGEX, PAN_REGEX, PHONE_REGEX, VEHICLE_NUMBER_REGEX } from "../../../constants/regex";
 
 const UpdateUser = ({ route, navigation }) => {
   const { user } = route.params;
@@ -64,7 +65,7 @@ const UpdateUser = ({ route, navigation }) => {
   // const [secureConfirmPass, setSecureConfirmPass] = useState(true);
   const accessToken = useSelector(selectToken);
   const [selectedStatus, setSelectedStatus] = useState(user?.status || null);
-
+   
 
   const dispatch = useDispatch();
   const showFullImage = (uri) => {
@@ -164,19 +165,19 @@ const UpdateUser = ({ route, navigation }) => {
   };
 
   const validateInputs = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const mobileRegex = /^[6-9]\d{9}$/;
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // const mobileRegex = /^[6-9]\d{9}$/;
 
-    const aadharRegex = /^\d{12}$/;
-    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    const gstRegex =
-      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
-    // const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-    const nameRegex = /^[A-Za-z\s]{3,}$/;
-    const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
+    // const aadharRegex = /^\d{12}$/;
+    // const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    // const gstRegex =
+    //   /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/;
+    // // const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    // const nameRegex = /^[A-Za-z\s]{3,}$/;
+    // const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
 
 
-    if (!nameRegex.test(name)) {
+    if (!NAME_REGEX.test(name)) {
       dispatch(
         showSnackbar({
           message:
@@ -186,14 +187,14 @@ const UpdateUser = ({ route, navigation }) => {
       );
       return false;
     }
-    if (!emailRegex.test(email)) {
+    if (!EMAIL_REGEX.test(email)) {
       dispatch(
         showSnackbar({ message: "Invalid Email format.", type: "error" })
       );
       return false;
     }
 
-    if (!mobileRegex.test(mobNumber)) {
+    if (!PHONE_REGEX.test(mobNumber)) {
       dispatch(
         showSnackbar({
           message:
@@ -235,7 +236,7 @@ const UpdateUser = ({ route, navigation }) => {
         );
         return false;
       }
-      if (!panRegex.test(panNumber)) {
+      if (!PAN_REGEX.test(panNumber)) {
         dispatch(
           showSnackbar({ message: "Invalid PAN number format.", type: "error" })
         );
@@ -254,7 +255,7 @@ const UpdateUser = ({ route, navigation }) => {
           return false;
         }
 
-        if (!aadharRegex.test(aadharNumber)) {
+        if (!AADHAR_REGEX.test(aadharNumber)) {
           dispatch(
             showSnackbar({
               message: "Invalid Aadhar number. Must be 12 digits.",
@@ -282,7 +283,7 @@ const UpdateUser = ({ route, navigation }) => {
         return false;
       }
 
-      if (gstNumber && !gstRegex.test(gstNumber)) {
+      if (gstNumber && !GST_REGEX.test(gstNumber)) {
         dispatch(
           showSnackbar({ message: "Invalid GST number format.", type: "error" })
         );
@@ -309,7 +310,7 @@ const UpdateUser = ({ route, navigation }) => {
         );
         return false;
       }
-      if (!vehicleNumberRegex.test(vehicleNumber)) {
+      if (!VEHICLE_NUMBER_REGEX.test(vehicleNumber)) {
         dispatch(
           showSnackbar({
             message: "Invalid vechile number format.",
@@ -388,6 +389,26 @@ const UpdateUser = ({ route, navigation }) => {
         const userResponse = await dispatch(getAllUsers());
         if (getAllUsers.fulfilled.match(userResponse)) {
           console.log("User updated successfully:");
+          // dispatch(
+          //   showSnackbar({
+          //     message: "User updated successfully!",
+          //     type: "success",
+          //   })
+          // );
+
+        } else {
+            dispatch(
+            showSnackbar({
+              message: userResponse?.payload ||userResponse?.payload?.message || "Failed to update user!",
+              type: "error",
+            }
+          
+          )
+          );
+        }
+       const vendorResponse = await dispatch(getAllVendors());
+        if (getAllVendors.fulfilled.match(vendorResponse)) {
+          console.log("Vendor updated successfully:");
           dispatch(
             showSnackbar({
               message: "User updated successfully!",
@@ -398,12 +419,13 @@ const UpdateUser = ({ route, navigation }) => {
         } else {
             dispatch(
             showSnackbar({
-              message: userResponse?.payload ||userResponse?.payload?.message || "Failed to update user!",
+              message: vendorResponse?.payload ||vendorResponse?.payload?.message || "Failed to update user!",
               type: "error",
-            })
+            }
+          
+          )
           );
         }
-
         navigation.pop(2);
       } else {
         dispatch(

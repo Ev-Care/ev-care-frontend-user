@@ -2,7 +2,7 @@
   "expo": {
     "name": "EV Care",
     "slug": "ev-care",
-    "version": "1.0.0", 
+    "version": "1.0.0",
     "orientation": "portrait",
     "owner": "",
     "icon": "./assets/icon.png",
@@ -52,7 +52,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "66c63800-b3a1-4aef-a38d-f7eb53a04631"
+        "projectId": "bf6e0d60-ad6c-4d0b-9243-d7dcc6c4a77a"
       }
     },
     "plugins": [

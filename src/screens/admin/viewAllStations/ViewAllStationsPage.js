@@ -53,7 +53,7 @@ const filteredStations = allStationsList.filter((station) => {
   const [refreshing, setRefreshing] = useState(false);
   const trimText = (text, limit) =>
     text.length > limit ? text.substring(0, limit) + "..." : text;
-  console.log('stations legth', allStationsList.length);
+  // console.log('stations legth', allStationsList.length);
  
 
 
@@ -75,7 +75,7 @@ const filteredStations = allStationsList.filter((station) => {
       const response = await dispatch(fetchAllStations());
       if (fetchAllStations.fulfilled.match(response)) {
         // Optional: Show success snackbar or log
-        console.log("Pending stations refreshed successfully.");
+        // console.log("Pending stations refreshed successfully.");
       } else {
         await dispatch(showSnackbar({ message: "Failed to refresh pending stations.", type: 'error' }));
       }

@@ -41,7 +41,7 @@ const SupportIssuesDetail = ({ route, navigation }) => {
   const [imageloading, setImageLoading] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  console.log('issue = ', issue);
+  // console.log('issue = ', issue);
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
@@ -51,13 +51,13 @@ const SupportIssuesDetail = ({ route, navigation }) => {
   const dispatch = useDispatch();
 
   const handleReject = async () => {
-    console.log("calling reject");
+    // console.log("calling reject");
     setIsLoading(true);
     try {
       const rejectResponse = await dispatch(
         approveVendorProfile({ user_key: user?.user_key, status: "reject" })
       );
-      console.log({ rejectResponse });
+      // console.log({ rejectResponse });
 
       if (approveVendorProfile.fulfilled.match(rejectResponse)) {
         const pendingVendorResponse = await dispatch(getAllPendingUsers());
@@ -241,7 +241,7 @@ const SupportIssuesDetail = ({ route, navigation }) => {
         {renderUserData("Contact Number", issue.contactNumber)}
         {renderUserData("Contact Email", issue.email)}
         {renderTitleMessage("Title", issue.title)}
-        {console.log(issue.title)}
+        {/* {console.log(issue.title)} */}
         {renderTitleMessage("Message", issue.description)}
         {/* <View style={styles.imageContainer}>
           {renderImageBox("Reference", imageURL.baseURL + issue.reference_image_url)}

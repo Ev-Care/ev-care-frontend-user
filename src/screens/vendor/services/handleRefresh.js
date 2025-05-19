@@ -7,7 +7,7 @@ import { selectVendorError } from "./selector";
 export const handleRefreshStations = async (dispatch, userId, setRefreshing, errorMessage) => {
 
   try {
-    console.log("Refreshing stations...");
+    // console.log("Refreshing stations...");
     if (setRefreshing) setRefreshing(true);
     const response = await dispatch(fetchStations(userId));
     if (fetchStations.fulfilled.match(response)) {

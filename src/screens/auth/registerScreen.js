@@ -137,14 +137,14 @@ const RegisterScreen = ({ navigation, route }) => {
 
     const validationError = validateUserData(userData);
     if (validationError) {
-      console.log("error cartched");
+      // console.log("error cartched");
       dispatch(showSnackbar({ message: validationError, type: "error" }));
       return;
     }
 
     setLoading(true);
 
-    console.log("Post signup called");
+    // console.log("P/ost signup called");
     try {
       const response = await dispatch(register(userData));
       if (register.fulfilled.match(response)) {
@@ -164,7 +164,7 @@ const RegisterScreen = ({ navigation, route }) => {
         );
       }
     } catch (error) {
-      console.log("Error during registration");
+      // console.log("Error during registration");
       dispatch(
         showSnackbar({
           message: error || "Something went wrong. Please try again later!",

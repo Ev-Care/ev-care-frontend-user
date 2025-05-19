@@ -108,7 +108,7 @@ const AllStations = ({ navigation, route }) => {
   };
 
   const handleRefresh = async () => {
-    console.log("Refreshing stations...in all stations");
+    // console.log("Refreshing stations...in all stations");
     await handleRefreshStations(dispatch, user?.id, setRefreshing);
   };
 

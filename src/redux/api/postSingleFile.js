@@ -16,7 +16,7 @@ export const apiPostFileRequest = async (request) => {
 
         return response; // Axios automatically parses JSON
     } catch (error) {
-        console.log("Error in apiPostRequest:", error?.response?.data || error.message);
+        // console.log("Error in apiPostRequest:", error?.response?.data || error.message);
         throw error;
     }
 };

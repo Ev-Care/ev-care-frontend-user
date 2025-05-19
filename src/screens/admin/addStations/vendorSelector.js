@@ -46,7 +46,7 @@ const VendorSelector = ({ navigation,route }) => {
   const users = useSelector(selectActiveVendors);
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
-  console.log('users length',users?.length);
+  // console.log('users length',users?.length);
    const [refreshing, setRefreshing] = useState(false);
 
 
@@ -56,7 +56,7 @@ const VendorSelector = ({ navigation,route }) => {
       const response = await dispatch(getAllVendors());
   
       if (getAllVendors.fulfilled.match(response)) {
-        console.log('vendors refreshed');
+        // console.log('vendors refreshed');
         // Optional: show a success snackbar
         // dispatch(showSnackbar({ message: "Vendors refreshed.", type: "success" }));
       } else {

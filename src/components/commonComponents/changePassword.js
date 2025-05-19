@@ -64,12 +64,12 @@ const ChangePassword = ({ route, navigation }) => {
     }
 
     if ((newPassword || "").trim() !== (confirmPassword || "").trim()) {
-      console.log(
-        "new and confirm password ",
-        newPassword,
-        " ---> ",
-        confirmPassword
-      );
+      // console.log(
+      //   "new and confirm password ",
+      //   newPassword,
+      //   " ---> ",
+      //   confirmPassword
+      // );
       dispatch(
         showSnackbar({
           message: "New Password and Confirm Passwords do not match.",
@@ -94,10 +94,10 @@ const ChangePassword = ({ route, navigation }) => {
 
   const handleSubmit = async () => {
     setIsLoading(true);
-    console.log("submit called");
+    // console.log("submit called");
     try {
       if (!validateInputs()) return;
-      console.log("handle submit called");
+      // console.log("handle submit called");
       const payload = {
         oldPassword: currentPassword.trim(),
         newPassword: newPassword.trim(),
@@ -121,7 +121,7 @@ const ChangePassword = ({ route, navigation }) => {
         );
       }
     } catch (error) {
-      console.log("error in create user", error);
+      // console.log("error in create user", error);
     } finally {
       setIsLoading(false);
     }

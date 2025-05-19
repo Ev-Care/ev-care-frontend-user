@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const apiDeleteRequest = async (request) => {
     try {
-        console.log("Calling delete API:", request);
+        // console.log("Calling delete API:", request);
         // console.log("Headers:", { Authorization: `Bearer ${request.accessToken}` });
 
         const response = await axios.delete(request.apiUrl, {
@@ -14,11 +14,11 @@ export const apiDeleteRequest = async (request) => {
         });
 
         // Log the raw response for debugging
-        console.log("Raw Delete API Response:", response.data);
+        // console.log("Raw Delete API Response:", response.data);
 
         return response; // Axios automatically parses JSON
     } catch (error) {
-        console.log("Error in apiGetRequest:", error?.response?.data || error.message);
+        // console.log("Error in apiGetRequest:", error?.response?.data || error.message);
         throw error;
     }
 };

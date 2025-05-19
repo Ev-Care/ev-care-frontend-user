@@ -69,8 +69,8 @@ const VendorHome = () => {
       );
 
       setIsLive(anyActiveStation);
-      console.log("useEffect called");
-      console.log("anyActiveStation called", anyActiveStation);
+      // console.log("useEffect called");
+      // console.log("anyActiveStation called", anyActiveStation);
     }
   }, [stations]);
 
@@ -79,9 +79,9 @@ const VendorHome = () => {
     const fetchData = async () => {
       if (user?.id) {
         if (stations) {
-          console.log("station = ", stations);
+          // console.log("station = ", stations);
         }
-        console.log("Dispatching fetchStations for user ID:", user?.id);
+        // console.log("Dispatching fetchStations for user ID:", user?.id);
         const response = await dispatch(fetchStations(user?.id));
         if (fetchStations.fulfilled.match(response)) {
           // await dispatch(showSnackbar({ message: "Station fetched Successfully." }));
@@ -91,7 +91,7 @@ const VendorHome = () => {
           );
         }
       } else {
-        console.log("User ID is not available");
+        // console.log("User ID is not available");
         // console.log(useSelector(selectStation));
       }
     };
@@ -99,7 +99,7 @@ const VendorHome = () => {
     fetchData();
 
     return () => {
-      console.log("Cleaning up VendorHome...");
+      // console.log("Cleaning up VendorHome...");
     };
   }, [dispatch]);
 

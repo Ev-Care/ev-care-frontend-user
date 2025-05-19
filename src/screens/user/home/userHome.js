@@ -117,7 +117,7 @@ const UserHome = ({ navigation }) => {
             // <-- important: make this function async
             const coords = loc.coords;
             setCurrentLocation(coords);
-            console.log({ currentLocation });
+            // console.log({ currentLocation });
 
             dispatch(updateUserCoordinate(coords)); // Update user coordinates
 

@@ -86,7 +86,7 @@ const UserDetailScreen = ({ route, navigation }) => {
         try {
           setIsLoading(true);
           const response = await dispatch(fetchStationsByUserId(user?.id));
-          console.log("response in user detail", response?.payload);
+          // console.log("response in user detail", response?.payload);
           setStations(response?.payload?.data?.chargingStations);
         } catch (error) {
           dispatch(
@@ -123,7 +123,7 @@ const UserDetailScreen = ({ route, navigation }) => {
       try {
         setIsLoading(true);
         const response = await dispatch(fetchStationsByUserId(user?.id));
-        console.log("response in user detail", response?.payload);
+        // console.log("response in user detail", response?.payload);
         setStations(response?.payload?.data?.chargingStations);
       } catch (error) {
         dispatch(

@@ -116,14 +116,14 @@ const StationDetailToVerify = ({ route, navigation }) => {
   };
 
  const handleReject = async () => {
-  console.log("in reject");
+  // console.log("in reject");
   setIsLoading(true);
 
   try {
     const rejectResponse = await dispatch(rejectStation(station?.id));
 
     if (rejectStation.fulfilled.match(rejectResponse)) {
-      console.log("Reject fulfilled");
+      // console.log("Reject fulfilled");
 
       const fetchResponse = await dispatch(fetchAllStations());
 
@@ -165,7 +165,7 @@ const StationDetailToVerify = ({ route, navigation }) => {
 };
 
   const handleApprove = async () => {
-    console.log("in approve");
+    // console.log("in approve");
     setIsLoading(true);
 
     try {
@@ -173,7 +173,7 @@ const StationDetailToVerify = ({ route, navigation }) => {
 
 
       if (approveStation.fulfilled.match(approvedResponse)) {
-        console.log("in approve fulfill");
+        // console.log("in approve fulfill");
 
         const stationResponse = await dispatch(fetchAllStations());
 

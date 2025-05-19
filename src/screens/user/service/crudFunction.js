@@ -32,7 +32,7 @@ export const fetchStationsByLocation = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in postSignUp:", error);
+      // console.log("Error in postSignUp:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -63,7 +63,7 @@ export const searchStationsByLocation = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in postSignUp:", error);
+      // console.log("Error in postSignUp:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -93,7 +93,7 @@ export const getUserDetailsByKey = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in getUserDetailsByKey:", error);
+      // console.log("Erro/r in getUserDetailsByKey:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -121,7 +121,7 @@ export const patchUpdateUserProfile = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in patchUpdateUserProfile:", error);
+      // console.log("Error in patchUpdateUserProfile:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -148,7 +148,7 @@ export const postUpdatePassword = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in patchUpdateUserProfile:", error);
+      // console.log("Error in patchUpdateUserProfile:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -175,7 +175,7 @@ export const getEnrouteStations = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in getEnrouteStations:", error);
+      // console.log("Error in getEnrouteStations:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -205,7 +205,7 @@ export const getAllFavoriteStations = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in getAllFavoriteStations:", error);
+      // console.log("Error in getAllFavoriteStations:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -232,7 +232,7 @@ export const postFavoriteStation = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in postFavoriteStation:", error);
+      // console.log("Error in postFavoriteStation:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -259,7 +259,7 @@ export const unFavoriteStation = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in unFavoriteStation:", error);
+      // console.log("Error in unFavoriteStation:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -284,7 +284,7 @@ export const sendQueryAction = createAsyncThunk(
         return rejectWithValue(response.data.message || "Send query failed!!");
       }
     } catch (error) {
-      console.log("Error in sendQueryAction:", error);
+      // console.log("Error in sendQueryAction:", error);
 
       // Always extract message properly even in catch
       const errorMessage =

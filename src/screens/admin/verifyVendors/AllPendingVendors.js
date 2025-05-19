@@ -65,7 +65,7 @@ const AllPendingVendors = ({ navigation }) => {
         setIsLoading(true);
         const response = await dispatch(getAllVendors());
         if (getAllVendors.fulfilled.match(response)) {
-          console.log('vendors fetched');
+          // console.log('vendors fetched');
         } else {
           dispatch(showSnackbar({ message: response?.payload || response?.payload?.message || "Failed to fetch vendors.", type: "error" }));
         }
@@ -86,7 +86,7 @@ const AllPendingVendors = ({ navigation }) => {
       const response = await dispatch(getAllVendors());
 
       if (getAllVendors.fulfilled.match(response)) {
-        console.log('vendors refreshed');
+        // console.log('vendors refreshed');
         // Optional: show a success snackbar
         // dispatch(showSnackbar({ message: "Vendors refreshed.", type: "success" }));
       } else {

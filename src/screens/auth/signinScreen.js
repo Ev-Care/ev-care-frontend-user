@@ -73,7 +73,7 @@ const SigninScreen = ({ navigation }) => {
   }
 
   const handleSignIn = async() => {
-    console.log(" handle Signin called ");
+    // console.log(" handle Signin called ");
     if (!emailOrNumber || emailOrNumber.length < 3) {
       dispatch(showSnackbar({ message: 'Invalid Email or Phone', type: 'error' }))
       return;
@@ -94,10 +94,10 @@ const SigninScreen = ({ navigation }) => {
         // console.log('token in sigin = ', token);
         AsyncStorage.setItem("accessToken", response?.payload?.data?.access_token);
 
-        console.log(
-          "Access token stored in AsyncStorage:",
-          AsyncStorage.getItem("accessToken")
-        );
+        // console.log(
+        //   "Access token stored in AsyncStorage:",
+        //   AsyncStorage.getItem("accessToken")
+        // );
 
         dispatch(
           showSnackbar({

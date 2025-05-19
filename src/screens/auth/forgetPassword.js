@@ -36,11 +36,11 @@ const ForgetPassword = ({ navigation }) => {
 
 
   const handleSubmit = async () => {
-    console.log("submitt button clicked");
+    // console.log("submitt button clicked");
     setIsLoading(true);
     try {
       const response = await dispatch(forgetPassword({ identifier: emailOrNumber }));
-      console.log('response = ', response?.payload);
+      // console.log('response = ', response?.payload);
       if (response?.payload?.code == 200) {
         Alert.alert("Success", response?.payload?.message);
         // dispatch(showSnackbar({message: response?.payload?.message, type: 'success'}));

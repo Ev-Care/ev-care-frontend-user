@@ -242,7 +242,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   }, [mapLayoutCompleted]);
 
   useEffect(() => {
-    console.log(" map page rendered");
+    // console.log(" map page rendered");
     mapAnimation.addListener(({ value }) => {
       let index = Math.floor(value / cardWidth + 0.3);
       if (index >= markerList?.length) {
@@ -288,36 +288,36 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   });
 
   const toggleStop = (station) => {
-    console.log("Toggle Stop called with station:", station.id);
+    // console.log("Toggle Stop called with station:", station.id);
 
     const exists = addedStops.find((stop) => stop.id === station.id);
-    console.log("Exists:", exists);
-    console.log(
-      "Existing stop IDs:",
-      addedStops.map((s) => s.id)
-    );
-    console.log("Station ID being checked:", station.id);
+    // console.log("Exists:", exists);
+    // console.log(
+    //   "Existing stop IDs:",
+    //   addedStops.map((s) => s.id)
+    // );
+    // console.log("Station ID being checked:", station.id);
 
     if (exists) {
-      console.log("Station exists, removing...");
+      // console.log("Station exists, removing...");
       setAddedStops((prev) => prev.filter((stop) => stop.id !== station.id));
     } else {
-      console.log("Station does not exist, adding...");
+      // console.log("Station does not exist, adding...");
       setAddedStops((prev) => [...prev, station]);
     }
   };
 
   // Use useEffect to monitor changes to addedStops
   useEffect(() => {
-    console.log("Updated added stops:", addedStops);
+    // console.log("Updated added stops:", addedStops);
   }, [addedStops]);
 
   const removeStop = (id) => {
-    console.log("Remove Stop called with id:", id);
+    // console.log("Remove Stop called with id:", id);
     debugger;
 
     const updatedStops = addedStops.filter((stop) => stop?.id !== id);
-    console.log("Updated stops after removal:", updatedStops);
+    // console.log("Updated stops after removal:", updatedStops);
     setAddedStops(updatedStops);
   };
 
@@ -477,7 +477,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       <>
         {addedStops.map((stop, index) => (
           <View key={stop.id} style={styles.stopsContainer}>
-            {console.log("stop", stop)}
+            {/* {console.log("stop", stop)} */}
             <View
               style={{
                 height: 90,

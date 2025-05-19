@@ -16,7 +16,7 @@ const PendingApprovalScreen = ({route,navigation}) => {
   const handleContinue = async () => {
     const response = await dispatch(getUserDetailsByKey(user.user_key));
     const updatedUser = response?.payload.data;
-    console.log('updated user in pending', updatedUser);
+    // console.log('updated user in pending', updatedUser);
     if (response?.payload?.code === 200 || response?.payload?.code === 201) {
       if (updatedUser.status !== "Active") {
         await dispatch(showSnackbar({ message: 'Please wait for admin approval', type: 'error' }));

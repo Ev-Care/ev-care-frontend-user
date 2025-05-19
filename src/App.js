@@ -68,7 +68,7 @@ function AppNavigator() {
 
   // Function to handle role-based navigation
   const renderRoleStack = () => {
-    console.log("User role in renderRoleStack:", userType);
+    // console.log("User role in renderRoleStack:", userType);
     switch (userType) {
       case "user":
         return <Stack.Screen name="UserStack" component={UserStack} />;

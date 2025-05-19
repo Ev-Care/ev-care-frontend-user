@@ -212,7 +212,7 @@ const EnRouteScreen = () => {
       const response = await dispatch(getEnrouteStations(enRoutedata));
 
       if (response?.payload?.code === 200) {
-        console.log("response of enroute:", response?.payload?.data);
+        // console.log("response of enroute:", response?.payload?.data);
         const enrouteStations = response?.payload?.data;
 
         navigation.push("EnrouteChargingStations", {

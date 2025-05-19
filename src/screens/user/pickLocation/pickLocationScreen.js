@@ -42,7 +42,7 @@ const PickLocationScreen = ({ navigation, route }) => {
       if (mapRef.current) {
         getUserLocation();
       } else {
-        console.log("Map reference is not ready yet");
+        // console.log("Map reference is not ready yet");
       }
     }, 500);
 
@@ -81,7 +81,7 @@ const PickLocationScreen = ({ navigation, route }) => {
 
       // ✅ Animate camera IMMEDIATELY without waiting for state update
       if (mapRef.current) {
-        console.log("Animating camera to..:", latitude, longitude);
+        // console.log("Animating camera to..:", latitude, longitude);
         mapRef.current.animateCamera(
           {
             center: { latitude, longitude },

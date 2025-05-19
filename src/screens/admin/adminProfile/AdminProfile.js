@@ -123,9 +123,9 @@ const AdminProfilePage = () => {
                 await dispatch(logoutUser());
          
                 setshowLogoutSheet(false);
-                console.log(
-                  "User logged out successfully in profileScreen and navigting to Signin"
-                );
+                // console.log(
+                //   "User logged out successfully in profileScreen and navigting to Signin"
+                // );
               }}
               style={{
                 ...styles.logoutButtonStyle,

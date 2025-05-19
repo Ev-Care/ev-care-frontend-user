@@ -82,7 +82,7 @@ const HelpScreen = ({ navigation }) => {
   );
 
   async function sendQueryActionHandler() {
-    console.log("in query");
+    // console.log("in query");
     setIsLoading(true);
     const data = {
       title: title,
@@ -102,7 +102,7 @@ const HelpScreen = ({ navigation }) => {
         image: null,
       })
     );
-    console.log("data - ", data);
+    // console.log("data - ", data);
     if (sendQueryAction.fulfilled.match(sendQueryResponse)) {
       setIsLoading(false);
       dispatch(

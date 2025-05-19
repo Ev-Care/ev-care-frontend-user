@@ -64,7 +64,7 @@ const AllChargingStationsScreen = ({ navigation }) => {
   };
 
   const handleRefresh = async () => {
-    console.log("handle refresh called");
+   
     const data = {
       radius: 30000,
       coords: userCoords,

@@ -89,7 +89,7 @@ const ChargingStationMap = () => {
   const stateStations = useSelector(selectStations);
   const [stations, setStations] = useState(stateStations || []);
   const dispatch = useDispatch();
-  console.log("stations", stations?.length);
+  // console.log("stations", stations?.length);
 const userCurrentRegion = useSelector(selectUserCoordinate);
    const [region, setRegion] = useState({
     latitude: userCurrentRegion?.latitude || 28.6139,
@@ -106,7 +106,7 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
   let mapIndex = 0;
 
   useEffect(() => {
-    console.log('new stations = ', JSON.stringify(stations[0], null, 2));
+    // console.log('new stations = ', JSON.stringify(stations[0], null, 2));
   }, [stations]);
 
 
@@ -121,7 +121,7 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
         dispatch(showSnackbar({ message: "Location didn't fetched", type: "error" }));
       }
     } catch (error) {
-      console.log("error = " + error);
+      // console.log("error = " + error);
       dispatch(showSnackbar({ message: "Something went wrong. Please try again later", type: "error" }));
 
     }
@@ -135,7 +135,7 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
   }, []);
 
   useEffect(() => {
-    console.log(" map page rendered");
+    // console.log(" map page rendered");
     mapAnimation.addListener(({ value }) => {
       let index = Math.floor(value / cardWidth + 0.3);
       if (index >= stations?.length) {
@@ -166,7 +166,7 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
 
   const getUserLocation = async (calledBy) => {
     try {
-      console.log('user try to fit inmap');
+      // console.log('user try to fit inmap');
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         Alert.alert("Permission Denied", "Using default location (Delhi).");

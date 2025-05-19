@@ -65,10 +65,10 @@ const PreviewPage = ({ navigation, route }) => {
   );
 
   useEffect(() => {
-    console.log(
-      "Transformed station data preview:",
-      JSON.stringify(stationData, null, 2)
-    );
+    // console.log(
+    //   "Transformed station data preview:",
+    //   JSON.stringify(stationData, null, 2)
+    // );
   }, [stationData]);
 
   const connectorIcons = {
@@ -109,7 +109,7 @@ const PreviewPage = ({ navigation, route }) => {
 
   const handleSubmit = async () => {
     try {
-      console.log("station data", stationData);
+      // console.log("station data", stationData);
       if (type === "add") {
         const addStationresponse = await dispatch(addStation(stationData));
         if (addStation.fulfilled.match(addStationresponse)) {
@@ -151,7 +151,7 @@ const PreviewPage = ({ navigation, route }) => {
             fetchStations(stationData?.owner_id)
           );
           if (fetchStations.fulfilled.match(stationResponse)) {
-            console.log("station updated");
+            // console.log("station updated");
 
             await dispatch(
               showSnackbar({
@@ -163,7 +163,7 @@ const PreviewPage = ({ navigation, route }) => {
             navigation.pop(2);
             // navigation.navigate("StationManagement", { station })
           } else if (fetchStations.rejected.match(stationResponse)) {
-            console.log("station update failed");
+            // console.log("station update failed");
             await dispatch(
               showSnackbar({
                 message: errorMessage || "Failed to fetch station.",

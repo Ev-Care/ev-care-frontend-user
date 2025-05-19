@@ -64,10 +64,10 @@ const PreviewStation = ({ navigation, route }) => {
   //   );
 
   useEffect(() => {
-    console.log(
-      "Transformed station data preview:",
-      JSON.stringify(stationData, null, 2)
-    );
+    // console.log(
+    //   "Transformed station data preview:",
+    //   JSON.stringify(stationData, null, 2)
+    // );
   }, [stationData]);
 
   const connectorIcons = {
@@ -97,7 +97,7 @@ const PreviewStation = ({ navigation, route }) => {
     try {
       setIsLoading(true);
 
-      console.log("station data", stationData);
+      // console.log("station data", stationData);
 
       if (type === "add") {
         const addStationResponse = await dispatch(

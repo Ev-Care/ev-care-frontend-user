@@ -71,7 +71,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
   }
 
   const [inFavorite, setInFavorite] = useState(false);
-  console.log(station.id);
+  // console.log(station.id);
 
   useEffect(() => {
     if (favStations && station) {
@@ -79,12 +79,12 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         (favStation) => favStation.stationId === station.id
       );
       setInFavorite(isFavorite);
-      console.log("stationdetail useEffect called.", inFavorite);
+      // console.log("stationdetail useEffect called.", inFavorite);
     }
   }, [favStations, station]);
 
   useEffect(() => {
-    console.log("inFavorite changed to", inFavorite);
+    // console.log("inFavorite changed to", inFavorite);
   }, [inFavorite]);
 
   const connectorIcons = {
@@ -124,7 +124,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         const postFavresponse = await dispatch(
           postFavoriteStation({ stationId: station.id, userId: user.id })
         );
-        console.log("station favorited ");
+        // console.log("station favorited ");
   
         await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
   
@@ -149,7 +149,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         const unFavResponse = await dispatch(
           unFavoriteStation({ stationId: station.id, userId: user.id })
         );
-        console.log("station unfavorited ");
+        // console.log("station unfavorited ");
   
         await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
   

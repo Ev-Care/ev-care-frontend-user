@@ -66,7 +66,7 @@ const UpdateStation = ({ navigation, route }) => {
   const [selectedAmenities, setSelectedAmenities] = useState(
     mapAmenitiesToIds(station?.amenities || "")
   );
-  console.log("Stations in update = ", JSON.stringify(station, null, 2));
+  // console.log("Stations in update = ", JSON.stringify(station, null, 2));
   const [openHours, setOpenHours] = useState(
     station.open_hours_opening_time === "00:00:00" &&
       station.open_hours_closing_time === "23:59:59"
@@ -112,7 +112,7 @@ const UpdateStation = ({ navigation, route }) => {
     return initialConnectors;
   });
 
-  console.log("selectedConnectors", selectedConnectors);
+  // console.log("selectedConnectors", selectedConnectors);
   const addChargerForm = () =>
     setChargerForms((prevForms) => [
       ...prevForms,
@@ -264,16 +264,16 @@ const UpdateStation = ({ navigation, route }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -303,16 +303,16 @@ const UpdateStation = ({ navigation, route }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -361,10 +361,10 @@ const UpdateStation = ({ navigation, route }) => {
       chargers: chargerForms,
     };
 
-    console.log(
-      "Transformed Station Data in update:",
-      JSON.stringify(stationData, null, 2)
-    );
+    // console.log(
+    //   "Transformed Station Data in update:",
+    //   JSON.stringify(stationData, null, 2)
+    // );
 
     // Navigate to PreviewPage with the transformed data
     navigation.push("PreviewPage", {
@@ -551,7 +551,7 @@ const UpdateStation = ({ navigation, route }) => {
     );
   }
   function chargerDetail(charger, index) {
-    console.log("charger details", chargerForms[index]);
+    // console.log("charger details", chargerForms[index]);
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -690,9 +690,9 @@ const UpdateStation = ({ navigation, route }) => {
   }
 
   function connectorsInfo(charger, chargerIndex) {
-    console.log("charger = ", charger);
-    console.log("connectors = ", connectors);
-    console.log("connectorsList = ", connectorsList);
+    // console.log("charger = ", charger);
+    // console.log("connectors = ", connectors);
+    // console.log("connectorsList = ", connectorsList);
     return (
       <View style={styles?.section}>
         <Text style={styles?.sectionLabel}>Connectors</Text>
@@ -701,13 +701,13 @@ const UpdateStation = ({ navigation, route }) => {
             const connectorData = connectorsList?.find(
               (c) => c?.id === connector?.id && c?.chargerIndex === chargerIndex
             );
-            console.log("connectorData", connectorData);
+            // console.log("connectorData", connectorData);
             const count = connectorData?.count || 0;
 
             const isSelected =
               selectedConnectors[chargerIndex] === connector?.type;
 
-            console.log("isSelected", isSelected);
+            // console.log("isSelected", isSelected);
 
             return (
               <TouchableOpacity

@@ -63,7 +63,7 @@ export const getLocationPermission = async () => {
       );
 
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Location permission granted (Android)');
+        // console.log('Location permission granted (Android)');
         return true;
       } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
         Alert.alert(
@@ -75,12 +75,12 @@ export const getLocationPermission = async () => {
           ]
         );
       } else {
-        console.log('Location permission denied (Android)');
+        // console.log('Location permission denied (Android)');
       }
     } else {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status === 'granted') {
-        console.log('Location permission granted (iOS)');
+        // console.log('Location permission granted (iOS)');
         return true;
       } else {
         Alert.alert(

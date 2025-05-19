@@ -92,7 +92,7 @@ const StationManagement = ({ navigation, route }) => {
   const [chargerStatusMap, setChargerStatusMap] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  console.log("StationManagement", JSON.stringify(station, null, 2));
+  // console.log("StationManagement", JSON.stringify(station, null, 2));
   const handleTabPress = (index) => {
     setActiveTab(index);
     scrollViewRef.current.scrollTo({ x: index * width, animated: true });
@@ -104,7 +104,7 @@ const StationManagement = ({ navigation, route }) => {
   };
   useEffect(() => {
     if (!station) {
-      console.log("Station no longer exists. Navigating back.");
+      // console.log("Station no longer exists. Navigating back.");
       navigation.goBack(); // Navigate back if the station is undefined
     }
   }, [station]);
@@ -119,7 +119,7 @@ const StationManagement = ({ navigation, route }) => {
 
   const handleDelete = async () => {
     setIsLoading(true);
-    console.log("handleDelete Called");
+    // console.log("handleDele/te Called");
 
     try {
       const deleteResponse = await dispatch(deleteStation(stationId));
@@ -128,7 +128,7 @@ const StationManagement = ({ navigation, route }) => {
 
         const stationResponse = await dispatch(fetchStations(user?.id));
         if (fetchStations.fulfilled.match(stationResponse)) {
-          console.log("station updated");
+          // console.log("station updated");
           await dispatch(
             showSnackbar({
               message: "Station deleted successfully.",
@@ -136,7 +136,7 @@ const StationManagement = ({ navigation, route }) => {
             })
           );
         } else if (fetchStations.rejected.match(stationResponse)) {
-          console.log("Failed to fetch updated stations.");
+        //  console.log("Failed to fetch updated stations.");
           await dispatch(
             showSnackbar({
               message: errorMessage || "Failed to update station list.",

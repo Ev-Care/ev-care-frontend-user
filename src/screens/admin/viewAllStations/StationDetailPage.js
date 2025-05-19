@@ -63,7 +63,7 @@ const StationDetailPage = ({ route, navigation }) => {
 
   const station = route?.params?.item;
 
-  console.log("station in detail page = ", JSON.stringify(station, 2, null));
+  // console.log("station in detail page = ", JSON.stringify(station, 2, null));
 
   if (!station) {
     return <Text>Loading...</Text>; // Handle when station is not available
@@ -98,14 +98,14 @@ const StationDetailPage = ({ route, navigation }) => {
 
   const handleDelete = async () => {
     setIsLoading(true);
-    console.log("handleDelete Called");
+    // console.log("handleDelete Called");
 
     try {
       const deleteResponse = await dispatch(deleteStationByAdmin(station?.id));
       if (deleteStationByAdmin.fulfilled.match(deleteResponse)) {
         const stationResponse = await dispatch(fetchAllStations());
         if (fetchAllStations.fulfilled.match(stationResponse)) {
-          console.log("station updated");
+          // console.log("station updated");
           await dispatch(
             showSnackbar({
               message: "Station deleted successfully.",
@@ -114,7 +114,7 @@ const StationDetailPage = ({ route, navigation }) => {
           );
           navigation.pop();
         } else if (fetchAllStations.rejected.match(stationResponse)) {
-          console.log("Failed to fetch updated stations.");
+          // console.log("Failed to fetch updated stations.");
           await dispatch(
             showSnackbar({
               message: errorMessage || "Failed to update station list.",

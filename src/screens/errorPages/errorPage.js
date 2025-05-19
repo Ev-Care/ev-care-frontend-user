@@ -22,9 +22,9 @@ const ErrorPage = ({ setHasLocationPermission }) => {
       <TouchableOpacity
         style={styles.button}
         onPress={async () => {
-          console.log('clicked');
+          // console.log('clicked');
           if (Platform.OS === 'android') {
-            console.log('android');
+            // console.log('android');
             const granted = await getLocationPermission();
             if (granted) {
               setHasLocationPermission(true);

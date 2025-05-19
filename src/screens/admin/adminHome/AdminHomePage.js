@@ -57,7 +57,7 @@ useFocusEffect(
     const fetchEntityCount = async () => {
       const response = await dispatch(getEntityCount());
       if (isActive && response.payload.code === 200) {
-        console.log("response ",response.payload)
+        // console.log("response ",response.payload)
         setEntityCount(response.payload.data);
       }
     };
@@ -158,7 +158,7 @@ useFocusEffect(
 
   const  handleCardClick =(id)=>{
     // Handle the card click here
-    console.log('Card clicked!',id);
+    // console.log('Card clicked!',id);
     if(id === 1){
       navigation?.navigate('CreateUser');
       }
@@ -177,7 +177,7 @@ useFocusEffect(
 
       }
     else{
-      console.log('Invald Card Clicked');
+      // console.log('Invald Card Clicked');
     }
   }
 

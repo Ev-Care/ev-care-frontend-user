@@ -49,7 +49,7 @@ const AllPendingStations = ({ navigation }) => {
         const response = await dispatch(fetchAllStations());
         if (fetchAllStations.fulfilled.match(response)) {
           // Optional: Show success snackbar or log
-          console.log("Pending stations refreshed successfully.");
+          // console.log("Pending stations refreshed successfully.");
         } else {
           await dispatch(
             showSnackbar({
@@ -81,7 +81,7 @@ const AllPendingStations = ({ navigation }) => {
       const response = await dispatch(fetchAllStations());
       if (fetchAllStations.fulfilled.match(response)) {
         // Optional: Show success snackbar or log
-        console.log("Pending stations refreshed successfully.");
+        // console.log("Pending stations refreshed successfully.");
       } else {
         await dispatch(
           showSnackbar({

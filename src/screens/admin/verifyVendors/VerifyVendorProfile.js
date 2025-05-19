@@ -66,13 +66,13 @@ const VerifyVendorProfile = ({ route, navigation }) => {
   const dispatch = useDispatch();
 
   const handleReject = async () => {
-    console.log("calling reject");
+    // console.log("calling reject");
     setIsLoading(true);
     try {
       const rejectResponse = await dispatch(
         approveVendorProfile({ user_key: user?.user_key, status: "reject" })
       );
-      console.log({ rejectResponse });
+      // console.log({ rejectResponse });
 
       if (approveVendorProfile.fulfilled.match(rejectResponse)) {
         const vendorResponse = await dispatch(getAllVendors());

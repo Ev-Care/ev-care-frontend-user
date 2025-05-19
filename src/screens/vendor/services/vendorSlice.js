@@ -24,7 +24,7 @@ const vendorSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchStations.fulfilled, (state, action) => {
-        console.log("station in vendorslice", action.payload.data.chargingStations);
+        // console.log("station in vendorslice", action.payload.data.chargingStations);
         state.stations = action.payload.data.chargingStations;
         state.loading = false;
         // console.log("fetch stations fullfilled called", action.payload.data.chargingStations)
@@ -32,7 +32,7 @@ const vendorSlice = createSlice({
       .addCase(fetchStations.rejected, (state, action) => {
         state.error = action.payload;
         state.loading = false;
-        console.log("fetch stations rejected called", action.payload)
+        // console.log("fetch stations rejected called", action.payload)
       });
 
     // Add Station
@@ -90,7 +90,7 @@ const vendorSlice = createSlice({
       .addCase(updateStationsChargersConnectorsStatus.pending, (state) => {
         state.loading = true;
         state.error = null;
-        console.log("update station pending called");
+        // console.log("update station pending called");
       })
       .addCase(updateStationsChargersConnectorsStatus.fulfilled, (state, action) => {
         state.loading = false;
@@ -114,17 +114,17 @@ const vendorSlice = createSlice({
       .addCase(updateAllStationStatus.pending, (state) => {
         state.loading = true;
         state.error = null;
-        console.log("update station pending called");
+        // console.log("update station pending called");
       })
       .addCase(updateAllStationStatus.fulfilled, (state, action) => {
         state.loading = false;
         state.error = null;
-        console.log("update All station fulfilled called");
+        // console.log("update All station fulfilled called");
       })
       .addCase(updateAllStationStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        console.log("update All station Error called");
+        // console.log("update All station Error called");
       })
   },
 });

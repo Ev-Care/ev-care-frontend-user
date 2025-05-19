@@ -26,7 +26,7 @@ export const postSignIn = createAsyncThunk(
         throw new Error(response.data?.message || "OTP not sent, try again");
       }
     } catch (error) {
-      console.log("Error in postSignIn:", error);
+      // console.log("Error in postSignIn:", error);
       return rejectWithValue(
         error?.response?.data?.message || "Something went wrong"
       );
@@ -50,7 +50,7 @@ export const postVerifyOtp = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in postVerifyOtp:", error);
+      // console.log("Error in postVerifyOtp:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -77,7 +77,7 @@ export const postSignUp = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in postSignUp:", error);
+      // console.log("Error in postSignUp:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -103,7 +103,7 @@ export const register = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in register:", error);
+      // console.log("Error in register:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -120,7 +120,7 @@ export const postSingleFile = createAsyncThunk(
   "auth/singleFileUpload",
   async (data, { rejectWithValue }) => {
     try {
-      console.log("postSingleFile called with:", data);
+      // console.log("postSingleFile called with:", data);
       const response = await postSingleFileAPI(data);
 
       if (response.data.code === 200 || response.data.code === 201) {
@@ -129,14 +129,14 @@ export const postSingleFile = createAsyncThunk(
         return rejectWithValue(response?.data?.message || response?.message || "File Upload failed.");
       }
     } catch (error) {
-      console.log("Error in postSingleFile:", error);
+      // console.log("Error in postSingleFile:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
         error?.response?.data?.message || // API sent error message
         error?.message || // JS error message
         "Something went wrong. Please try again"; // fallback message
-      console.log("error message : ", errorMessage);
+      // console.log("error message : ", errorMessage);
       return rejectWithValue(errorMessage);
     }
   }
@@ -147,9 +147,9 @@ export const patchUpdateVendorProfile = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const response = await updateVendorAPI(data);
-      console.log("response at crud func page", response);
+      // console.log("response at crud func page", response);
       if (response?.data?.code === 200 || response?.data?.code === 201) {
-        console.log("return response data in thunk", response.data);
+        // console.log("return response data in thunk", response.data);
         return response?.data;
       } else {
         return rejectWithValue(
@@ -157,7 +157,7 @@ export const patchUpdateVendorProfile = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in patchUpdateVendorProfile:", error);
+      // console.log("Error in patchUpdateVendorProfile:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -184,7 +184,7 @@ export const getUserByKey = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in getUserByKey:", error);
+      // console.log("Error in getUserByKey:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -214,7 +214,7 @@ export const login =  createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in getUserByKey:", error);
+      // console.log("Error in getUserByKey:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -242,7 +242,7 @@ export const forgetPassword =  createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in getUserByKey:", error);
+      // console.log("Error in getUserByKey:", error);
 
       // Always extract message properly even in catch
       const errorMessage =

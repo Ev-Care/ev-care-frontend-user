@@ -22,7 +22,7 @@ export const fetchAllPendingStation = createAsyncThunk(
   "admin/fetchAllPendingStation",
   async (_, { rejectWithValue }) => {
     try {
-      console.log("Fetching all pending stations...");
+      // console.log("Fetching all pending stations...");
 
       const accessToken = await AsyncStorage.getItem("accessToken");
 
@@ -40,7 +40,7 @@ export const fetchAllPendingStation = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in fetchAllPendingStation:", error);
+      // console.log("Error in fetchAllPendingStation:", error);
 
       const errorMessage =
         error?.response?.data?.message || error?.message || "Server error";
@@ -71,7 +71,7 @@ export const fetchAllStations = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in fetchAllStations:", error);
+      // console.log("Error in fetchAllStations:", error);
 
       const errorMessage =
         error?.response?.data?.message || error?.message || "Server error";
@@ -97,7 +97,7 @@ export const getAllVendors = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in getAllvendors:", error);
+      // console.log("Error in getAllvendors:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -129,7 +129,7 @@ export const getAllUsers = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in getAllPendingUsers:", error);
+      // console.log("Error in getAllPendingUsers:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -149,7 +149,7 @@ export const fetchStationsByUserId = createAsyncThunk(
     try {
       const accessToken = await AsyncStorage.getItem("accessToken");
       // const accessToken = await useSelector(selectToken);
-      console.log("vendorId", vendorId);
+      // console.log("vendorId", vendorId);
       const response = await getAllStationsByUserIdAPI({ owner_id: vendorId, accessToken });
       if (response.data.code === 200 || response.data.code === 201) {
         return response.data;
@@ -157,7 +157,7 @@ export const fetchStationsByUserId = createAsyncThunk(
         return rejectWithValue(response.data.message || "Failed to fetch Stations");
       }
     } catch (error) {
-      console.log("Error in fetchStations:", error);
+      // console.log("Error in fetchStations:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -189,7 +189,7 @@ export const getAllSupportIssues = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in getAllSupportIssues:", error);
+      // console.log("Error in getAllSupportIssues:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -221,7 +221,7 @@ export const approveStation = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in approveStation:", error);
+      // console.log("Error in approveStation:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -252,7 +252,7 @@ export const rejectStation = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in reject station:", error);
+      // console.log("Error in reject station:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -269,7 +269,7 @@ export const updateUserProfile = createAsyncThunk(
   "admin/updateUserProfile",
   async (data, { rejectWithValue }) => {
     try {
-      console.log("data in updateUserProfile", data);
+      // console.log("data in updateUserProfile", data);
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
       // console.log("data:",  {...data, accessToken}); // Log the access token for debugging
       const response = await updateUserProfileAPI({ ...data, accessToken }); // Call the API to fetch stations by location
@@ -281,7 +281,7 @@ export const updateUserProfile = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in updateUserProfile:", error);
+      // console.log("Error in updateUserProfile:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -296,7 +296,7 @@ export const updateUserProfile = createAsyncThunk(
 export const approveVendorProfile = createAsyncThunk(
   "admin/approveVendorProfile",
   async (data, { rejectWithValue }) => {
-    console.log("admin/approveVendorProfile");
+    // console.log("admin/approveVendorProfile");
     try {
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
 
@@ -314,7 +314,7 @@ export const approveVendorProfile = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in approveStation:", error);
+      // console.log("Error in approveStation:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -348,7 +348,7 @@ export const createUser = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in createUser:", error);
+      // console.log("Error in createUser:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -380,7 +380,7 @@ export const addStationByAdmin = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in addStationByAdmin:", error);
+      // console.log("Error in addStationByAdmin:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -407,7 +407,7 @@ export const deleteStationByAdmin = createAsyncThunk(
         return rejectWithValue(response?.message || response?.data?.message || "Failed to delete Stations");
       }
     } catch (error) {
-      console.log("Error in deleteStationByAdmin:", error);
+      // console.log("Error in deleteStationByAdmin:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -432,7 +432,7 @@ export const getEntityCount = createAsyncThunk(
         return rejectWithValue(response?.message || response?.data?.message || "Failed to delete Stations");
       }
     } catch (error) {
-      console.log("Error in deleteStationByAdmin:", error);
+      // console.log("Error in deleteStationByAdmin:", error);
 
       // Always extract message properly even in catch
       const errorMessage =

@@ -147,12 +147,12 @@ const EditProfileScreen = ({ route, navigation }) => {
 
      const error = validateUserData(updatedData);
       if (error) {
-        console.log('error cartched');
+        // console.log('error cartched');
         dispatch(showSnackbar({ message: error, type: 'error' }));
         return;
       }
   
-      console.log("Updated Data:", updatedData);
+      // console.log("Updated Data:", updatedData);
   
       const response = await dispatch(patchUpdateUserProfile(updatedData));
   
@@ -172,7 +172,7 @@ const EditProfileScreen = ({ route, navigation }) => {
         );
       }
   
-      console.log("Response from update profile:", response.payload);
+      // console.log("Response from update profile:", response.payload);
   
       // Optional navigation
       // navigation.pop();
@@ -205,16 +205,16 @@ const EditProfileScreen = ({ route, navigation }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -244,16 +244,16 @@ const EditProfileScreen = ({ route, navigation }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");

@@ -100,16 +100,16 @@ const CreateUser = ({ route, navigation }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -139,16 +139,16 @@ const CreateUser = ({ route, navigation }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -407,7 +407,7 @@ const CreateUser = ({ route, navigation }) => {
         vehicle_model: vehicleModel,
       };
     }
-    console.log("Submitting payload:", payload);
+    // console.log("Submitting payload:", payload);
 
     try {
       const response = await dispatch(createUser(payload));
@@ -431,7 +431,7 @@ const CreateUser = ({ route, navigation }) => {
         );
       }
     } catch (error) {
-      console.log("error in create user", error);
+      // console.log("error in create user", error);
 
       dispatch(
         showSnackbar({ message: "Failed to create user!", type: "error" })

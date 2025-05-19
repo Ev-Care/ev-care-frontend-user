@@ -97,16 +97,16 @@ const UpdateUser = ({ route, navigation }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -136,16 +136,16 @@ const UpdateUser = ({ route, navigation }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -379,7 +379,7 @@ const UpdateUser = ({ route, navigation }) => {
         vehicle_model: vehicleModel,
       };
     }
-    console.log("Submitting payload:", payload);
+    // console.log("Submitting payload:", payload);
 
     try {
       setIsLoading(true);
@@ -388,7 +388,7 @@ const UpdateUser = ({ route, navigation }) => {
 
         const userResponse = await dispatch(getAllUsers());
         if (getAllUsers.fulfilled.match(userResponse)) {
-          console.log("User updated successfully:");
+          // console.log("User updated successfully:");
           // dispatch(
           //   showSnackbar({
           //     message: "User updated successfully!",
@@ -408,7 +408,7 @@ const UpdateUser = ({ route, navigation }) => {
         }
        const vendorResponse = await dispatch(getAllVendors());
         if (getAllVendors.fulfilled.match(vendorResponse)) {
-          console.log("Vendor updated successfully:");
+          // console.log("Vendor updated successfully:");
           dispatch(
             showSnackbar({
               message: "User updated successfully!",
@@ -439,7 +439,7 @@ const UpdateUser = ({ route, navigation }) => {
         );
       }
     } catch (error) {
-      console.log("error While Updating user", error);
+      // console.log("error While Updating user", error);
 
       dispatch(
         showSnackbar({ message: "Failed to Update user!", type: "error" })

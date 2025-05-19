@@ -135,16 +135,16 @@ const AddStationScreen = () => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -174,16 +174,16 @@ const AddStationScreen = () => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -199,7 +199,7 @@ const AddStationScreen = () => {
     });
   };
   const handleVendorSelection = () => {
-    console.log("handleVendorSelection called");
+    // console.log("handleVendorSelection called");
     navigation.push("VendorSelector", {
       setVendorNumber: (newVendorNumber) => setVendorNumber(newVendorNumber),
       setVendorName: (newVendorName) => setVendorNamer(newVendorName),
@@ -207,7 +207,7 @@ const AddStationScreen = () => {
   }
 
   const handlePreview = () => {
-    console.log("in the preview page");
+    // console.log("in the preview page");
     const amenitiesString = selectedAmenities
       .map((id) => amenities.find((amenity) => amenity.id === id)?.label)
       .join(",");
@@ -239,10 +239,10 @@ const AddStationScreen = () => {
       station_images: photo ? photo : "",
     };
 
-    console.log(
-      "Transformed Station Data:",
-      JSON.stringify(stationData, null, 2)
-    );
+    // console.log(
+    //   "Transformed Station Data:",
+    //   JSON.stringify(stationData, null, 2)
+    // );
 
     if (!vendorNumber || vendorNumber === "") {
       dispatch(

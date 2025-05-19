@@ -122,9 +122,9 @@ const ProfileScreen = ({ navigation }) => {
               onPress={async() => {
                 await dispatch(logoutUser());
              
-                console.log(
-                  "User logged out successfully in profileScreen and navigting to Signin"
-                );
+                // console.log(
+                //   "User logged out successfully in profileScreen and navigting to Signin"
+                // );
                 setshowLogoutSheet(false);
               }}
               style={{

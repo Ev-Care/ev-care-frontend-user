@@ -1,5 +1,5 @@
 export const Key = {
-    apiKey: 'AIzaSyAEqA9xxuXpegQ98gpVjkOis3xYMAzPNQI',
+    apiKey: 'AIzaSyASRGQshp6t0wfi0WA-6MoHQsD0qAfflaM',
 }
 
 export default Key;

@@ -3,8 +3,9 @@
     "name": "EV Care",
     "slug": "ev-care",
     "version": "1.0.0",
+    "sdkVersion": "52.0.0",
+    "owner": "evcare",
     "orientation": "portrait",
-    "owner": "",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -16,6 +17,7 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "runtimeVersion": "1.0.0",
     "ios": {
       "bundleIdentifier": "com.render.evcare",
       "buildNumber": "1.0.0",
@@ -50,9 +52,12 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "updates": {
+      "url": "https://u.expo.dev/d8e9e121-522f-4937-ba4f-985f540ae83e"
+    },
     "extra": {
       "eas": {
-        "projectId": "bf6e0d60-ad6c-4d0b-9243-d7dcc6c4a77a"
+        "projectId": "d8e9e121-522f-4937-ba4f-985f540ae83e"
       }
     },
     "plugins": [

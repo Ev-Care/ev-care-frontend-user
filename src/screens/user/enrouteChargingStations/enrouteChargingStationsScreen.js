@@ -37,7 +37,7 @@ import { DottedLoader2 } from "../../../utils/lottieLoader/loaderView";
 const width = screenWidth;
 const cardWidth = width / 1.15;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
-// const allStationsList = [
+
 //   {
 //     owner_id: 7,
 //     station_name: "Tesla EV India",

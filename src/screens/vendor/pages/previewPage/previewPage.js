@@ -117,6 +117,7 @@ const PreviewPage = ({ navigation, route }) => {
             fetchStations(stationData?.owner_id)
           );
           if (fetchStations.fulfilled.match(stationResponse)) {
+            // console.log( "this is response",stationResponse);
             // await dispatch(showSnackbar({ message: "Station fetched Successfully.", type:'success' }));
             await dispatch(
               showSnackbar({ message: "New station added.", type: "success" })
@@ -474,7 +475,8 @@ const PreviewPage = ({ navigation, route }) => {
         <View style={styles.landmarkContainer}>
           <Text style={styles.landmarkTitle}>{stationData?.address}</Text>
         </View>
-
+          
+         { stationData?.amenities?.length &&( <>
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
           {stationData?.amenities?.split(",").map((amenityName, index) => {
@@ -489,6 +491,7 @@ const PreviewPage = ({ navigation, route }) => {
             );
           })}
         </View>
+          </>)}
       </ScrollView>
     );
   }

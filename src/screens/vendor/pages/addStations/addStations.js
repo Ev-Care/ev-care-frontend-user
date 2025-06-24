@@ -28,6 +28,7 @@ import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
 import { Colors } from "../../../../constants/styles";
 import RNModal from "react-native-modal";
 import imageURL from "../../../../constants/baseURL";
+import { validateDecimalInput } from "../../../../utils/globalMethods";
 
 const PRIMARY_COLOR = "#101942";
 const amenities = [
@@ -158,11 +159,11 @@ const AddStations = () => {
   const openGallery = async (setter, label) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: label === "avatar" ? [1, 1] : undefined,
-      quality: 0.2,
-    });
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: label === "avatar" ? [1, 1] : undefined,
+        quality: 0.2,
+      });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -197,11 +198,11 @@ const AddStations = () => {
 
   const openCamera = async (setter, label) => {
     try {
-     const result = await ImagePicker.launchCameraAsync({
-      quality: 0.2,
-      allowsEditing: true,
-      aspect: label === "avatar" ? [1, 1] : undefined,
-    });
+      const result = await ImagePicker.launchCameraAsync({
+        quality: 0.2,
+        allowsEditing: true,
+        aspect: label === "avatar" ? [1, 1] : undefined,
+      });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -296,15 +297,15 @@ const AddStations = () => {
       );
       return;
     }
-    if (!stationData?.amenities || stationData.amenities === "") {
-      dispatch(
-        showSnackbar({
-          message: "Station Amenities cannot be empty.",
-          type: "error",
-        })
-      );
-      return;
-    }
+    // if (!stationData?.amenities || stationData.amenities === "") {
+    //   dispatch(
+    //     showSnackbar({
+    //       message: "Station Amenities cannot be empty.",
+    //       type: "error",
+    //     })
+    //   );
+    //   return;
+    // }
     if (!stationData?.station_images || stationData.station_images === "") {
       dispatch(
         showSnackbar({
@@ -628,17 +629,18 @@ const AddStations = () => {
                 Power Rating <Text style={styles?.optional}>(in kW)</Text>
               </Text>
               <TextInput
-                style={styles?.input}
+                style={styles.input}
                 placeholder="Power Rating In kW"
+                keyboardType="decimal-pad"
                 value={chargerForms?.[index]?.powerRating || ""}
-                keyboardType="numeric"
                 onChangeText={(text) => {
-                  const numericText = text.replace(/[^0-9]/g, "");
+                  const validInput = validateDecimalInput(text, 1000, 2);
 
-                  if (numericText && parseInt(numericText) > 1000) {
+                  if (text && !validInput) {
                     dispatch(
                       showSnackbar({
-                        message: "Power rating cannot exceed 1000 kW",
+                        message:
+                          "Invalid input. Max 2 decimals or value exceeded.",
                         type: "error",
                       })
                     );
@@ -650,7 +652,7 @@ const AddStations = () => {
                       i === index
                         ? {
                             ...charger,
-                            powerRating: numericText,
+                            powerRating: validInput,
                           }
                         : charger
                     )

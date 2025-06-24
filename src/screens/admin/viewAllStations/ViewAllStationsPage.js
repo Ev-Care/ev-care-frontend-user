@@ -33,29 +33,31 @@ const ViewAllStationsPage = ({ navigation }) => {
   const allStationsList = useSelector(selectAllStations);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const dispatch = useDispatch();
-const [selectedStatuses, setSelectedStatuses] = useState([]);
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
 
   const [selectedRole, setSelectedRole] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-const filteredStations = allStationsList.filter((station) => {
-  const matchesText = station?.station_name?.toLowerCase().includes(searchText.toLowerCase());
+  const filteredStations = allStationsList.filter((station) => {
+    const matchesText = station?.station_name
+      ?.toLowerCase()
+      .includes(searchText.toLowerCase());
 
-  const matchesStatus =
-    selectedStatuses.length === 0 || selectedStatuses.includes("All")
-      ? true
-      : selectedStatuses.includes(station?.status);
+    const matchesStatus =
+      selectedStatuses.length === 0 || selectedStatuses.includes("All")
+        ? true
+        : selectedStatuses.includes(station?.status);
 
-  return matchesText && matchesStatus;
-});
+    return matchesText && matchesStatus;
+  });
 
+  // console.log("all Stations:", allStationsList.length);
+  // console.log("Filtered Stations:", filteredStations.length);
 
   const [refreshing, setRefreshing] = useState(false);
   const trimText = (text, limit) =>
     text.length > limit ? text.substring(0, limit) + "..." : text;
   // console.log('stations legth', allStationsList.length);
- 
-
 
   useEffect(() => {
     const loadStations = async () => {
@@ -67,9 +69,7 @@ const filteredStations = allStationsList.filter((station) => {
     loadStations();
   }, []);
 
-
   const handleRefresh = async () => {
-
     try {
       setRefreshing(true);
       const response = await dispatch(fetchAllStations());
@@ -77,14 +77,23 @@ const filteredStations = allStationsList.filter((station) => {
         // Optional: Show success snackbar or log
         // console.log("Pending stations refreshed successfully.");
       } else {
-        await dispatch(showSnackbar({ message: "Failed to refresh pending stations.", type: 'error' }));
+        await dispatch(
+          showSnackbar({
+            message: "Failed to refresh pending stations.",
+            type: "error",
+          })
+        );
       }
     } catch (error) {
       console.error("Error refreshing stations:", error);
-      await dispatch(showSnackbar({ message: "Something went wrong during refresh.", type: 'error' }));
+      await dispatch(
+        showSnackbar({
+          message: "Something went wrong during refresh.",
+          type: "error",
+        })
+      );
     } finally {
       setRefreshing(false);
-
     }
   };
 
@@ -106,32 +115,42 @@ const filteredStations = allStationsList.filter((station) => {
 
   function allStationsInfo() {
     return (
-      <ScrollView style={styles.scrollContainer}
+      <ScrollView
+        style={styles.scrollContainer}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={['#9Bd35A', '#101942']}  // Android spinner colors
-            tintColor="#101942"            // iOS spinner color
+            colors={["#9Bd35A", "#101942"]} // Android spinner colors
+            tintColor="#101942" // iOS spinner color
           />
         }
       >
-
         {/* Check if stations is defined and not empty */}
         {filteredStations && filteredStations?.length > 0 ? (
           filteredStations.map((station) => (
             <TouchableOpacity
-              onPress={() => navigation.navigate("StationDetailPage", { item: station })}
+              onPress={() =>
+                navigation.navigate("StationDetailPage", { item: station })
+              }
               key={station.id}
               style={styles.card}
             >
               {station?.station_images ? (
-                <Image source={{ uri: imageURL.baseURL + station?.station_images }} style={styles.image} />
+                <Image
+                  source={{ uri: imageURL.baseURL + station?.station_images }}
+                  style={styles.image}
+                />
               ) : (
-                <View style={[styles.image, { alignItems: "center", justifyContent: "center" }]}>
+                <View
+                  style={[
+                    styles.image,
+                    { alignItems: "center", justifyContent: "center" },
+                  ]}
+                >
                   <MaterialIcons
                     name="ev-station"
-                    size={50}  // or match your image size
+                    size={50} // or match your image size
                     color="#8f8f8f"
                   />
                 </View>
@@ -142,7 +161,6 @@ const filteredStations = allStationsList.filter((station) => {
                   <Text style={styles.stationName}>
                     {trimText(station?.station_name, 25)}
                   </Text>
-
                 </View>
                 <Text style={styles.statusText}>
                   Status:{" "}
@@ -153,12 +171,16 @@ const filteredStations = allStationsList.filter((station) => {
                     //     : Colors.primaryColor,
                     // }}
                     style={{
-                      color: station?.status == "Active"
-                        ? Colors.lightGreenColor
-                        : station?.status == "Inactive"
-                          ? Colors.darOrangeColor : station?.status == "Rejected"
-                            ? Colors.redColor : station?.status == "Planned"
-                              ? Colors.yellowColor : Colors.primaryColor,
+                      color:
+                        station?.status == "Active"
+                          ? Colors.lightGreenColor
+                          : station?.status == "Inactive"
+                          ? Colors.darOrangeColor
+                          : station?.status == "Rejected"
+                          ? Colors.redColor
+                          : station?.status == "Planned"
+                          ? Colors.yellowColor
+                          : Colors.primaryColor,
                     }}
                   >
                     {/* {station?.status !== "Active" ? "Pending" : "Active"} */}
@@ -169,7 +191,9 @@ const filteredStations = allStationsList.filter((station) => {
                 <Text style={styles.text}>
                   Chargers: {station?.chargers?.length || 0}
                 </Text>
-                <Text style={styles.addressText}>{trimText(station?.address, 100)}</Text>
+                <Text style={styles.addressText}>
+                  {trimText(station?.address, 100)}
+                </Text>
               </View>
             </TouchableOpacity>
           ))
@@ -216,15 +240,31 @@ const filteredStations = allStationsList.filter((station) => {
         </View>
 
         {/* Filter Icon */}
-        <MaterialIcons
-          name="filter-list"
-          color={Colors.blackColor}
-          size={26}
-          style={{ marginLeft: 12 }} // add some spacing
-          onPress={() =>
-            setBottomSheetVisible(true)
-          }
-        />
+        <View style={{ position: "relative", marginLeft: 12 }}>
+          <MaterialIcons
+            name="filter-list"
+            color={Colors.blackColor}
+            size={26}
+            onPress={() => setBottomSheetVisible(true)}
+          />
+          <View
+            style={{
+              position: "absolute",
+              top: -8,
+              right: -8,
+              backgroundColor: "red",
+              borderRadius: 10,
+              width: 18,
+              height: 18,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "white", fontSize: 10, fontWeight: "bold" }}>
+             {filteredStations.length}
+            </Text>
+          </View>
+        </View>
       </View>
     );
   }
@@ -239,7 +279,8 @@ const filteredStations = allStationsList.filter((station) => {
           {/* {roleSelector()} */}
           {statusSection()}
         </View>
-      </RNModal>)
+      </RNModal>
+    );
   }
 
   function roleSelector() {
@@ -276,49 +317,48 @@ const filteredStations = allStationsList.filter((station) => {
     );
   }
 
+  function statusSection() {
+    const statuses = ["All", "Planned", "Inactive", "Rejected", "Active"];
 
-function statusSection() {
-  const statuses = ['All', 'Planned', 'Inactive', 'Rejected', 'Active'];
+    const toggleStatus = (status) => {
+      if (selectedStatuses.includes(status)) {
+        setSelectedStatuses(selectedStatuses.filter((s) => s !== status));
+      } else {
+        setSelectedStatuses([...selectedStatuses, status]);
+      }
+    };
 
-  const toggleStatus = (status) => {
-    if (selectedStatuses.includes(status)) {
-      setSelectedStatuses(selectedStatuses.filter((s) => s !== status));
-    } else {
-      setSelectedStatuses([...selectedStatuses, status]);
-    }
-  };
+    return (
+      <View style={[styles.section, { marginBottom: 12 }]}>
+        <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+          Select Status
+        </Text>
 
-  return (
-    <View style={[styles.section, { marginBottom: 12 }]}>
-      <Text style={{ marginBottom: 4, fontWeight: 'bold', fontSize: 14 }}>
-        Select Status
-      </Text>
-
-      <View style={[styles.TypeContainer, { flexWrap: 'wrap' }]}>
-        {statuses.map((status) => (
-          <TouchableOpacity
-            key={status}
-            style={[
-              styles.TypeButton,
-              selectedStatuses.includes(status) && styles.selectedButton,
-            ]}
-            onPress={() => toggleStatus(status)}
-          >
-            <Text
+        <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
+          {statuses.map((status) => (
+            <TouchableOpacity
+              key={status}
               style={[
-                styles.TypebuttonText,
-                selectedStatuses.includes(status) && styles.selectedButtonText,
+                styles.TypeButton,
+                selectedStatuses.includes(status) && styles.selectedButton,
               ]}
+              onPress={() => toggleStatus(status)}
             >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  styles.TypebuttonText,
+                  selectedStatuses.includes(status) &&
+                    styles.selectedButtonText,
+                ]}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
-    </View>
-  );
-}
-
+    );
+  }
 };
 
 export default ViewAllStationsPage;
@@ -334,7 +374,8 @@ const styles = StyleSheet.create({
   TypeContainer: {
     flexDirection: "row",
     gap: 10,
-  }, TypeButton: {
+  },
+  TypeButton: {
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderWidth: 1,
@@ -402,7 +443,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.primary,
     textAlign: "center",
   },
@@ -422,8 +463,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 15,
     borderWidth: 1,
-    borderColor: '#e2e2e2 ',
-    backgroundColor: '#f5f5f5'
+    borderColor: "#e2e2e2 ",
+    backgroundColor: "#f5f5f5",
   },
   infoContainer: {
     flex: 1,
@@ -474,5 +515,4 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     borderTopLeftRadius: 20,
   },
-  
 });

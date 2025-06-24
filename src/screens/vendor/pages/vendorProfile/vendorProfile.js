@@ -33,7 +33,7 @@ const VendorProfile = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
 
-
+  
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);

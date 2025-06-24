@@ -27,6 +27,7 @@ import { MaterialIcons, Ionicons, Entypo } from "@expo/vector-icons";
 import RNModal from "react-native-modal";
 import { Colors } from "../../../constants/styles";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
+import { validateDecimalInput } from "../../../utils/globalMethods";
 const PRIMARY_COLOR = "#101942";
 const amenities = [
   { id: 1, icon: "toilet", label: "Restroom" },
@@ -237,7 +238,7 @@ const UpdateStationPage = ({ navigation, route }) => {
   };
   const selectOnMap = () => {
     navigation.push("PickLocation", {
-      addressFor: "stationAddress",
+      addressFor: "adminStationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
       setCoordinate: (newCoordinate) => setCoordinate(newCoordinate),
     });
@@ -292,15 +293,15 @@ const UpdateStationPage = ({ navigation, route }) => {
       return;
     }
 
-    if (!stationData?.amenities || stationData.amenities === "") {
-      dispatch(
-        showSnackbar({
-          message: "Station Amenities cannot be empty.",
-          type: "error",
-        })
-      );
-      return;
-    }
+    // if (!stationData?.amenities || stationData.amenities === "") {
+    //   dispatch(
+    //     showSnackbar({
+    //       message: "Station Amenities cannot be empty.",
+    //       type: "error",
+    //     })
+    //   );
+    //   return;
+    // }
 
     if (!stationData?.station_images || stationData.station_images === "") {
       dispatch(
@@ -652,33 +653,30 @@ const UpdateStationPage = ({ navigation, route }) => {
                 keyboardType="numeric"
                 value={String(chargerForms[index]?.max_power_kw ?? "")}
                 onChangeText={(text) => {
-                  // Remove non-numeric characters
-                  let numericText = text.replace(/[^0-9]/g, "");
-
-                  // Prevent leading zeros
-                  if (numericText.length > 1 && numericText.startsWith("0")) {
-                    numericText = numericText.replace(/^0+/, "");
-                  }
-
-                  // If input is not empty and > 99, block it
-                  if (numericText && parseInt(numericText, 10) > 1000) {
-                    dispatch(
-                      showSnackbar({
-                        message: "Power rating cannot exceed 1000 kW",
-                        type: "error",
-                      })
-                    );
-                    return;
-                  }
-
-                  setChargerForms((prev) =>
-                    prev.map((charger, i) =>
-                      i === index
-                        ? { ...charger, max_power_kw: numericText }
-                        : charger
-                    )
-                  );
-                }}
+                                 const validInput = validateDecimalInput(text, 1000, 2);
+               
+                                 if (text && !validInput) {
+                                   dispatch(
+                                     showSnackbar({
+                                       message:
+                                         "Invalid input. Max 2 decimals or value exceeded.",
+                                       type: "error",
+                                     })
+                                   );
+                                   return;
+                                 }
+               
+                                 setChargerForms((prev) =>
+                                   prev.map((charger, i) =>
+                                     i === index
+                                       ? {
+                                           ...charger,
+                                           max_power_kw: validInput,
+                                         }
+                                       : charger
+                                   )
+                                 );
+                               }}
               />
             </View>
 

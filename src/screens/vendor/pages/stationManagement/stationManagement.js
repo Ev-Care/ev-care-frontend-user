@@ -454,7 +454,7 @@ const StationManagement = ({ navigation, route }) => {
         <View style={styles.landmarkContainer}>
           <Text style={styles.landmarkTitle}>{station?.address}</Text>
         </View>
-
+          {station?.amenities?.length &&(<>
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
           {station?.amenities.split(",").map((amenityName, index) => {
@@ -470,6 +470,7 @@ const StationManagement = ({ navigation, route }) => {
             );
           })}
         </View>
+        </>)}
       </ScrollView>
     );
   }

@@ -29,6 +29,7 @@ import { Colors, commonStyles } from "../../../constants/styles";
 import RNModal from "react-native-modal";
 import imageURL from "../../../constants/baseURL";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
+import { validateDecimalInput } from "../../../utils/globalMethods";
 
 const PRIMARY_COLOR = "#101942";
 const amenities = [
@@ -193,7 +194,7 @@ const AddStationScreen = () => {
 
   const selectOnMap = () => {
     navigation.push("PickLocation", {
-      addressFor: "stationAddress",
+      addressFor: "adminStationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
       setCoordinate: (newCoordinate) => setCoordinate(newCoordinate),
     });
@@ -284,15 +285,15 @@ const AddStationScreen = () => {
       return;
     }
 
-    if (!stationData?.amenities || stationData.amenities === "") {
-      dispatch(
-        showSnackbar({
-          message: "Station Amenities cannot be empty.",
-          type: "error",
-        })
-      );
-      return;
-    }
+    // if (!stationData?.amenities || stationData.amenities === "") {
+    //   dispatch(
+    //     showSnackbar({
+    //       message: "Station Amenities cannot be empty.",
+    //       type: "error",
+    //     })
+    //   );
+    //   return;
+    // }
 
     if (!stationData?.station_images || stationData.station_images === "") {
       dispatch(
@@ -647,18 +648,19 @@ const AddStationScreen = () => {
               <Text style={styles?.sectionLabel}>
                 Power Rating <Text style={styles?.optional}>(in kW)</Text>
               </Text>
-              <TextInput
-                style={styles?.input}
+               <TextInput
+                style={styles.input}
                 placeholder="Power Rating In kW"
+                keyboardType="decimal-pad"
                 value={chargerForms?.[index]?.powerRating || ""}
-                keyboardType="numeric"
                 onChangeText={(text) => {
-                  const numericText = text.replace(/[^0-9]/g, "");
+                  const validInput = validateDecimalInput(text, 1000, 2);
 
-                  if (numericText && parseInt(numericText) > 1000) {
+                  if (text && !validInput) {
                     dispatch(
                       showSnackbar({
-                        message: "Power rating cannot exceed 1000 kW",
+                        message:
+                          "Invalid input. Max 2 decimals or value exceeded.",
                         type: "error",
                       })
                     );
@@ -669,9 +671,9 @@ const AddStationScreen = () => {
                     prev.map((charger, i) =>
                       i === index
                         ? {
-                          ...charger,
-                          powerRating: numericText,
-                        }
+                            ...charger,
+                            powerRating: validInput,
+                          }
                         : charger
                     )
                   );

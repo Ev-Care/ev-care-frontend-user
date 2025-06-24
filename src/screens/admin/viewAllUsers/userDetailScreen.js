@@ -379,7 +379,7 @@ const UserDetailScreen = ({ route, navigation }) => {
           </>
         )}
         <View style={styles.buttonRow}>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => {
               setshowDeleteDialogue(true);
             }}
@@ -389,7 +389,7 @@ const UserDetailScreen = ({ route, navigation }) => {
             ]}
           >
             <Text style={styles.buttonText}>Delete</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             onPress={() => navigation.navigate("UpdateUser", { user })}
             style={[

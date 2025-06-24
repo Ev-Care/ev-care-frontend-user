@@ -445,7 +445,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         <View style={styles.landmarkContainer}>
           <Text style={styles.landmarkTitle}>{station?.address}</Text>
         </View>
-
+          {station?.amenities?.length >0 &&(<>
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
           {station?.amenities?.split(",").map((amenityName, index) => {
@@ -474,6 +474,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
             );
           })}
         </View>
+        </>)}
       </ScrollView>
     );
   }

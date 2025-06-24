@@ -27,7 +27,7 @@ import {
   screenWidth,
 } from "../../../constants/styles";
 import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../../auth/services/selector";
+import { selectAuthloader, selectUser } from "../../auth/services/selector";
 import * as Location from "expo-location";
 import {
   fetchStationsByLocation,
@@ -54,7 +54,7 @@ import {
   openGoogleMaps,
 } from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import {DottedLoader} from "../../../utils/lottieLoader/loaderView";
+import { DottedLoader } from "../../../utils/lottieLoader/loaderView";
 import MyStatusBar from "../../../components/myStatusBar";
 const COLORS = {
   primary: "#101942",
@@ -72,6 +72,7 @@ const UserHome = ({ navigation }) => {
   const AnimatedLinearGradient =
     Animated.createAnimatedComponent(LinearGradient);
   const user = useSelector(selectUser);
+  // const isLoading =useSelector(selectAuthloader);
   const [radius, setRadius] = useState(50);
   const [refreshing, setRefreshing] = useState(false);
   const isLoading = useSelector(selectStationsLoading || selectUserLoading);
@@ -94,7 +95,6 @@ const UserHome = ({ navigation }) => {
     let subscription = null;
 
     const startLocationUpdates = async () => {
-
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
@@ -142,7 +142,6 @@ const UserHome = ({ navigation }) => {
       } catch (err) {
         console.error("Error watching location:", err);
       }
-
     };
 
     startLocationUpdates();
@@ -201,8 +200,6 @@ const UserHome = ({ navigation }) => {
     }
   };
 
-
-
   const animatedHeaderStyle = {
     paddingBottom: scrollY.interpolate({
       inputRange: [0, 100],
@@ -227,7 +224,7 @@ const UserHome = ({ navigation }) => {
   }
   return (
     <SafeAreaView style={styles.container}>
-      <MyStatusBar/>
+      <MyStatusBar />
 
       <AnimatedLinearGradient
         colors={["#101942", "#1C2A5A"]}
@@ -318,7 +315,8 @@ const UserHome = ({ navigation }) => {
                     Nearest Charging Stations
                   </Text>
                   <Text style={styles.featureText}>
-                    Discover nearby EV stations and filter by distance or connector type.
+                    Discover nearby EV stations and filter by distance or
+                    connector type.
                   </Text>
                 </View>
                 <View style={styles.featureIcons}>
@@ -327,17 +325,26 @@ const UserHome = ({ navigation }) => {
                     size={14}
                     color={COLORS.white}
                   />
-                  {!stations?.length > 0 ? (
-                    <DottedLoader />
+                  {stations.length > 0 ? (
+                    <>
+                      {isLoading ? (
+                        <DottedLoader />
+                      ) : (
+                        <Text style={styles.featureText}>
+                          {formatDistance(stations[0]?.distance_km)}
+                        </Text>
+                      )}
+                      <Text style={styles.featureText}>
+                        (from your location)
+                      </Text>
+                    </>
                   ) : (
                     <Text style={styles.featureText}>
-                      {formatDistance(stations[0]?.distance_km)}
+                      No any Nearest Station
                     </Text>
                   )}
-                  <Text style={styles.featureText}>(from your location)</Text>
                 </View>
               </TouchableOpacity>
-
             </LinearGradient>
 
             <LinearGradient
@@ -484,7 +491,6 @@ const UserHome = ({ navigation }) => {
               marginTop: Sizes.fixPadding,
             }}
           >
-
             <Text
               numberOfLines={1}
               style={{
@@ -495,7 +501,6 @@ const UserHome = ({ navigation }) => {
             >
               {formatDistance(item?.distance_km)}
             </Text>
-
 
             <TouchableOpacity
               onPress={() =>
@@ -624,7 +629,7 @@ const styles = StyleSheet.create({
   welcomeImage: {
     width: 100,
     height: 100,
-    borderRadius:12,
+    borderRadius: 12,
   },
   sectionContainer: {
     marginBottom: 25,

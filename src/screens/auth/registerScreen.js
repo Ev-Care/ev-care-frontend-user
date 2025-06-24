@@ -531,7 +531,7 @@ const RegisterScreen = ({ navigation, route }) => {
           >
             <Picker.Item
               style={{ fontSize: 12 }}
-              label="Select Company"
+              label="Select Manufacturer"
               value=""
             />
             {Object.keys(vehicleData).map((make) => (
@@ -559,7 +559,7 @@ const RegisterScreen = ({ navigation, route }) => {
               }}
             >
               <TextInput
-                placeholder="Enter Company Name here "
+                placeholder="Enter Manufacturer Name here "
                 placeholderTextColor={Colors.grayColor}
                 value={customCompany}
                 onChangeText={setCustomCompany}

@@ -1,6 +1,6 @@
 // ViewAllUserPage.js
 import { StackActions, useFocusEffect } from "@react-navigation/native";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -49,6 +49,11 @@ const VendorSelector = ({ navigation,route }) => {
   // console.log('users length',users?.length);
    const [refreshing, setRefreshing] = useState(false);
 
+useEffect(() => {
+  if (!users || users.length === 0) {
+    handleRefresh();
+  }
+}, []);
 
   const handleRefresh = async () => {
     try {
@@ -68,6 +73,10 @@ const VendorSelector = ({ navigation,route }) => {
       setRefreshing(false); // end refreshing UI
     }
   };
+
+
+
+
   const handleSelect = (name, number) => {
   route?.params?.setVendorName(name);
   route?.params?.setVendorNumber(number);

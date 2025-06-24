@@ -643,7 +643,8 @@ const StationDetailToVerify = ({ route, navigation }) => {
           <Text style={styles.landmarkTitle}>{station?.address}</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Amenities</Text>
+        {station?.amenities?.length>0 &&(  <>
+          <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
           {station?.amenities?.split(",").map((amenityName, index) => {
             const trimmedName = amenityName.trim();
@@ -670,7 +671,7 @@ const StationDetailToVerify = ({ route, navigation }) => {
               </View>
             );
           })}
-        </View>
+        </View></>)}
       </ScrollView>
     );
   }

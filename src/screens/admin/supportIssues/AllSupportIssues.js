@@ -145,7 +145,7 @@ useEffect(() => {
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
           <Text style={[styles.userName, {}]}>Status: </Text>
-          <Text style={[styles.userMobile, { color: "red" }]}>{issue?.status} </Text>
+          <Text style={[styles.userMobile, { color: issue?.status=="Open"?"red":"teal"}]}>{issue?.status} </Text>
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
           <Text style={[styles.userName, {}]}>Created at: </Text>

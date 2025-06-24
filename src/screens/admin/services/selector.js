@@ -1,5 +1,6 @@
-// Selector to get stations from the state
-// export const selectPendingStations = (state) => state.admin.pendingStations;
+import { createSelector } from 'reselect';
+
+// ...existing code...
 export const selectAllVendors = (state) => state.admin.allVendors;
 export const selectAllUsers = (state) => state.admin.allUsers;
 export const selectAllStations = (state) => state.admin.allStations;
@@ -10,8 +11,18 @@ export const selectRejectedStations = (state) => state.admin.rejectedStations;
 export const selectRejectedUsers = (state) => state.admin.rejectedUsers;
 export const selectAllSupportIssues = (state) => state.admin.supportIssues;
 
-// Filtered selectors
-export const selectPendingVendors = (state) => state.admin.allVendors.filter((user) => user?.status === "Completed");
-export const selectActiveVendors = (state) => state.admin.allVendors.filter((user) => user?.status === "Active");
-export const selectPendingStations = (state) => state.admin.allStations.filter((station) => station?.status === "Planned");
+// Memoized selectors using reselect
+export const selectPendingVendors = createSelector(
+  [selectAllVendors],
+  (allVendors) => allVendors.filter((user) => user?.status === "Completed")
+);
 
+export const selectActiveVendors = createSelector(
+  [selectAllVendors],
+  (allVendors) => allVendors.filter((user) => user?.status === "Active")
+);
+
+export const selectPendingStations = createSelector(
+  [selectAllStations],
+  (allStations) => allStations.filter((station) => station?.status === "Planned")
+);

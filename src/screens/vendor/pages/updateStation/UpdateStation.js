@@ -28,6 +28,7 @@ import { MaterialIcons, Ionicons, Entypo } from "@expo/vector-icons";
 
 import RNModal from "react-native-modal";
 import { Colors } from "../../../../constants/styles";
+import { validateDecimalInput } from "../../../../utils/globalMethods";
 const PRIMARY_COLOR = "#101942";
 const amenities = [
   { id: 1, icon: "toilet", label: "Restroom" },
@@ -73,7 +74,7 @@ const UpdateStation = ({ navigation, route }) => {
       ? "24 Hours"
       : "Custom"
   );
- 
+
   const [address, setAddress] = useState(station?.address || "");
   const [openTime, setOpenTime] = useState(
     station?.open_hours_opening_time || ""
@@ -244,11 +245,11 @@ const UpdateStation = ({ navigation, route }) => {
   const openGallery = async (setter, label) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: label === "avatar" ? [1, 1] : undefined,
-      quality: 0.2,
-    });
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: label === "avatar" ? [1, 1] : undefined,
+        quality: 0.2,
+      });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -284,10 +285,10 @@ const UpdateStation = ({ navigation, route }) => {
   const openCamera = async (setter, label) => {
     try {
       const result = await ImagePicker.launchCameraAsync({
-      quality: 0.2,
-      allowsEditing: true,
-      aspect: label === "avatar" ? [1, 1] : undefined,
-    });
+        quality: 0.2,
+        allowsEditing: true,
+        aspect: label === "avatar" ? [1, 1] : undefined,
+      });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -347,8 +348,8 @@ const UpdateStation = ({ navigation, route }) => {
       station_name: stationName,
       station_images: stationImages,
       address,
-      access_type:accessType,
-      status:station?.status,
+      access_type: accessType,
+      status: station?.status,
       coordinates: {
         latitude: coordinate?.latitude || null,
         longitude: coordinate?.longitude || null,
@@ -641,19 +642,13 @@ const UpdateStation = ({ navigation, route }) => {
                 keyboardType="numeric"
                 value={String(chargerForms[index]?.max_power_kw ?? "")}
                 onChangeText={(text) => {
-                  // Remove non-numeric characters
-                  let numericText = text.replace(/[^0-9]/g, "");
+                  const validInput = validateDecimalInput(text, 1000, 2);
 
-                  // Prevent leading zeros
-                  if (numericText.length > 1 && numericText.startsWith("0")) {
-                    numericText = numericText.replace(/^0+/, "");
-                  }
-
-                  // If input is not empty and > 99, block it
-                  if (numericText && parseInt(numericText, 10) > 1000) {
+                  if (text && !validInput) {
                     dispatch(
                       showSnackbar({
-                        message: "Power rating cannot exceed 1000 kW",
+                        message:
+                          "Invalid input. Max 2 decimals or value exceeded.",
                         type: "error",
                       })
                     );
@@ -663,7 +658,10 @@ const UpdateStation = ({ navigation, route }) => {
                   setChargerForms((prev) =>
                     prev.map((charger, i) =>
                       i === index
-                        ? { ...charger, max_power_kw: numericText }
+                        ? {
+                            ...charger,
+                            max_power_kw: validInput,
+                          }
                         : charger
                     )
                   );
@@ -892,7 +890,6 @@ const UpdateStation = ({ navigation, route }) => {
     );
   }
   function uploadPhotoSection() {
-  
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>
@@ -901,7 +898,7 @@ const UpdateStation = ({ navigation, route }) => {
         <Text style={styles.photoDescription}>
           Contribute to smoother journeys; include a location/charger photo.
         </Text>
-     
+
         <View
           style={{
             flexWrap: "wrap",

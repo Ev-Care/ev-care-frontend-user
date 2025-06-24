@@ -23,7 +23,6 @@ import { selectUserCoordinate } from "../service/selector";
 import { useSelector } from "react-redux";
 
 const PickLocationScreen = ({ navigation, route }) => {
-  
   const mapRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -168,28 +167,18 @@ const PickLocationScreen = ({ navigation, route }) => {
   };
 
   // Submit function
-  const handleSubmit = () => {
-    if (!selectedLocation || !address) {
-      Alert.alert("No Location Selected", "Please select a location first.");
-      return;
-    }
+const handleSubmit = () => {
+  if (!selectedLocation || !address) {
+    Alert.alert("No Location Selected", "Please select a location first.");
+    return;
+  }
 
-    if (route.params?.addressFor === "destination") {
-      route.params?.setDestinationAddress(address);
-      route.params?.setDestinationCoordinate(selectedLocation);
-    } else if (route.params?.addressFor === "pickup") {
-      route.params?.setPickupAddress(address);
-      route.params?.setPickupCoordinate(selectedLocation);
-    } else if (route.params?.addressFor === "vendorAddress") {
-      route.params?.setAddress(address);
-      route.params?.setCoordinate(selectedLocation);
-    } else {
-      route.params?.setAddress(address);
-      route.params?.setCoordinate(selectedLocation);
-    }
+  route.params?.setAddress(address);
+  route.params?.setCoordinate(selectedLocation);
 
-    navigation.dispatch(StackActions.pop(1));
-  };
+  navigation.dispatch(StackActions.pop(1));
+};
+
 
   return (
     <View style={styles.container}>
@@ -231,7 +220,21 @@ const PickLocationScreen = ({ navigation, route }) => {
       {/* Display Selected Address */}
       {address ? (
         <View style={styles.addressContainer}>
-          <Text style={styles.addressText}>{address}</Text>
+          <Text style={styles.addressHeading}>Location Details</Text>
+          {route.params?.addressFor === "adminStationAddress" &&
+           <View style={styles.addressRow}>
+            <Text style={styles.label}>Coordinates:</Text>
+            <Text style={styles.value}>
+              {selectedLocation?.latitude},
+            </Text>
+            <Text style={styles.value}>
+            {selectedLocation?.longitude}
+            </Text>
+          </View>}
+          <View style={styles.addressRow}>
+            <Text style={styles.label}>Address:</Text>
+            <Text style={styles.value}>{address}</Text>
+          </View>
         </View>
       ) : null}
 
@@ -304,16 +307,44 @@ const styles = StyleSheet.create({
     bottom: 80,
     left: 20,
     right: 20,
-    backgroundColor: "rgba(255,255,255,0.9)",
-    borderRadius: 4,
-    padding: 10,
-    alignItems: "center",
-    elevation: 5,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  addressText: {
-    fontSize: 16,
-    color: "black",
+
+  addressHeading: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: Colors.primaryColor,
+    marginBottom: 10,
   },
+
+  addressRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 6,
+    flexWrap: "wrap",
+  },
+
+  label: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: Colors.primaryColor,
+    marginRight: 6,
+  },
+
+  value: {
+    fontSize: 13,
+    color: "#333",
+    flexShrink: 1,
+  },
+
   submitButton: {
     position: "absolute",
     bottom: 20,
@@ -327,7 +358,7 @@ const styles = StyleSheet.create({
   },
   currentLocationButton: {
     position: "absolute",
-    bottom: 150,
+    bottom: 250,
     right: 20,
     width: 50,
     height: 50,

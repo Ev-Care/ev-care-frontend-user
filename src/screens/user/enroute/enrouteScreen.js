@@ -68,7 +68,7 @@ const EnRouteScreen = () => {
         setDestinationCoordinate({ latitude, longitude });
         setDestinationText(address);
       }
-
+    
       setRegion({
         latitude,
         longitude,

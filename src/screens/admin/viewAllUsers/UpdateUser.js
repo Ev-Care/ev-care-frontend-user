@@ -154,7 +154,7 @@ const UpdateUser = ({ route, navigation }) => {
   };
   const selectOnMap = () => {
     navigation.push("PickLocation", {
-      addressFor: "stationAddress",
+      addressFor: "adminStationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
       setCoordinate: (newCoordinate) => setCoordinate(newCoordinate),
     });

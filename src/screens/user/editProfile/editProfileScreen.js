@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,10 @@ import {
   Alert,
   Modal,
   ScrollView,
+  Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+
 import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
 import {
   Colors,
@@ -34,10 +36,15 @@ import {
   selectToken,
   selectUser,
 } from "../../auth/services/selector";
-import { Picker } from '@react-native-picker/picker';
+import { Picker } from "@react-native-picker/picker";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import { vehicleData } from "../../auth/registerScreen";
-import { EMAIL_REGEX, NAME_REGEX, VEHICLE_NUMBER_REGEX } from "../../../constants/regex";
+import { vehicleData } from "../../../utils/evVehicleData";
+import {
+  EMAIL_REGEX,
+  NAME_REGEX,
+  PHONE_REGEX,
+  VEHICLE_NUMBER_REGEX,
+} from "../../../constants/regex";
 
 const EditProfileScreen = ({ route, navigation }) => {
   const user = useSelector(selectUser);
@@ -56,22 +63,11 @@ const EditProfileScreen = ({ route, navigation }) => {
   );
   const [panNumber, setPanNumber] = useState(user?.pan_no || "Not found");
   const [gstNumber, setGstNumber] = useState(user?.gstin_number || "Not found");
-  const [vehicleCompany, setVehicleCompany] = useState(user?.vehicle_manufacturer|| "Not found");
-  const [vehicleModel, setVehicleModel] = useState(user?.vehicle_model|| "Not found");
-  const [vehicleNumber, setVehicleNumber] = useState(user?.vehicle_registration_number|| "Not found");
-  // const [selectedCompany, setSelectedCompany] = useState(user?.vehicle_manufacturer|| "Not found");
-  // const [selectedModel, setSelectedModel] = useState(user?.vehicle_model|| "Not found");
-  // const [customCompany, setCustomCompany] = useState(null);
-  // const [customModel, setCustomModel] = useState(null); 
 
-  // const models = selectedCompany && vehicleData[selectedCompany] ? vehicleData[selectedCompany] : [];
-  //   image start
-  // const [aadhaarFrontImage, setAadhaarFrontImage] = useState(null);
-  // const [aadhaarBackImage, setAadhaarBackImage] = useState(null);
-  // const [panImage, setPanImage] = useState(null);
-  // const [gstImage, setGstImage] = useState(null);
-  // const [avatar, setAvatar] = useState(null);
-  //   image uri
+  const [vehicleNumber, setVehicleNumber] = useState(
+    user?.vehicle_registration_number || "Not found"
+  );
+
   const [aadhaarFrontImageURI, setAadhaarFrontImageURI] = useState(
     user?.adhar_front_pic
   );
@@ -90,7 +86,60 @@ const EditProfileScreen = ({ route, navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showDialogue, setshowDialogue] = useState(false);
   const [imageloading, setImageLoading] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedModel, setSelectedModel] = useState(null);
+  const [customCompany, setCustomCompany] = useState(null);
+  const [customModel, setCustomModel] = useState(null);
+  const models =
+    selectedCompany && vehicleData[selectedCompany]
+      ? vehicleData[selectedCompany]
+      : [];
+
+  const [vehicleCompany, setVehicleCompany] = useState(
+    customCompany
+      ? customCompany
+      : selectedCompany
+      ? selectedCompany
+      : user?.vehicle_manufacturer || "Not found"
+  );
+
+  const [vehicleModel, setVehicleModel] = useState(
+    customModel
+      ? customModel
+      : selectedModel
+      ? selectedModel
+      : user?.vehicle_model || "Not found"
+  );
   const errorMessage = useSelector(selectAuthError);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const manu = user.vehicle_manufacturer?.trim();
+    const model = user.vehicle_model?.trim();
+
+    if (manu) {
+      if (vehicleData.hasOwnProperty(manu)) {
+        // Manufacturer is in the master list
+        setSelectedCompany(manu);
+      } else {
+        // “Other” manufacturer
+        setSelectedCompany("Others");
+        setCustomCompany(manu);
+      }
+    }
+
+    if (model) {
+      // When models depend on manufacturer, we must check after we know which list to look in
+      const list = vehicleData[manu] || [];
+      if (list.includes(model)) {
+        setSelectedModel(model);
+      } else {
+        setSelectedModel("Other");
+        setCustomModel(model);
+      }
+    }
+  }, [user]);
 
   const showFullImage = (uri) => {
     if (!uri) return;
@@ -98,10 +147,12 @@ const EditProfileScreen = ({ route, navigation }) => {
     setModalVisible(true);
   };
   const validateUserData = (data) => {
-  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  //   const nameRegex = /^[A-Za-z\s]{3,}$/;
-  //  const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
-
+    //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    //   const nameRegex = /^[A-Za-z\s]{3,}$/;
+    //  const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
+    if (!PHONE_REGEX.test(mobNumber)) {
+      return "Invalid mobile number";
+    }
     if (!data.email || !EMAIL_REGEX.test(data.email)) {
       return "Invalid email address.";
     }
@@ -110,16 +161,21 @@ const EditProfileScreen = ({ route, navigation }) => {
       return "Invalid full name. Only letters and spaces, at least 3 characters.";
     }
 
-    if (!data.role || !['user', 'vendor'].includes(data.role.toLowerCase())) {
+    if (!data.role || !["user", "vendor"].includes(data.role.toLowerCase())) {
       return "Role must be either 'user' or 'vendor'.";
     }
-    if (data.role === 'user') {
-
-      if (!data.vehicle_registration_number || !VEHICLE_NUMBER_REGEX.test(data.vehicle_registration_number)) {
+    if (data.role === "user") {
+      if (
+        !data.vehicle_registration_number ||
+        !VEHICLE_NUMBER_REGEX.test(data.vehicle_registration_number)
+      ) {
         return "Invalid vehicle number format ";
       }
 
-      if (!data.vehicle_manufacturer || data.vehicle_manufacturer.trim() === "") {
+      if (
+        !data.vehicle_manufacturer ||
+        data.vehicle_manufacturer.trim() === ""
+      ) {
         return "Vehicle manufacturer is required.";
       }
 
@@ -131,31 +187,39 @@ const EditProfileScreen = ({ route, navigation }) => {
     return null; // all good
   };
   const handleSubmit = async () => {
- 
     setIsLoading(true);
     try {
       const updatedData = {
         owner_legal_name: name,
         email: email,
+        mobile_number: mobNumber,
         avatar: avatarURI,
-        vehicle_model:vehicleModel,
-        vehicle_manufacturer:vehicleCompany,
-        vehicle_registration_number:vehicleNumber,
+        vehicle_model: customModel
+          ? customModel
+          : selectedModel
+          ? selectedModel
+          : user?.vehicle_model,
+        vehicle_manufacturer: customCompany
+          ? customCompany
+          : selectedCompany
+          ? selectedCompany
+          : user?.vehicle_manufacturer,
+        vehicle_registration_number: vehicleNumber,
         role: user?.role,
         user_key: user?.user_key,
       };
 
-     const error = validateUserData(updatedData);
+      const error = validateUserData(updatedData);
       if (error) {
         // console.log('error cartched');
-        dispatch(showSnackbar({ message: error, type: 'error' }));
+        dispatch(showSnackbar({ message: error, type: "error" }));
         return;
       }
-  
-      // console.log("Updated Data:", updatedData);
-  
+
+      console.log("Updated Data is :", updatedData);
+
       const response = await dispatch(patchUpdateUserProfile(updatedData));
-  
+
       if (patchUpdateUserProfile.fulfilled.match(response)) {
         await dispatch(
           showSnackbar({
@@ -171,25 +235,24 @@ const EditProfileScreen = ({ route, navigation }) => {
           })
         );
       }
-  
+
       // console.log("Response from update profile:", response.payload);
-  
+
       // Optional navigation
       // navigation.pop();
     } finally {
       setIsLoading(false);
     }
   };
-  
 
   const openGallery = async (setter, label) => {
     try {
-     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: label === "avatar" ? [1, 1] : undefined,
-      quality: 0.2,
-    });
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: label === "avatar" ? [1, 1] : undefined,
+        quality: 0.2,
+      });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -225,10 +288,10 @@ const EditProfileScreen = ({ route, navigation }) => {
   const openCamera = async (setter, label) => {
     try {
       const result = await ImagePicker.launchCameraAsync({
-      quality: 0.2,
-      allowsEditing: true,
-      aspect: label === "avatar" ? [1, 1] : undefined,
-    });
+        quality: 0.2,
+        allowsEditing: true,
+        aspect: label === "avatar" ? [1, 1] : undefined,
+      });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -271,10 +334,10 @@ const EditProfileScreen = ({ route, navigation }) => {
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         {label}
       </Text>
-     <TextInput
-      style={styles.input}
-      value={value}
-       onChangeText={(text) => {
+      <TextInput
+        style={styles.input}
+        value={value}
+        onChangeText={(text) => {
           if (label === "Email") {
             setter(text.toLowerCase());
           } else if (label === "Vehicle Registration Number") {
@@ -283,16 +346,16 @@ const EditProfileScreen = ({ route, navigation }) => {
             setter(text);
           }
         }}
-      placeholder={placeholder}
-      keyboardType={
-        label === "Mobile Number"
-          ? "numeric"
-          : label === "Email"
-          ? "email-address"
-          : "default"
-      }
-       maxLength={label === "Mobile Number" ? 10 : undefined}
-    />
+        placeholder={placeholder}
+        keyboardType={
+          label === "Mobile Number"
+            ? "numeric"
+            : label === "Email"
+            ? "email-address"
+            : "default"
+        }
+        maxLength={label === "Mobile Number" ? 10 : undefined}
+      />
     </View>
   );
   // const renderVehicleInput = (label, value) => (
@@ -325,85 +388,102 @@ const EditProfileScreen = ({ route, navigation }) => {
     </View>
   );
 
-    const renderImageBox = (label, setter, apiRespUri) => {
-         if (!apiRespUri && label !== "avatar") return null;
-       
-         return (
-           <TouchableOpacity
-             onPress={() => {
-               if (apiRespUri) {
-                 showFullImage(imageURL.baseURL + apiRespUri);
-               }
-             }}
-             style={{ alignItems: "center", marginBottom: 20 }}
-           >
-             <View
-               style={[
-                 styles.imageBox,
-                 { borderRadius: label === "avatar" ? 50 : 12 },
-               ]}
-             >
-               {imageloading === label ? (
-                 <ActivityIndicator size={40} color="#ccc" />
-               ) : apiRespUri ? (
-                 <Image
-                   source={{ uri: imageURL.baseURL + apiRespUri }}
-                   style={[
-                     styles.imageStyle,
-                     { borderRadius: label === "avatar" ? 50 : 12 },
-                   ]}
-                 />
-               ) : (
-                 <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
-               )}
-       
-               {label === "avatar" && (
-                 <TouchableOpacity
-                   style={styles.editIcon}
-                   onPress={() => {
-                     setCurrentImageSetter(() => setter);
-                     setCurrentImageLabel(label);
-                     setBottomSheetVisible(true);
-                   }}
-                 >
-                   <MaterialIcons name="edit" size={20} color="white" />
-                 </TouchableOpacity>
-               )}
-             </View>
-             {label !== "avatar" && <Text style={styles.imageLabel}>{label}</Text>}
-           </TouchableOpacity>
-         );
-       };
+  const renderImageBox = (label, setter, apiRespUri) => {
+    if (!apiRespUri && label !== "avatar") return null;
+
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          if (apiRespUri) {
+            showFullImage(imageURL.baseURL + apiRespUri);
+          }
+        }}
+        style={{ alignItems: "center", marginBottom: 20 }}
+      >
+        <View
+          style={[
+            styles.imageBox,
+            { borderRadius: label === "avatar" ? 50 : 12 },
+          ]}
+        >
+          {imageloading === label ? (
+            <ActivityIndicator size={40} color="#ccc" />
+          ) : apiRespUri ? (
+            <Image
+              source={{ uri: imageURL.baseURL + apiRespUri }}
+              style={[
+                styles.imageStyle,
+                { borderRadius: label === "avatar" ? 50 : 12 },
+              ]}
+            />
+          ) : (
+            <MaterialIcons name="image-not-supported" size={50} color="#bbb" />
+          )}
+
+          {label === "avatar" && (
+            <TouchableOpacity
+              style={styles.editIcon}
+              onPress={() => {
+                setCurrentImageSetter(() => setter);
+                setCurrentImageLabel(label);
+                setBottomSheetVisible(true);
+              }}
+            >
+              <MaterialIcons name="edit" size={20} color="white" />
+            </TouchableOpacity>
+          )}
+        </View>
+        {label !== "avatar" && <Text style={styles.imageLabel}>{label}</Text>}
+      </TouchableOpacity>
+    );
+  };
   return (
     <View style={{ flex: 1, backgroundColor: Colors.whiteColor }}>
-       <View style={styles.appBar}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                      <Icon name="arrow-back" size={24} color={Colors.primary} />
-                    </TouchableOpacity>
-                    <Text style={[styles.title,{fontSize:16}]}>Edit Profile</Text>
-                    <View style={{ width: 24 }} />
-                  </View>
+      <View style={styles.appBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Icon name="arrow-back" size={24} color={Colors.primary} />
+        </TouchableOpacity>
+        <Text style={[styles.title, { fontSize: 16 }]}>Edit Profile</Text>
+        <View style={{ width: 24 }} />
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
-       
         <View style={styles.imageContainerAvatar}>
           {renderImageBox("avatar", setAvatarURI, avatarURI)}
         </View>
         {renderInput("Full Name", name, setName, "Enter your full name")}
-        {renderNonEditableInput(
+        {renderInput(
           "Mobile Number",
           mobNumber,
           setMobNumber,
-          "Enter your full name"
+          "Enter your Mob Number"
         )}
-        {renderNonEditableInput("Email", email, setEmail, "Enter your email")}
-        {renderInput("Vehicle Registration Number", vehicleNumber, setVehicleNumber, "Enter your Vehicle Number")}
-        {renderInput("Vehicle Manufacturer", vehicleCompany, setVehicleCompany, "Enter Vehicle Manufacturer Name")}
-        {renderInput("Vehicle Model", vehicleModel, setVehicleModel, "Enter Vehicle Model")}
-     
-            
+        {renderInput("Email", email, setEmail, "Enter your email")}
+        {renderInput(
+          "Vehicle Registration Number",
+          vehicleNumber,
+          setVehicleNumber,
+          "Enter your Vehicle Number"
+        )}
+        {/* <Text style={[styles.label,{marginBottom: 10}]}>
+          Vehicle Manufacturer <Text style={styles.label}> : {user?.vehicle_manufacturer}</Text>
+        </Text>
+         <Text style={styles.label}>
+          Vehicle Model <Text style={styles.label}> : {user?.vehicle_model}</Text>
+        </Text> */}
+        {/* {renderInput(
+          "Vehicle Manufacturer",
+          vehicleCompany,
+          setVehicleCompany,
+          "Enter Vehicle Manufacturer Name"
+        )}
+        {renderInput(
+          "Vehicle Model",
+          vehicleModel,
+          setVehicleModel,
+          "Enter Vehicle Model"
+        )} */}
+        {vehicleDataForm?.()}
 
-
-            
         <View style={styles.buttonRow}>
           <TouchableOpacity
             onPress={() => {
@@ -531,11 +611,119 @@ const EditProfileScreen = ({ route, navigation }) => {
       </Overlay>
     );
   }
+
+  function vehicleDataForm() {
+    return (
+      <View>
+        {/* Vehicle Manufacturer Picker */}
+        <Text style={styles.label}>
+          Select Vehicle Manufacturer <Text style={styles.label}>*</Text>
+        </Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={selectedCompany}
+            onValueChange={(itemValue) => {
+              setSelectedCompany(itemValue);
+              setSelectedModel("");
+              setCustomCompany("");
+              setCustomModel("");
+            }}
+            style={styles.pickerStyle}
+          >
+            <Picker.Item
+              label="Select Manufacturer"
+              value=""
+              style={{ fontSize: 12 }}
+            />
+            {Object.keys(vehicleData).map((make) => (
+              <Picker.Item
+                key={make}
+                label={make}
+                value={make}
+                style={{ fontSize: 12 }}
+              />
+            ))}
+          </Picker>
+        </View>
+
+        {/* If 'Others' is selected, show custom company and model inputs */}
+        {selectedCompany === "Others" && (
+          <>
+            <View style={styles.textFieldWrapper}>
+              {renderInput(
+                "Enter Vehicle Manufacturer",
+                customCompany,
+                setCustomCompany,
+                "Enter Manufacturer Name here"
+              )}
+            </View>
+
+            <View style={styles.textFieldWrapper}>
+              {renderInput(
+                "Vehicle Model",
+                customModel,
+                setCustomModel,
+                "Enter Model here"
+              )}
+            </View>
+          </>
+        )}
+
+        {/* Show model picker only when models exist or user has existing model */}
+        {selectedCompany !== "Others" &&
+          (models.length > 0 || !!user?.vehicle_model) && (
+            <>
+              <Text style={styles.label}>
+                Select Vehicle Model <Text style={styles.label}>*</Text>
+              </Text>
+              <View style={styles.pickerWrapper}>
+                <Picker
+                  selectedValue={selectedModel}
+                  onValueChange={(itemValue) => setSelectedModel(itemValue)}
+                  style={styles.pickerStyle}
+                >
+                  <Picker.Item
+                    label="Select Model"
+                    value=""
+                    style={{ fontSize: 12 }}
+                  />
+                  {models.map((model) => (
+                    <Picker.Item
+                      key={model}
+                      label={model}
+                      value={model}
+                      style={{ fontSize: 12 }}
+                    />
+                  ))}
+                  <Picker.Item
+                    label="Other"
+                    value="Other"
+                    style={{ fontSize: 12 }}
+                  />
+                </Picker>
+              </View>
+            </>
+          )}
+
+        {/* Show custom model input if model is 'Other' or company is 'Others' */}
+        {selectedModel === "Other" && selectedCompany !== "" && (
+          <View style={styles.textFieldWrapper}>
+            {renderInput(
+              "Vehicle Model",
+              customModel,
+              setCustomModel,
+              "Enter Model here"
+            )}
+          </View>
+        )}
+      </View>
+    );
+  }
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    paddingHorizontal: 20,
     // backgroundColor: "#fff",
     // flex:1,
     backgroundColor: Colors.bodyBackColor,
@@ -555,6 +743,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 10,
+    backgroundColor: "#fff",
     padding: 12,
     fontSize: 12,
   },
@@ -566,16 +755,17 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
     zIndex: 999,
   },
   imageContainer: {
     flexDirection: "row",
-    gap:20,
+    gap: 20,
     marginTop: 20,
 
     flexWrap: "wrap",
   },
+  label: { marginBottom: 4, fontWeight: "bold", fontSize: 14 },
   imageContainerAvatar: {
     flexDirection: "row",
     justifyContent: "center",
@@ -592,7 +782,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#fff",
   },
   imageStyle: {
     width: "100%",
@@ -720,6 +910,21 @@ const styles = StyleSheet.create({
   dropdownText: {
     fontSize: 14,
     color: "#333",
+  },
+  pickerWrapper: {
+    position: "relative",
+    borderWidth: 1,
+    borderColor: Colors.primaryColor,
+    // ...commonStyles.shadow,
+    borderRadius: 10,
+    marginBottom: Sizes.fixPadding * 2.0,
+    backgroundColor: Colors.bodyBackColor,
+  },
+  pickerStyle: {
+    height: Platform.OS === "ios" ? 180 : 50,
+    width: "100%",
+    color: "#000",
+    fontSize: 16,
   },
 });
 

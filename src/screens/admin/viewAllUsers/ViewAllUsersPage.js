@@ -196,13 +196,31 @@ const ViewAllUserPage = ({ navigation,route }) => {
         </View>
 
         {/* Filter Icon */}
-        <MaterialIcons
-          name="filter-list"
-          color={Colors.blackColor}
-          size={26}
-          style={{ marginLeft: 12 }} // add some spacing
-          onPress={() => setBottomSheetVisible(true)}
-        />
+           <View style={{ position: "relative", marginLeft: 12 }}>
+          <MaterialIcons
+            name="filter-list"
+            color={Colors.blackColor}
+            size={26}
+            onPress={() => setBottomSheetVisible(true)}
+          />
+          <View
+            style={{
+              position: "absolute",
+              top: -8,
+              right: -8,
+              backgroundColor: "red",
+              borderRadius: 10,
+              width: 18,
+              height: 18,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "white", fontSize: 10, fontWeight: "bold" }}>
+           {filteredUsers.length}
+            </Text>
+          </View>
+        </View>
       </View>
     );
   }

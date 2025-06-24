@@ -31,7 +31,7 @@ import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 const SupportIssuesDetail = ({ route, navigation }) => {
   const { issue } = route?.params; // Get the user data from route params
-
+ const [selectedStatus, setSelectedStatus] = useState(issue?.status || null);
   
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -41,7 +41,9 @@ const SupportIssuesDetail = ({ route, navigation }) => {
   const [imageloading, setImageLoading] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // console.log('issue = ', issue);
+
+
+  console.log('issue = ', issue);
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
@@ -87,41 +89,19 @@ const SupportIssuesDetail = ({ route, navigation }) => {
       setIsLoading(false);
     }
   };
-  // const handleApprove = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     const approvedResponse = await dispatch(
-  //       approveVendorProfile({ user_key: user?.user_key, status: "approve" })
-  //     );
-
-  //     if (approveVendorProfile.fulfilled.match(approvedResponse)) {
-  //       const pendingVendorResponse = await dispatch(getAllPendingUsers());
-
-  //       if (getAllPendingUsers.fulfilled.match(pendingVendorResponse)) {
-  //         await dispatch(
-  //           showSnackbar({
-  //             message: "Vendor profile approved.",
-  //             type: "success",
-  //           })
-  //         );
-  //         navigation.goBack();
-  //       } else if (getAllPendingUsers.rejected.match(pendingVendorResponse)) {
-  //         dispatch(
-  //           showSnackbar({
-  //             message: "Failed to approve vendor.",
-  //             type: "error",
-  //           })
-  //         );
-  //       }
-  //     } else if (approveVendorProfile.rejected.match(approvedResponse)) {
-  //       dispatch(
-  //         showSnackbar({ message: "Failed to approve vendor.", type: "error" })
-  //       );
-  //     }
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+    
+    } catch (e){
+      console.error("Error approving vendor profile:", e);
+      dispatch(
+        showSnackbar({ message: "Failed to approve vendor.", type: "error" })
+      );
+    }finally {
+      setIsLoading(false);
+    }
+  };
 
   const renderUserData = (key, value) => (
     <View
@@ -243,23 +223,14 @@ const SupportIssuesDetail = ({ route, navigation }) => {
         {renderTitleMessage("Title", issue.title)}
         {/* {console.log(issue.title)} */}
         {renderTitleMessage("Message", issue.description)}
+        {statusSection()}
         {/* <View style={styles.imageContainer}>
           {renderImageBox("Reference", imageURL.baseURL + issue.reference_image_url)}
          
         </View> */}
 
-        {/* <View style={styles.buttonRow}>
-          <TouchableOpacity
-            onPress={() => {
-              setshowRejectDialogue(true);
-            }}
-            style={[
-              styles.actionButton,
-              { backgroundColor: Colors.darOrangeColor },
-            ]}
-          >
-            <Text style={styles.buttonText}>Reject</Text>
-          </TouchableOpacity>
+        <View style={styles.buttonRow}>
+         
           <TouchableOpacity
             onPress={() => {
               setshowApproveDialogue(true);
@@ -269,9 +240,9 @@ const SupportIssuesDetail = ({ route, navigation }) => {
               { backgroundColor: Colors.primaryColor },
             ]}
           >
-            <Text style={styles.buttonText}>Approve</Text>
+            <Text style={styles.buttonText}>Submit</Text>
           </TouchableOpacity>
-        </View> */}
+        </View>
 
         {/* Full Image Modal */}
         <Modal visible={modalVisible} transparent={true}>
@@ -366,7 +337,7 @@ const SupportIssuesDetail = ({ route, navigation }) => {
               marginVertical: Sizes.fixPadding * 2.0,
             }}
           >
-            Do You Want To Approve?
+          Are you sure you want to change the status?
           </Text>
 
           <View
@@ -391,7 +362,7 @@ const SupportIssuesDetail = ({ route, navigation }) => {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => {
-                handleApprove();
+                handleSubmit();
                 setshowApproveDialogue(false);
                 // handle delete logic here
               }}
@@ -430,6 +401,42 @@ const SupportIssuesDetail = ({ route, navigation }) => {
       </Overlay>
     );
   }
+    function statusSection() {
+      
+      const ticketStatus = ["Pending", "Resolved", "In Progress", "Closed", "Escalated","Open"];
+  
+      return (
+        <View style={[styles.section, { marginBottom: 12 }]}>
+          <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+            Current Status
+            <Text style={{ color: Colors.darOrangeColor }}> *</Text>
+          </Text>
+  
+          <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
+           {ticketStatus.map((status) => (
+              <TouchableOpacity
+                key={status}
+                style={[
+                  styles.TypeButton,
+                  selectedStatus === status && styles.selectedButton,
+                ]}
+                onPress={() => setSelectedStatus(status)}
+              >
+                <Text
+                  style={[
+                    styles.TypebuttonText,
+                    selectedStatus === status && styles.selectedButtonText,
+                  ]}
+                >
+                  {status}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          
+          </View>
+        </View>
+      );
+    }
 };
 
 const styles = StyleSheet.create({
@@ -546,8 +553,8 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     // marginHorizontal: 10,
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingVertical: 10,
+    borderRadius: 8,
     alignItems: "center",
   },
   buttonText: {
@@ -583,6 +590,29 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: Sizes.fixPadding - 5.0,
   },
   /*End of  Dialog Styles */
+
+   TypeContainer: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  TypeButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    borderRadius: 8,
+  },
+  TypebuttonText: {
+    fontSize: 12,
+    color: "#555",
+  },
+  selectedButton: {
+    backgroundColor: Colors.primaryColor,
+    borderColor: Colors.primaryColor,
+  },
+  selectedButtonText: {
+    color: "white",
+  },
 });
 
 export default SupportIssuesDetail;

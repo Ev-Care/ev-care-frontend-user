@@ -123,3 +123,16 @@ export  const openGoogleMaps = (latitude, longitude, label = 'EV Care') => {
 
 //   Linking.openURL(url);
 // };
+export const validateDecimalInput = (text, max = 1000, decimalPlaces = 2) => {
+  const numericText = text.replace(/[^0-9.]/g, "");
+
+  if ((numericText.match(/\./g) || []).length > 1) return "";
+
+  const [whole, fraction] = numericText.split(".");
+  if (fraction && fraction.length > decimalPlaces) return "";
+
+  const value = parseFloat(numericText);
+  if (!isNaN(value) && value > max) return "";
+
+  return numericText;
+};

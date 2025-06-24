@@ -473,7 +473,7 @@ const PreviewStation = ({ navigation, route }) => {
         <View style={styles.landmarkContainer}>
           <Text style={styles.landmarkTitle}>{stationData?.address}</Text>
         </View>
-
+       {stationData?.amenities?.length>0 && (<>
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
           {stationData?.amenities?.split(",").map((amenityName, index) => {
@@ -488,6 +488,7 @@ const PreviewStation = ({ navigation, route }) => {
             );
           })}
         </View>
+        </>)}
       </ScrollView>
     );
   }

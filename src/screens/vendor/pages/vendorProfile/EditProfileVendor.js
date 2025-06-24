@@ -84,9 +84,11 @@ const EditProfileScreen = ({ route, navigation }) => {
         owner_legal_name: name,
         address:address,
         email: email,
+        mobile_number: mobNumber,
         avatar: avatarURI,
         business_name: businessName,
         role: user?.role,
+        address: address,
         user_key: user?.user_key,
       };
 
@@ -327,13 +329,13 @@ const EditProfileScreen = ({ route, navigation }) => {
         </View>
         {renderInput("Full Name", name, setName, "Enter your full name")}
 
-        {renderNonEditableInput(
+        {renderInput(
           "Mobile Number",
           mobNumber,
           setMobNumber,
           "Enter your full name"
         )}
-        {renderNonEditableInput("Email", email, setEmail, "Enter your email")}
+        {renderInput("Email", email, setEmail, "Enter your email")}
 
         {user?.role === "vendor" && (
           <>

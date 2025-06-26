@@ -26,7 +26,7 @@ import { Overlay } from "@rneui/themed";
 import imageURL from "../../../constants/baseURL";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useDispatch } from "react-redux";
-import { approveVendorProfile, getAllPendingUsers } from "../services/crudFunctions";
+import { approveVendorProfile, changeTicketStatus, getAllPendingUsers, getAllSupportIssues } from "../services/crudFunctions";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 const SupportIssuesDetail = ({ route, navigation }) => {
@@ -43,7 +43,7 @@ const SupportIssuesDetail = ({ route, navigation }) => {
 
 
 
-  console.log('issue = ', issue);
+  // console.log('issue = ', issue);
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
@@ -63,7 +63,7 @@ const SupportIssuesDetail = ({ route, navigation }) => {
 
       if (approveVendorProfile.fulfilled.match(rejectResponse)) {
         const pendingVendorResponse = await dispatch(getAllPendingUsers());
-
+        //  await dispatch(getAllSupportIssues());
         if (getAllPendingUsers.fulfilled.match(pendingVendorResponse)) {
           await dispatch(
             showSnackbar({
@@ -89,16 +89,28 @@ const SupportIssuesDetail = ({ route, navigation }) => {
       setIsLoading(false);
     }
   };
-  const handleSubmit = async () => {
+const handleSubmit = async () => {
     setIsLoading(true);
     try {
-    
-    } catch (e){
-      console.error("Error approving vendor profile:", e);
-      dispatch(
-        showSnackbar({ message: "Failed to approve vendor.", type: "error" })
-      );
-    }finally {
+      const response = await dispatch(changeTicketStatus({ id: issue?.support_id, status: selectedStatus }));
+      if (changeTicketStatus.fulfilled.match(response)) {
+        await dispatch(showSnackbar({
+          message: "Ticket status updated successfully.",
+          type: "success",
+        }));
+        navigation.goBack();
+      } else {
+        dispatch(showSnackbar({
+          message: "Failed to update ticket status.",
+          type: "error",
+        }));
+      }
+    } catch (error) {
+      dispatch(showSnackbar({
+        message: "An error occurred while updating ticket status.",
+        type: "error",
+      }));
+    } finally {
       setIsLoading(false);
     }
   };

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { approveStation, approveVendorProfile, fetchAllPendingStation, fetchAllStations, getAllSupportIssues, getAllUsers, getAllVendors } from "./crudFunctions";
+import { approveStation, approveVendorProfile, changeTicketStatus, fetchAllPendingStation, fetchAllStations, getAllSupportIssues, getAllUsers, getAllVendors } from "./crudFunctions";
 
 const initialState = {
     allUsers: [],
@@ -108,7 +108,20 @@ const adminSlice = createSlice({
             .addCase(getAllSupportIssues.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload.message;
-            });
+            })
+            //  .addCase(changeTicketStatus.pending, (state) => {
+            //     state.loading = true;
+            //     state.error = null;
+            // })
+            // .addCase(changeTicketStatus.fulfilled, (state, action) => {
+            //     state.loading = false;
+            //     state.supportIssues = action.payload.data;
+
+            // })
+            // .addCase(changeTicketStatus.rejected, (state, action) => {
+            //     state.loading = false;
+            //     state.error = action.payload.message;
+            // });
     }
 });
 export const { clearAdminState } = adminSlice.actions;

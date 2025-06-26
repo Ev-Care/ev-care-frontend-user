@@ -5,6 +5,7 @@ import {
   addStationByAdminAPI,
   approveStationAPI,
   approveVendorProfileAPI,
+  changeTicketStatusAPI,
   createUserAPI,
   getAllPendingStationAPI,
   getAllPendingUsersAPI,
@@ -439,6 +440,38 @@ export const getEntityCount = createAsyncThunk(
         error?.response?.data?.message ||  // API sent error message
         error?.message ||                  // JS error message
         "Something went wrong. Please try again";          // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const changeTicketStatus = createAsyncThunk(
+  "admin/changeTicketStatus",
+  async (data, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
+
+      const response = await changeTicketStatusAPI({
+        data,
+        accessToken,
+      }); // Call the API to fetch stations by location
+      console .log("response in changeTicketStatus", response?.data);
+      if (response?.data?.code === 200 || response?.data?.code === 201) {
+        return response?.data?.data;
+      } else {
+        return rejectWithValue(
+          response?.message || response?.data?.message || "Failed to  Change Ticket Status"
+        );
+      }
+    } catch (error) {
+      // console.log("Error in changeTicketStatus:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message || // API sent error message
+        error?.message || // JS error message
+        "Server error"; // fallback message
 
       return rejectWithValue(errorMessage);
     }

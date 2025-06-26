@@ -120,3 +120,11 @@ export const getEntityCountAPI = (data) =>
     content_type: "application/json",
     accessToken: data.accessToken,
   });
+
+  export const changeTicketStatusAPI = ({data,accessToken}) =>
+  apiPatchRequest({
+    apiUrl: `${API_URL}/support/update-query/${data?.id}`,
+    content_type: "application/json",
+    accessToken: accessToken,
+    data: { status: data?.status }, // ✅ Send as object
+  });

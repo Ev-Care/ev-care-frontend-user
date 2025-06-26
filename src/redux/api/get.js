@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const apiGetRequest = async (request) => {
     try {
-        // console.log("Calling GET API:", request);
+        console.log("Calling GET API:", request);
         // console.log("Headers:", { Authorization: `Bearer ${request.accessToken}` });
 
         const response = await axios.get(request.apiUrl, {
@@ -14,7 +14,7 @@ export const apiGetRequest = async (request) => {
         });
 
         // Log the raw response for debugging
-        // console.log("Raw API Response:", response.data);
+        // console.log("Raw API Response:", JSON.stringify(response.data, null, 2));
 
         return response; // Axios automatically parses JSON
     } catch (error) {

@@ -1,33 +1,27 @@
-import React, { useState } from "react";
+import { MaterialIcons } from "@expo/vector-icons";
+import { Overlay } from "@rneui/themed";
+import { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Image,
   ActivityIndicator,
-  StyleSheet,
-  Alert,
+  Image,
   Modal,
   ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
+import { default as Icon } from "react-native-vector-icons/MaterialIcons";
+import { useDispatch } from "react-redux";
+import imageURL from "../../../constants/baseURL";
 import {
   Colors,
-  Sizes,
   Fonts,
-  commonStyles,
-  screenWidth,
+  Sizes,
+  commonStyles
 } from "../../../constants/styles";
-import RNModal from "react-native-modal";
-import { default as Icon } from "react-native-vector-icons/MaterialIcons";
-import { Overlay } from "@rneui/themed";
-import imageURL from "../../../constants/baseURL";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { useDispatch } from "react-redux";
-import { approveVendorProfile, changeTicketStatus, getAllPendingUsers, getAllSupportIssues } from "../services/crudFunctions";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+import { approveVendorProfile, changeTicketStatus, getAllPendingUsers } from "../services/crudFunctions";
 
 const SupportIssuesDetail = ({ route, navigation }) => {
   const { issue } = route?.params; // Get the user data from route params
@@ -43,7 +37,8 @@ const SupportIssuesDetail = ({ route, navigation }) => {
 
 
 
-  // console.log('issue = ', issue);
+  console.log('issue = ', issue);
+  console.log('url  = ', imageURL.baseURL + issue?.user?.avatar);
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
@@ -106,6 +101,7 @@ const handleSubmit = async () => {
         }));
       }
     } catch (error) {
+      console.error("Error updating ticket status:", error);
       dispatch(showSnackbar({
         message: "An error occurred while updating ticket status.",
         type: "error",
@@ -415,7 +411,7 @@ const handleSubmit = async () => {
   }
     function statusSection() {
       
-      const ticketStatus = ["Pending", "Resolved", "In Progress", "Closed", "Escalated","Open"];
+      const ticketStatus = [ "Resolved", "In Progress", "Closed", "Escalated","Open","Rejected"];
   
       return (
         <View style={[styles.section, { marginBottom: 12 }]}>

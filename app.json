@@ -6,11 +6,11 @@
     "sdkVersion": "52.0.0",
     "owner": "evcare",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/appIcon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/icon.png",
+      "image": "./assets/appIcon.png",
       "resizeMode": "contain",
       "backgroundColor": "#101942"
     },

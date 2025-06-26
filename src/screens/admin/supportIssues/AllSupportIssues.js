@@ -42,10 +42,10 @@ const COLORS = {
   divider: "#e1e1ea",
 };
 
-
 const ViewAllIssuesPage = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const user = useSelector(selectUser);
+  const [refreshing, setRefreshing] = useState(false);
   const allIssues = useSelector(selectAllSupportIssues);
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
@@ -56,25 +56,41 @@ const ViewAllIssuesPage = ({ navigation }) => {
       issue?.user?.owner_legal_name
         ?.toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      issue?.user.mobile_number?.includes(searchQuery)
+      issue?.user.mobile_number?.includes(searchQuery) ||
+      issue?.status?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-useEffect(() => {
-  const fetchIssues = async () => {
-    setIsLoading(true);
+  useEffect(() => {
+   handleRefresh();
+  }, []);
+
+  const handleRefresh = async () => {
+
+  try {
+     setRefreshing(true);
+    // setIsLoading(true);
     await dispatch(getAllSupportIssues());
-    setIsLoading(false);
-  };
-
-  fetchIssues();
-}, []);
-
+  } catch (error) {
+    console.error("Error refreshing issues:", error);
+    await dispatch(
+      showSnackbar({
+        message: "Something went wrong during refresh.",
+        type: "error",
+      })
+    );
+  } finally {
+    setRefreshing(false);
+    // setIsLoading(false); 
+  }
+};
 
   return (
     <SafeAreaView style={styles.container}>
       <MyStatusBar />
       {searchBar()}
       <FlatList
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
         data={filteredIssues}
         renderItem={({ item }) => <SupportInfo issue={item} />}
         keyExtractor={(item) => item?.id?.toString()}
@@ -82,13 +98,17 @@ useEffect(() => {
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-           <View style={styles.emptyContainer}>
-            <MaterialIcons name="confirmation-number" size={60} color={COLORS.lightGray} />
+          <View style={styles.emptyContainer}>
+            <MaterialIcons
+              name="confirmation-number"
+              size={60}
+              color={COLORS.lightGray}
+            />
             <Text style={styles.emptyText}>No Issues found</Text>
           </View>
         }
       />
-       {isLoading && (
+      {isLoading && (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={Colors.primaryColor} />
         </View>
@@ -113,7 +133,10 @@ useEffect(() => {
           ]}
         >
           {issue?.user?.avatar ? (
-            <Image source={{ uri: imageURL.baseURL + issue?.user?.avatar }} style={styles.avatar} />
+            <Image
+              source={{ uri: imageURL.baseURL + issue?.user?.avatar }}
+              style={styles.avatar}
+            />
           ) : (
             <Icon
               name="account-circle"
@@ -136,7 +159,10 @@ useEffect(() => {
             <Text
               style={[
                 styles.roleText,
-                { color: issue?.user?.role === "user" ? COLORS.primary : "orange" },
+                {
+                  color:
+                    issue?.user?.role === "user" ? COLORS.primary : "orange",
+                },
               ]}
             >
               {issue?.user?.role || "N/A"}
@@ -145,7 +171,14 @@ useEffect(() => {
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
           <Text style={[styles.userName, {}]}>Status: </Text>
-          <Text style={[styles.userMobile, { color: issue?.status=="Open"?"red":"teal"}]}>{issue?.status} </Text>
+          <Text
+            style={[
+              styles.userMobile,
+              { color: issue?.status == "Open" ? "red" : "teal" },
+            ]}
+          >
+            {issue?.status}{" "}
+          </Text>
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
           <Text style={[styles.userName, {}]}>Created at: </Text>
@@ -153,9 +186,7 @@ useEffect(() => {
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
           <Text style={[styles.userName, {}]}>Title: </Text>
-          <Text style={[styles.userMobile, {}]}>
-            {issue?.title}
-          </Text>
+          <Text style={[styles.userMobile, {}]}>{issue?.title}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -208,7 +239,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
   },
-    loaderContainer: {
+  loaderContainer: {
     position: "absolute",
     top: 0,
     left: 0,

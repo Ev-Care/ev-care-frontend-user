@@ -109,19 +109,23 @@ const adminSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload.message;
             })
-            //  .addCase(changeTicketStatus.pending, (state) => {
-            //     state.loading = true;
-            //     state.error = null;
-            // })
-            // .addCase(changeTicketStatus.fulfilled, (state, action) => {
-            //     state.loading = false;
-            //     state.supportIssues = action.payload.data;
-
-            // })
-            // .addCase(changeTicketStatus.rejected, (state, action) => {
-            //     state.loading = false;
-            //     state.error = action.payload.message;
-            // });
+            .addCase(changeTicketStatus.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(changeTicketStatus.fulfilled, (state, action) => {
+                state.loading = false;
+                const updatedIssue = action?.payload;
+                if (updatedIssue && updatedIssue.support_id) {
+                    state.supportIssues = state.supportIssues.map(issue =>
+                        issue.support_id === updatedIssue.support_id ? { ...issue, ...updatedIssue } : issue
+                    );
+                }
+            })
+            .addCase(changeTicketStatus.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload.message;
+            });
     }
 });
 export const { clearAdminState } = adminSlice.actions;

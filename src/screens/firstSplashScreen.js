@@ -70,8 +70,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   icon: {
-    width: 110,
-    height: 100,
+    width: 150,
+    height: 150,
     resizeMode: "contain",
     marginBottom: 0, // if needed to nudge for visual alignment
   },
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
   text: {
     ...Fonts.whiteColor38SemiBold,
-    fontSize: 45,
+    fontSize: 65,
     marginBottom: -6, // Adjust as needed
     color: "#29cafc",
   },

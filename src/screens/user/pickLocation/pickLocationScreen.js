@@ -23,11 +23,20 @@ import { selectUserCoordinate } from "../service/selector";
 import { useSelector } from "react-redux";
 
 const PickLocationScreen = ({ navigation, route }) => {
+   const userCurrentRegion = useSelector(selectUserCoordinate);
   const mapRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const [currentLocation, setCurrentLocation] = useState(null);
+  const [currentLocation, setCurrentLocation] = useState(
+    userCurrentRegion
+      ? {
+          latitude: userCurrentRegion.latitude,
+          longitude: userCurrentRegion.longitude,
+        }
+      : null
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const userCurrentRegion = useSelector(selectUserCoordinate);
+ 
+  // console.log("location from store ", userCurrentRegion);
   const [address, setAddress] = useState(""); // Store address
   const [region, setRegion] = useState({
     latitude: userCurrentRegion?.latitude || 28.6139,
@@ -36,17 +45,17 @@ const PickLocationScreen = ({ navigation, route }) => {
     longitudeDelta: 0.05,
   });
   const [errorMsg, setErrorMsg] = useState(null);
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (mapRef.current) {
-        getUserLocation();
-      } else {
-        // console.log("Map reference is not ready yet");
-      }
-    }, 500);
+  // useEffect(() => {
+  //   const timeout = setTimeout(() => {
+  //     if (mapRef.current) {
+  //       getUserLocation();
+  //     } else {
+  //       // console.log("Map reference is not ready yet");
+  //     }
+  //   }, 500);
 
-    return () => clearTimeout(timeout);
-  }, []);
+  //   return () => clearTimeout(timeout);
+  // }, []);
 
   const getUserLocation = async () => {
     setIsLoading(true);
@@ -167,18 +176,17 @@ const PickLocationScreen = ({ navigation, route }) => {
   };
 
   // Submit function
-const handleSubmit = () => {
-  if (!selectedLocation || !address) {
-    Alert.alert("No Location Selected", "Please select a location first.");
-    return;
-  }
+  const handleSubmit = () => {
+    if (!selectedLocation || !address) {
+      Alert.alert("No Location Selected", "Please select a location first.");
+      return;
+    }
 
-  route.params?.setAddress(address);
-  route.params?.setCoordinate(selectedLocation);
+    route.params?.setAddress(address);
+    route.params?.setCoordinate(selectedLocation);
 
-  navigation.dispatch(StackActions.pop(1));
-};
-
+    navigation.dispatch(StackActions.pop(1));
+  };
 
   return (
     <View style={styles.container}>
@@ -221,16 +229,13 @@ const handleSubmit = () => {
       {address ? (
         <View style={styles.addressContainer}>
           <Text style={styles.addressHeading}>Location Details</Text>
-          {route.params?.addressFor === "adminStationAddress" &&
-           <View style={styles.addressRow}>
-            <Text style={styles.label}>Coordinates:</Text>
-            <Text style={styles.value}>
-              {selectedLocation?.latitude},
-            </Text>
-            <Text style={styles.value}>
-            {selectedLocation?.longitude}
-            </Text>
-          </View>}
+          {route.params?.addressFor === "adminStationAddress" && (
+            <View style={styles.addressRow}>
+              <Text style={styles.label}>Coordinates:</Text>
+              <Text style={styles.value}>{selectedLocation?.latitude},</Text>
+              <Text style={styles.value}>{selectedLocation?.longitude}</Text>
+            </View>
+          )}
           <View style={styles.addressRow}>
             <Text style={styles.label}>Address:</Text>
             <Text style={styles.value}>{address}</Text>

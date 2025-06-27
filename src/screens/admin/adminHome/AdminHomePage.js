@@ -1,5 +1,5 @@
 // EVCareAdminDashboard.js
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -26,7 +26,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectUser } from '../../auth/services/selector';
 import { useFocusEffect } from '@react-navigation/native';
 import { getEntityCount } from '../services/crudFunctions';
-
+import { updateUserCoordinate } from '../../../redux/store/userSlice';
+import * as Location from "expo-location";
+import { showSnackbar } from '../../../redux/snackbar/snackbarSlice';
 // Define root colors at the top
 const COLORS = {
   primary: '#101942',
@@ -44,9 +46,9 @@ const COLORS = {
 const { width } = Dimensions.get('window');
 
 const AdminHome = ({navigation}) => {
-
+ const [refreshing, setRefreshing] = useState(false);
   const [entityCount ,setEntityCount]=useState(null);
-
+ const [currentLocation, setCurrentLocation] = useState(null);
   const user = useSelector(selectUser);
  const dispatch = useDispatch();
 
@@ -71,6 +73,68 @@ useFocusEffect(
 );
 
 
+
+  useEffect(() => {
+    let subscription = null;
+
+    const startLocationUpdates = async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          dispatch(
+            showSnackbar({
+              message: "Permission to access location was denied.",
+              type: "error",
+            })
+          );
+          return;
+        }
+
+        subscription = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 5000, // minimum time (ms) between updates
+            distanceInterval: 50, // minimum distance (m) between updates
+          },
+          async (loc) => {
+            // <-- important: make this function async
+            const coords = loc.coords;
+            setCurrentLocation(coords);
+            // console.log({ currentLocation });
+
+            dispatch(updateUserCoordinate(coords)); // Update user coordinates
+
+            // 1. Fetch stations
+            const locationResponse = await dispatch(
+              fetchStationsByLocation({ radius, coords })
+            );
+            if (fetchStationsByLocation.fulfilled.match(locationResponse)) {
+              // dispatch(showSnackbar({ message: 'Charging stations found.', type: "success" }));
+            } else if (
+              fetchStationsByLocation.rejected.match(locationResponse)
+            ) {
+              dispatch(
+                showSnackbar({
+                  message: errorMessage || "Failed to fetch stations.",
+                  type: "error",
+                })
+              );
+            }
+          }
+        );
+      } catch (err) {
+        console.error("Error watching location:", err);
+      }
+    };
+
+    startLocationUpdates();
+
+    return () => {
+      if (subscription) subscription.remove();
+    };
+  }, [refreshing]);
+
+  console.log("this is admin curr loc =", currentLocation);
 
   // Dummy data for today's metrics
   const todayData = {

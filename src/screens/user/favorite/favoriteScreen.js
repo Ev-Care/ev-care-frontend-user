@@ -261,7 +261,7 @@ setListData(filtered);
                   marginRight: Sizes.fixPadding - 5.0,
                 }}
               >
-                {formatDistance(data?.item?.distance_km)}
+                {/* {formatDistance(data?.item?.distance_km)} */}
               </Text>
          
               <TouchableOpacity

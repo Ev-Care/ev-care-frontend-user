@@ -21,11 +21,10 @@ import { getEnrouteStations } from "../service/crudFunction";
 import { DottedLoader2 } from "../../../utils/lottieLoader/loaderView";
 import { selectUserCoordinate } from "../service/selector";
 const EnRouteScreen = () => {
-
   const mapRef = useRef(null);
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  
+
   const userCurrentRegion = useSelector(selectUserCoordinate);
   //  console.log('user current region ', userCurrentRegion);
 
@@ -41,12 +40,20 @@ const EnRouteScreen = () => {
   const [destinationText, setDestinationText] = useState("");
   const [sourceSuggestions, setSourceSuggestions] = useState([]);
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
-  const [sourceCoordinate, setSourceCoordinate] = useState(null);
+  const [sourceCoordinate, setSourceCoordinate] = useState(
+    userCurrentRegion
+      ? {
+          latitude: userCurrentRegion.latitude,
+          longitude: userCurrentRegion.longitude,
+        }
+      : null
+  );
   const [destinationCoordinate, setDestinationCoordinate] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  useEffect(() => {
-    getUserLocation("source");
-  }, []);
+
+  // useEffect(() => {
+  //   getUserLocation("source");
+  // }, []);
 
   const getUserLocation = async (target) => {
     setIsLoading(true);
@@ -68,7 +75,7 @@ const EnRouteScreen = () => {
         setDestinationCoordinate({ latitude, longitude });
         setDestinationText(address);
       }
-    
+
       setRegion({
         latitude,
         longitude,

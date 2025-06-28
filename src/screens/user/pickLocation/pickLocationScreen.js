@@ -24,6 +24,7 @@ import { useSelector } from "react-redux";
 
 const PickLocationScreen = ({ navigation, route }) => {
    const userCurrentRegion = useSelector(selectUserCoordinate);
+   console.log("userCurrentRegion from store: ", userCurrentRegion);
   const mapRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(
@@ -38,12 +39,18 @@ const PickLocationScreen = ({ navigation, route }) => {
  
   // console.log("location from store ", userCurrentRegion);
   const [address, setAddress] = useState(""); // Store address
-  const [region, setRegion] = useState({
-    latitude: userCurrentRegion?.latitude || 28.6139,
-    longitude: userCurrentRegion?.longitude || 77.209,
-    latitudeDelta: 0.05,
-    longitudeDelta: 0.05,
-  });
+ const [region, setRegion] = useState(userCurrentRegion
+       ? {
+     latitude: userCurrentRegion?.latitude,
+     longitude: userCurrentRegion?.longitude,
+     latitudeDelta: 0.05,
+     longitudeDelta: 0.05,
+   }:{
+     latitude:28.6139,
+     longitude:77.209,
+     latitudeDelta: 0.05,
+     longitudeDelta: 0.05,
+   });
   const [errorMsg, setErrorMsg] = useState(null);
   // useEffect(() => {
   //   const timeout = setTimeout(() => {

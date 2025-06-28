@@ -11,12 +11,12 @@ export const apiPostRequest = async ({ apiUrl, content_type, data, accessToken }
       headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
-    console.log(`POST Request: ${apiUrl}`);
+    // console.log(`POST Request: ${apiUrl}`);
     // console.log('Headers:', headers);
-    console.log('Body:', data);
+    // console.log('Body:', data);
 
     const response = await axios.post(apiUrl, data, { headers });
-    console.log('raw api response = ',JSON.stringify(response.data, null, 2));
+    // console.log('raw api response = ',JSON.stringify(response.data, null, 2));
     return response; // axios parses JSON by default
   } catch (error) {
     console.error('Error in apiPostRequest:', error?.response?.data || error.message);

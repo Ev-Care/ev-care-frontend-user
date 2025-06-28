@@ -219,6 +219,7 @@ const VendorHome = () => {
           async (loc) => {
             // <-- important: make this function async
             const coords = loc.coords;
+             console.log("Location updated:", coords);
             setCurrentLocation(coords);
             // console.log({ currentLocation });
 

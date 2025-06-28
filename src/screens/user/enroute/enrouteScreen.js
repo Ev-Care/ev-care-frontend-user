@@ -26,14 +26,23 @@ const EnRouteScreen = () => {
   const dispatch = useDispatch();
 
   const userCurrentRegion = useSelector(selectUserCoordinate);
-  //  console.log('user current region ', userCurrentRegion);
+  // console.log("user current region ", userCurrentRegion);
 
-  const [region, setRegion] = useState({
-    latitude: userCurrentRegion?.latitude || 28.6139,
-    longitude: userCurrentRegion?.longitude || 77.209,
-    latitudeDelta: 0.05,
-    longitudeDelta: 0.05,
-  });
+  const [region, setRegion] = useState(
+    userCurrentRegion
+      ? {
+          latitude: userCurrentRegion?.latitude,
+          longitude: userCurrentRegion?.longitude,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        }
+      : {
+          latitude: 28.6139,
+          longitude: 77.209,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        }
+  );
 
   const [activeInput, setActiveInput] = useState(null);
   const [sourceText, setSourceText] = useState("");
@@ -51,9 +60,25 @@ const EnRouteScreen = () => {
   const [destinationCoordinate, setDestinationCoordinate] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // useEffect(() => {
-  //   getUserLocation("source");
-  // }, []);
+  useEffect(() => {
+    const initLocation = async () => {
+      if (!userCurrentRegion) {
+        getUserLocation("source");
+      } else {
+        const address = await fetchAddressFromCoordinates(
+          userCurrentRegion.latitude,
+          userCurrentRegion.longitude
+        );
+        setSourceCoordinate({
+          latitude: userCurrentRegion.latitude,
+          longitude: userCurrentRegion.longitude,
+        });
+        setSourceText(address);
+      }
+    };
+
+    initLocation();
+  }, []);
 
   const getUserLocation = async (target) => {
     setIsLoading(true);
@@ -213,7 +238,7 @@ const EnRouteScreen = () => {
         fromLng: sourceCoordinate.longitude,
         toLat: destinationCoordinate.latitude,
         toLng: destinationCoordinate.longitude,
-        maxDistance: 50,
+        maxDistance: 20,
       };
 
       const response = await dispatch(getEnrouteStations(enRoutedata));

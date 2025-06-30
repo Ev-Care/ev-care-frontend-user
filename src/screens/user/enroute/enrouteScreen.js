@@ -240,7 +240,7 @@ const EnRouteScreen = () => {
         toLng: destinationCoordinate.longitude,
         maxDistance: 20,
       };
-
+  console.log("enRoutedata:", enRoutedata);
       const response = await dispatch(getEnrouteStations(enRoutedata));
 
       if (response?.payload?.code === 200) {

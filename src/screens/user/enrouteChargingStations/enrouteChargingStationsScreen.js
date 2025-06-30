@@ -30,6 +30,8 @@ import {
   openHourFormatter,
   formatDistance,
   getChargerLabel,
+  markerImages,
+  getMarkerImage,
 } from "../../../utils/globalMethods";
 import polyline from "@mapbox/polyline";
 import { DottedLoader2 } from "../../../utils/lottieLoader/loaderView";
@@ -38,102 +40,11 @@ const width = screenWidth;
 const cardWidth = width / 1.15;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
 
-//   {
-//     owner_id: 7,
-//     station_name: "Tesla EV India",
-//     address: "Rajstan india",
-//     coordinates: {
-//       latitude: 18.4745984,
-//       longitude: 73.8197504,
-//     },
-//     amenities: "restroom,wifi,store, car care,lodging",
-//     rate: null,
-//     rate_type: null,
-//     station_images: null,
-//     additional_comment: null,
-//     distance_km:5000, //check it
-//     open_hours_opening_time: "00:00:00",
-//     open_hours_closing_time: "23:59:59",
-//     id: 2,
-//     status: "Planned",
-//     created_at: "2025-04-21T02:23:19.671Z",
-//     update_at: "2025-04-21T02:23:19.671Z",
-//     updated_by: 0,
-//     chargers: [
-//       {
-//         charger_type: "AC",
-//         max_power_kw: 60,
-//         station: {
-//           id: 2,
-//           owner_id: 7,
-//           station_name: "Tesla EV India",
-//           address: "Rajstan india",
-//           coordinates: {
-//             latitude: 18.4745984,
-//             longitude: 73.8197504,
-//           },
-//           amenities: "restroom,wifi,store, car care,lodging",
-//           rate: null,
-//           rate_type: null,
-//           station_images: null,
-//           additional_comment: null,
-//           open_hours_opening_time: "00:00:00",
-//           open_hours_closing_time: "23:59:59",
-//           status: "Planned",
-//           created_at: "2025-04-21T02:23:19.671Z",
-//           update_at: "2025-04-21T02:23:19.671Z",
-//           updated_by: 0,
-//         },
-//         charger_id: 3,
-//         status: "Available",
-//         created_at: "2025-04-21T02:23:19.760Z",
-//         update_at: "2025-04-21T02:23:19.760Z",
-//         updated_by: 0,
-//         connectors: [
-//           {
-//             connector_status: "operational",
-//             charger: {
-//               charger_id: 3,
-//               charger_type: "AC",
-//               max_power_kw: 60,
-//               status: "Available",
-//               created_at: "2025-04-21T02:23:19.760Z",
-//               update_at: "2025-04-21T02:23:19.760Z",
-//               updated_by: 0,
-//               station: {
-//                 id: 2,
-//                 owner_id: 7,
-//                 station_name: "Tesla EV India",
-//                 address: "Rajstan india",
-//                 coordinates: {
-//                   latitude: 18.4745984,
-//                   longitude: 73.8197504,
-//                 },
-//                 amenities: "restroom,wifi,store, car care,lodging",
-//                 rate: null,
-//                 rate_type: null,
-//                 station_images: null,
-//                 additional_comment: null,
-//                 open_hours_opening_time: "00:00:00",
-//                 open_hours_closing_time: "23:59:59",
-//                 status: "Planned",
-//                 created_at: "2025-04-21T02:23:19.671Z",
-//                 update_at: "2025-04-21T02:23:19.671Z",
-//                 updated_by: 0,
-//               },
-//             },
-//             connectorType: {
-//               connector_type_id: 1,
-//               max_power_kw: "60.00",
-//               description: "CCS-2",
-//             },
-//             charger_connector_id: 2,
-//           },
-//         ],
-//       },
-//     ],
-//   },
-// ];
+
+
+
+
+
 const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   const SCREEN_HEIGHT = Dimensions.get("window").height;
   const [expanded, setExpanded] = useState(false);
@@ -689,19 +600,22 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
         onRegionChangeComplete={setRegion} // Allows zoom update
       >
         {markerList.map((marker, index) => {
+          // console.log("Marker:", marker);
           const scaleStyle = {
             transform: [{ scale: interpolation[index].scale }],
           };
           return (
             <Marker
               key={index}
-              coordinate={marker.coordinates}
+              coordinate={marker?.coordinates}
               onPress={onMarkerPress}
               pinColor="#28692e"
               anchor={{ x: 0.5, y: 0.5 }}
+              title={trimName(40,marker?.station_name)}
+              description={trimName(40,marker?.address)}
             >
               <Image
-                source={require("../../../../assets/images/stationMarker.png")}
+                 source={getMarkerImage(marker?.vendor?.owner_legal_name)} 
                 style={{ width: 50, height: 50 }}
                 resizeMode="contain"
               />
@@ -709,15 +623,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
           );
         })}
 
-        {/* <MapViewDirections
-          origin={fromDefaultLocation}
-          destination={toDefaultLocation}
-          apikey={Key.apiKey}
-          strokeColor={Colors.primaryColor}
-          strokeWidth={3}
-          mode="DRIVING"
-          optimizeWaypoints={true}
-        /> */}
+       
         {coordinates.length > 0 && (
           <Polyline
             coordinates={coordinates}

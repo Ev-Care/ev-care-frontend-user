@@ -20,25 +20,46 @@ const BlockedUserScreen = ({ navigation }) => {
         source={require("../../../assets/images/sadCar.png")}
         style={styles.image}
       />
-
-      <Text style={styles.title}>
+       
+      {user?(
+        <>
+        <Text style={styles.title}>
         Oops! Your account is currently {user?.status}
       </Text>
-
-      <Text style={styles.subtitle}>
+       <Text style={styles.subtitle}>
         Your access has been restricted. Please contact the administrator for
         further assistance or to resolve any issues.
       </Text>
-
+      
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("Help")}
       >
         <Text style={styles.buttonText}>Contact Support</Text>
       </TouchableOpacity>
+       
+
       <TouchableOpacity onPress={() => dispatch(logoutUser())}>
         <Text style={styles.goBackText}>Log out</Text>
       </TouchableOpacity>
+      </>
+    ):(<>
+        <Text style={styles.title}>Unexpected Error Occured</Text>
+        <Text style={styles.subtitle}>
+        Please contact the administrator for
+        further assistance or to resolve any issues Or Check Your internet Connection
+      </Text>
+      
+      {/* <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("Help")}
+      >
+        <Text style={styles.buttonText}>Contact Support</Text>
+      </TouchableOpacity> */}
+        </>
+      )}
+
+    
     </View>
   );
 };

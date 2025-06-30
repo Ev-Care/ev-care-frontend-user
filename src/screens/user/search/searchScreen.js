@@ -33,9 +33,14 @@ import {
   formatDistance,
   getChargerLabel,
   openGoogleMaps,
+  markerImages,
+  getMarkerImage,
+  trimName,
 } from "../../../utils/globalMethods";
 import { fetchStationsByLocation, searchStationsByLocation } from "../service/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
+
+
 
 const width = screenWidth;
 const cardWidth = width / 1.15;
@@ -397,8 +402,8 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
             fillColor="rgba(0, 150, 255, 0.1)"
           />
         )}
-
         {stations?.map((marker, index) => {
+        
           // Optional chaining to prevent errors if stationsList is undefined or null
           const scaleStyle = {
             transform: [
@@ -413,13 +418,15 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
               coordinate={marker?.coordinates} // Optional chaining for coordinates
               onPress={(e) => {
                 onMarkerPress(e);
-                navigation.navigate("ChargingStationDetail", { item: marker });
+                // navigation.navigate("ChargingStationDetail", { item: marker });
               }}
+               title={trimName(40,marker?.station_name)}
+              description={trimName(40,marker?.address)}
               anchor={{ x: 0.5, y: 0.5 }}
               pinColor="green"
             >
-              <Image
-                source={require("../../../../assets/images/stationMarker.png")}
+              <Image   
+                source={getMarkerImage(marker?.station_name)} 
                 style={{ width: 50, height: 50 }}
                 resizeMode="contain"
               />

@@ -121,7 +121,7 @@ const OnboardingScreen = ({ navigation }) => {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => {
-          currentScreen == 2
+          currentScreen == 5
             ? navigation.push("Signin")
             : scrollToIndex({ index: currentScreen + 1 });
         }}

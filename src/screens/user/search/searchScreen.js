@@ -12,6 +12,7 @@ import {
   Linking,
   Pressable,
   Alert,
+  Keyboard,
 } from "react-native";
 import {
   Colors,
@@ -37,10 +38,11 @@ import {
   getMarkerImage,
   trimName,
 } from "../../../utils/globalMethods";
-import { fetchStationsByLocation, searchStationsByLocation } from "../service/crudFunction";
+import {
+  fetchStationsByLocation,
+  searchStationsByLocation,
+} from "../service/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-
-
 
 const width = screenWidth;
 const cardWidth = width / 1.15;
@@ -85,7 +87,7 @@ const customMapStyle = [
   //   featureType: "transit.station",
   //   elementType: "all",
   //   stylers: [{ visibility: "on" }],
-  // }, 
+  // },
 ];
 
 const ChargingStationMap = () => {
@@ -94,9 +96,11 @@ const ChargingStationMap = () => {
   const stateStations = useSelector(selectStations);
   const [stations, setStations] = useState(stateStations || []);
   const dispatch = useDispatch();
+  const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(null);
+
   // console.log("stations", stations?.length);
-const userCurrentRegion = useSelector(selectUserCoordinate);
-   const [region, setRegion] = useState({
+  const userCurrentRegion = useSelector(selectUserCoordinate);
+  const [region, setRegion] = useState({
     latitude: userCurrentRegion?.latitude || 28.6139,
     longitude: userCurrentRegion?.longitude || 77.209,
     latitudeDelta: 0.05,
@@ -114,26 +118,27 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
     // console.log('new stations = ', JSON.stringify(stations[0], null, 2));
   }, [stations]);
 
-
   const handleSearchedStation = async (data) => {
     try {
-
       const response = await dispatch(searchStationsByLocation(data));
 
       if (searchStationsByLocation.fulfilled.match(response)) {
         setStations(response?.payload?.data);
       } else if (searchStationsByLocation.fulfilled.match(response)) {
-        dispatch(showSnackbar({ message: "Location didn't fetched", type: "error" }));
+        dispatch(
+          showSnackbar({ message: "Location didn't fetched", type: "error" })
+        );
       }
     } catch (error) {
       // console.log("error = " + error);
-      dispatch(showSnackbar({ message: "Something went wrong. Please try again later", type: "error" }));
-
+      dispatch(
+        showSnackbar({
+          message: "Something went wrong. Please try again later",
+          type: "error",
+        })
+      );
     }
-
-
-
-  }
+  };
   const _scrollView = useRef(null);
   useEffect(() => {
     getUserLocation("autoCall");
@@ -247,6 +252,7 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
 
   const selectSuggestion = async (placeId, description) => {
     setSuggestions([]);
+    setTimeout(() => Keyboard.dismiss(), 100);
     setSearch(description);
     try {
       const url = `https://maps.googleapis.com/maps/api/geocode/json?place_id=${placeId}&key=${Key.apiKey}`;
@@ -257,7 +263,7 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
 
         const coords = {
           latitude: lat,
-          longitude: lng
+          longitude: lng,
         };
 
         await handleSearchedStation({ coords, radius: 50 });
@@ -265,7 +271,9 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
         const radiusInKm = 50;
         const oneDegreeOfLatitudeInKm = 111.32;
         const latitudeDelta = radiusInKm / oneDegreeOfLatitudeInKm;
-        const longitudeDelta = radiusInKm / (oneDegreeOfLatitudeInKm * Math.cos(lat * (Math.PI / 180)));
+        const longitudeDelta =
+          radiusInKm /
+          (oneDegreeOfLatitudeInKm * Math.cos(lat * (Math.PI / 180)));
 
         const newRegion = {
           latitude: lat,
@@ -276,7 +284,7 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
 
         setRegion(newRegion);
         const selectedCoord = { latitude: lat, longitude: lng };
-        
+
         setSelectedLocation(selectedCoord);
         scrollTo();
 
@@ -286,15 +294,11 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
             { duration: 1000 }
           );
         }
-        
-
-        
       }
     } catch (error) {
       console.error("Place details error:", error);
     }
   };
-
 
   const scrollTo = () => {
     if (stations.length > 0 && _scrollView.current) {
@@ -306,17 +310,15 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
     }
   };
 
- 
+  const onMarkerPress = (e, index) => {
+    setSelectedMarkerIndex(index);
 
-  const onMarkerPress = (mapEventData) => {
-    const markerID = mapEventData?._targetInst?.return?.key; // Optional chaining
-
-    let x = markerID * cardWidth + markerID * 20;
+    let x = index * cardWidth + index * 20;
     if (Platform.OS === "ios") {
       x = x - SPACING_FOR_CARD_INSET;
     }
 
-    _scrollView.current?.scrollTo({ x: x, y: 0, animated: true }); // Optional chaining
+    _scrollView.current?.scrollTo({ x, y: 0, animated: true });
   };
 
   const interpolation = stations?.map((marker, index) => {
@@ -366,6 +368,7 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
         {suggestions.length > 0 && (
           <FlatList
             data={suggestions}
+            keyboardShouldPersistTaps="handled"
             keyExtractor={(item) => item.place_id}
             style={styles.suggestionList}
             renderItem={({ item }) => (
@@ -403,7 +406,6 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
           />
         )}
         {stations?.map((marker, index) => {
-        
           // Optional chaining to prevent errors if stationsList is undefined or null
           const scaleStyle = {
             transform: [
@@ -415,19 +417,23 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
           return (
             <Marker
               key={index}
-              coordinate={marker?.coordinates} // Optional chaining for coordinates
-              onPress={(e) => {
-                onMarkerPress(e);
-                // navigation.navigate("ChargingStationDetail", { item: marker });
-              }}
-               title={trimName(40,marker?.station_name)}
-              description={trimName(40,marker?.address)}
+              coordinate={marker?.coordinates}
+              onPress={(e) => onMarkerPress(e, index)}
+              title={trimName(40, marker?.station_name)}
+              description={trimName(40, marker?.address)}
               anchor={{ x: 0.5, y: 0.5 }}
-              pinColor="green"
+              pinColor={index === selectedMarkerIndex ? "blue" : "green"} // optional
             >
-              <Image   
-                source={getMarkerImage(marker?.station_name)} 
-                style={{ width: 50, height: 50 }}
+              <Image
+                source={getMarkerImage(marker?.vendor?.owner_legal_name)}
+                style={{
+                  // backgroundColor:"teal",
+                  width: index === selectedMarkerIndex ? 65 : 50,
+                  height: index === selectedMarkerIndex ? 55 : 50,
+                  transform: [
+                    { scale: index === selectedMarkerIndex ? 1 : 1 },
+                  ],
+                }}
                 resizeMode="contain"
               />
             </Marker>
@@ -562,7 +568,6 @@ const userCurrentRegion = useSelector(selectUserCoordinate);
                     marginTop: Sizes.fixPadding,
                   }}
                 >
-
                   <Text
                     numberOfLines={1}
                     style={{

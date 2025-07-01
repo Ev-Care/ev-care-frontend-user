@@ -9,6 +9,7 @@ import {
   Image,
   Pressable,
   Alert,
+  Keyboard,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
@@ -44,7 +45,7 @@ const EnRouteScreen = () => {
         }
   );
 
-  const [activeInput, setActiveInput] = useState(null);
+  const [activeInput, setActiveInput] = useState("source");
   const [sourceText, setSourceText] = useState("");
   const [destinationText, setDestinationText] = useState("");
   const [sourceSuggestions, setSourceSuggestions] = useState([]);
@@ -161,6 +162,7 @@ const EnRouteScreen = () => {
 
   const selectPlace = async (placeId, description, type) => {
     setIsLoading(true);
+     setTimeout(() => Keyboard.dismiss(), 100);
     type === "source"
       ? setSourceSuggestions([])
       : setDestinationSuggestions([]);
@@ -315,6 +317,7 @@ const EnRouteScreen = () => {
           <FlatList
             data={sourceSuggestions}
             keyExtractor={(item) => item.place_id}
+             keyboardShouldPersistTaps="handled"
             style={styles.suggestionList}
             renderItem={({ item }) => (
               <Pressable
@@ -377,6 +380,7 @@ const EnRouteScreen = () => {
           <FlatList
             data={destinationSuggestions}
             keyExtractor={(item) => item.place_id}
+             keyboardShouldPersistTaps="handled"
             style={styles.suggestionList}
             renderItem={({ item }) => (
               <Pressable

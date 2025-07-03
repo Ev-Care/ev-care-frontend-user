@@ -94,11 +94,14 @@ const ChargingStationMap = () => {
   const navigation = useNavigation();
   const mapRef = useRef(null);
   const stateStations = useSelector(selectStations);
-  const [stations, setStations] = useState(stateStations || []);
+  const [stations, setStations] = useState(
+    Array.isArray(stateStations) ? stateStations.slice(0, 20) : []
+  );
+
   const dispatch = useDispatch();
   const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(null);
 
-  // console.log("stations", stations?.length);
+  console.log("stations", stations?.length);
   const userCurrentRegion = useSelector(selectUserCoordinate);
   const [region, setRegion] = useState({
     latitude: userCurrentRegion?.latitude || 28.6139,
@@ -111,8 +114,9 @@ const ChargingStationMap = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
-  let mapAnimation = new Animated.Value(0);
-  let mapIndex = 0;
+  const mapAnimation = useRef(new Animated.Value(0)).current;
+
+  const mapIndexRef = useRef(0);
 
   useEffect(() => {
     // console.log('new stations = ', JSON.stringify(stations[0], null, 2));
@@ -123,7 +127,8 @@ const ChargingStationMap = () => {
       const response = await dispatch(searchStationsByLocation(data));
 
       if (searchStationsByLocation.fulfilled.match(response)) {
-        setStations(response?.payload?.data);
+        const allStations = response?.payload?.data;
+        setStations(Array.isArray(allStations) ? allStations.slice(0, 20) : []);
       } else if (searchStationsByLocation.fulfilled.match(response)) {
         dispatch(
           showSnackbar({ message: "Location didn't fetched", type: "error" })
@@ -139,40 +144,56 @@ const ChargingStationMap = () => {
       );
     }
   };
+
   const _scrollView = useRef(null);
   useEffect(() => {
     getUserLocation("autoCall");
   }, []);
 
   useEffect(() => {
-    // console.log(" map page rendered");
-    mapAnimation.addListener(({ value }) => {
-      let index = Math.floor(value / cardWidth + 0.3);
-      if (index >= stations?.length) {
-        index = stations?.length - 1;
-      }
-      if (index <= 0) {
-        index = 0;
-      }
+    const listenerId = mapAnimation.addListener(({ value }) => {
+      const itemSpacing = cardWidth + 25;
+      const index = Math.round(value / itemSpacing);
 
-      clearTimeout(regionTimeout);
+      if (index !== mapIndexRef.current && stations[index]) {
+        mapIndexRef.current = index;
+        setSelectedMarkerIndex(index);
 
-      const regionTimeout = setTimeout(() => {
-        if (mapIndex !== index) {
-          mapIndex = index;
-          const { coordinates } = stations[index] ?? {}; // Optional chaining
-          mapRef.current?.animateToRegion(
-            {
-              ...coordinates,
-              latitudeDelta: region.latitudeDelta,
-              longitudeDelta: region.longitudeDelta,
-            },
-            350
-          );
-        }
-      }, 10);
+        const { coordinates } = stations[index];
+        mapRef.current?.animateToRegion(
+          {
+            ...coordinates,
+            latitudeDelta: 0.002,
+            longitudeDelta: 0.002,
+          },
+          350
+        );
+      }
     });
-  }, [mapAnimation, stations]);
+
+    return () => {
+      mapAnimation.removeListener(listenerId);
+    };
+  }, [stations]);
+
+  const scrollTo = () => {
+    if (stations.length > 0 && _scrollView.current) {
+      _scrollView.current.scrollToOffset({
+        offset: 0,
+        animated: true,
+      });
+    }
+  };
+
+  const onMarkerPress = (e, index) => {
+    setSelectedMarkerIndex(index);
+
+    const offset = index * (cardWidth + 25); // match your FlatList item layout
+    _scrollView.current?.scrollToOffset({
+      offset,
+      animated: true,
+    });
+  };
 
   const getUserLocation = async (calledBy) => {
     try {
@@ -300,27 +321,6 @@ const ChargingStationMap = () => {
     }
   };
 
-  const scrollTo = () => {
-    if (stations.length > 0 && _scrollView.current) {
-      _scrollView.current.scrollTo({
-        x: 0, // Scroll directly to the start of the first item
-        y: 0,
-        animated: true,
-      });
-    }
-  };
-
-  const onMarkerPress = (e, index) => {
-    setSelectedMarkerIndex(index);
-
-    let x = index * cardWidth + index * 20;
-    if (Platform.OS === "ios") {
-      x = x - SPACING_FOR_CARD_INSET;
-    }
-
-    _scrollView.current?.scrollTo({ x, y: 0, animated: true });
-  };
-
   const interpolation = stations?.map((marker, index) => {
     // Optional chaining
     const inputRange = [
@@ -428,11 +428,11 @@ const ChargingStationMap = () => {
                 source={getMarkerImage(marker?.vendor?.owner_legal_name)}
                 style={{
                   // backgroundColor:"teal",
-                  width: index === selectedMarkerIndex ? 65 : 50,
-                  height: index === selectedMarkerIndex ? 55 : 50,
-                  transform: [
-                    { scale: index === selectedMarkerIndex ? 1 : 1 },
-                  ],
+                  // borderColor:"teal",
+                  // borderWidth: 1,
+                  width: 70 ,
+                  height: 57,
+                  transform: [{ scale: index === selectedMarkerIndex ? 1 : 0.8 }],
                 }}
                 resizeMode="contain"
               />
@@ -463,36 +463,36 @@ const ChargingStationMap = () => {
   function chargingSpots() {
     return (
       <View style={styles.chargingInfoWrapStyle}>
-        <Animated.ScrollView
+        <Animated.FlatList
           ref={_scrollView}
+          data={stations}
           horizontal
           pagingEnabled
-          scrollEventThrottle={16}
+          keyExtractor={(_, index) => index.toString()}
           showsHorizontalScrollIndicator={false}
-          snapToInterval={cardWidth + 25}
           decelerationRate="fast"
+          snapToInterval={cardWidth + 25}
           snapToAlignment="center"
-          style={{ paddingVertical: Sizes.fixPadding }}
+          scrollEventThrottle={16}
           contentContainerStyle={{ paddingHorizontal: Sizes.fixPadding }}
           onScroll={Animated.event(
-            [
-              {
-                nativeEvent: {
-                  contentOffset: {
-                    x: mapAnimation,
-                  },
-                },
-              },
-            ],
+            [{ nativeEvent: { contentOffset: { x: mapAnimation } } }],
             { useNativeDriver: true }
           )}
-        >
-          {stations?.map((item, index) => (
+          getItemLayout={(_, index) => ({
+            length: cardWidth + 25,
+            offset: (cardWidth + 25) * index,
+            index,
+          })}
+          renderItem={({ item, index }) => (
             <TouchableOpacity
-              activeOpacity={0.8}
               onPress={() => navigation.push("ChargingStationDetail", { item })}
-              key={index}
-              style={styles.enrouteChargingStationWrapStyle}
+              activeOpacity={0.8}
+              style={{
+                ...styles.enrouteChargingStationWrapStyle,
+                width: cardWidth,
+                marginRight: 25, // add margin here
+              }}
             >
               <Image
                 source={
@@ -535,7 +535,6 @@ const ChargingStationMap = () => {
                       ...commonStyles.rowSpaceBetween,
                     }}
                   >
-                    {/* Left Section */}
                     <View style={{ ...commonStyles.rowAlignCenter }}>
                       <Text style={{ ...Fonts.blackColor16Medium }}>
                         {openHourFormatter(
@@ -544,8 +543,6 @@ const ChargingStationMap = () => {
                         )}
                       </Text>
                     </View>
-
-                    {/* Right Section */}
                     <View style={{ ...commonStyles.rowAlignCenter }}>
                       <View style={styles.primaryColorDot} />
                       <Text
@@ -553,7 +550,7 @@ const ChargingStationMap = () => {
                         style={{
                           marginLeft: Sizes.fixPadding,
                           ...Fonts.grayColor14Medium,
-                          maxWidth: 150, // optional: limit text to prevent overflow
+                          maxWidth: 150,
                         }}
                       >
                         {getChargerLabel(item?.chargers?.length ?? 0)}
@@ -596,8 +593,8 @@ const ChargingStationMap = () => {
                 </View>
               </View>
             </TouchableOpacity>
-          ))}
-        </Animated.ScrollView>
+          )}
+        />
       </View>
     );
   }
@@ -664,10 +661,10 @@ const styles = StyleSheet.create({
     borderWidth: 0.1,
     borderTopWidth: 1.0,
     flexDirection: "row",
-    marginHorizontal: Sizes.fixPadding,
+
     marginBottom: Sizes.fixPadding,
-    width: cardWidth,
   },
+
   enrouteChargingStationImage: {
     width: screenWidth / 3.2,
     height: "100%",

@@ -33,11 +33,11 @@ const ViewAllStationsPage = ({ navigation }) => {
   const allStationsList = useSelector(selectAllStations);
   const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const dispatch = useDispatch();
-  const [selectedStatuses, setSelectedStatuses] = useState([]);
+  
 
   const [selectedRole, setSelectedRole] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
+const [selectedStatuses, setSelectedStatuses] = useState([]);
   const filteredStations = allStationsList.filter((station) => {
     const matchesText = station?.station_name
       ?.toLowerCase()
@@ -261,7 +261,7 @@ const ViewAllStationsPage = ({ navigation }) => {
             }}
           >
             <Text style={{ color: "white", fontSize: 10, fontWeight: "bold" }}>
-             {filteredStations.length}
+             {filteredStations?.length}
             </Text>
           </View>
         </View>

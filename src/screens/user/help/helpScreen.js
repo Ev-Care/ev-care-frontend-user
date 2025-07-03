@@ -34,8 +34,8 @@ import { selectUser } from "../service/selector";
 const HelpScreen = ({ navigation }) => {
   const user = useSelector(selectUser);
   const [title, setTitle] = useState("");
-  const [email, setEmail] = useState(user?.email || "");
-  const [mobileNumber, setMobileNumber] = useState(user?.mobile_number || "");
+  const [email, setEmail] = useState(user?.email || null);
+  const [mobileNumber, setMobileNumber] = useState(user?.mobile_number || null);
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [titleTimer, setTitleTimer] = useState(null);
@@ -90,8 +90,8 @@ const HelpScreen = ({ navigation }) => {
         sendQueryAction({
           title,
           description,
-          email,
-          contactNumber: mobileNumber,
+          email : email?email:null,
+          contactNumber: mobileNumber? mobileNumber : null,
           image: null,
         })
       );
@@ -105,9 +105,9 @@ const HelpScreen = ({ navigation }) => {
           })
         );
         navigation.pop();
-        setEmail("");
+        setEmail(null);
         setTitle("");
-        setMobileNumber("");
+        setMobileNumber(null);
         setDescription("");
       } else {
         dispatch(

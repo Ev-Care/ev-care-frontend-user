@@ -35,15 +35,11 @@ import {
 } from "../../../utils/globalMethods";
 import polyline from "@mapbox/polyline";
 import { DottedLoader2 } from "../../../utils/lottieLoader/loaderView";
+import { FlatList as RNFlatList } from "react-native-gesture-handler";
 
-const width = screenWidth;
-const cardWidth = width / 1.15;
-const SPACING_FOR_CARD_INSET = width * 0.1 - 30;
-
-
-
-
-
+const CARD_MARGIN = 12;
+const cardWidth = screenWidth * 0.85;
+const snapInterval = cardWidth + CARD_MARGIN * 2;
 
 const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -53,6 +49,8 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   const { enrouteStations } = route?.params || [];
   const [mapLayoutCompleted, setMapLayoutCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(null);
+  const AnimatedFlatList = Animated.createAnimatedComponent(RNFlatList);
   // console.log("enrouteStations", JSON.stringify(enrouteStations[0]));
   const [destinationAddress, setDestinationAddress] = useState(
     route?.params?.destinationAddress || "Destination Address"
@@ -93,15 +91,15 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       const originStr = `${origin.latitude},${origin.longitude}`;
       const destinationStr = `${destination.latitude},${destination.longitude}`;
       const apiKey = Key.apiKey;
-  
+
       const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${originStr}&destination=${destinationStr}&key=${apiKey}&mode=driving&overview=full&steps=true`;
-  
+
       const response = await fetch(url);
       const data = await response.json();
-  
+
       if (data.routes.length) {
         let allPoints = [];
-  
+
         data.routes[0].legs.forEach((leg) => {
           leg.steps.forEach((step) => {
             if (step.polyline) {
@@ -110,8 +108,11 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
             }
           });
         });
-  
-        return allPoints.map(([lat, lng]) => ({ latitude: lat, longitude: lng }));
+
+        return allPoints.map(([lat, lng]) => ({
+          latitude: lat,
+          longitude: lng,
+        }));
       } else {
         throw new Error("No route found");
       }
@@ -122,7 +123,6 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
       setIsLoading(false);
     }
   };
-  
 
   const [markerList] = useState(enrouteStations || []);
   const [region, setRegion] = useState({
@@ -132,61 +132,77 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
     longitudeDelta: 0.01,
   });
 
-  const _map = useRef(null);
+  const mapRef = useRef(null);
   const _scrollView = useRef(null);
   // const mapAnimation = useRef(new Animated.Value(0)).current;
   // const mapIndex = useRef(0);
-  let mapAnimation = new Animated.Value(0);
-  let mapIndex = 0;
+  const mapAnimation = useRef(new Animated.Value(0)).current;
+
+  const mapIndexRef = useRef(0);
   useEffect(() => {
     if (
       mapLayoutCompleted &&
-      _map.current &&
+      mapRef.current &&
       fromDefaultLocation &&
       toDefaultLocation
     ) {
-      _map.current.fitToCoordinates([fromDefaultLocation, toDefaultLocation], {
-        edgePadding: { top: 50, right: 50, bottom: 150, left: 50 },
-        animated: true,
-      });
+      mapRef.current.fitToCoordinates(
+        [fromDefaultLocation, toDefaultLocation],
+        {
+          edgePadding: { top: 50, right: 50, bottom: 150, left: 50 },
+          animated: true,
+        }
+      );
     }
   }, [mapLayoutCompleted]);
 
   useEffect(() => {
-    // console.log(" map page rendered");
-    mapAnimation.addListener(({ value }) => {
-      let index = Math.floor(value / cardWidth + 0.3);
-      if (index >= markerList?.length) {
-        index = markerList?.length - 1;
-      }
-      if (index <= 0) {
-        index = 0;
-      }
+    const listenerId = mapAnimation.addListener(({ value }) => {
+      const index = Math.round(value / snapInterval);
 
-      clearTimeout(regionTimeout);
+      if (index !== mapIndexRef.current && markerList[index]) {
+        mapIndexRef.current = index;
+        setSelectedMarkerIndex(index);
 
-      const regionTimeout = setTimeout(() => {
-        if (mapIndex !== index) {
-          mapIndex = index;
-          const { coordinates } = markerList[index] ?? {};
-          _map.current?.animateToRegion(
-            {
-              ...coordinates,
-              latitudeDelta: region.latitudeDelta,
-              longitudeDelta: region.longitudeDelta,
-            },
-            350
-          );
-        }
-      }, 10);
+        const { coordinates } = markerList[index];
+        mapRef.current?.animateToRegion(
+          {
+            ...coordinates,
+            latitudeDelta: 0.002,
+            longitudeDelta: 0.002,
+          },
+          350
+        );
+      }
     });
-  }, [mapAnimation, markerList]);
 
-  const interpolation = markerList.map((marker, index) => {
+    return () => {
+      mapAnimation.removeListener(listenerId);
+    };
+  }, [markerList]);
+
+  const scrollTo = () => {
+    if (markerList.length > 0 && _scrollView.current) {
+      _scrollView.current.scrollToOffset({
+        offset: 0,
+        animated: true,
+      });
+    }
+  };
+
+  const onMarkerPress = (e, index) => {
+    setSelectedMarkerIndex(index);
+    const offset = index * snapInterval;
+    _scrollView.current?.scrollToOffset({
+      offset,
+      animated: true,
+    });
+  };
+  const interpolation = markerList.map((_, index) => {
     const inputRange = [
-      (index - 1) * cardWidth,
-      index * cardWidth,
-      (index + 1) * cardWidth,
+      (index - 1) * snapInterval,
+      index * snapInterval,
+      (index + 1) * snapInterval,
     ];
 
     return {
@@ -202,12 +218,6 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
     // console.log("Toggle Stop called with station:", station.id);
 
     const exists = addedStops.find((stop) => stop.id === station.id);
-    // console.log("Exists:", exists);
-    // console.log(
-    //   "Existing stop IDs:",
-    //   addedStops.map((s) => s.id)
-    // );
-    // console.log("Station ID being checked:", station.id);
 
     if (exists) {
       // console.log("Station exists, removing...");
@@ -247,16 +257,6 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
     Linking.openURL(url);
   };
 
-  const onMarkerPress = (mapEventData) => {
-    const markerID = mapEventData._targetInst.return.key;
-
-    let x = markerID * cardWidth + markerID * 20;
-    if (Platform.OS === "ios") {
-      x = x - SPACING_FOR_CARD_INSET;
-    }
-
-    _scrollView.current.scrollTo({ x: x, y: 0, animated: true });
-  };
   function trimName(threshold, str) {
     if (str.length <= threshold) {
       return str;
@@ -274,11 +274,11 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
         {bottomSheet()}
       </View>
       {isLoading && (
-              <View style={styles.loaderContainer}>
-                <DottedLoader2/>
-                {/* <ActivityIndicator size="large" color={Colors.primaryColor} /> */}
-              </View>
-            )}
+        <View style={styles.loaderContainer}>
+          <DottedLoader2 />
+          {/* <ActivityIndicator size="large" color={Colors.primaryColor} /> */}
+        </View>
+      )}
     </View>
   );
   function bottomSheet() {
@@ -450,17 +450,17 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   }
   function chargingSpots() {
     return (
-      <Animated.ScrollView
+      <Animated.FlatList
         ref={_scrollView}
         horizontal
+        data={markerList}
+        keyExtractor={(item, index) => item?.id?.toString() ?? index.toString()}
         pagingEnabled
-        scrollEventThrottle={16}
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={cardWidth + 25}
+        snapToInterval={snapInterval}
         decelerationRate="fast"
         snapToAlignment="center"
-        style={{ paddingVertical: Sizes.fixPadding }}
-        contentContainerStyle={{ paddingHorizontal: Sizes.fixPadding }}
+        showsHorizontalScrollIndicator={false}
+        scrollEventThrottle={16}
         onScroll={Animated.event(
           [
             {
@@ -473,12 +473,16 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
           ],
           { useNativeDriver: true }
         )}
-      >
-        {markerList.map((item, index) => (
+        contentContainerStyle={{ paddingHorizontal: CARD_MARGIN }}
+        style={{ paddingVertical: Sizes.fixPadding, height: 134 }}
+        renderItem={({ item, index }) => (
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => navigation.push("ChargingStationDetail", { item })}
-            key={index}
+            onPress={() =>
+              navigation.push("ChargingStationDetail", {
+                item,
+              })
+            }
             style={styles.enrouteChargingStationWrapStyle}
           >
             <Image
@@ -493,7 +497,9 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
               <Text
                 style={[
                   styles.statusClosed,
-                  { color: item?.status === "Inactive" ? "#FF5722" : "white" },
+                  {
+                    color: item?.status === "Inactive" ? "#FF5722" : "white",
+                  },
                 ]}
               >
                 {item?.status === "Inactive" ? "Closed" : "Open"}
@@ -501,41 +507,34 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
             </View>
             <View style={{ flex: 1 }}>
               <View style={{ margin: Sizes.fixPadding }}>
-                <Text
-                  numberOfLines={1}
-                  style={{ ...Fonts.blackColor18SemiBold }}
-                >
+                <Text numberOfLines={1} style={Fonts.blackColor18SemiBold}>
                   {item?.station_name}
                 </Text>
-                <Text numberOfLines={1} style={{ ...Fonts.grayColor14Medium }}>
-                  {item.address}
+                <Text numberOfLines={1} style={Fonts.grayColor14Medium}>
+                  {item?.address}
                 </Text>
-
                 <View
                   style={{
                     marginTop: Sizes.fixPadding,
                     ...commonStyles.rowSpaceBetween,
                   }}
                 >
-                  {/* Left Section */}
-                  <View style={{ ...commonStyles.rowAlignCenter }}>
-                    <Text style={{ ...Fonts.blackColor16Medium }}>
+                  <View style={commonStyles.rowAlignCenter}>
+                    <Text style={Fonts.blackColor16Medium}>
                       {openHourFormatter(
                         item?.open_hours_opening_time,
                         item?.open_hours_closing_time
                       )}
                     </Text>
                   </View>
-
-                  {/* Right Section */}
-                  <View style={{ ...commonStyles.rowAlignCenter }}>
+                  <View style={commonStyles.rowAlignCenter}>
                     <View style={styles.primaryColorDot} />
                     <Text
                       numberOfLines={1}
                       style={{
                         marginLeft: Sizes.fixPadding,
                         ...Fonts.grayColor14Medium,
-                        maxWidth: 150, // optional: limit text to prevent overflow
+                        maxWidth: 150,
                       }}
                     >
                       {getChargerLabel(item?.chargers?.length ?? 0)}
@@ -550,18 +549,16 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                   marginTop: Sizes.fixPadding,
                 }}
               >
-              
-                  <Text
-                    numberOfLines={1}
-                    style={{
-                      ...Fonts.blackColor16Medium,
-                      flex: 1,
-                      marginRight: Sizes.fixPadding - 5.0,
-                    }}
-                  >
-                    {formatDistance(item?.distanceKm)}
-                  </Text>
-              
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    ...Fonts.blackColor16Medium,
+                    flex: 1,
+                    marginRight: Sizes.fixPadding - 5.0,
+                  }}
+                >
+                  {formatDistance(item?.distanceKm)}
+                </Text>
                 <TouchableOpacity
                   activeOpacity={0.8}
                   onPress={() => toggleStop(item)}
@@ -576,7 +573,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                     },
                   ]}
                 >
-                  <Text style={{ ...Fonts.whiteColor16Medium }}>
+                  <Text style={Fonts.whiteColor16Medium}>
                     {addedStops.some((s) => s?.id === item?.id)
                       ? "- Remove Stop"
                       : "+ Add Stop"}
@@ -585,14 +582,15 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
               </View>
             </View>
           </TouchableOpacity>
-        ))}
-      </Animated.ScrollView>
+        )}
+      />
     );
   }
+
   function markersInfo() {
     return (
       <MapView
-        ref={_map}
+        ref={mapRef}
         style={{ flex: 1 }}
         initialRegion={region}
         onLayout={() => setMapLayoutCompleted(true)}
@@ -608,22 +606,28 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
             <Marker
               key={index}
               coordinate={marker?.coordinates}
-              onPress={onMarkerPress}
+              onPress={(e) => onMarkerPress(e, index)}
               pinColor="#28692e"
               anchor={{ x: 0.5, y: 0.5 }}
-              title={trimName(40,marker?.station_name)}
-              description={trimName(40,marker?.address)}
+              title={trimName(40, marker?.station_name)}
+              description={trimName(40, marker?.address)}
             >
               <Image
-                 source={getMarkerImage(marker?.vendor?.owner_legal_name)} 
-                style={{ width: 50, height: 50 }}
+                source={getMarkerImage(marker?.vendor?.owner_legal_name)}
+                style={{
+                  // backgroundColor:"teal",
+                  // borderColor:"teal",
+                  // borderWidth: 1,
+                  width: 70 ,
+                  height: 57,
+                  transform: [{ scale: index === selectedMarkerIndex ? 1 : 0.8 }],
+                }}
                 resizeMode="contain"
               />
             </Marker>
           );
         })}
 
-       
         {coordinates.length > 0 && (
           <Polyline
             coordinates={coordinates}
@@ -662,17 +666,17 @@ export default EnrouteChargingStationsScreen;
 
 const styles = StyleSheet.create({
   enrouteChargingStationWrapStyle: {
+    width: cardWidth,
+    marginHorizontal: 12,
     borderRadius: Sizes.fixPadding,
     backgroundColor: Colors.bodyBackColor,
+    flexDirection: "row",
     ...commonStyles.shadow,
     borderColor: Colors.extraLightGrayColor,
     borderWidth: 0.1,
     borderTopWidth: 1.0,
-    flexDirection: "row",
-    marginHorizontal: Sizes.fixPadding,
-    marginBottom: Sizes.fixPadding,
-    width: cardWidth,
   },
+
   enrouteChargingStationImage: {
     width: screenWidth / 3.2,
     height: "100%",
@@ -686,7 +690,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizes.fixPadding * 2.0,
     borderTopLeftRadius: Sizes.fixPadding,
     borderBottomRightRadius: Sizes.fixPadding,
-  }, 
+  },
   loaderContainer: {
     position: "absolute",
     top: 0,
@@ -695,7 +699,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
     zIndex: 999,
   },
   // bottom sheet

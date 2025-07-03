@@ -19,6 +19,7 @@ import {
   Sizes,
   Fonts,
 } from "../../../constants/styles";
+import RNModal from "react-native-modal";
 import MyStatusBar from "../../../components/myStatusBar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
@@ -45,44 +46,64 @@ const COLORS = {
 const ViewAllIssuesPage = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const user = useSelector(selectUser);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const allIssues = useSelector(selectAllSupportIssues);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
   const dispatch = useDispatch();
+  const statusColors = {
+    Open: "red",
+    "In Progress": "orange",
+    Resolved: "green",
+    Closed: "gray",
+    Escalated: "#d9534f",
+    Rejected: "purple",
+  };
+
+  const getStatusColor = (status) => {
+    return statusColors[status] || "black"; // fallback if unknown status
+  };
+
   // Filter users based on search query
   // console.log('all Issue = ', allIssues);
-  const filteredIssues = allIssues.filter(
-    (issue) =>
-      issue?.user?.owner_legal_name
-        ?.toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      issue?.user.mobile_number?.includes(searchQuery) ||
-      issue?.status?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+const filteredIssues = allIssues.filter((issue) => {
+  const matchesText =
+    issue?.user?.owner_legal_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    issue?.user?.mobile_number?.includes(searchQuery) || issue?.user?.role?.includes(searchQuery) ||
+    issue?.status?.toLowerCase().includes(searchQuery.toLowerCase());
+
+  const matchesStatus =
+    selectedStatuses.length === 0 || selectedStatuses.includes("All")
+      ? true
+      : selectedStatuses.includes(issue?.status);
+
+  return matchesText && matchesStatus;
+});
+
 
   useEffect(() => {
-   handleRefresh();
+    handleRefresh();
   }, []);
 
   const handleRefresh = async () => {
-
-  try {
-     setRefreshing(true);
-    // setIsLoading(true);
-    await dispatch(getAllSupportIssues());
-  } catch (error) {
-    console.error("Error refreshing issues:", error);
-    await dispatch(
-      showSnackbar({
-        message: "Something went wrong during refresh.",
-        type: "error",
-      })
-    );
-  } finally {
-    setRefreshing(false);
-    // setIsLoading(false); 
-  }
-};
+    try {
+      setRefreshing(true);
+      // setIsLoading(true);
+      await dispatch(getAllSupportIssues());
+    } catch (error) {
+      console.error("Error refreshing issues:", error);
+      await dispatch(
+        showSnackbar({
+          message: "Something went wrong during refresh.",
+          type: "error",
+        })
+      );
+    } finally {
+      setRefreshing(false);
+      // setIsLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -113,6 +134,7 @@ const ViewAllIssuesPage = ({ navigation }) => {
           <ActivityIndicator size="large" color={Colors.primaryColor} />
         </View>
       )}
+       {bottonSheet()}
     </SafeAreaView>
   );
 
@@ -174,10 +196,10 @@ const ViewAllIssuesPage = ({ navigation }) => {
           <Text
             style={[
               styles.userMobile,
-              { color: issue?.status == "Open" ? "red" : "teal" },
+              { color: getStatusColor(issue?.status) },
             ]}
           >
-            {issue?.status}{" "}
+            {issue?.status}
           </Text>
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
@@ -194,9 +216,17 @@ const ViewAllIssuesPage = ({ navigation }) => {
 
   function searchBar() {
     return (
-      <View style={{ margin: 20.0 }}>
+      <View
+        style={{
+          margin: 20,
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
         <MyStatusBar />
-        <View style={styles.searchBar}>
+
+        {/* Wrap SearchBar and give it flex: 1 */}
+        <View style={[styles.searchBar, { flex: 1 }]}>
           <MaterialIcons
             name="search"
             size={24}
@@ -204,7 +234,7 @@ const ViewAllIssuesPage = ({ navigation }) => {
             style={{ marginRight: 8 }}
           />
           <TextInput
-            placeholder="Search users here ..."
+            placeholder="Search here .."
             placeholderTextColor="#888"
             style={{
               flex: 1,
@@ -215,9 +245,92 @@ const ViewAllIssuesPage = ({ navigation }) => {
             onChangeText={(text) => setSearchQuery(text)}
           />
         </View>
+
+        {/* Filter Icon */}
+        <View style={{ position: "relative", marginLeft: 12 }}>
+          <MaterialIcons
+            name="filter-list"
+            color={Colors.blackColor}
+            size={26}
+            onPress={() => setBottomSheetVisible(true)}
+          />
+          <View
+            style={{
+              position: "absolute",
+              top: -8,
+              right: -8,
+              backgroundColor: "red",
+              borderRadius: 10,
+              width: 18,
+              height: 18,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "white", fontSize: 10, fontWeight: "bold" }}>
+             {filteredIssues?.length}
+            </Text>
+          </View>
+        </View>
       </View>
     );
   }
+  function bottonSheet() {
+    return (
+      <RNModal
+        isVisible={isBottomSheetVisible}
+        onBackdropPress={() => setBottomSheetVisible(false)}
+        style={{ justifyContent: "flex-end", margin: 0 }}
+      >
+        <View style={styles.bottomSheet}>
+          {/* {roleSelector()} */}
+          {statusSection()}
+        </View>
+      </RNModal>
+    );
+  }
+    function statusSection() {
+      const statuses = [ "Resolved", "In Progress", "Closed", "Escalated","Open","Rejected"];
+  
+      const toggleStatus = (status) => {
+        if (selectedStatuses.includes(status)) {
+          setSelectedStatuses(selectedStatuses.filter((s) => s !== status));
+        } else {
+          setSelectedStatuses([...selectedStatuses, status]);
+        }
+      };
+  
+      return (
+        <View style={[styles.section, { marginBottom: 12 }]}>
+          <Text style={{ marginBottom: 10, fontWeight: "bold", fontSize: 14 }}>
+            Select Status
+          </Text>
+  
+          <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
+            {statuses.map((status) => (
+              <TouchableOpacity
+                key={status}
+                style={[
+                  styles.TypeButton,
+                  selectedStatuses.includes(status) && styles.selectedButton,
+                ]}
+                onPress={() => toggleStatus(status)}
+              >
+                <Text
+                  style={[
+                    styles.TypebuttonText,
+                    selectedStatuses.includes(status) &&
+                      styles.selectedButtonText,
+                  ]}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      );
+    }
 };
 
 const styles = StyleSheet.create({
@@ -354,6 +467,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.gray,
     marginTop: 12,
+  },
+    bottomSheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+  },
+    TypeContainer: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  TypeButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    borderRadius: 8,
+  },
+  TypebuttonText: {
+    fontSize: 12,
+    color: "#555",
+  },
+  selectedButton: {
+    backgroundColor: Colors.primaryColor,
+    borderColor: Colors.primaryColor,
+  },
+  selectedButtonText: {
+    color: "white",
   },
 });
 

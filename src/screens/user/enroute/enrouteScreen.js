@@ -413,12 +413,12 @@ const EnRouteScreen = () => {
         )}
       </MapView>
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.locationButton}
         onPress={() => getUserLocation("source")}
       >
         <Ionicons name="locate-outline" size={28} color="white" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <TouchableOpacity
         style={[commonStyles.button, styles.submitButton]}

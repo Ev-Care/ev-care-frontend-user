@@ -618,8 +618,8 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
                   // backgroundColor:"teal",
                   // borderColor:"teal",
                   // borderWidth: 1,
-                  width: 70 ,
-                  height: 57,
+                  width: 65 ,
+                  height: 55,
                   transform: [{ scale: index === selectedMarkerIndex ? 1 : 0.8 }],
                 }}
                 resizeMode="contain"

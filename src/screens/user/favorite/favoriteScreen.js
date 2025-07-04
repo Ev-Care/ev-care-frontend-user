@@ -57,8 +57,10 @@ const FavoriteScreen = ({ navigation }) => {
   const [listData, setListData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const errorMessage = useSelector(selectStationsError);
- 
+//  console.log("user ", user.user_key);
   // console.log(listData);
+
+
   useEffect(() => {
     dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
   }, []);
@@ -72,6 +74,10 @@ const FavoriteScreen = ({ navigation }) => {
 setListData(filtered);
 }, [favStations, stations]);
  
+// console.log("List Data: ", listData[0]?.vendor);
+
+
+
   const handleRefresh = async () => {
     const favResponse = await dispatch(
       getAllFavoriteStations({ user_key: user?.user_key })

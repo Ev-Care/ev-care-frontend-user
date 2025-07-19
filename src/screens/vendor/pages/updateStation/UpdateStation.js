@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import MyStatusBar from "../../../../components/myStatusBar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
@@ -422,6 +423,7 @@ const UpdateStation = ({ navigation, route }) => {
     );
   };
   return (
+      <View style={{ flex: 1 }}>
     <ScrollView style={styles.container}>
       <MyStatusBar />
       <View style={styles.header}>
@@ -443,6 +445,7 @@ const UpdateStation = ({ navigation, route }) => {
           <Text style={styles.previewButtonText}>Preview</Text>
         </TouchableOpacity>
       </View>
+     
       <Modal visible={modalVisible} transparent={true}>
         <View style={styles.modalContainer}>
           <Image source={{ uri: selectedImage }} style={styles.fullImage} />
@@ -456,6 +459,17 @@ const UpdateStation = ({ navigation, route }) => {
       </Modal>
       {bottomSheet()}
     </ScrollView>
+     <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={addChargerForm}
+        style={styles.floatingAddButton}
+      >
+        <MaterialIcons name="add" size={20} color={Colors.whiteColor} />
+        <Text style={{ color: Colors.whiteColor, fontSize: 8 }}>
+          Add Charger
+        </Text>
+      </TouchableOpacity>
+      </View>
   );
   function bottomSheet() {
     return (
@@ -561,10 +575,10 @@ const UpdateStation = ({ navigation, route }) => {
       >
         <View style={styles.chagerTitle}>
           <Text style={styles.sectionTitle}>Charger Details {index + 1}</Text>
-          {index > 0 && (
+          {index >= 0 && (
             <TouchableOpacity
               onPress={() => removeChargerForm(index)}
-              style={styles.deleteButton}
+              style={{marginBottom: 16,}}
             >
               <Icon name="close-circle" size={24} color="red" />
             </TouchableOpacity>
@@ -733,7 +747,7 @@ const UpdateStation = ({ navigation, route }) => {
                 </View>
 
                 {/* Radio Button */}
-                <TouchableOpacity
+                <View
                   style={{
                     height: 20,
                     width: 20,
@@ -755,7 +769,7 @@ const UpdateStation = ({ navigation, route }) => {
                       }}
                     />
                   )}
-                </TouchableOpacity>
+                </View>
 
                 {/* Count Buttons (if needed) */}
                 {/* Add your inc/dec logic here */}
@@ -970,6 +984,22 @@ const UpdateStation = ({ navigation, route }) => {
 };
 // export default  AddStations ;
 const styles = StyleSheet.create({
+  floatingAddButton: {
+     justifyContent: "center",
+          alignItems: "center",
+          width: 70,
+          height: 70,
+          borderRadius: 35,
+          backgroundColor: Colors.primaryColor,
+          shadowColor: Colors.primaryColor,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.4,
+          shadowRadius: 5,
+          elevation: 8,
+          position: "absolute",
+          bottom: 150,
+          right: "10%"
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",

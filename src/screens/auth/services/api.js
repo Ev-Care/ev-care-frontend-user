@@ -2,8 +2,9 @@ import { apiPostRequest } from "../../../redux/api/post";
 import { apiPatchRequest } from "../../../redux/api/patch";
 import { apiPostFileRequest } from "../../../redux/api/postSingleFile";
 import { apiGetRequest } from "../../../redux/api/get";
+import { API_URL } from "../../../constants/baseURL";
 
-const API_URL = process.env.APP_BACKEND_API || "http://evcareindia.com/api";
+// const API_URL = process.env.APP_BACKEND_API || "http://evcareindia.com/api";
 
 // API CALLS
 export const signInAPI = (data) =>

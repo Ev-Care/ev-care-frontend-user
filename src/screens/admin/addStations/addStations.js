@@ -576,7 +576,7 @@ const AddStationScreen = () => {
           {index > 0 && (
             <TouchableOpacity
               onPress={() => removeChargerForm(index)}
-              style={styles?.deleteButton}
+              style={{marginBottom:16}}
             >
               <Icon name="close-circle" size={24} color="red" />
             </TouchableOpacity>

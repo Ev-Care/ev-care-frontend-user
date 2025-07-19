@@ -1,8 +1,9 @@
+import { API_URL } from "../../../constants/baseURL";
 import { apiGetRequest } from "../../../redux/api/get";
 import { apiPatchRequest } from "../../../redux/api/patch";
 import { apiPostRequest } from "../../../redux/api/post";
 
-const API_URL = process.env.APP_BACKEND_API || "http://evcareindia.com/api";
+// const API_URL = process.env.APP_BACKEND_API || "http://evcareindia.com/api";
 
 export const getAllPendingStationAPI = (data) =>
   apiGetRequest({

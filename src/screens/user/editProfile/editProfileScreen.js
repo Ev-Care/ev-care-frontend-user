@@ -90,6 +90,9 @@ const EditProfileScreen = ({ route, navigation }) => {
   const [selectedModel, setSelectedModel] = useState(null);
   const [customCompany, setCustomCompany] = useState(null);
   const [customModel, setCustomModel] = useState(null);
+  //  console.log('custom model',customModel);
+  // console.log('selected Model',selectedModel);
+
   const models =
     selectedCompany && vehicleData[selectedCompany]
       ? vehicleData[selectedCompany]
@@ -206,7 +209,7 @@ const EditProfileScreen = ({ route, navigation }) => {
         role: user?.role,
         user_key: user?.user_key,
       };
-
+      console.log("this is payload"+updatedData);
       const error = validateUserData(updatedData);
       if (error) {
         // console.log('error cartched');
@@ -667,17 +670,18 @@ const EditProfileScreen = ({ route, navigation }) => {
           </>
         )}
 
-        {/* Show model picker only when models exist or user has existing model */}
-        {selectedCompany !== "Others" &&
-          (models.length > 0 || !!user?.vehicle_model) && (
-            <>
+        {/*Show model picker only when models exist or user has existing model */}
+        {selectedCompany !== "Others" && (models.length > 0 || !!user?.vehicle_model) && (
+             <>
               <Text style={styles.label}>
                 Select Vehicle Model <Text style={styles.label}>*</Text>
               </Text>
               <View style={styles.pickerWrapper}>
                 <Picker
                   selectedValue={selectedModel}
-                  onValueChange={(itemValue) => setSelectedModel(itemValue)}
+                  onValueChange={(itemValue) =>{ setSelectedModel(itemValue);
+                    setCustomModel("");
+                  }}
                   style={styles.pickerStyle}
                 >
                   <Picker.Item
@@ -701,13 +705,13 @@ const EditProfileScreen = ({ route, navigation }) => {
                 </Picker>
               </View>
             </>
-          )}
+        )}
 
         {/* Show custom model input if model is 'Other' or company is 'Others' */}
-        {selectedModel === "Other" && selectedCompany !== "" && (
+        {selectedModel === "Other" && selectedCompany !== "Others" && (
           <View style={styles.textFieldWrapper}>
             {renderInput(
-              "Vehicle Model ",
+              "Vehicle Model",
               customModel,
               setCustomModel,
               "Enter Model here"

@@ -148,7 +148,6 @@ const UpdateStationPage = ({ navigation, route }) => {
     }
   };
 
- 
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
@@ -161,11 +160,11 @@ const UpdateStationPage = ({ navigation, route }) => {
   const openGallery = async (setter, label) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: label === "avatar" ? [1, 1] : undefined,
-      quality: 0.2,
-    });
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: label === "avatar" ? [1, 1] : undefined,
+        quality: 0.2,
+      });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -201,10 +200,10 @@ const UpdateStationPage = ({ navigation, route }) => {
   const openCamera = async (setter, label) => {
     try {
       const result = await ImagePicker.launchCameraAsync({
-      quality: 0.2,
-      allowsEditing: true,
-      aspect: label === "avatar" ? [1, 1] : undefined,
-    });
+        quality: 0.2,
+        allowsEditing: true,
+        aspect: label === "avatar" ? [1, 1] : undefined,
+      });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -244,7 +243,6 @@ const UpdateStationPage = ({ navigation, route }) => {
     });
   };
   const handlePreview = () => {
-
     // Transform amenities into a comma-separated string
     const amenitiesString = selectedAmenities
       .map((id) => amenities.find((amenity) => amenity.id === id)?.label)
@@ -256,9 +254,9 @@ const UpdateStationPage = ({ navigation, route }) => {
       station_id: station?.id || null,
       station_name: stationName,
       station_images: stationImages,
-      access_type:accessType,
+      access_type: accessType,
       address,
-      status:selectedStatus,
+      status: selectedStatus,
       coordinates: {
         latitude: coordinate?.latitude || null,
         longitude: coordinate?.longitude || null,
@@ -270,8 +268,6 @@ const UpdateStationPage = ({ navigation, route }) => {
         openHours === "24 Hours" ? "23:59:59" : closeTime || "23:59:59",
       chargers: chargerForms,
     };
-
-
 
     if (!stationData?.station_name || stationData?.station_name === "") {
       dispatch(
@@ -400,6 +396,7 @@ const UpdateStationPage = ({ navigation, route }) => {
     );
   };
   return (
+     <View style={{ flex: 1 }}>
     <ScrollView style={styles.container}>
       <MyStatusBar />
       <View style={styles.header}>
@@ -434,6 +431,16 @@ const UpdateStationPage = ({ navigation, route }) => {
       </Modal>
       {bottomSheet()}
     </ScrollView>
+     <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={addChargerForm}
+        style={styles.floatingAddButton}
+      >
+        <MaterialIcons name="add" size={20} color={Colors.whiteColor} />
+        <Text style={{ color: Colors.whiteColor, fontSize: 8 }}>
+          Add Charger
+        </Text>
+      </TouchableOpacity></View>
   );
   function bottomSheet() {
     return (
@@ -535,9 +542,7 @@ const UpdateStationPage = ({ navigation, route }) => {
     const statuses = ["Planned", "Active", "Inactive", "Rejected"];
     return (
       <View style={[styles.section, { marginBottom: 12 }]}>
-        <Text style={styles.sectionLabel}>
-          Select Status
-        </Text>
+        <Text style={styles.sectionLabel}>Select Status</Text>
 
         <View style={styles.hoursContainer}>
           {statuses.map((role) => (
@@ -573,10 +578,10 @@ const UpdateStationPage = ({ navigation, route }) => {
       >
         <View style={styles.chagerTitle}>
           <Text style={styles.sectionTitle}>Charger Details {index + 1}</Text>
-          {index > 0 && (
+          {index >= 0 && (
             <TouchableOpacity
               onPress={() => removeChargerForm(index)}
-              style={styles.deleteButton}
+              style={{marginBottom:16}}
             >
               <Icon name="close-circle" size={24} color="red" />
             </TouchableOpacity>
@@ -592,7 +597,7 @@ const UpdateStationPage = ({ navigation, route }) => {
                   style={[
                     styles.hoursButton,
                     chargerForms[index]?.charger_type === "AC" &&
-                    styles.selectedButton,
+                      styles.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -608,7 +613,7 @@ const UpdateStationPage = ({ navigation, route }) => {
                     style={[
                       styles.buttonText,
                       chargerForms[index]?.charger_type === "AC" &&
-                      styles.selectedButtonText,
+                        styles.selectedButtonText,
                     ]}
                   >
                     AC
@@ -619,7 +624,7 @@ const UpdateStationPage = ({ navigation, route }) => {
                   style={[
                     styles.hoursButton,
                     chargerForms[index]?.charger_type === "DC" &&
-                    styles.selectedButton,
+                      styles.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -635,7 +640,7 @@ const UpdateStationPage = ({ navigation, route }) => {
                     style={[
                       styles.buttonText,
                       chargerForms[index]?.charger_type === "DC" &&
-                      styles.selectedButtonText,
+                        styles.selectedButtonText,
                     ]}
                   >
                     DC
@@ -653,30 +658,30 @@ const UpdateStationPage = ({ navigation, route }) => {
                 keyboardType="numeric"
                 value={String(chargerForms[index]?.max_power_kw ?? "")}
                 onChangeText={(text) => {
-                                 const validInput = validateDecimalInput(text, 1000, 2);
-               
-                                 if (text && !validInput) {
-                                   dispatch(
-                                     showSnackbar({
-                                       message:
-                                         "Invalid input. Max 2 decimals or value exceeded.",
-                                       type: "error",
-                                     })
-                                   );
-                                   return;
-                                 }
-               
-                                 setChargerForms((prev) =>
-                                   prev.map((charger, i) =>
-                                     i === index
-                                       ? {
-                                           ...charger,
-                                           max_power_kw: validInput,
-                                         }
-                                       : charger
-                                   )
-                                 );
-                               }}
+                  const validInput = validateDecimalInput(text, 1000, 2);
+
+                  if (text && !validInput) {
+                    dispatch(
+                      showSnackbar({
+                        message:
+                          "Invalid input. Max 2 decimals or value exceeded.",
+                        type: "error",
+                      })
+                    );
+                    return;
+                  }
+
+                  setChargerForms((prev) =>
+                    prev.map((charger, i) =>
+                      i === index
+                        ? {
+                            ...charger,
+                            max_power_kw: validInput,
+                          }
+                        : charger
+                    )
+                  );
+                }}
               />
             </View>
 
@@ -710,7 +715,7 @@ const UpdateStationPage = ({ navigation, route }) => {
             const connectorData = connectorsList?.find(
               (c) => c?.id === connector?.id && c?.chargerIndex === chargerIndex
             );
-          //   console.log("connectorData", connectorData);
+            //   console.log("connectorData", connectorData);
             const count = connectorData?.count || 0;
 
             const isSelected =
@@ -744,7 +749,7 @@ const UpdateStationPage = ({ navigation, route }) => {
                 </View>
 
                 {/* Radio Button */}
-                <TouchableOpacity
+                <View
                   style={{
                     height: 20,
                     width: 20,
@@ -766,7 +771,7 @@ const UpdateStationPage = ({ navigation, route }) => {
                       }}
                     />
                   )}
-                </TouchableOpacity>
+                </View>
 
                 {/* Count Buttons (if needed) */}
                 {/* Add your inc/dec logic here */}
@@ -791,7 +796,7 @@ const UpdateStationPage = ({ navigation, route }) => {
               style={[
                 styles.amenityItem,
                 selectedAmenities.includes(amenity.id) &&
-                styles.selectedAmenity,
+                  styles.selectedAmenity,
               ]}
               onPress={() => toggleAmenity(amenity.id)}
             >
@@ -808,7 +813,7 @@ const UpdateStationPage = ({ navigation, route }) => {
                 style={[
                   styles.amenityLabel,
                   selectedAmenities.includes(amenity.id) &&
-                  styles.selectedAmenityText,
+                    styles.selectedAmenityText,
                 ]}
               >
                 {amenity.label}
@@ -901,11 +906,10 @@ const UpdateStationPage = ({ navigation, route }) => {
     );
   }
   function uploadPhotoSection() {
-
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>
-          Upload Photo <Text style={styles.optional}>(Optional)</Text>
+          Upload Photo <Text style={styles.optional}>(Required)</Text>
         </Text>
         <Text style={styles.photoDescription}>
           Contribute to smoother journeys; include a location/charger photo.
@@ -982,6 +986,22 @@ const UpdateStationPage = ({ navigation, route }) => {
 };
 // export default  AddStations ;
 const styles = StyleSheet.create({
+   floatingAddButton: {
+     justifyContent: "center",
+          alignItems: "center",
+          width: 70,
+          height: 70,
+          borderRadius: 35,
+          backgroundColor: Colors.primaryColor,
+          shadowColor: Colors.primaryColor,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.4,
+          shadowRadius: 5,
+          elevation: 8,
+          position: "absolute",
+          bottom: 150,
+          right: "10%"
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
@@ -1103,7 +1123,7 @@ const styles = StyleSheet.create({
   },
   hoursContainer: {
     flexDirection: "row",
-    flexWrap:"wrap",
+    flexWrap: "wrap",
     gap: 10,
   },
   hoursButton: {

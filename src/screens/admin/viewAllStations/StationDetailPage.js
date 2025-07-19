@@ -63,7 +63,7 @@ const StationDetailPage = ({ route, navigation }) => {
 
   const station = route?.params?.item;
 
-  // console.log("station in detail page = ", JSON.stringify(station, 2, null));
+  console.log("station in detail page = ", JSON.stringify(station, 2, null));
 
   if (!station) {
     return <Text>Loading...</Text>; // Handle when station is not available
@@ -235,36 +235,26 @@ const StationDetailPage = ({ route, navigation }) => {
           <Text style={styles.stationName}>
             {trimName(50, station?.station_name)}
           </Text>
-          {station?.user?.vendor_type === "individual" ? (
-            <>
-              <Text style={styles.stationAddress}>
-                Vendor Name : {station?.user?.owner_legal_name}
-              </Text>
-              <Text style={styles.stationAddress}>
-                Contact Number : {station?.user?.mobile_number}
-              </Text>
-            </>
-          ) : station?.user?.vendor_type === "organization" ? (
-            <>
-              <Text style={styles.stationAddress}>
-                Organization Name: {station?.user?.business_name}
-              </Text>
-              <Text style={styles.stationAddress}>
-                Contact Number : {station?.user?.mobile_number}
-              </Text>
-            </>
-          ) : (
-            <Text style={styles.stationAddress}>
-              {trimName(50, station?.address)}
-            </Text>
-          )}
+          <Text style={[styles.stationAddress, { fontWeight: "700" }]}>
+            Vendor Name : {trimName(50, station?.vendor?.owner_legal_name)}
+          </Text>
+          {station?.vendor?.vendor_type === "organization" &&(<Text style={[styles.stationAddress, { fontWeight: "700" }]}>
+            Organization Name: {trimName(50, station?.vendor?.business_name)}
+          </Text>)}
+          <Text style={[styles.stationAddress, { fontWeight: "700" }]}>
+            Contact Number : {station?.vendor?.mobile_number}
+          </Text>
+          <Text style={[styles.stationAddress, { fontWeight: "300" }]}>
+            Address : {trimName(50, station?.address)}
+          </Text>
+
           <View
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
           >
             <View style={styles.statusContainer}>
-             
               <Text style={styles.statusTime}>
-               Open Hours : {openHourFormatter(
+                Open Hours :{" "}
+                {openHourFormatter(
                   station?.open_hours_opening_time,
                   station?.open_hours_closing_time
                 )}
@@ -509,36 +499,38 @@ const StationDetailPage = ({ route, navigation }) => {
         <View style={styles.landmarkContainer}>
           <Text style={styles.landmarkTitle}>{station?.address}</Text>
         </View>
-       {station?.amenities?.length>0 &&(<>
-        <Text style={styles.sectionTitle}>Amenities</Text>
-        <View style={styles.amenitiesContainer}>
-          {station?.amenities?.split(",").map((amenityName, index) => {
-            const trimmedName = amenityName.trim();
-            let iconName = "help-circle"; // default fallback
+        {station?.amenities?.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Amenities</Text>
+            <View style={styles.amenitiesContainer}>
+              {station?.amenities?.split(",").map((amenityName, index) => {
+                const trimmedName = amenityName.trim();
+                let iconName = "help-circle"; // default fallback
 
-            if (trimmedName === "Restroom") {
-              iconName = "toilet";
-            } else if (trimmedName === "Cafe") {
-              iconName = "coffee";
-            } else if (trimmedName === "Wifi") {
-              iconName = "wifi";
-            } else if (trimmedName === "Store") {
-              iconName = "cart";
-            } else if (trimmedName === "Car Care") {
-              iconName = "car";
-            } else if (trimmedName === "Lodging") {
-              iconName = "bed";
-            }
+                if (trimmedName === "Restroom") {
+                  iconName = "toilet";
+                } else if (trimmedName === "Cafe") {
+                  iconName = "coffee";
+                } else if (trimmedName === "Wifi") {
+                  iconName = "wifi";
+                } else if (trimmedName === "Store") {
+                  iconName = "cart";
+                } else if (trimmedName === "Car Care") {
+                  iconName = "car";
+                } else if (trimmedName === "Lodging") {
+                  iconName = "bed";
+                }
 
-            return (
-              <View key={trimmedName} style={styles.amenityItem}>
-                <Icon name={iconName} size={24} color={COLORS.primary} />
-                <Text style={styles.AminitiesTypeText}>{trimmedName}</Text>
-              </View>
-            );
-          })}
-        </View>
-</>)}
+                return (
+                  <View key={trimmedName} style={styles.amenityItem}>
+                    <Icon name={iconName} size={24} color={COLORS.primary} />
+                    <Text style={styles.AminitiesTypeText}>{trimmedName}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </>
+        )}
       </ScrollView>
     );
   }
@@ -615,9 +607,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   statusTime: {
-    color: COLORS.black,
+    color: COLORS.primary,
     fontSize: 12,
-   fontWeight:"700"
+    fontWeight: "700",
   },
   newBadge: {
     backgroundColor: COLORS.primary,

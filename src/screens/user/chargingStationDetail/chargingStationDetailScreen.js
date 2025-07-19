@@ -68,7 +68,6 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
 
   const station = route?.params?.item;
 
-   
   if (!station) {
     return <Text>Loading...</Text>; // Handle when station is not available
   }
@@ -258,7 +257,6 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
             }
           }}
         >
-         
           <Image source={imageUrl} style={styles.mapBackground} />
         </TouchableOpacity>
 
@@ -266,14 +264,28 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
           <Text style={styles.stationName}>
             {trimName(50, station?.station_name)}
           </Text>
-           {station?.vendor&&(<Text style={[styles.stationName,{fontWeight:"500"}]}>
-            Vendor Name : {trimName(25, station?.vendor?.owner_legal_name)}
-          </Text>)}
-
+          {/* {station?.vendor?.vendor_type === "individual" ? (
+            <>
+              <Text style={[styles.stationName, { fontWeight: "500" }]}>
+                Vendor Name : {station?.vendor?.owner_legal_name}
+              </Text>
+             
+            </>
+          ) : station?.vendor?.vendor_type === "organization" ? (
+            <>
+              <Text style={[styles.stationName, { fontWeight: "500" }]}>
+                Organization Name: {station?.vendor?.business_name}
+              </Text>
+              
+            </>
+          ) : null} */}
+          <Text style={[styles.stationName, { fontWeight: "500" }]}>
+            Vendor Name : {station?.vendor?.owner_legal_name}
+          </Text>
           <Text style={styles.stationAddress}>
             {trimName(50, station?.address)}
           </Text>
-          
+
           <View
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
           >

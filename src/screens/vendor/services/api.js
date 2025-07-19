@@ -3,7 +3,7 @@ import {apiPostRequest } from "../../../redux/api/post";
 import {apiPatchRequest } from "../../../redux/api/patch";
 import { apiDeleteRequest } from "../../../redux/api/delete";
 
-const API_URL = process.env.APP_BACKEND_API || "http://89.116.34.17:3010";
+const API_URL = process.env.APP_BACKEND_API || "http://evcareindia.com/api";
 
 // API CALLS
 export const postStationAPI = (data) =>

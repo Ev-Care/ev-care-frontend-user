@@ -14,6 +14,7 @@ import {
   Alert,
   Keyboard,
 } from "react-native";
+import { DottedLoader2 } from "../../../utils/lottieLoader/loaderView";
 import {
   Colors,
   screenWidth,
@@ -101,7 +102,7 @@ const ChargingStationMap = () => {
   const dispatch = useDispatch();
   const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(null);
 
-  console.log("stations", stations?.length);
+  // console.log("stations", stations?.length);
   const userCurrentRegion = useSelector(selectUserCoordinate);
   const [region, setRegion] = useState({
     latitude: userCurrentRegion?.latitude || 28.6139,
@@ -109,7 +110,7 @@ const ChargingStationMap = () => {
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   });
-
+const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -196,6 +197,7 @@ const ChargingStationMap = () => {
   };
 
   const getUserLocation = async (calledBy) => {
+    setIsLoading(true);
     try {
       // console.log('user try to fit inmap');
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -237,6 +239,9 @@ const ChargingStationMap = () => {
     } catch (error) {
       console.error("Location error:", error);
     }
+    finally{
+      setIsLoading(false);
+    }
   };
 
   const reverseGeocode = async (lat, lng) => {
@@ -254,6 +259,7 @@ const ChargingStationMap = () => {
 
   const fetchSuggestions = async (text) => {
     setSearch(text);
+    // setIsLoading(true);
     if (text.trim() === "") {
       setSuggestions([]);
       return;
@@ -273,8 +279,10 @@ const ChargingStationMap = () => {
 
   const selectSuggestion = async (placeId, description) => {
     setSuggestions([]);
+
     setTimeout(() => Keyboard.dismiss(), 100);
     setSearch(description);
+    setIsLoading(true);
     try {
       const url = `https://maps.googleapis.com/maps/api/geocode/json?place_id=${placeId}&key=${Key.apiKey}`;
       const response = await fetch(url);
@@ -318,7 +326,7 @@ const ChargingStationMap = () => {
       }
     } catch (error) {
       console.error("Place details error:", error);
-    }
+    }finally{setIsLoading(false);}
   };
 
   const interpolation = stations?.map((marker, index) => {
@@ -457,6 +465,12 @@ const ChargingStationMap = () => {
         <Ionicons name="locate-outline" size={28} color="white" />
       </TouchableOpacity>
       {chargingSpots()}
+        {isLoading && (
+        <View style={styles.loaderContainer}>
+          <DottedLoader2 />
+          {/* <ActivityIndicator size="large" color={Colors.primaryColor} /> */}
+        </View>
+      )}
     </View>
   );
 
@@ -720,6 +734,17 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   // cards end
+    loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
+  },
 });
 
 export default ChargingStationMap;

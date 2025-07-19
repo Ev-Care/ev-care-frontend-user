@@ -405,7 +405,7 @@ const UserDetailScreen = ({ route, navigation }) => {
       </ScrollView>
     );
   }
-  function stationDetail() {
+function stationDetail() {
     return (
       <ScrollView
         contentContainerStyle={styles.container}

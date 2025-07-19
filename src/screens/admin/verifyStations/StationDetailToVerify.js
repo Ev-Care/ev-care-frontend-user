@@ -11,23 +11,19 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import { default as Icon, default as MaterialCommunityIcons } from "react-native-vector-icons/MaterialCommunityIcons";
+import {
+  default as Icon,
+  default as MaterialCommunityIcons,
+} from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useDispatch } from "react-redux";
 import imageURL from "../../../constants/baseURL";
-import {
-  Colors,
-  Fonts,
-  Sizes,
-  commonStyles
-} from "../../../constants/styles";
+import { Colors, Fonts, Sizes, commonStyles } from "../../../constants/styles";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import {
-  openHourFormatter
-} from "../../../utils/globalMethods";
+import { openHourFormatter } from "../../../utils/globalMethods";
 import {
   approveStation,
   fetchAllPendingStation,
@@ -115,54 +111,54 @@ const StationDetailToVerify = ({ route, navigation }) => {
     return str?.substring(0, threshold) + ".....";
   };
 
- const handleReject = async () => {
-  // console.log("in reject");
-  setIsLoading(true);
+  const handleReject = async () => {
+    // console.log("in reject");
+    setIsLoading(true);
 
-  try {
-    const rejectResponse = await dispatch(rejectStation(station?.id));
+    try {
+      const rejectResponse = await dispatch(rejectStation(station?.id));
 
-    if (rejectStation.fulfilled.match(rejectResponse)) {
-      // console.log("Reject fulfilled");
+      if (rejectStation.fulfilled.match(rejectResponse)) {
+        // console.log("Reject fulfilled");
 
-      const fetchResponse = await dispatch(fetchAllStations());
+        const fetchResponse = await dispatch(fetchAllStations());
 
-      if (fetchAllStations.fulfilled.match(fetchResponse)) {
-        await dispatch(
-          showSnackbar({
-            message: "Station rejected successfully.",
-            type: "success",
-          })
-        );
-        navigation.goBack();
+        if (fetchAllStations.fulfilled.match(fetchResponse)) {
+          await dispatch(
+            showSnackbar({
+              message: "Station rejected successfully.",
+              type: "success",
+            })
+          );
+          navigation.goBack();
+        } else {
+          await dispatch(
+            showSnackbar({
+              message: "Failed to fetch updated station list.",
+              type: "error",
+            })
+          );
+        }
       } else {
         await dispatch(
           showSnackbar({
-            message: "Failed to fetch updated station list.",
+            message: "Failed to reject station.",
             type: "error",
           })
         );
       }
-    } else {
+    } catch (error) {
+      console.error("Error in reject handler:", error);
       await dispatch(
         showSnackbar({
-          message: "Failed to reject station.",
+          message: "Something went wrong while rejecting the station.",
           type: "error",
         })
       );
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    console.error("Error in reject handler:", error);
-    await dispatch(
-      showSnackbar({
-        message: "Something went wrong while rejecting the station.",
-        type: "error",
-      })
-    );
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const handleApprove = async () => {
     // console.log("in approve");
@@ -171,12 +167,10 @@ const StationDetailToVerify = ({ route, navigation }) => {
     try {
       const approvedResponse = await dispatch(approveStation(station?.id));
 
-
       if (approveStation.fulfilled.match(approvedResponse)) {
         // console.log("in approve fulfill");
 
         const stationResponse = await dispatch(fetchAllStations());
-
 
         if (fetchAllStations.fulfilled.match(stationResponse)) {
           await dispatch(
@@ -290,30 +284,21 @@ const StationDetailToVerify = ({ route, navigation }) => {
           <Text style={styles.stationName}>
             {trimName(50, station?.station_name)}
           </Text>
-          {station?.user?.vendor_type === "individual" ? (
-            <>
-              <Text style={styles.stationAddress}>
-                Vendor Name :{" "}{station?.user?.owner_legal_name}
-              </Text>
-              <Text style={styles.stationAddress}>
-                Contact Number :{" "}{station?.user?.mobile_number}
-              </Text>
-            </>
-          ) : station?.user?.vendor_type === "organization" ? (
-            <>
-              <Text style={styles.stationAddress}>
-                Organization Name:{" "}{station?.user?.business_name}
-              </Text>
-              <Text style={styles.stationAddress}>
-                Contact Number :{" "}{station?.user?.mobile_number}
-              </Text>
-            </>
-          ) : (
-            <Text style={styles.stationAddress}>
-              {trimName(50, station?.address)}
-            </Text>
 
+          <Text style={[styles.stationAddress, { fontWeight: "700" }]}>
+            Vendor Name : {trimName(50, station?.vendor?.owner_legal_name)}
+          </Text>
+          {station?.vendor?.vendor_type === "organization" && (
+            <Text style={[styles.stationAddress, { fontWeight: "700" }]}>
+              Organization Name: {trimName(50, station?.vendor?.business_name)}
+            </Text>
           )}
+          <Text style={[styles.stationAddress, { fontWeight: "700" }]}>
+            Contact Number : {station?.vendor?.mobile_number}
+          </Text>
+          <Text style={[styles.stationAddress, { fontWeight: "300" }]}>
+            Address : {trimName(50, station?.address)}
+          </Text>
 
           <View
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
@@ -643,35 +628,38 @@ const StationDetailToVerify = ({ route, navigation }) => {
           <Text style={styles.landmarkTitle}>{station?.address}</Text>
         </View>
 
-        {station?.amenities?.length>0 &&(  <>
-          <Text style={styles.sectionTitle}>Amenities</Text>
-        <View style={styles.amenitiesContainer}>
-          {station?.amenities?.split(",").map((amenityName, index) => {
-            const trimmedName = amenityName.trim();
-            let iconName = "help-circle"; // default fallback
+        {station?.amenities?.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Amenities</Text>
+            <View style={styles.amenitiesContainer}>
+              {station?.amenities?.split(",").map((amenityName, index) => {
+                const trimmedName = amenityName.trim();
+                let iconName = "help-circle"; // default fallback
 
-            if (trimmedName === "Restroom") {
-              iconName = "toilet";
-            } else if (trimmedName === "Cafe") {
-              iconName = "coffee";
-            } else if (trimmedName === "Wifi") {
-              iconName = "wifi";
-            } else if (trimmedName === "Store") {
-              iconName = "cart";
-            } else if (trimmedName === "Car Care") {
-              iconName = "car";
-            } else if (trimmedName === "Lodging") {
-              iconName = "bed";
-            }
+                if (trimmedName === "Restroom") {
+                  iconName = "toilet";
+                } else if (trimmedName === "Cafe") {
+                  iconName = "coffee";
+                } else if (trimmedName === "Wifi") {
+                  iconName = "wifi";
+                } else if (trimmedName === "Store") {
+                  iconName = "cart";
+                } else if (trimmedName === "Car Care") {
+                  iconName = "car";
+                } else if (trimmedName === "Lodging") {
+                  iconName = "bed";
+                }
 
-            return (
-              <View key={trimmedName} style={styles.amenityItem}>
-                <Icon name={iconName} size={24} color={COLORS.primary} />
-                <Text style={styles.connectorTypeText}>{trimmedName}</Text>
-              </View>
-            );
-          })}
-        </View></>)}
+                return (
+                  <View key={trimmedName} style={styles.amenityItem}>
+                    <Icon name={iconName} size={24} color={COLORS.primary} />
+                    <Text style={styles.connectorTypeText}>{trimmedName}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </>
+        )}
       </ScrollView>
     );
   }
@@ -760,9 +748,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   statusTime: {
-    color: COLORS.black,
+    color: COLORS.primary,
     fontSize: 12,
-   fontWeight:"700"
+    fontWeight: "700",
   },
   newBadge: {
     backgroundColor: COLORS.primary,

@@ -147,9 +147,7 @@ const EditProfileScreen = ({ route, navigation }) => {
     setModalVisible(true);
   };
   const validateUserData = (data) => {
-    //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    //   const nameRegex = /^[A-Za-z\s]{3,}$/;
-    //  const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
+    
     if (!PHONE_REGEX.test(mobNumber)) {
       return "Invalid mobile number";
     }
@@ -709,7 +707,7 @@ const EditProfileScreen = ({ route, navigation }) => {
         {selectedModel === "Other" && selectedCompany !== "" && (
           <View style={styles.textFieldWrapper}>
             {renderInput(
-              "Vehicle Model",
+              "Vehicle Model ",
               customModel,
               setCustomModel,
               "Enter Model here"

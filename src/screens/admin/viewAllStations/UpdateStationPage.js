@@ -578,7 +578,7 @@ const UpdateStationPage = ({ navigation, route }) => {
       >
         <View style={styles.chagerTitle}>
           <Text style={styles.sectionTitle}>Charger Details {index + 1}</Text>
-          {index >= 0 && (
+          {index > 0 && (
             <TouchableOpacity
               onPress={() => removeChargerForm(index)}
               style={{marginBottom:16}}

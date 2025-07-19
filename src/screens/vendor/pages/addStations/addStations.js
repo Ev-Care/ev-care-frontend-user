@@ -417,7 +417,7 @@ const AddStations = () => {
       </TouchableOpacity>
     );
   };
-  return (
+  return ( <View style={{ flex: 1 }}>
     <ScrollView style={styles.container}>
       <MyStatusBar />
       <View style={styles.header}>
@@ -453,7 +453,16 @@ const AddStations = () => {
           </TouchableOpacity>
         </View>
       </Modal>
-    </ScrollView>
+    </ScrollView> <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={addChargerForm}
+        style={styles.floatingAddButton}
+      >
+        <MaterialIcons name="add" size={20} color={Colors.whiteColor} />
+        <Text style={{ color: Colors.whiteColor, fontSize: 8 }}>
+          Add Charger
+        </Text>
+      </TouchableOpacity></View>
   );
   function bottomSheet() {
     return (
@@ -966,6 +975,22 @@ const AddStations = () => {
 };
 // export default  AddStations ;
 const styles = StyleSheet.create({
+   floatingAddButton: {
+     justifyContent: "center",
+          alignItems: "center",
+          width: 70,
+          height: 70,
+          borderRadius: 35,
+          backgroundColor: Colors.primaryColor,
+          shadowColor: Colors.primaryColor,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.4,
+          shadowRadius: 5,
+          elevation: 8,
+          position: "absolute",
+          bottom: 150,
+          right: "10%"
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",

@@ -64,7 +64,7 @@ const customMapStyle = [
     elementType: "all",
     stylers: [{ visibility: "on" }],
   },
-  
+
 ];
 
 const ChargingStationMap = () => {
@@ -92,14 +92,19 @@ const ChargingStationMap = () => {
   const mapAnimation = useRef(new Animated.Value(0)).current;
 
   const mapIndexRef = useRef(0);
- const coords = {
-          latitude: userCurrentRegion?.latitude || 28.6139,
-          longitude: userCurrentRegion?.longitude || 77.209,
-        };
-  useEffect(async() => {
-     await getUserLocation("autoCall");
-     await handleSearchedStation({ coords, radius: 5000 });
+  const coords = {
+    latitude: userCurrentRegion?.latitude || 28.6139,
+    longitude: userCurrentRegion?.longitude || 77.209,
+  };
+  useEffect(() => {
+    const fetchData = async () => {
+      await getUserLocation("autoCall");
+      await handleSearchedStation({ coords, radius: 5000 });
+    };
+
+    fetchData();
   }, []);
+
 
   useEffect(() => {
     const listenerId = mapAnimation.addListener(({ value }) => {
@@ -126,13 +131,14 @@ const ChargingStationMap = () => {
       mapAnimation.removeListener(listenerId);
     };
   }, [stations]);
+
   const handleSearchedStation = async (data) => {
     try {
       const response = await dispatch(searchStationsByLocation(data));
 
       if (searchStationsByLocation.fulfilled.match(response)) {
         const allStations = response?.payload?.data;
-        setStations( allStations);
+        setStations(allStations);
       } else if (searchStationsByLocation.fulfilled.match(response)) {
         dispatch(
           showSnackbar({ message: "Location didn't fetched", type: "error" })
@@ -183,7 +189,7 @@ const ChargingStationMap = () => {
       }
       let location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
-      
+
 
       setRegion({
         latitude,
@@ -216,7 +222,7 @@ const ChargingStationMap = () => {
     } catch (error) {
       console.error("Location error:", error);
     }
-    finally{
+    finally {
       setIsLoading(false);
     }
   };
@@ -303,7 +309,7 @@ const ChargingStationMap = () => {
       }
     } catch (error) {
       console.error("Place details error:", error);
-    }finally{setIsLoading(false);}
+    } finally { setIsLoading(false); }
   };
 
   const interpolation = stations?.map((marker, index) => {
@@ -415,7 +421,7 @@ const ChargingStationMap = () => {
                   // backgroundColor:"teal",
                   // borderColor:"teal",
                   // borderWidth: 1,
-                  width: 65 ,
+                  width: 65,
                   height: 55,
                   transform: [{ scale: index === selectedMarkerIndex ? 1 : 0.8 }],
                 }}
@@ -442,7 +448,7 @@ const ChargingStationMap = () => {
         <Ionicons name="locate-outline" size={28} color="white" />
       </TouchableOpacity>
       {chargingSpots()}
-        {isLoading && (
+      {isLoading && (
         <View style={styles.loaderContainer}>
           <DottedLoader2 />
           {/* <ActivityIndicator size="large" color={Colors.primaryColor} /> */}
@@ -711,7 +717,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   // cards end
-    loaderContainer: {
+  loaderContainer: {
     position: "absolute",
     top: 0,
     left: 0,

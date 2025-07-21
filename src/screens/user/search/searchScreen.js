@@ -64,31 +64,7 @@ const customMapStyle = [
     elementType: "all",
     stylers: [{ visibility: "on" }],
   },
-  // {
-  //   featureType: "poi.park",
-  //   elementType: "all",
-  //   stylers: [{ visibility: "on" }],
-  // },
-  // {
-  //   featureType: "poi.sports_complex",
-  //   elementType: "all",
-  //   stylers: [{ visibility: "on" }],
-  // },
-  // {
-  //   featureType: "poi.airport",
-  //   elementType: "all",
-  //   stylers: [{ visibility: "on" }],
-  // },
-  // {
-  //   featureType: "poi.train_station",
-  //   elementType: "all",
-  //   stylers: [{ visibility: "on" }],
-  // },
-  // {
-  //   featureType: "transit.station",
-  //   elementType: "all",
-  //   stylers: [{ visibility: "on" }],
-  // },
+  
 ];
 
 const ChargingStationMap = () => {
@@ -117,36 +93,9 @@ const [isLoading, setIsLoading] = useState(false);
 
   const mapIndexRef = useRef(0);
 
-  useEffect(() => {
-    // console.log('new stations = ', JSON.stringify(stations[0], null, 2));
-  }, [stations]);
-
-  const handleSearchedStation = async (data) => {
-    try {
-      const response = await dispatch(searchStationsByLocation(data));
-
-      if (searchStationsByLocation.fulfilled.match(response)) {
-        const allStations = response?.payload?.data;
-        setStations(Array.isArray(allStations) ? allStations.slice(0, 20) : []);
-      } else if (searchStationsByLocation.fulfilled.match(response)) {
-        dispatch(
-          showSnackbar({ message: "Location didn't fetched", type: "error" })
-        );
-      }
-    } catch (error) {
-      // console.log("error = " + error);
-      dispatch(
-        showSnackbar({
-          message: "Something went wrong. Please try again later",
-          type: "error",
-        })
-      );
-    }
-  };
-
-  const _scrollView = useRef(null);
-  useEffect(() => {
-    getUserLocation("autoCall");
+  useEffect(async() => {
+     await getUserLocation("autoCall");
+     await handleSearchedStation({ coords, radius: 5000 });
   }, []);
 
   useEffect(() => {
@@ -174,6 +123,32 @@ const [isLoading, setIsLoading] = useState(false);
       mapAnimation.removeListener(listenerId);
     };
   }, [stations]);
+  const handleSearchedStation = async (data) => {
+    try {
+      const response = await dispatch(searchStationsByLocation(data));
+
+      if (searchStationsByLocation.fulfilled.match(response)) {
+        const allStations = response?.payload?.data;
+        setStations( allStations);
+      } else if (searchStationsByLocation.fulfilled.match(response)) {
+        dispatch(
+          showSnackbar({ message: "Location didn't fetched", type: "error" })
+        );
+      }
+    } catch (error) {
+      // console.log("error = " + error);
+      dispatch(
+        showSnackbar({
+          message: "Something went wrong. Please try again later",
+          type: "error",
+        })
+      );
+    }
+  };
+
+  const _scrollView = useRef(null);
+
+
 
   const scrollTo = () => {
     if (stations.length > 0 && _scrollView.current) {
@@ -205,6 +180,7 @@ const [isLoading, setIsLoading] = useState(false);
       }
       let location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
+      
 
       setRegion({
         latitude,

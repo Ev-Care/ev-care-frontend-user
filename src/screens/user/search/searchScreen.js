@@ -95,9 +95,7 @@ const ChargingStationMap = () => {
   const navigation = useNavigation();
   const mapRef = useRef(null);
   const stateStations = useSelector(selectStations);
-  const [stations, setStations] = useState(
-    Array.isArray(stateStations) ? stateStations.slice(0, 20) : []
-  );
+  const [stations, setStations] = useState(stateStations);
 
   const dispatch = useDispatch();
   const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(null);
@@ -295,9 +293,9 @@ const [isLoading, setIsLoading] = useState(false);
           longitude: lng,
         };
 
-        await handleSearchedStation({ coords, radius: 50 });
+        await handleSearchedStation({ coords, radius: 5000 });
 
-        const radiusInKm = 50;
+        const radiusInKm = 5000;
         const oneDegreeOfLatitudeInKm = 111.32;
         const latitudeDelta = radiusInKm / oneDegreeOfLatitudeInKm;
         const longitudeDelta =
@@ -479,7 +477,7 @@ const [isLoading, setIsLoading] = useState(false);
       <View style={styles.chargingInfoWrapStyle}>
         <Animated.FlatList
           ref={_scrollView}
-          data={stations}
+          data={Array.isArray(stateStations) ? stateStations.slice(0, 20) : []}
           horizontal
           pagingEnabled
           keyExtractor={(_, index) => index.toString()}

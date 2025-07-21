@@ -84,7 +84,7 @@ const ChargingStationMap = () => {
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   });
-const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -92,7 +92,10 @@ const [isLoading, setIsLoading] = useState(false);
   const mapAnimation = useRef(new Animated.Value(0)).current;
 
   const mapIndexRef = useRef(0);
-
+ const coords = {
+          latitude: userCurrentRegion?.latitude || 28.6139,
+          longitude: userCurrentRegion?.longitude || 77.209,
+        };
   useEffect(async() => {
      await getUserLocation("autoCall");
      await handleSearchedStation({ coords, radius: 5000 });

@@ -77,16 +77,21 @@ const OnboardingScreen = ({ navigation }) => {
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      BackHandler.addEventListener("hardwareBackPress", backAction);
-      navigation.addListener("gestureEnd", backAction);
-      return () => {
-        BackHandler.removeEventListener("hardwareBackPress", backAction);
-        navigation.removeListener("gestureEnd", backAction);
-      };
-    }, [backAction])
-  );
+ useFocusEffect(
+  useCallback(() => {
+    const backHandlerSub = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+    const gestureListener = navigation.addListener("gestureEnd", backAction);
+
+    return () => {
+      backHandlerSub.remove(); // ← proper unsubscription
+      gestureListener();       // ← remove navigation listener
+    };
+  }, [backAction])
+);
+
 
   function _spring() {
     setBackClickCount(1);

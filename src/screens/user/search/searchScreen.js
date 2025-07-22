@@ -99,7 +99,7 @@ const ChargingStationMap = () => {
   useEffect(() => {
     const fetchData = async () => {
       await getUserLocation("autoCall");
-      await handleSearchedStation({ coords, radius: 5000 });
+      await handleSearchedStation({ coords, radius: 10000 });
     };
 
     fetchData();
@@ -138,6 +138,7 @@ const ChargingStationMap = () => {
 
       if (searchStationsByLocation.fulfilled.match(response)) {
         const allStations = response?.payload?.data;
+        console.log("allStations are", allStations.length);
         setStations(allStations);
       } else if (searchStationsByLocation.fulfilled.match(response)) {
         dispatch(
@@ -278,9 +279,9 @@ const ChargingStationMap = () => {
           longitude: lng,
         };
 
-        await handleSearchedStation({ coords, radius: 5000 });
+        await handleSearchedStation({ coords, radius: 10000 });
 
-        const radiusInKm = 5000;
+        const radiusInKm = 10000;
         const oneDegreeOfLatitudeInKm = 111.32;
         const latitudeDelta = radiusInKm / oneDegreeOfLatitudeInKm;
         const longitudeDelta =
@@ -462,7 +463,7 @@ const ChargingStationMap = () => {
       <View style={styles.chargingInfoWrapStyle}>
         <Animated.FlatList
           ref={_scrollView}
-          data={Array.isArray(stateStations) ? stateStations.slice(0, 20) : []}
+          data={stations}
           horizontal
           pagingEnabled
           keyExtractor={(_, index) => index.toString()}

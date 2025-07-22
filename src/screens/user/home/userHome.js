@@ -117,8 +117,8 @@ const UserHome = ({ navigation }) => {
             // <-- important: make this function async
             const coords = loc.coords;
             setCurrentLocation(coords);
-                    console.log("Current Location:", coords);
- 
+            console.log("Current Location:", coords);
+
             dispatch(updateUserCoordinate(coords)); // Update user coordinates
 
             // 1. Fetch stations
@@ -151,9 +151,6 @@ const UserHome = ({ navigation }) => {
     };
   }, [refreshing]);
 
-
-
-  
   const handleRefresh = async () => {
     try {
       // setRefreshing(true);
@@ -323,28 +320,36 @@ const UserHome = ({ navigation }) => {
                   </Text>
                 </View>
                 <View style={styles.featureIcons}>
-                  <Icon
-                    name="map-marker-distance"
-                    size={14}
-                    color={COLORS.white}
-                  />
-                  {stations.length > 0 ? (
+                  {isLoading ? (
                     <>
-                      {isLoading ? (
-                        <DottedLoader />
-                      ) : (
-                        <Text style={styles.featureText}>
-                          {formatDistance(stations[0]?.distance_km)}
-                        </Text>
-                      )}
+                      <DottedLoader />
+                      <Text style={{ fontSize: 10, color: COLORS.white }}>
+                        Loading Stations ...
+                      </Text>
+                    </>
+                  ) : stations.length > 0 ? (
+                    <>
+                      <Icon
+                        name="map-marker-distance"
+                        size={14}
+                        color={COLORS.white}
+                      />
                       <Text style={styles.featureText}>
-                        (from your location)
+                        {formatDistance(stations[0]?.distance_km)} (from your
+                        location)
                       </Text>
                     </>
                   ) : (
-                    <Text style={styles.featureText}>
-                      No any Nearest Station
-                    </Text>
+                    <>
+                      <Icon
+                        name="map-marker-distance"
+                        size={14}
+                        color={COLORS.white}
+                      />
+                      <Text style={styles.featureText}>
+                        No any Nearest Station
+                      </Text>
+                    </>
                   )}
                 </View>
               </TouchableOpacity>

@@ -29,6 +29,8 @@ import {
   fetchAllStations,
 } from "../services/crudFunctions";
 import { updateStation } from "../../vendor/services/crudFunction";
+
+import { selectAdminError } from "../services/selector";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -54,7 +56,7 @@ const PreviewStation = ({ navigation, route }) => {
   //   const isLoading = useSelector(selectVendorLoading);
   //   const errorMessage = useSelector(selectVendorError);
   const [isLoading, setIsLoading] = useState(false);
-  const errorMessage = "change this with actual error";
+  const errorMessage = useSelector(selectAdminError);
   //   const stations = useSelector(selectVendorStation);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(stationImage || "");
@@ -63,12 +65,7 @@ const PreviewStation = ({ navigation, route }) => {
   //     (station) => station.id === stationData.station_id
   //   );
 
-  useEffect(() => {
-    // console.log(
-    //   "Transformed station data preview:",
-    //   JSON.stringify(stationData, null, 2)
-    // );
-  }, [stationData]);
+
 
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",

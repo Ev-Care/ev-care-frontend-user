@@ -2,7 +2,7 @@
   "expo": {
     "name": "EV Care",
     "slug": "ev-care",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "sdkVersion": "52.0.0",
     "owner": "evcare",
     "orientation": "portrait",
@@ -17,10 +17,10 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "runtimeVersion": "1.0.0",
+    "runtimeVersion": "1.0.1",
     "ios": {
       "bundleIdentifier": "com.render.evcare",
-      "buildNumber": "1.0.0",
+      "buildNumber": "1.0.1",
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to your camera.",
@@ -38,7 +38,7 @@
         "android.permission.ACCESS_FINE_LOCATION"
       ],
       "package": "com.render.evcare",
-      "versionCode": 1,
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/appIcon.png",
         "backgroundColor": "#101942"

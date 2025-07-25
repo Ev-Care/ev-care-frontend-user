@@ -322,29 +322,37 @@ const UserHome = ({ navigation }) => {
                     connector type.
                   </Text>
                 </View>
-                <View style={styles.featureIcons}>
-                  <Icon
-                    name="map-marker-distance"
-                    size={14}
-                    color={COLORS.white}
-                  />
-                  {stations.length > 0 ? (
+               <View style={styles.featureIcons}>
+                  {isLoading ? (
                     <>
-                      {isLoading ? (
-                        <DottedLoader />
-                      ) : (
-                        <Text style={styles.featureText}>
-                          {formatDistance(stations[0]?.distance_km)}
-                        </Text>
-                      )}
+                      <DottedLoader />
+                      <Text style={{ fontSize: 10, color: COLORS.white }}>
+                        Loading Stations ....
+                      </Text>
+                    </>
+                  ) : stations.length > 0 ? (
+                    <>
+                      <Icon
+                        name="map-marker-distance"
+                        size={14}
+                        color={COLORS.white}
+                      />
                       <Text style={styles.featureText}>
-                        (from your location)
+                        {formatDistance(stations[0]?.distance_km)} (from your
+                        location)
                       </Text>
                     </>
                   ) : (
-                    <Text style={styles.featureText}>
-                      No any Nearest Station
-                    </Text>
+                    <>
+                      <Icon
+                        name="map-marker-distance"
+                        size={14}
+                        color={COLORS.white}
+                      />
+                      <Text style={styles.featureText}>
+                        No any Nearest Station
+                      </Text>
+                    </>
                   )}
                 </View>
               </TouchableOpacity>
@@ -524,11 +532,12 @@ const UserHome = ({ navigation }) => {
 
     return (
       <FlatList
-        data={stations}
-        keyExtractor={(item) => `${item?.id}`}
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-      />
+  data={stations.slice(0, 20)}
+  keyExtractor={(item) => `${item?.id}`}
+  renderItem={renderItem}
+  showsVerticalScrollIndicator={false}
+/>
+
     );
   }
 };

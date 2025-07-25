@@ -498,6 +498,7 @@ const ChargingStationMap = () => {
                     : require("../../../../assets/images/nullStation.png")
                 }
                 style={styles.enrouteChargingStationImage}
+                resizeMode="stretch"
               />
               <View style={styles.enrouteStationOpenCloseWrapper}>
                 <Text

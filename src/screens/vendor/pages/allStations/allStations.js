@@ -150,6 +150,7 @@ const AllStations = ({ navigation, route }) => {
                 <Image
                   source={{ uri: imageURL.baseURL + station?.station_images }}
                   style={styles.image}
+                  resizeMode="stretch"
                 />
               ) : (
                 <View

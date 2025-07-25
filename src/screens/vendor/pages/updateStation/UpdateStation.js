@@ -115,16 +115,20 @@ const UpdateStation = ({ navigation, route }) => {
   });
 
   // console.log("selectedConnectors", selectedConnectors);
-  const addChargerForm = () =>
-    setChargerForms((prevForms) => [
+ const addChargerForm = () => {
+  setChargerForms((prevForms) => {
+    const newForms = [
       ...prevForms,
       {
-        // charger_id: -1,
         charger_type: null,
         max_power_kw: null,
         connectors: [],
       },
-    ]);
+    ];
+    setSelectedForm(String(newForms.length - 1));
+    return newForms;
+  });
+};
   const [connectorsList, setConnectorsList] = useState([]);
 
   const handleTimeChange = (event, selectedDate) => {
@@ -687,12 +691,12 @@ const UpdateStation = ({ navigation, route }) => {
 
             {index === chargerForms.length - 1 && (
               <View style={styles.nextButtonContainer}>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   onPress={addChargerForm}
                   style={styles.nextButton}
                 >
                   <Text style={styles.nextButtonText}>+ Add more</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             )}
           </>

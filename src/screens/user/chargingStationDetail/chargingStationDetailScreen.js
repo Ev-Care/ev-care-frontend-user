@@ -516,6 +516,7 @@ const styles = StyleSheet.create({
   mapBackground: {
     width: "100%",
     height: 200,
+    resizeMode:"cover",
   },
   overlay: {
     paddingHorizontal: 16,

@@ -64,8 +64,13 @@ const AddStationScreen = () => {
   const [chargerForms, setChargerForms] = useState([{}]);
   const [selectedForm, setSelectedForm] = useState(null);
   const [coordinate, setCoordinate] = useState(null);
-  const addChargerForm = () =>
-    setChargerForms((prevForms) => [...prevForms, {}]);
+const addChargerForm = () => {
+    setChargerForms((prevForms) => {
+        const newForms = [...prevForms, {}];
+        setSelectedForm(String(newForms.length - 1));
+        return newForms;
+    });
+};
   const [connectorsList, setConnectorsList] = useState([]);
   const accessToken = useSelector(selectToken); // Get access token from Redux store
   const dispatch = useDispatch(); // Get the dispatch function
@@ -695,12 +700,12 @@ const AddStationScreen = () => {
 
             {index === chargerForms?.length - 1 && (
               <View style={styles?.nextButtonContainer}>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   onPress={addChargerForm}
                   style={styles?.nextButton}
                 >
                   <Text style={styles?.nextButtonText}>+ Add more</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             )}
           </>

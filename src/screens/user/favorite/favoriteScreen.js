@@ -118,7 +118,8 @@ setListData(filtered);
         <View style={[styles.noItemsInfoWrapStyle, { paddingVertical: "60%" }]}>
           <Image
             source={require("../../../../assets/images/icons/heart_broken.png")}
-            style={{ width: 100.0, height: 100.0, resizeMode: "contain" }}
+            style={{ width: 100.0, height: 100.0,resizeMode:"stretch" }}
+           
           />
           <Text
             style={{
@@ -196,6 +197,7 @@ setListData(filtered);
                 : require("../../../../assets/images/nullStation.png")
             }
             style={styles.enrouteChargingStationImage}
+            resizeMode="stretch"
           />
           <View style={styles.enrouteStationOpenCloseWrapper}>
             <Text

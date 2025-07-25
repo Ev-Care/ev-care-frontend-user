@@ -140,6 +140,7 @@ const [selectedStatuses, setSelectedStatuses] = useState([]);
                 <Image
                   source={{ uri: imageURL.baseURL + station?.station_images }}
                   style={styles.image}
+                  resizeMode="stretch"
                 />
               ) : (
                 <View

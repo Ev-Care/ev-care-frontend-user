@@ -76,7 +76,7 @@ const ChargingStationMap = () => {
   const dispatch = useDispatch();
   const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(null);
 
-  // console.log("stations", stations?.length);
+  // console.log("stations", JSON.stringify(stations, null, 2));
   const userCurrentRegion = useSelector(selectUserCoordinate);
   const [region, setRegion] = useState({
     latitude: userCurrentRegion?.latitude || 28.6139,

@@ -432,6 +432,7 @@ function stationDetail() {
                   // source={{ uri: imageURL.baseURL + station?.station_images }}
                   source={{ uri: imageURL.baseURL + station?.station_images }}
                   style={styles.stationImage}
+                  resizeMode="stretch"
                 />
               ) : (
                 <View

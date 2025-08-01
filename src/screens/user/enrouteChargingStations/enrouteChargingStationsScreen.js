@@ -51,7 +51,7 @@ const EnrouteChargingStationsScreen = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(null);
   const AnimatedFlatList = Animated.createAnimatedComponent(RNFlatList);
-  // console.log("enrouteStations", JSON.stringify(enrouteStations[0]));
+  console.log("enrouteStations", JSON.stringify(enrouteStations[0]));
   const [destinationAddress, setDestinationAddress] = useState(
     route?.params?.destinationAddress || "Destination Address"
   );

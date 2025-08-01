@@ -79,8 +79,9 @@ const UserHome = ({ navigation }) => {
   const stations = useSelector(selectStations);
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
+  console.log(JSON.stringify(stations, null, 2));
   const [currentLocation, setCurrentLocation] = useState(null);
+  
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good Morning";

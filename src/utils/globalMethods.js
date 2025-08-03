@@ -3,14 +3,19 @@ import { Alert, Linking, Platform } from "react-native";
 
 /** Format distance in meters or kilometers */
 export const formatDistance = (distanceInKm) => {
-  if (distanceInKm < 1) {
-    const meters = Math.round(distanceInKm * 1000);
+  const distance = Number(distanceInKm);
+
+  if (isNaN(distance)) return 'NAN';
+
+  if (distance < 1) {
+    const meters = (distance * 1000).toFixed(2).replace(/\.00$/, '');
     return `${meters} m`;
   } else {
-    const kilometers = Math.round(distanceInKm);
+    const kilometers = distance.toFixed(2).replace(/\.00$/, '');
     return `${kilometers} km`;
   }
 };
+
 
 /** Format operating hours */
 export const openHourFormatter = (openingTime, closingTime) => {

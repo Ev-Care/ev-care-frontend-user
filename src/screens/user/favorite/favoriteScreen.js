@@ -42,6 +42,7 @@ import {
   openHourFormatter,
   formatDistance,
   getChargerLabel,
+  openGoogleMaps,
 } from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { useFocusEffect } from "@react-navigation/native";
@@ -56,63 +57,26 @@ const FavoriteScreen = ({ navigation }) => {
   const [listData, setListData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const errorMessage = useSelector(selectStationsError);
- 
+//  console.log("user ", user.user_key);
   // console.log(listData);
+
+
   useEffect(() => {
     dispatch(getAllFavoriteStations({ user_key: user?.user_key }));
-  }, [user?.user_key, dispatch]);
+  }, []);
 
   useEffect(() => {
-    if (stations?.length && favStations?.length) {
-      console.log(
-        "useeffect in fav called and fav length is ",
-        favStations.length
-      );
-      const filtered = favStations
-        .map((fav) => stations.find((station) => station.id === fav.station.id))
-        .filter(Boolean);
-      setListData(filtered);
-    }
-  }, [favStations, stations]);
+  if (!stations || !favStations) return;
+  const filtered = favStations
+  .map((fav) => fav.station)  // Directly access the station object
+  .filter(Boolean);           // Filter out any undefined/null values
 
-  useFocusEffect(
-    useCallback(() => {
-      const fetchFavorites = async () => {
-        const favResponse = await dispatch(
-          getAllFavoriteStations({ user_key: user?.user_key })
-        );
+setListData(filtered);
+}, [favStations, stations]);
+ 
+// console.log("List Data: ", listData[0]?.vendor);
 
-        if (getAllFavoriteStations.rejected.match(favResponse)) {
-          dispatch(
-            showSnackbar({
-              message: errorMessage || "Failed to fetch favorite stations.",
-              type: "error",
-            })
-          );
-          return;
-        }
 
-        // ✅ Get updated favorites from store after dispatch
-        const updatedFavStations = store.getState().favorites.favStations;
-
-        if (stations && updatedFavStations) {
-          const filtered = updatedFavStations
-            .map((fav) =>
-              stations.find((station) => station.id == fav.station.id)
-            )
-            .filter(Boolean);
-
-          setListData(filtered);
-        }
-      };
-
-      fetchFavorites();
-    }, [user?.user_key, dispatch, stations])
-  );
-
-  // console.log("stations in  stations fav screen", stations.length);
-  // console.log("stations in fav stations fav screen", favStations.length);
-  //   console.log("stations in listData fav screen", listData.length);
 
   const handleRefresh = async () => {
     const favResponse = await dispatch(
@@ -129,21 +93,7 @@ const FavoriteScreen = ({ navigation }) => {
         })
       );
     }
-    if (stations && favStations) {
-      const filtered = favStations
-        .map((fav) => stations.find((station) => station.id == fav.station.id))
-        .filter(Boolean);
-
-      setListData(filtered);
-    }
-  };
-
-  const openGoogleMaps = (latitude, longitude) => {
-    const url = Platform.select({
-      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
-    });
-    Linking.openURL(url);
+    
   };
 
   return (
@@ -168,7 +118,8 @@ const FavoriteScreen = ({ navigation }) => {
         <View style={[styles.noItemsInfoWrapStyle, { paddingVertical: "60%" }]}>
           <Image
             source={require("../../../../assets/images/icons/heart_broken.png")}
-            style={{ width: 100.0, height: 100.0, resizeMode: "contain" }}
+            style={{ width: 100.0, height: 100.0,resizeMode:"stretch" }}
+           
           />
           <Text
             style={{
@@ -202,6 +153,7 @@ const FavoriteScreen = ({ navigation }) => {
     );
 
     const deleteRow = async (rowMap, rowKey) => {
+      isLoading
       closeRow(rowMap, rowKey);
       const newData = [...listData];
       const prevIndex = listData.findIndex((item) => item?.key === rowKey);
@@ -245,6 +197,7 @@ const FavoriteScreen = ({ navigation }) => {
                 : require("../../../../assets/images/nullStation.png")
             }
             style={styles.enrouteChargingStationImage}
+            resizeMode="stretch"
           />
           <View style={styles.enrouteStationOpenCloseWrapper}>
             <Text
@@ -316,14 +269,15 @@ const FavoriteScreen = ({ navigation }) => {
                   marginRight: Sizes.fixPadding - 5.0,
                 }}
               >
-                {formatDistance(data?.item?.distance_km)}
+                {/* {formatDistance(data?.item?.distance_km)} */}
               </Text>
          
               <TouchableOpacity
                 onPress={() =>
                   openGoogleMaps(
                     data?.item?.coordinates?.latitude,
-                    data?.item?.coordinates?.longitude
+                    data?.item?.coordinates?.longitude,
+                    data?.item?.station_name
                   )
                 }
                 style={styles.getDirectionButton}

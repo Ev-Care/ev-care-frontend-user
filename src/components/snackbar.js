@@ -7,7 +7,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 const Snackbar = () => {
   const dispatch = useDispatch();
   const { message, type } = useSelector((state) => state.snackbar);
-  console.log("Snackbar message:", message); // Debugging line
+  // console.log("Snackbar message:", message); // Debugging line
 
   useEffect(() => {
     if (message) {

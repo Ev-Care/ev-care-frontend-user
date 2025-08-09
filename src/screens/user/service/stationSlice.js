@@ -3,13 +3,10 @@ import { enableMapSet } from "immer";
 import { fetchStationsByLocation, getAllFavoriteStations } from "./crudFunction";
 
 
-// Enable support for Set and Map in Immer
-enableMapSet();
-// Initial state
+
 const initialState = {
   stations: [],
   favorite: [],
-  recent: new Set(),
   loading: false,
   error: null,
 };
@@ -19,23 +16,7 @@ const stationSlice = createSlice({
   name: "stations",
   initialState,
   reducers: {
-    // Reducer to reset the state
-    resetStationsState: (state) => {
-      state.stations = [];
-      state.favorite = new Set();
-      state.recent = new Set();
-      state.loading = false;
-      state.error = null;
-    },
-    
-    
-    addToRecent: (state, action) => {
-      var item = {
-        id: action.payload.id,
-        time: Date.now(),
-      }
-      state.recent.push(stationId);
-    },
+     clearUserStationsState: () => initialState,
 
   },
   extraReducers: (builder) => {
@@ -68,7 +49,7 @@ const stationSlice = createSlice({
         // console.log("Favorite stations fetched successfully:", action.payload);
         state.loading = false;
         state.favorite = action.payload.data; // Update the favorite stations list
-        console.log("favorite stations:", state.favorite); // Log the favorite stations for debugging
+        // console.log("favorite stations:", JSON.stringify(state.favorite, null, 2)); // Log the favorite stations for debugging
       })
       .addCase(getAllFavoriteStations.rejected, (state, action) => {
         // console.log("Error fetching favorite stations:", action.payload);
@@ -79,7 +60,7 @@ const stationSlice = createSlice({
 });
 
 // Export actions
-export const { resetStationsState, addToFavorite, removeFromFavorite, addToRecent } = stationSlice.actions;
+export const { clearUserStationsState } = stationSlice.actions;
 
 
 

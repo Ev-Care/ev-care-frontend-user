@@ -28,6 +28,7 @@ import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
 import { Colors } from "../../../../constants/styles";
 import RNModal from "react-native-modal";
 import imageURL from "../../../../constants/baseURL";
+import { validateDecimalInput } from "../../../../utils/globalMethods";
 
 const PRIMARY_COLOR = "#101942";
 const amenities = [
@@ -62,8 +63,15 @@ const AddStations = () => {
   const [chargerForms, setChargerForms] = useState([{}]);
   const [selectedForm, setSelectedForm] = useState(null);
   const [coordinate, setCoordinate] = useState(null);
-  const addChargerForm = () =>
-    setChargerForms((prevForms) => [...prevForms, {}]);
+ const addChargerForm = () => {
+    setChargerForms((prevForms) => {
+        const newForms = [...prevForms, {}];
+        setSelectedForm(String(newForms.length - 1));
+        return newForms;
+    });
+};
+
+
   const [connectorsList, setConnectorsList] = useState([]);
   const accessToken = useSelector(selectToken); // Get access token from Redux store
   const dispatch = useDispatch(); // Get the dispatch function
@@ -158,10 +166,10 @@ const AddStations = () => {
   const openGallery = async (setter, label) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.1,
+        mediaTypes: ["images"],
         allowsEditing: true,
         aspect: label === "avatar" ? [1, 1] : undefined,
+        quality: 0.2,
       });
 
       if (!result.canceled) {
@@ -178,16 +186,16 @@ const AddStations = () => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -198,7 +206,7 @@ const AddStations = () => {
   const openCamera = async (setter, label) => {
     try {
       const result = await ImagePicker.launchCameraAsync({
-        quality: 0.1,
+        quality: 0.2,
         allowsEditing: true,
         aspect: label === "avatar" ? [1, 1] : undefined,
       });
@@ -217,16 +225,16 @@ const AddStations = () => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -243,7 +251,7 @@ const AddStations = () => {
   };
 
   const handlePreview = () => {
-    console.log("in the preview page");
+    // console.log("in the preview page");
     const amenitiesString = selectedAmenities
       .map((id) => amenities.find((amenity) => amenity.id === id)?.label)
       .join(",");
@@ -273,10 +281,10 @@ const AddStations = () => {
       station_images: photo ? photo : "",
     };
 
-    console.log(
-      "Transformed Station Data:",
-      JSON.stringify(stationData, null, 2)
-    );
+    // console.log(
+    //   "Transformed Station Data:",
+    //   JSON.stringify(stationData, null, 2)
+    // );
 
     if (!stationData?.station_name || stationData?.station_name === "") {
       dispatch(
@@ -296,15 +304,15 @@ const AddStations = () => {
       );
       return;
     }
-    if (!stationData?.amenities || stationData.amenities === "") {
-      dispatch(
-        showSnackbar({
-          message: "Station Amenities cannot be empty.",
-          type: "error",
-        })
-      );
-      return;
-    }
+    // if (!stationData?.amenities || stationData.amenities === "") {
+    //   dispatch(
+    //     showSnackbar({
+    //       message: "Station Amenities cannot be empty.",
+    //       type: "error",
+    //     })
+    //   );
+    //   return;
+    // }
     if (!stationData?.station_images || stationData.station_images === "") {
       dispatch(
         showSnackbar({
@@ -416,7 +424,7 @@ const AddStations = () => {
       </TouchableOpacity>
     );
   };
-  return (
+  return ( <View style={{ flex: 1 }}>
     <ScrollView style={styles.container}>
       <MyStatusBar />
       <View style={styles.header}>
@@ -452,7 +460,16 @@ const AddStations = () => {
           </TouchableOpacity>
         </View>
       </Modal>
-    </ScrollView>
+    </ScrollView> <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={addChargerForm}
+        style={styles.floatingAddButton}
+      >
+        <MaterialIcons name="add" size={20} color={Colors.whiteColor} />
+        <Text style={{ color: Colors.whiteColor, fontSize: 8 }}>
+          Add Charger
+        </Text>
+      </TouchableOpacity></View>
   );
   function bottomSheet() {
     return (
@@ -555,7 +572,7 @@ const AddStations = () => {
           {index > 0 && (
             <TouchableOpacity
               onPress={() => removeChargerForm(index)}
-              style={styles?.deleteButton}
+              style={{marginBottom:16}}
             >
               <Icon name="close-circle" size={24} color="red" />
             </TouchableOpacity>
@@ -628,17 +645,18 @@ const AddStations = () => {
                 Power Rating <Text style={styles?.optional}>(in kW)</Text>
               </Text>
               <TextInput
-                style={styles?.input}
+                style={styles.input}
                 placeholder="Power Rating In kW"
+                keyboardType="decimal-pad"
                 value={chargerForms?.[index]?.powerRating || ""}
-                keyboardType="numeric"
                 onChangeText={(text) => {
-                  const numericText = text.replace(/[^0-9]/g, "");
+                  const validInput = validateDecimalInput(text, 1000, 2);
 
-                  if (numericText && parseInt(numericText) > 1000) {
+                  if (text && !validInput) {
                     dispatch(
                       showSnackbar({
-                        message: "Power rating cannot exceed 1000 kW",
+                        message:
+                          "Invalid input. Max 2 decimals or value exceeded.",
                         type: "error",
                       })
                     );
@@ -650,7 +668,7 @@ const AddStations = () => {
                       i === index
                         ? {
                             ...charger,
-                            powerRating: numericText,
+                            powerRating: validInput,
                           }
                         : charger
                     )
@@ -663,12 +681,12 @@ const AddStations = () => {
 
             {index === chargerForms?.length - 1 && (
               <View style={styles?.nextButtonContainer}>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   onPress={addChargerForm}
                   style={styles?.nextButton}
                 >
                   <Text style={styles?.nextButtonText}>+ Add more</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             )}
           </>
@@ -964,6 +982,22 @@ const AddStations = () => {
 };
 // export default  AddStations ;
 const styles = StyleSheet.create({
+   floatingAddButton: {
+     justifyContent: "center",
+          alignItems: "center",
+          width: 70,
+          height: 70,
+          borderRadius: 35,
+          backgroundColor: Colors.primaryColor,
+          shadowColor: Colors.primaryColor,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.4,
+          shadowRadius: 5,
+          elevation: 8,
+          position: "absolute",
+          bottom: 150,
+          right: "10%"
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",

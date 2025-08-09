@@ -33,6 +33,7 @@ import {
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import RNModal from "react-native-modal";
 import imageURL from "../../../constants/baseURL";
+import { GST_REGEX, PAN_REGEX } from "../../../constants/regex";
 
 export const setupImagePicker = (file) => {
   // console.log("inside setup image");
@@ -61,11 +62,11 @@ export const setupImagePicker = (file) => {
 
 const VendorDetailForm = () => {
   const navigation = useNavigation();
-  const [businessName, setBusinessName] = useState("");
-  const [address, setAddress] = useState("");
+  const [businessName, setBusinessName] = useState(null);
+  const [address, setAddress] = useState(null);
   const [coordinate, setCoordinate] = useState(null);
-  const [aadharNumber, setAadharNumber] = useState("");
-  const [panNumber, setPanNumber] = useState("");
+  const [aadharNumber, setAadharNumber] = useState(null);
+  const [panNumber, setPanNumber] = useState(null);
   const [gstNumber, setGstNumber] = useState(null);
   const [avatar, setAvatar] = useState(null);
 
@@ -96,11 +97,11 @@ const VendorDetailForm = () => {
   let vendorDetail = {};
 
   const handleSubmit = async () => {
-    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[A-Z0-9]{1}[A-Z0-9]{1}$/;
-  
+    // const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    // const gstRegex =
+    //   /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[A-Z0-9]{1}[A-Z0-9]{1}$/;
     // Validate required fields
-    if (!avatarURI || !businessName || !panNumber || !panImageURI || !address) {
+    if (!avatarURI || !panNumber || !panImageURI || !address) {
       try {
         await dispatch(
           showSnackbar({
@@ -114,40 +115,59 @@ const VendorDetailForm = () => {
         return;
       }
     }
-  
+      if (businessType==="organization" && !businessName ) {
+      try {
+        await dispatch(
+          showSnackbar({
+            message: "Please Enter Organization or Legal Name",
+            type: "error",
+          })
+        );
+        return;
+      } catch (error) {
+        Alert.alert("Oops! You must have missed a required field.");
+        return;
+      }
+    }
+
     // Validate Aadhaar number for individuals
-    if (businessType === "individual" && (aadharNumber.length !== 12 || !/^\d+$/.test(aadharNumber))) {
+    if (
+      businessType === "individual" &&
+      (aadharNumber.length !== 12 || !/^\d+$/.test(aadharNumber))
+    ) {
       await dispatch(
         showSnackbar({ message: "Invalid Aadhaar number.", type: "error" })
       );
       return;
     }
-  
+
     // Validate PAN number
-    if (!panRegex.test(panNumber)) {
+    if (!PAN_REGEX.test(panNumber)) {
       await dispatch(
         showSnackbar({ message: "Invalid PAN number", type: "error" })
       );
       return;
     }
-  
+
     // Validate GST number if applicable
-    if ((isCheckBoxClicked || businessType === "organization") && (!gstNumber || !gstRegex.test(gstNumber))) {
+    if (
+      (isCheckBoxClicked || businessType === "organization") &&
+      (!gstNumber || !GST_REGEX.test(gstNumber))
+    ) {
       await dispatch(
         showSnackbar({ message: "Invalid GST number.", type: "error" })
       );
       return;
     }
-  
+
     // Prepare base vendor detail object
     let vendorDetail = {
-      business_name: businessName,
       pan_no: panNumber,
       address: address,
       avatar: avatarURI,
       pan_pic: panImageURI,
     };
-  
+
     // Add conditional fields
     if (businessType === "individual") {
       vendorDetail = {
@@ -157,28 +177,27 @@ const VendorDetailForm = () => {
         adhar_front_pic: aadhaarFrontImageURI,
         adhar_back_pic: aadhaarBackImageURI,
       };
-      
+
       if (isCheckBoxClicked) {
         vendorDetail = {
           ...vendorDetail,
-          
           gstin_number: gstNumber,
           gstin_image: gstImageURI,
         };
       }
-    } 
-    else if (businessType === "organization") {
+    } else if (businessType === "organization") {
       vendorDetail = {
         ...vendorDetail,
+         business_name: businessName,
         vendor_type: businessType,
         gstin_number: gstNumber,
         gstin_image: gstImageURI,
       };
     }
-  
+
     try {
       setIsLoading(true);
-  
+
       const response = await dispatch(
         patchUpdateVendorProfile({
           detail: vendorDetail,
@@ -186,7 +205,7 @@ const VendorDetailForm = () => {
           accessToken: accessToken,
         })
       );
-  
+
       if (patchUpdateVendorProfile.fulfilled.match(response)) {
         dispatch(
           showSnackbar({
@@ -195,7 +214,9 @@ const VendorDetailForm = () => {
           })
         );
       } else if (patchUpdateVendorProfile.rejected.match(response)) {
-        const errorMessage = response?.payload?.message || "Submission failed. Please try again.";
+        const errorMessage =
+        response.payload||
+          response?.payload?.message || "Submission failed. Please try again.";
         dispatch(showSnackbar({ message: errorMessage, type: "error" }));
       }
     } catch (error) {
@@ -213,90 +234,79 @@ const VendorDetailForm = () => {
 
   const selectOnMap = () => {
     navigation.push("PickLocation", {
-      addressFor: "stationAddress",
+      addressFor: "vendorAddress",
       setAddress: (newAddress) => setAddress(newAddress),
       setCoordinate: (newCoordinate) => setCoordinate(newCoordinate),
     });
   };
 
-  const openGallery = async (setter, label) => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.1,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
 
-      if (!result.canceled) {
-        const imageUri = result.assets[0].uri;
-        setImageLoading(label);
-        const file = await setupImagePicker(imageUri);
 
-        const response = await dispatch(
-          postSingleFile({ file: file, accessToken: accessToken })
-        );
+const openGallery = async (setter, label) => {
+  try {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+      quality: 0.2,
+    });
 
-        if (
-          response?.payload?.code === 200 ||
-          response?.payload?.code === 201
-        ) {
-          setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
-        } else {
-          Alert.alert("Error", "File should be less than 5 MB");
-        }
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+      setImageLoading(label);
+      const file = await setupImagePicker(imageUri);
+
+      const response = await dispatch(
+        postSingleFile({ file: file, accessToken: accessToken })
+      );
+
+      if (response?.payload?.code === 200 || response?.payload?.code === 201) {
+        setter(response?.payload?.data?.filePathUrl);
+        // console.log("Profile Image URI set successfully:", response?.payload?.data?.filePathUrl);
+      } else {
+        Alert.alert("Error", "File should be less than 5 MB");
       }
-    } catch (error) {
-      console.log("Error uploading file:", error);
-      Alert.alert("Error", "Upload failed. Please try again.");
-    } finally {
-      setImageLoading("");
-      setBottomSheetVisible(false);
     }
-  };
+  } catch (error) {
+    // console.log("Error uploading file:", error);
+    Alert.alert("Error", "Upload failed. Please try again.");
+  } finally {
+    setImageLoading("");
+    setBottomSheetVisible(false);
+  }
+};
+const openCamera = async (setter, label) => {
+  try {
+    const result = await ImagePicker.launchCameraAsync({
+      quality: 0.2,
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+    });
 
-  const openCamera = async (setter, label) => {
-    try {
-      const result = await ImagePicker.launchCameraAsync({
-        quality: 0.1,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+      setImageLoading(label);
+      const file = await setupImagePicker(imageUri);
 
-      if (!result.canceled) {
-        const imageUri = result.assets[0].uri;
-        setImageLoading(label);
-        const file = await setupImagePicker(imageUri);
+      const response = await dispatch(
+        postSingleFile({ file: file, accessToken: accessToken })
+      );
 
-        const response = await dispatch(
-          postSingleFile({ file: file, accessToken: accessToken })
-        );
-
-        if (
-          response?.payload?.code === 200 ||
-          response?.payload?.code === 201
-        ) {
-          setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
-        } else {
-          Alert.alert("Error", "File should be less than 5 MB");
-        }
+      if (response?.payload?.code === 200 || response?.payload?.code === 201) {
+        setter(response?.payload?.data?.filePathUrl);
+        // console.log("Profile Image URI set successfully:", response?.payload?.data?.filePathUrl);
+      } else {
+        Alert.alert("Error", "File should be less than 5 MB");
       }
-    } catch (error) {
-      console.log("Error uploading file:", error);
-      Alert.alert("Error", "Upload failed. Please try again.");
-    } finally {
-      setImageLoading("");
-      setBottomSheetVisible(false);
     }
-  };
+  } catch (error) {
+    // console.log("Error uploading file:", error);
+    Alert.alert("Error", "Upload failed. Please try again.");
+  } finally {
+    setImageLoading("");
+    setBottomSheetVisible(false);
+  }
+};
 
   const renderImageBox = (label, setter, apiRespUri) => {
     return (
@@ -352,7 +362,7 @@ const VendorDetailForm = () => {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.avatarSection}>
           <Text style={styles.sectionLabel}>
-            Upload Your Photo  <Text style={styles.label}>*</Text>
+            Upload Your Photo <Text style={styles.label}>*</Text>
             {/* <Text style={styles.optional}>(Optional)</Text> */}
           </Text>
           <Text style={styles.photoDescription}>
@@ -362,56 +372,12 @@ const VendorDetailForm = () => {
             {renderImageBox("avatar", setAvatarURI, avatarURI)}
           </View>
         </View>
-        {businessNameSection?.()}
         {businessTypeSection?.()}
+        {businessNameSection?.()}
+
         {aadharSection?.()}
-        <Text style={styles.sectionLabel}>
-          Pan Number  <Text style={styles.label}>*</Text>
-            {/* <Text style={styles.optional}>(Optional)</Text> */}
-          </Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter PAN number"
-          placeholderTextColor="gray"
-          value={panNumber}
-          onChangeText={(text) => {
-            const upperText = text.toUpperCase();
-            const validText = upperText.replace(/[^A-Z0-9]/g, ""); // Only letters and numbers
 
-            if (validText.length > 10) {
-              dispatch(
-                showSnackbar({
-                  message: "PAN number cannot exceed 10 characters",
-                  type: "error",
-                })
-              );
-              return; // Don't update if more than 10 characters
-            }
-
-            setPanNumber(validText); // Update normally
-
-            if (panTimer) {
-              clearTimeout(panTimer);
-            }
-
-            // Set a timer: if user stops typing for 500ms, validate
-            const timer = setTimeout(() => {
-              const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
-              if (!panRegex.test(validText)) {
-                dispatch(
-                  showSnackbar({
-                    message: "Invalid PAN format. Example: ABCDE1234F",
-                    type: "error",
-                  })
-                );
-              }
-            }, 3000);
-
-            setPanTimer(timer);
-          }}
-          maxLength={10}
-        />
-
+        {panInfo()}
         {gstSection?.()}
         {addressSection?.()}
         {docImageSection?.()}
@@ -477,16 +443,70 @@ const VendorDetailForm = () => {
       </View>
     );
   }
-  function businessNameSection() {
+  function panInfo() {
     return (
       <>
         <Text style={styles.sectionLabel}>
-            Owner Legal Name  <Text style={styles.label}>*</Text>
-            {/* <Text style={styles.optional}>(Optional)</Text> */}
-          </Text>
+          Pan Number <Text style={styles.label}>*</Text>
+          {/* <Text style={styles.optional}>(Optional)</Text> */}
+        </Text>
         <TextInput
           style={styles.input}
-          placeholder="Enter Your Legal Name"
+          placeholder="Enter PAN number"
+          placeholderTextColor="gray"
+          value={panNumber}
+          onChangeText={(text) => {
+            const upperText = text.toUpperCase();
+            const validText = upperText.replace(/[^A-Z0-9]/g, ""); // Only letters and numbers
+
+            if (validText.length > 10) {
+              dispatch(
+                showSnackbar({
+                  message: "PAN number cannot exceed 10 characters",
+                  type: "error",
+                })
+              );
+              return; // Don't update if more than 10 characters
+            }
+
+            setPanNumber(validText); // Update normally
+
+            if (panTimer) {
+              clearTimeout(panTimer);
+            }
+
+            // Set a timer: if user stops typing for 500ms, validate
+            const timer = setTimeout(() => {
+              const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+              if (!panRegex.test(validText)) {
+                dispatch(
+                  showSnackbar({
+                    message: "Invalid PAN format. Example: ABCDE1234F",
+                    type: "error",
+                  })
+                );
+              }
+            }, 3000);
+
+            setPanTimer(timer);
+          }}
+          maxLength={10}
+        />
+      </>
+    );
+  }
+  function businessNameSection() {
+    return (
+      <>
+        {businessType === "organization" && (
+          <>
+          <Text style={styles.sectionLabel}>
+            Organization or Legal Name <Text style={styles.label}>*</Text>
+          </Text>
+       
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Organization or Legal Name"
           placeholderTextColor="gray"
           value={businessName}
           onChangeText={(text) => {
@@ -501,7 +521,7 @@ const VendorDetailForm = () => {
             }
             setBusinessName(text);
           }}
-        />
+        /></> )}
       </>
     );
   }
@@ -509,9 +529,9 @@ const VendorDetailForm = () => {
     return (
       <View style={[styles.section, { marginBottom: 12 }]}>
         <Text style={styles.sectionLabel}>
-            Register As  <Text style={styles.label}>*</Text>
-            {/* <Text style={styles.optional}>(Optional)</Text> */}
-          </Text>
+          Register As <Text style={styles.label}>*</Text>
+          {/* <Text style={styles.optional}>(Optional)</Text> */}
+        </Text>
         <View style={styles.TypeContainer}>
           <TouchableOpacity
             style={[
@@ -561,10 +581,10 @@ const VendorDetailForm = () => {
       <>
         {businessType === "individual" && (
           <>
-             <Text style={styles.sectionLabel}>
-           Aadhaar Number  <Text style={styles.label}>*</Text>
-            {/* <Text style={styles.optional}>(Optional)</Text> */}
-          </Text>
+            <Text style={styles.sectionLabel}>
+              Aadhaar Number <Text style={styles.label}>*</Text>
+              {/* <Text style={styles.optional}>(Optional)</Text> */}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Enter Aadhaar number"
@@ -630,10 +650,10 @@ const VendorDetailForm = () => {
 
         {(isCheckBoxClicked || businessType === "organization") && (
           <>
-           <Text style={styles.sectionLabel}>
-            Gst Number  <Text style={styles.label}>*</Text>
-            {/* <Text style={styles.optional}>(Optional)</Text> */}
-          </Text>
+            <Text style={styles.sectionLabel}>
+              Gst Number <Text style={styles.label}>*</Text>
+              {/* <Text style={styles.optional}>(Optional)</Text> */}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Enter GST number"
@@ -686,9 +706,9 @@ const VendorDetailForm = () => {
     return (
       <>
         <Text style={styles.sectionLabel}>
-            Address  <Text style={styles.label}>*</Text>
-            {/* <Text style={styles.optional}>(Optional)</Text> */}
-          </Text>
+          Address <Text style={styles.label}>*</Text>
+          {/* <Text style={styles.optional}>(Optional)</Text> */}
+        </Text>
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder="Home/Street/Locality, City, State, Pincode"
@@ -696,7 +716,7 @@ const VendorDetailForm = () => {
           multiline
           value={address}
           onChangeText={(text) => {
-            if (text.length > 100) {
+            if (text.length > 200) {
               dispatch(
                 showSnackbar({
                   message: "Address cannot exceed 100 characters",
@@ -721,9 +741,9 @@ const VendorDetailForm = () => {
     return (
       <>
         <Text style={styles.sectionLabel}>
-            Upload These Documents  <Text style={styles.label}>*</Text>
-            {/* <Text style={styles.optional}>(Optional)</Text> */}
-          </Text>
+          Upload These Documents <Text style={styles.label}>*</Text>
+          {/* <Text style={styles.optional}>(Optional)</Text> */}
+        </Text>
         <View style={styles.imageContainer}>
           {businessType === "individual" && (
             <>

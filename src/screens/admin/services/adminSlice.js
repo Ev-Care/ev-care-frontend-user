@@ -1,15 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { approveStation, approveVendorProfile, fetchAllPendingStation, fetchAllStations, getAllPendingUsers, getAllSupportIssues } from "./crudFunctions";
-
-
+import { approveStation, approveVendorProfile, changeTicketStatus, fetchAllPendingStation, fetchAllStations, getAllSupportIssues, getAllUsers, getAllVendors } from "./crudFunctions";
 
 const initialState = {
     allUsers: [],
+    allVendors: [],
     allStations: [],
     pendingStations: [],
-    pendingUsers: [],
     rejectedStations: [],
-    rejectedUsers: [],
     supportIssues: [],
     loading: false,
     error: null,
@@ -20,7 +17,7 @@ const adminSlice = createSlice({
     name: 'admin',
     initialState,
     reducers: {
-
+        clearAdminState: () => initialState,
     },
     extraReducers: (builder) => {
         builder
@@ -38,17 +35,27 @@ const adminSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload?.message || action.payload;
             })
-            .addCase(getAllPendingUsers.pending, (state) => {
+            .addCase(getAllUsers.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(getAllPendingUsers.fulfilled, (state, action) => {
+            .addCase(getAllUsers.fulfilled, (state, action) => {
+                state.allUsers = action.payload.data;
                 state.loading = false;
-                console.log('in users fulfilled.', action.payload.data[0]);
-                state.pendingUsers = action.payload.data;
-
             })
-            .addCase(getAllPendingUsers.rejected, (state, action) => {
+            .addCase(getAllUsers.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload.message;
+            })
+            .addCase(getAllVendors.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getAllVendors.fulfilled, (state, action) => {
+                state.allVendors = action.payload.data;
+                state.loading = false;
+            })
+            .addCase(getAllVendors.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload.message;
             })
@@ -95,15 +102,32 @@ const adminSlice = createSlice({
             })
             .addCase(getAllSupportIssues.fulfilled, (state, action) => {
                 state.loading = false;
-                state.allStations = action.payload.data.chargingStations;
+                state.supportIssues = action.payload.data;
 
             })
             .addCase(getAllSupportIssues.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload.message;
+            })
+            .addCase(changeTicketStatus.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(changeTicketStatus.fulfilled, (state, action) => {
+                state.loading = false;
+                const updatedIssue = action?.payload;
+                if (updatedIssue && updatedIssue.support_id) {
+                    state.supportIssues = state.supportIssues.map(issue =>
+                        issue.support_id === updatedIssue.support_id ? { ...issue, ...updatedIssue } : issue
+                    );
+                }
+            })
+            .addCase(changeTicketStatus.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload.message;
             });
     }
 });
-
+export const { clearAdminState } = adminSlice.actions;
 // export default adminSlice.actions;
 export default adminSlice.reducer;

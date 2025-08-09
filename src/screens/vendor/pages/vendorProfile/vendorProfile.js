@@ -33,7 +33,7 @@ const VendorProfile = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showLogoutSheet, setshowLogoutSheet] = useState(false);
 
-
+  
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
@@ -97,7 +97,7 @@ const VendorProfile = () => {
               marginHorizontal: Sizes.fixPadding * 2.0,
             }}
           >
-            Are you sure want to logout?
+           Are you sure you want to log out?
           </Text>
           <View
             style={{
@@ -122,9 +122,9 @@ const VendorProfile = () => {
               onPress={() => {
                 dispatch(logoutUser());
                 setshowLogoutSheet(false);
-                console.log(
-                  "User logged out successfully in profileScreen and navigting to Signin"
-                );
+                // console.log(
+                //   "User logged out successfully in profileScreen and navigting to Signin"
+                // );
               }}
               style={{
                 ...styles.logoutButtonStyle,
@@ -180,6 +180,11 @@ const VendorProfile = () => {
             option: "Edit Profile",
             iconName: "person",
             onPress: () => navigation.navigate("EditProfileVendor"),
+          })}
+           {profileOption({
+            option: "Change Password",
+            iconName: "key",
+            onPress: () => navigation.navigate("ChangePassword"),
           })}
 
           {profileOption({

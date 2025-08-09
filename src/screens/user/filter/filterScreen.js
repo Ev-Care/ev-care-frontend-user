@@ -94,7 +94,7 @@ const FilterScreen = ({ navigation,route }) => {
       route.params?.onApplyFilter(selectedFilters);
       navigation.dispatch(StackActions.pop(1));
     } else {
-      console.log("Please select a valid filter.");
+      // console.log("Please select a valid filter.");
     }
   };
   

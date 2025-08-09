@@ -24,21 +24,42 @@ const onboardingScreenList = [
   {
     id: "1",
     onboardingImage: require("../../assets/images/onboarding/onboarding1.png"),
-    onboardingTitle: "Find nearby charging station",
+    onboardingTitle: "Find Nearby Charging Stations",
     onboardingDescription:
       "Lorem ipsum dolor sit amet consectetur. Lectus vulputate pretium phasellus elementum quam pellentesque urna velit.",
   },
   {
     id: "2",
     onboardingImage: require("../../assets/images/onboarding/onboarding2.png"),
-    onboardingTitle: "Get direction",
+    onboardingTitle: "Find Stations on Your Route",
     onboardingDescription:
       "Lorem ipsum dolor sit amet consectetur. Lectus vulputate pretium phasellus elementum quam pellentesque urna velit.",
   },
   {
     id: "3",
     onboardingImage: require("../../assets/images/onboarding/onboarding3.png"),
-    onboardingTitle: "Plug and start charging",
+    onboardingTitle: "Get Direction to Station",
+    onboardingDescription:
+      "Lorem ipsum dolor sit amet consectetur. Lectus vulputate pretium phasellus elementum quam pellentesque urna velit.",
+  },
+   {
+    id: "4",
+    onboardingImage: require("../../assets/images/onboarding/onboarding4.png"),
+    onboardingTitle: "Plug and Charge Your Vehicle Smartly",
+    onboardingDescription:
+      "Lorem ipsum dolor sit amet consectetur. Lectus vulputate pretium phasellus elementum quam pellentesque urna velit.",
+  },
+  {
+    id: "5",
+    onboardingImage: require("../../assets/images/onboarding/onboarding5.png"),
+    onboardingTitle: "Smartly Charge 3 Wheeler",
+    onboardingDescription:
+      "Lorem ipsum dolor sit amet consectetur. Lectus vulputate pretium phasellus elementum quam pellentesque urna velit.",
+  },
+  {
+    id: "6",
+    onboardingImage: require("../../assets/images/onboarding/onboarding6.png"),
+    onboardingTitle: "Charge Your 2 Wheeler",
     onboardingDescription:
       "Lorem ipsum dolor sit amet consectetur. Lectus vulputate pretium phasellus elementum quam pellentesque urna velit.",
   },
@@ -100,7 +121,7 @@ const OnboardingScreen = ({ navigation }) => {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => {
-          currentScreen == 2
+          currentScreen == 5
             ? navigation.push("Signin")
             : scrollToIndex({ index: currentScreen + 1 });
         }}
@@ -229,6 +250,7 @@ const styles = StyleSheet.create({
   },
   indicatorWrapStyle: {
     margin: Sizes.fixPadding * 3.0,
+    marginBottom:65,
     justifyContent: "center",
     ...commonStyles.rowAlignCenter,
   },
@@ -240,7 +262,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     position: "absolute",
-    bottom: 15.0,
+    bottom: 50.0,
     right: 20.0,
   },
   pageContent: {

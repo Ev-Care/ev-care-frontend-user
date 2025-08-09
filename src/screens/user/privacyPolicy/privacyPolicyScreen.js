@@ -58,12 +58,12 @@ const PrivacyPolicyScreen = ({ navigation }) => {
                 {title}:
               </Text>
               <Text
-                style={{ ...Fonts.blackColor16Regular, textAlign: "justify" }}
+                style={{ fontSize: 12, textAlign: "justify" }}
               >
                 {description}
                 {index === array.length - 1 ? (
                   <Text
-                    onPress={() => Linking.openURL("http://evcareindia.com/")}
+                    onPress={() => Linking.openURL("http://evcareindia.com/privacy-policy")}
                     style={{ color: "blue", marginLeft: 5 }}
                   >
                     {" "}

@@ -12,7 +12,9 @@ export const Colors = {
   redColor: "#FF0606",
   orangeColor: "#FF8C00",
   darOrangeColor: "#FF5722",
+  lightGreenColor: "#90EE90", // Added light green
 };
+
 
 export const FontFamily = {
   Regular: "Poppins-Regular",

@@ -24,6 +24,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectUser } from "../../auth/services/selector";
 import { logoutUser } from "../../../redux/store/userSlice";
 import imageURL from "../../../constants/baseURL";
+import { clearVendorState } from "../../vendor/services/vendorSlice";
+import { clearAdminState } from "../../admin/services/adminSlice";
 
 const ProfileScreen = ({ navigation }) => {
   const user = useSelector(selectUser);
@@ -117,11 +119,12 @@ const ProfileScreen = ({ navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => {
-                dispatch(logoutUser());
-                console.log(
-                  "User logged out successfully in profileScreen and navigting to Signin"
-                );
+              onPress={async() => {
+                await dispatch(logoutUser());
+             
+                // console.log(
+                //   "User logged out successfully in profileScreen and navigting to Signin"
+                // );
                 setshowLogoutSheet(false);
               }}
               style={{
@@ -178,31 +181,23 @@ const ProfileScreen = ({ navigation }) => {
             iconName: "person",
             onPress: () => navigation.push("EditProfile"),
           })}
-          {/* {profileOption({
-            option: "Notifications",
-            iconName: "notifications",
-            onPress: () => navigation.push("Notification"),
-          })} */}
+          {profileOption({
+            option: "Change Password",
+            iconName: "key",
+            onPress: () => navigation.navigate("ChangePassword"),
+          })}
           {profileOption({
             option: "Terms & Conditions",
             iconName: "list-alt",
             onPress: () => navigation.push("TermsAndConditions"),
           })}
-          {/* {profileOption({
-            option: "FAQ",
-            iconName: "help-outline",
-            onPress: () => navigation.push("Faq"),
-          })} */}
+         
           {profileOption({
             option: "Privacy Policy",
             iconName: "privacy-tip",
             onPress: () => navigation.push("PrivacyPolicy"),
           })}
-          {/* {profileOption({
-            option: "Help",
-            iconName: "support-agent",
-            onPress: () => navigation.push("Help"),
-          })} */}
+         
           {logoutInfo()}
         </View>
       </View>

@@ -9,6 +9,7 @@ import {
   Image,
   Pressable,
   Alert,
+  Keyboard,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,30 +17,68 @@ import * as Location from "expo-location";
 import Key from "../../../constants/key";
 import { Colors, Fonts, commonStyles } from "../../../constants/styles";
 import { useNavigation } from "@react-navigation/native";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getEnrouteStations } from "../service/crudFunction";
 import { DottedLoader2 } from "../../../utils/lottieLoader/loaderView";
+import { selectUserCoordinate } from "../service/selector";
 const EnRouteScreen = () => {
   const mapRef = useRef(null);
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const [region, setRegion] = useState({
-    latitude: 28.6139,
-    longitude: 77.209,
-    latitudeDelta: 0.05,
-    longitudeDelta: 0.05,
-  });
 
-  const [activeInput, setActiveInput] = useState(null);
+  const userCurrentRegion = useSelector(selectUserCoordinate);
+  // console.log("user current region ", userCurrentRegion);
+
+  const [region, setRegion] = useState(
+    userCurrentRegion
+      ? {
+          latitude: userCurrentRegion?.latitude,
+          longitude: userCurrentRegion?.longitude,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        }
+      : {
+          latitude: 28.6139,
+          longitude: 77.209,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        }
+  );
+
+  const [activeInput, setActiveInput] = useState("source");
   const [sourceText, setSourceText] = useState("");
   const [destinationText, setDestinationText] = useState("");
   const [sourceSuggestions, setSourceSuggestions] = useState([]);
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
-  const [sourceCoordinate, setSourceCoordinate] = useState(null);
+  const [sourceCoordinate, setSourceCoordinate] = useState(
+    userCurrentRegion
+      ? {
+          latitude: userCurrentRegion.latitude,
+          longitude: userCurrentRegion.longitude,
+        }
+      : null
+  );
   const [destinationCoordinate, setDestinationCoordinate] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
-    getUserLocation("source");
+    const initLocation = async () => {
+      if (!userCurrentRegion) {
+        getUserLocation("source");
+      } else {
+        const address = await fetchAddressFromCoordinates(
+          userCurrentRegion.latitude,
+          userCurrentRegion.longitude
+        );
+        setSourceCoordinate({
+          latitude: userCurrentRegion.latitude,
+          longitude: userCurrentRegion.longitude,
+        });
+        setSourceText(address);
+      }
+    };
+
+    initLocation();
   }, []);
 
   const getUserLocation = async (target) => {
@@ -123,6 +162,7 @@ const EnRouteScreen = () => {
 
   const selectPlace = async (placeId, description, type) => {
     setIsLoading(true);
+     setTimeout(() => Keyboard.dismiss(), 100);
     type === "source"
       ? setSourceSuggestions([])
       : setDestinationSuggestions([]);
@@ -200,13 +240,13 @@ const EnRouteScreen = () => {
         fromLng: sourceCoordinate.longitude,
         toLat: destinationCoordinate.latitude,
         toLng: destinationCoordinate.longitude,
-        maxDistance: 50,
+        maxDistance: 20,
       };
-
+  console.log("enRoutedata:", enRoutedata);
       const response = await dispatch(getEnrouteStations(enRoutedata));
 
       if (response?.payload?.code === 200) {
-        console.log("response of enroute:", response?.payload?.data);
+        // console.log("response of enroute:", response?.payload?.data);
         const enrouteStations = response?.payload?.data;
 
         navigation.push("EnrouteChargingStations", {
@@ -277,6 +317,7 @@ const EnRouteScreen = () => {
           <FlatList
             data={sourceSuggestions}
             keyExtractor={(item) => item.place_id}
+             keyboardShouldPersistTaps="handled"
             style={styles.suggestionList}
             renderItem={({ item }) => (
               <Pressable
@@ -339,6 +380,7 @@ const EnRouteScreen = () => {
           <FlatList
             data={destinationSuggestions}
             keyExtractor={(item) => item.place_id}
+             keyboardShouldPersistTaps="handled"
             style={styles.suggestionList}
             renderItem={({ item }) => (
               <Pressable
@@ -371,12 +413,12 @@ const EnRouteScreen = () => {
         )}
       </MapView>
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.locationButton}
         onPress={() => getUserLocation("source")}
       >
         <Ionicons name="locate-outline" size={28} color="white" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <TouchableOpacity
         style={[commonStyles.button, styles.submitButton]}

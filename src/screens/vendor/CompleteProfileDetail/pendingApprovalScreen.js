@@ -7,7 +7,7 @@ import { selectUser } from "../../auth/services/selector";
 import { getUserDetailsByKey } from "../../user/service/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
-const PendingApprovalScreen = (route) => {
+const PendingApprovalScreen = ({route,navigation}) => {
 
 
   const dispatch = useDispatch();
@@ -16,7 +16,7 @@ const PendingApprovalScreen = (route) => {
   const handleContinue = async () => {
     const response = await dispatch(getUserDetailsByKey(user.user_key));
     const updatedUser = response?.payload.data;
-    console.log('updated user in pending', updatedUser);
+    // console.log('updated user in pending', updatedUser);
     if (response?.payload?.code === 200 || response?.payload?.code === 201) {
       if (updatedUser.status !== "Active") {
         await dispatch(showSnackbar({ message: 'Please wait for admin approval', type: 'error' }));
@@ -31,29 +31,41 @@ const PendingApprovalScreen = (route) => {
   }
 
   return (
-    <View style={styles.container}>
-      <Image source={require("../../../../assets/images/completed.png")} style={styles.image} />
-      <Text style={styles.title}>Document Submitted </Text>
-      <Text style={styles.subtitle}>Kindly wait for approval from the admin.{"\n"}This usually takes 2-3 business days.</Text>
+  <View style={styles.container}>
+  <Image
+    source={require("../../../../assets/images/completed.png")}
+    style={styles.image}
+  />
+  
+  <Text style={styles.title}>Documents Submitted</Text>
+  
+  <Text style={styles.subtitle}>
+    Please wait for approval from the admin.{"\n"}
+    This process usually takes 2–3 business days.
+  </Text>
+  
+  <Text style={[styles.subtitle, { color: "black", fontWeight: "700" }]}>
+    Need help or support?{" "}
+    <Text
+      onPress={() => navigation.navigate("HelpScreen")}
+      style={[styles.subtitle, { color: "blue" }]}
+    >
+      Click here
+    </Text>
+  </Text>
 
-      {/* 
-      <TouchableOpacity style={styles.button} onPress={() => setApproved(true)}>
-      <Text style={styles.buttonText}>continue</Text>
-      </TouchableOpacity> */}
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: Colors.primaryColor }]}
-        onPress={handleContinue}
-      >
-        <Text style={styles.buttonText}>Check  Status</Text>
-      </TouchableOpacity>
+  <TouchableOpacity
+    style={[styles.button, { backgroundColor: Colors.primaryColor }]}
+    onPress={handleContinue}
+  >
+    <Text style={styles.buttonText}>Check Status</Text>
+  </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => dispatch(logoutUser())}>
-        <Text style={styles.goBackText}>Log out</Text>
-      </TouchableOpacity>
-      {/* <TouchableOpacity  >
-        <Text style={styles.goBackText}>{user.user_key}</Text>
-      </TouchableOpacity> */}
-    </View>
+  <TouchableOpacity onPress={() => dispatch(logoutUser())}>
+    <Text style={styles.goBackText}>Log Out</Text>
+  </TouchableOpacity>
+</View>
+
   );
 };
 

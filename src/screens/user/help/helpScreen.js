@@ -28,11 +28,14 @@ import { sendQuery } from "../service/api";
 import { sendQueryAction } from "../service/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { Overlay } from "@rneui/themed";
+import { EMAIL_REGEX, PHONE_REGEX } from "../../../constants/regex";
+import { selectUser } from "../service/selector";
 
 const HelpScreen = ({ navigation }) => {
+  const user = useSelector(selectUser);
   const [title, setTitle] = useState("");
-  const [email, setEmail] = useState("");
-  const [mobileNumber, setMobileNumber] = useState("");
+  const [email, setEmail] = useState(user?.email || null);
+  const [mobileNumber, setMobileNumber] = useState(user?.mobile_number || null);
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [titleTimer, setTitleTimer] = useState(null);
@@ -43,19 +46,12 @@ const HelpScreen = ({ navigation }) => {
   const [showEmergencyDialog, setshowEmergencyDialog] = useState(false);
   const [emergencyQuery, setEmergencyQuery] = useState("");
   const [charCount, setCharCount] = useState(120);
+  const time = 2000;
   const handleEmergencyQueryChange = (text) => {
     if (text.length <= 100) {
       setEmergencyQuery(text);
       setCharCount(100 - text.length);
     }
-  };
-
-
-  const handleContentSizeChange = (event) => {
-    const newHeight = event.nativeEvent.contentSize.height;
-    const minHeight = 160;
-    const maxHeight = 300;
-    setInputHeight(Math.max(minHeight, Math.min(newHeight, maxHeight)));
   };
 
   const dispatch = useDispatch();
@@ -77,57 +73,61 @@ const HelpScreen = ({ navigation }) => {
           {submitButton()}
           {emergencyDialog()}
           {isLoading && (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color={Colors.primaryColor} />
-        </View>
-      )}
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color={Colors.primaryColor} />
+            </View>
+          )}
         </ScrollView>
       </View>
     </View>
   );
 
   async function sendQueryActionHandler() {
-    console.log("in query");
     setIsLoading(true);
-    const data = {
-      title: title,
-      description: description,
-      email: email,
-      contactNumber: mobileNumber,
-      image: "",
-    };
-    const sendQueryResponse = await dispatch(
-      sendQueryAction({
-        title: title,
-        description: description,
-        email: email,
-        contactNumber: mobileNumber,
-        image: "",
-      })
-    );
-    console.log("data - ", data);
-    if (sendQueryAction.fulfilled.match(sendQueryResponse)) {
-      setIsLoading(false);
-      dispatch(
-        showSnackbar({
-          message:
-            "Support ticket is created regarding your query. You will got response withen 24 hours.",
-          type: "success",
+
+    try {
+      const sendQueryResponse = await dispatch(
+        sendQueryAction({
+          title,
+          description,
+          email : email?email:null,
+          contactNumber: mobileNumber? mobileNumber : null,
+          image: null,
         })
       );
-      navigation.pop();
-      setEmail("");
-      setTitle("");
-      setMobileNumber("");
-      setDescription("");
-    } else if (getAllFavoriteStations.rejected.match(favResponse)) {
-      setIsLoading(false);
+
+      if (sendQueryAction.fulfilled.match(sendQueryResponse)) {
+        dispatch(
+          showSnackbar({
+            message:
+              "Support ticket is created regarding your query. You will get a response within 24 hours.",
+            type: "success",
+          })
+        );
+        navigation.pop();
+        setEmail(null);
+        setTitle("");
+        setMobileNumber(null);
+        setDescription("");
+      } else {
+        dispatch(
+          showSnackbar({
+            message:
+              sendQueryResponse?.payload?.message ||
+              "Something went wrong while sending your query.",
+            type: "error",
+          })
+        );
+      }
+    } catch (error) {
       dispatch(
         showSnackbar({
-          message: errorMessage || "Failed to fetch favorite stations.",
+          message: "An unexpected error occurred.",
           type: "error",
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -143,16 +143,14 @@ const HelpScreen = ({ navigation }) => {
         return;
       }
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      if (email && !EMAIL_REGEX.test(email)) {
         dispatch(
           showSnackbar({ message: "Invalid email format", type: "error" })
         );
         return;
       }
 
-      const phoneRegex = /^[0-9]{10}$/;
-      if (!phoneRegex.test(mobileNumber)) {
+      if (mobileNumber && !PHONE_REGEX.test(mobileNumber)) {
         dispatch(
           showSnackbar({
             message: "Mobile number must be exactly 10 digits",
@@ -185,8 +183,7 @@ const HelpScreen = ({ navigation }) => {
           { paddingVertical: 12, marginBottom: 50 },
         ]}
       >
-          <Text style={{ ...Fonts.whiteColor18Medium }}>Submit</Text>
-      
+        <Text style={{ ...Fonts.whiteColor18Medium }}>Submit</Text>
       </TouchableOpacity>
     );
   }
@@ -199,6 +196,7 @@ const HelpScreen = ({ navigation }) => {
           <TextInput
             placeholder="Write your description here.."
             value={description}
+            maxLength={256}
             onChangeText={(text) => {
               setDescription(text);
 
@@ -221,7 +219,7 @@ const HelpScreen = ({ navigation }) => {
                     })
                   );
                 }
-              }, 600);
+              }, time);
             }}
             style={[
               {
@@ -235,7 +233,6 @@ const HelpScreen = ({ navigation }) => {
             ]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
             multiline
           />
         </View>
@@ -246,41 +243,20 @@ const HelpScreen = ({ navigation }) => {
   function mobileNumberInfo() {
     return (
       <View style={{ margin: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.blackColor16SemiBold }}>Mobile number</Text>
+        <Text style={{ ...Fonts.blackColor16SemiBold }}>
+          Mobile number <Text style={{ color: "gray" }}>(optional)</Text>
+        </Text>
         <View style={styles.textFieldWrapper}>
           <TextInput
             placeholder="Enter your mobile number here"
             value={mobileNumber}
             onChangeText={(text) => {
-              const cleanedText = text.replace(/[^0-9]/g, ""); // Only numbers
+              const cleanedText = text.replace(/[^0-9]/g, ""); // Keep only digits
               setMobileNumber(cleanedText);
-
-              // Clear previous timer
-              if (mobileTimer.current) clearTimeout(mobileTimer.current);
-
-              // Delay validation
-              mobileTimer.current = setTimeout(() => {
-                if (!cleanedText) {
-                  dispatch(
-                    showSnackbar({
-                      message: "Mobile number is required",
-                      type: "error",
-                    })
-                  );
-                } else if (cleanedText.length !== 10) {
-                  dispatch(
-                    showSnackbar({
-                      message: "Mobile number must be exactly 10 digits",
-                      type: "error",
-                    })
-                  );
-                }
-              }, 500);
             }}
             style={[styles.input, { ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
             keyboardType="phone-pad"
             maxLength={10}
           />
@@ -292,44 +268,19 @@ const HelpScreen = ({ navigation }) => {
   function emailInfo() {
     return (
       <View style={{ marginHorizontal: Sizes.fixPadding * 2.0 }}>
-        <Text style={{ ...Fonts.blackColor16SemiBold }}>Email address</Text>
+        <Text style={{ ...Fonts.blackColor16SemiBold }}>
+          Email address <Text style={{ color: "gray" }}>(optional)</Text>
+        </Text>
         <View style={styles.textFieldWrapper}>
           <TextInput
             placeholder="Enter your email here"
             value={email}
             onChangeText={(text) => {
-              setEmail(text.trim());
-
-              // Clear previous validation timer
-              if (emailTimer.current) {
-                clearTimeout(emailTimer.current);
-              }
-
-              // Delay validation by 500ms
-              emailTimer.current = setTimeout(() => {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-                if (!text.trim()) {
-                  dispatch(
-                    showSnackbar({
-                      message: "Email is required",
-                      type: "error",
-                    })
-                  );
-                } else if (!emailRegex.test(text.trim())) {
-                  dispatch(
-                    showSnackbar({
-                      message: "Invalid email format",
-                      type: "error",
-                    })
-                  );
-                }
-              }, 500);
+              setEmail(text.trim().toLowerCase());
             }}
             style={[styles.input, { ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
             keyboardType="email-address"
           />
         </View>
@@ -378,13 +329,12 @@ const HelpScreen = ({ navigation }) => {
                     })
                   );
                 }
-              }, 500);
+              }, time);
               setTitleTimer(timer);
             }}
             style={[styles.input, { ...Fonts.blackColor16Medium }]}
             placeholderTextColor={Colors.grayColor}
             cursorColor={Colors.primaryColor}
-            selectionColor={Colors.primaryColor}
           />
         </View>
       </View>
@@ -404,7 +354,8 @@ const HelpScreen = ({ navigation }) => {
         </Text>
         <Text style={{ ...Fonts.grayColor16Regular }}>
           Fill the form below and our support team will be in touch with you
-          shortly. Or In case of Emergency,{" "}
+          shortly.{" "}
+          {/*Or In case of Emergency,{" "}
           <Text
             onPress={() => setshowEmergencyDialog(true)}
             style={{
@@ -415,6 +366,7 @@ const HelpScreen = ({ navigation }) => {
           >
             Click Here
           </Text>
+          */}
         </Text>
       </View>
     );
@@ -431,14 +383,13 @@ const HelpScreen = ({ navigation }) => {
 
   function header() {
     return (
-     <View style={styles.appBar}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Icon name="arrow-back" size={24} color={Colors.primary} />
-            </TouchableOpacity>
-   <Text style={styles.title}>Help & Support</Text>
-   <View style={{ width: 20 }} />
-   </View>
-    
+      <View style={styles.appBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Icon name="arrow-back" size={24} color={Colors.primary} />
+        </TouchableOpacity>
+        <Text style={styles.title}>Help & Support</Text>
+        <View style={{ width: 20 }} />
+      </View>
     );
   }
   function emergencyDialog() {
@@ -494,7 +445,6 @@ const HelpScreen = ({ navigation }) => {
               ]}
               placeholderTextColor={Colors.grayColor}
               cursorColor={Colors.primaryColor}
-              selectionColor={Colors.primaryColor}
               multiline
             />
           </View>
@@ -508,7 +458,7 @@ const HelpScreen = ({ navigation }) => {
               activeOpacity={0.8}
               onPress={() => {
                 setshowEmergencyDialog(false);
-                setEmergencyQuery("")
+                setEmergencyQuery("");
               }}
               style={{
                 ...styles.noButtonStyle,
@@ -541,9 +491,10 @@ export default HelpScreen;
 const styles = StyleSheet.create({
   helpImageStyle: {
     width: "100%",
-    height: screenWidth / 2,
+    height: screenWidth / 1.5,
     resizeMode: "contain",
     marginVertical: Sizes.fixPadding,
+    // backgroundColor:"teal"
   },
   loaderContainer: {
     position: "absolute",
@@ -553,7 +504,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-     zIndex: 999,
+    zIndex: 999,
   },
   textFieldWrapper: {
     backgroundColor: Colors.whiteColor,

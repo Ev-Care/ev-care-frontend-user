@@ -95,7 +95,7 @@ const EditAdminProfile = ({ route, navigation }) => {
         user_key: user?.user_key,
       };
   
-      console.log("Updated Data:", updatedData);
+      // console.log("Updated Data:", updatedData);
   
       const response = await dispatch(patchUpdateUserProfile(updatedData));
   
@@ -115,7 +115,7 @@ const EditAdminProfile = ({ route, navigation }) => {
         );
       }
   
-      console.log("Response from update profile:", response.payload);
+      // console.log("Response from update profile:", response.payload);
   
     } finally {
       setIsLoading(false); 
@@ -126,11 +126,11 @@ const EditAdminProfile = ({ route, navigation }) => {
   const openGallery = async (setter, label) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.2,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+      quality: 0.2,
+    });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -146,16 +146,16 @@ const EditAdminProfile = ({ route, navigation }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -166,10 +166,10 @@ const EditAdminProfile = ({ route, navigation }) => {
   const openCamera = async (setter, label) => {
     try {
       const result = await ImagePicker.launchCameraAsync({
-        quality: 0.1,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
+      quality: 0.2,
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+    });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -185,16 +185,16 @@ const EditAdminProfile = ({ route, navigation }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -213,11 +213,19 @@ const EditAdminProfile = ({ route, navigation }) => {
         {label}
       </Text>
       <TextInput
-        style={styles.input}
-        value={value}
-        onChangeText={setter}
-        placeholder={placeholder}
-      />
+       style={styles.input}
+       value={value}
+       onChangeText={setter}
+       placeholder={placeholder}
+       keyboardType={
+         label === "Mobile Number"
+           ? "numeric"
+           : label === "Email"
+           ? "email-address"
+           : "default"
+       }
+        maxLength={label === "Mobile Number" ? 10 : undefined}
+     />
     </View>
   );
 
@@ -308,7 +316,7 @@ const EditAdminProfile = ({ route, navigation }) => {
           setMobNumber,
           "Enter your full name"
         )}
-        {renderInput("Email", email, setEmail, "Enter your email")}
+        {renderNonEditableInput("Email", email, setEmail, "Enter your email")}
 
         {user?.role === "vendor" && (
           <>

@@ -97,11 +97,11 @@ const TermsAndConditionsScreen = ({ navigation }) => {
               <Text style={{ ...Fonts.blackColor16Regular, fontWeight: "700" }}>
                 {title}:
               </Text>
-              <Text style={{ ...Fonts.blackColor16Regular,textAlign: 'justify' }}>
+              <Text style={{ fontSize: 12,textAlign: 'justify' }}>
                 {description}
                 {index === array.length - 1 ? (
                   <Text
-                    onPress={() => Linking.openURL("http://evcareindia.com/")}
+                    onPress={() => Linking.openURL("http://evcareindia.com/terms-and-conditions")}
                     style={{ color: "blue", marginLeft: 5 }}
                   >
                     {" "}

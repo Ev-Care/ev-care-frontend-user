@@ -1,0 +1,317 @@
+// ViewAllUserPage.js
+import { StackActions, useFocusEffect } from "@react-navigation/native";
+import { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useDispatch, useSelector } from "react-redux";
+import MyStatusBar from "../../../components/myStatusBar";
+import imageURL from "../../../constants/baseURL";
+import {
+  Colors,
+  commonStyles,
+  Sizes
+} from "../../../constants/styles";
+import { getAllPendingUsers, getAllVendors } from "../services/crudFunctions";
+import { selectActiveVendors } from "../services/selector";
+// Define colors at the top for easy customization
+const COLORS = {
+  primary: "#101942",
+  accent: "#FF5722",
+  background: "#F8F9FA",
+  white: "#FFFFFF",
+  gray: "#8A94A6",
+  lightGray: "#E0E0E0",
+  text: "#333333",
+  userRole: "#4CAF50",
+  vendorRole: "#FF9800",
+  divider: "#e1e1ea",
+};
+
+
+// User item component - extracted for better code organization
+
+const VendorSelector = ({ navigation,route }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const users = useSelector(selectActiveVendors);
+  const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(false);
+  // console.log('users length',users?.length);
+   const [refreshing, setRefreshing] = useState(false);
+
+useEffect(() => {
+  if (!users || users.length === 0) {
+    handleRefresh();
+  }
+}, []);
+
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true); // start refreshing UI
+      const response = await dispatch(getAllVendors());
+  
+      if (getAllVendors.fulfilled.match(response)) {
+        // console.log('vendors refreshed');
+        // Optional: show a success snackbar
+        // dispatch(showSnackbar({ message: "Vendors refreshed.", type: "success" }));
+      } else {
+        dispatch(showSnackbar({ message: "Failed to refresh vendors.", type: "error" }));
+      }
+    } catch (error) {
+      dispatch(showSnackbar({ message: "Something went wrong.", type: "error" }));
+    } finally {
+      setRefreshing(false); // end refreshing UI
+    }
+  };
+
+
+
+
+  const handleSelect = (name, number) => {
+  route?.params?.setVendorName(name);
+  route?.params?.setVendorNumber(number);
+  navigation.dispatch(StackActions.pop(1));
+};
+
+
+  // Filter users based on search query
+  const filteredUsers = users?.filter(
+    (user) =>
+      user?.owner_legal_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user?.mobile_number?.includes(searchQuery)
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <MyStatusBar />
+
+    {searchBar()}
+
+      <FlatList
+       refreshing={refreshing}
+       onRefresh={handleRefresh}
+        data={filteredUsers}
+        renderItem={({ item }) => <UserInfo user={item} />}
+        keyExtractor={(item) => item?.id?.toString()}
+        contentContainerStyle={styles.listContainer}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Icon name="account-search" size={60} color={COLORS.lightGray} />
+            <Text style={styles.emptyText}>No users found</Text>
+          </View>
+        }
+      />
+       {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
+    </SafeAreaView>
+  );
+
+  function UserInfo({ user }) {
+    return (
+      <TouchableOpacity onPress={()=>handleSelect(user?.owner_legal_name,user?.mobile_number)} style={styles.userItem}>
+        {user?.avatar ? (
+          <Image source={{ uri: imageURL.baseURL + user?.avatar }} style={styles.avatar} />
+        ) : (
+          <Icon name="account-circle" size={50} color="#ccc" style={styles.avatar} />
+        )}
+
+        <View style={styles.userInfo}>
+          <Text style={styles.userName}>{user?.owner_legal_name || "N/A"}</Text>
+          <Text style={styles.userMobile}>{user?.mobile_number || "N/A"}</Text>
+        </View>
+
+        <View style={[styles.roleBadge]}>
+          <Text
+            style={[
+              styles.roleText, {
+                color: "red",
+              }
+            ]}
+          >
+            {user?.status === "New" ? "Pending" : user?.status}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+
+
+  function searchBar() {
+    return (
+      <View style={{ margin: 20.0 }}>
+        <MyStatusBar/>
+        <View style={styles.searchBar}>
+          <MaterialIcons
+            name="search"
+            size={24}
+            color="#888"
+            style={{ marginRight: 8 }}
+          />
+          <TextInput
+            placeholder="Search vendors here ..."
+            placeholderTextColor="#888"
+            style={{
+              flex: 1,
+              padding: 12,
+              fontSize: 12,
+            }}
+            value={searchQuery}
+            onChangeText={(text) => setSearchQuery(text)}
+          />
+        </View>
+      </View>
+    );
+  }
+};
+
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.bodyBackColor,
+    paddingHorizontal: Sizes.fixPadding * 0.5,
+  },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: Colors.bodyBackColor,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    fontSize: 14,
+    color: COLORS.text,
+  },
+  listContainer: {
+    paddingBottom: 16,
+  },
+  userItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.whiteColor,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 3,
+    ...commonStyles.shadow,
+    borderColor: Colors.extraLightGrayColor,
+    borderWidth: 0.1,
+    borderTopWidth: 1.0,
+
+  },
+    loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  userInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  userName: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  userMobile: {
+    fontSize: 12,
+    color: COLORS.gray,
+  },
+  roleBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  roleText: {
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  separator: {
+    height: 1,
+    backgroundColor: COLORS.divider,
+    marginLeft: 78, // Aligns with the end of the avatar
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: COLORS.gray,
+    marginTop: 12,
+  },
+});
+
+export default VendorSelector;

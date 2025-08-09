@@ -108,7 +108,7 @@ const AllStations = ({ navigation, route }) => {
   };
 
   const handleRefresh = async () => {
-    console.log("Refreshing stations...in all stations");
+    // console.log("Refreshing stations...in all stations");
     await handleRefreshStations(dispatch, user?.id, setRefreshing);
   };
 
@@ -150,6 +150,7 @@ const AllStations = ({ navigation, route }) => {
                 <Image
                   source={{ uri: imageURL.baseURL + station?.station_images }}
                   style={styles.image}
+                  resizeMode="stretch"
                 />
               ) : (
                 <View
@@ -203,15 +204,11 @@ const AllStations = ({ navigation, route }) => {
                         station?.status !== "Inactive"
                           ? station?.status === "Active"
                             ? COLORS.green
-                            : COLORS.darkGray
-                          : COLORS.secondary,
+                            : COLORS.primary
+                          : Colors.darOrangeColor,
                     }}
                   >
-                    {station?.status !== "Inactive"
-                      ? station?.status === "Active"
-                        ? "Live"
-                        : "Not Published"
-                      : "Offline"}
+                    {station?.status === "Active" ? "Live" : station?.status}
                   </Text>
                 </Text>
 
@@ -226,9 +223,11 @@ const AllStations = ({ navigation, route }) => {
           ))
         ) : (
           // Fallback UI when stations is undefined or empty
-          <Text style={{ textAlign: "center", marginTop: 20 }}>
-            No stations available.
-          </Text>
+          <View
+            style={{paddingVertical:"80%", justifyContent: "center", alignItems: "center" ,}}
+          >
+            <Text style={{ textAlign: "center" }}>No stations available.</Text>
+          </View>
         )}
       </ScrollView>
       {isLoading && (
@@ -236,14 +235,13 @@ const AllStations = ({ navigation, route }) => {
           <ActivityIndicator size="large" color={Colors.primaryColor} />
         </View>
       )}
-    {addSatationButton()}
+      {addSatationButton()}
     </View>
   );
-  function addSatationButton(){
-    return(
-    
+  function addSatationButton() {
+    return (
       <TouchableOpacity
-        onPress={()=>navigation?.navigate("AddStations")}
+        onPress={() => navigation?.navigate("AddStations")}
         style={{
           justifyContent: "center",
           alignItems: "center",
@@ -264,8 +262,7 @@ const AllStations = ({ navigation, route }) => {
       >
         <MaterialIcons name="add" size={30} color={Colors.whiteColor} />
       </TouchableOpacity>
-     
-    )
+    );
   }
 };
 
@@ -319,8 +316,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 15,
     borderWidth: 1,
-    borderColor: '#e2e2e2 ',
-    backgroundColor: '#f5f5f5' 
+    borderColor: "#e2e2e2 ",
+    backgroundColor: "#f5f5f5",
   },
   infoContainer: {
     flex: 1,

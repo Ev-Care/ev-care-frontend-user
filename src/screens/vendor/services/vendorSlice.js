@@ -13,23 +13,7 @@ const vendorSlice = createSlice({
   name: 'vendorStations',
   initialState,
   reducers: {
-    // Optional: Add any synchronous reducers if needed
-    toggleStationStatus: (state, action) => {
-      const { id } = action.payload;
-      const stationIndex = state.stations.findIndex((station) => station.id === id);
-      if (stationIndex !== -1) {
-        const updatedStation = {
-          ...state.stations[stationIndex],
-          status: state.stations[stationIndex].status !== 'Inactive' ? 'Inactive' : 'Active',
-        };
-        state.stations[stationIndex] = updatedStation;
-      }
-      console.log("toggle station availability success",state.stations[stationIndex] );
-    },
-    setStations(state, action) {
-      state.stations = action.payload.stations;
-    }
-
+     clearVendorState: () => initialState,
   },
   extraReducers: (builder) => {
     // Fetch Stations
@@ -40,7 +24,7 @@ const vendorSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchStations.fulfilled, (state, action) => {
-        console.log("station in vendorslice", action.payload.data.chargingStations);
+        // console.log("station in vendorslice", action.payload.data.chargingStations);
         state.stations = action.payload.data.chargingStations;
         state.loading = false;
         // console.log("fetch stations fullfilled called", action.payload.data.chargingStations)
@@ -48,7 +32,7 @@ const vendorSlice = createSlice({
       .addCase(fetchStations.rejected, (state, action) => {
         state.error = action.payload;
         state.loading = false;
-        console.log("fetch stations rejected called", action.payload)
+        // console.log("fetch stations rejected called", action.payload)
       });
 
     // Add Station
@@ -106,7 +90,7 @@ const vendorSlice = createSlice({
       .addCase(updateStationsChargersConnectorsStatus.pending, (state) => {
         state.loading = true;
         state.error = null;
-        console.log("update station pending called");
+        // console.log("update station pending called");
       })
       .addCase(updateStationsChargersConnectorsStatus.fulfilled, (state, action) => {
         state.loading = false;
@@ -130,19 +114,19 @@ const vendorSlice = createSlice({
       .addCase(updateAllStationStatus.pending, (state) => {
         state.loading = true;
         state.error = null;
-        console.log("update station pending called");
+        // console.log("update station pending called");
       })
       .addCase(updateAllStationStatus.fulfilled, (state, action) => {
         state.loading = false;
         state.error = null;
-        console.log("update All station fulfilled called");
+        // console.log("update All station fulfilled called");
       })
       .addCase(updateAllStationStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        console.log("update All station Error called");
+        // console.log("update All station Error called");
       })
   },
 });
-export const { toggleStationStatus,setStations } = vendorSlice.actions; // Export the action
+export const { clearVendorState } = vendorSlice.actions; // Export the action
 export default vendorSlice.reducer;

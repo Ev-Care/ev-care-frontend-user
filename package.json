@@ -1,6 +1,6 @@
 {
   "name": "ev-care",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "src/index.js",
   "scripts": {
     "start": "expo start --dev-client",
@@ -58,7 +58,8 @@
     "react-native-vector-icons": "^10.2.0",
     "react-redux": "^9.2.0",
     "rn-card-input": "^1.1.0",
-    "lottie-react-native": "7.1.0"
+    "lottie-react-native": "7.1.0",
+    "expo-updates": "~0.27.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

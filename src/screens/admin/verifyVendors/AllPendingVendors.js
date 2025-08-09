@@ -1,5 +1,5 @@
 // ViewAllUserPage.js
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
   SafeAreaView,
   StatusBar,
 } from "react-native";
@@ -21,9 +22,9 @@ import {
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { color } from "@rneui/base";
-import { getAllPendingUsers } from "../services/crudFunctions";
+import { getAllPendingUsers, getAllVendors } from "../services/crudFunctions";
 import { useDispatch, useSelector } from "react-redux";
-import {  selectPendingUsers } from "../services/selector";
+import { selectPendingUsers, selectPendingVendors } from "../services/selector";
 import { useFocusEffect } from "@react-navigation/native";
 import imageURL from "../../../constants/baseURL";
 import { RefreshControl } from "react-native";
@@ -46,25 +47,46 @@ const COLORS = {
 
 const AllPendingVendors = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const users = useSelector(selectPendingUsers);
+  const users = useSelector(selectPendingVendors);
   const dispatch = useDispatch();
-  console.log('users length',users?.length);
-   const [refreshing, setRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Called every time screen comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      console.log('pending users fetched from useFocusEffect');
-      dispatch(getAllPendingUsers());
-    }, [dispatch])
-  );
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+
+    if (users?.length > 0) {
+      return;
+    }
+    const fetchPendingVendors = async () => {
+
+      try {
+
+        setIsLoading(true);
+        const response = await dispatch(getAllVendors());
+        if (getAllVendors.fulfilled.match(response)) {
+          // console.log('vendors fetched');
+        } else {
+          dispatch(showSnackbar({ message: response?.payload || response?.payload?.message || "Failed to fetch vendors.", type: "error" }));
+        }
+      } catch (error) {
+        dispatch(showSnackbar({ message: error.message || response?.payload || response?.payload?.message || "Something went wrong. Please try again later.", type: "error" }));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchPendingVendors();
+  }, [dispatch]);
+
+
   const handleRefresh = async () => {
     try {
       setRefreshing(true); // start refreshing UI
-      const response = await dispatch(getAllPendingUsers());
-  
-      if (getAllPendingUsers.fulfilled.match(response)) {
-        console.log('vendors refreshed');
+      const response = await dispatch(getAllVendors());
+
+      if (getAllVendors.fulfilled.match(response)) {
+        // console.log('vendors refreshed');
         // Optional: show a success snackbar
         // dispatch(showSnackbar({ message: "Vendors refreshed.", type: "success" }));
       } else {
@@ -76,7 +98,7 @@ const AllPendingVendors = ({ navigation }) => {
       setRefreshing(false); // end refreshing UI
     }
   };
-  
+
 
   // Filter users based on search query
   const filteredUsers = users?.filter(
@@ -89,11 +111,11 @@ const AllPendingVendors = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <MyStatusBar />
 
-    {searchBar()}
+      {searchBar()}
 
       <FlatList
-       refreshing={refreshing}
-       onRefresh={handleRefresh}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
         data={filteredUsers}
         renderItem={({ item }) => <UserInfo user={item} />}
         keyExtractor={(item) => item?.id?.toString()}
@@ -107,6 +129,11 @@ const AllPendingVendors = ({ navigation }) => {
           </View>
         }
       />
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
     </SafeAreaView>
   );
 
@@ -143,7 +170,7 @@ const AllPendingVendors = ({ navigation }) => {
   function searchBar() {
     return (
       <View style={{ margin: 20.0 }}>
-        <MyStatusBar/>
+        <MyStatusBar />
         <View style={styles.searchBar}>
           <MaterialIcons
             name="search"
@@ -243,6 +270,17 @@ const styles = StyleSheet.create({
     borderWidth: 0.1,
     borderTopWidth: 1.0,
 
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
   },
   avatar: {
     width: 50,

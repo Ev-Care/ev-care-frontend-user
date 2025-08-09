@@ -23,12 +23,11 @@ import { selectToken, selectUser } from "../../auth/services/selector";
 import imageURL from "../../../constants/baseURL";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { postSingleFile } from "../../auth/services/crudFunction";
-
 import { MaterialIcons, Ionicons, Entypo } from "@expo/vector-icons";
-
 import RNModal from "react-native-modal";
 import { Colors } from "../../../constants/styles";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
+import { validateDecimalInput } from "../../../utils/globalMethods";
 const PRIMARY_COLOR = "#101942";
 const amenities = [
   { id: 1, icon: "toilet", label: "Restroom" },
@@ -62,19 +61,19 @@ const mapAmenitiesToIds = (amenitiesLabelString) => {
 };
 const UpdateStationPage = ({ navigation, route }) => {
   const station = route?.params?.station;
-  const user = useSelector(selectUser);
+  // const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const [selectedAmenities, setSelectedAmenities] = useState(
     mapAmenitiesToIds(station?.amenities || "")
   );
-  console.log("Stations in update = ", JSON.stringify(station, null, 2));
+  // console.log("Stations in update = ", JSON.stringify(station, null, 2));
   const [openHours, setOpenHours] = useState(
     station.open_hours_opening_time === "00:00:00" &&
       station.open_hours_closing_time === "23:59:59"
       ? "24 Hours"
       : "Custom"
   );
- 
+
   const [address, setAddress] = useState(station?.address || "");
   const [openTime, setOpenTime] = useState(
     station?.open_hours_opening_time || ""
@@ -90,7 +89,7 @@ const UpdateStationPage = ({ navigation, route }) => {
   );
   const [chargerType, setchargerType] = useState("");
   const [accessType, setAccessType] = useState(
-    station?.access_type || "public"
+    station?.access_type || "Public"
   );
   const [powerRating, setPowerRating] = useState("");
   const [chargerForms, setChargerForms] = useState(station?.chargers || [{}]);
@@ -102,7 +101,8 @@ const UpdateStationPage = ({ navigation, route }) => {
   const [currentImageSetter, setCurrentImageSetter] = useState(null);
   const [currentImageLabel, setCurrentImageLabel] = useState(null);
   const [imageloading, setImageLoading] = useState("");
-
+  const [selectedStatus, setSelectedStatus] = useState(station.status);
+  const [isLoading, setIsLoading] = useState(false);
   const accessToken = useSelector(selectToken);
   // Initialize selectedConnectors with chargerIndex as key and connector_type as value
   const [selectedConnectors, setSelectedConnectors] = useState(() => {
@@ -113,17 +113,21 @@ const UpdateStationPage = ({ navigation, route }) => {
     return initialConnectors;
   });
 
-  console.log("selectedConnectors", selectedConnectors);
-  const addChargerForm = () =>
-    setChargerForms((prevForms) => [
+  // console.log("selectedConnectors", selectedConnectors);
+ const addChargerForm = () => {
+  setChargerForms((prevForms) => {
+    const newForms = [
       ...prevForms,
       {
-        // charger_id: -1,
         charger_type: null,
         max_power_kw: null,
         connectors: [],
       },
-    ]);
+    ];
+    setSelectedForm(String(newForms.length - 1));
+    return newForms;
+  });
+};
   const [connectorsList, setConnectorsList] = useState([]);
 
   const handleTimeChange = (event, selectedDate) => {
@@ -148,91 +152,6 @@ const UpdateStationPage = ({ navigation, route }) => {
     }
   };
 
-  // Function to pick an image
-  // const handleImagePick = async (source, type) => {
-  //   console.log("inside imaoege pick");
-  //   let permissionResult;
-
-  //   if (source === "camera") {
-  //     permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-  //   } else {
-  //     permissionResult =
-  //       await ImagePicker.requestMediaLibraryPermissionsAsync();
-  //   }
-
-  //   if (permissionResult.granted === false) {
-  //     dispatch(
-  //       showSnackbar({ message: "Permission is required!", type: "error" })
-  //     );
-  //     return;
-  //   }
-
-  //   let result;
-  //   if (source === "camera") {
-  //     result = await ImagePicker.launchCameraAsync({
-  //       allowsEditing: true,
-  //       quality: 0.2,
-  //     });
-  //   } else {
-  //     result = await ImagePicker.launchImageLibraryAsync({
-  //       allowsEditing: true,
-  //       quality: 0.2,
-  //     });
-  //   }
-
-  //   if (!result.canceled) {
-  //     const imageUri = result.assets[0].uri;
-  //     await new Promise((resolve) => setTimeout(resolve, 200));
-  //     const file = await setupImagePicker(imageUri);
-
-  //     console.log("image", imageUri);
-  //     // Check for internet connectivity before sending request
-  //     // const netState = await NetInfo.fetch();
-  //     // if (!netState.isConnected) {
-  //     //   dispatch(showSnackbar({ message: "No internet connection.", type: "error" }));
-  //     //   return;
-  //     // }
-
-  //     try {
-  //       console.log("inside try");
-  //       const response = await dispatch(
-  //         postSingleFile({ file: file, accessToken: accessToken })
-  //       );
-
-  //       if (
-  //         response?.payload?.code === 200 ||
-  //         response?.payload?.code === 201
-  //       ) {
-  //         setPhoto(imageUri);
-  //         console.log(
-  //           "photo url in pick image = ",
-  //           response?.payload?.data?.filePathUrl
-  //         );
-  //         setStationImages(response?.payload?.data?.filePathUrl);
-  //       } else {
-  //         dispatch(
-  //           showSnackbar({
-  //             message: authErrorMessage || "File Should be less than 5 MB",
-  //             type: "error",
-  //           })
-  //         );
-
-  //         // Alert.alert("Error", "File Should be less than 5 MB");
-  //       }
-  //     } catch (error) {
-  //       dispatch(
-  //         showSnackbar({
-  //           message: authErrorMessage || "Upload failed. Please try again.",
-  //           type: "error",
-  //         })
-  //       );
-
-  //       // Alert.alert("Error", "Upload failed. Please try again.");
-  //     } finally {
-  //       // 👉 Always stop loader
-  //     }
-  //   }
-  // };
   const showFullImage = (uri) => {
     if (!uri) return;
     setSelectedImage(uri);
@@ -245,10 +164,10 @@ const UpdateStationPage = ({ navigation, route }) => {
   const openGallery = async (setter, label) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.1,
+        mediaTypes: ["images"],
         allowsEditing: true,
         aspect: label === "avatar" ? [1, 1] : undefined,
+        quality: 0.2,
       });
 
       if (!result.canceled) {
@@ -265,16 +184,16 @@ const UpdateStationPage = ({ navigation, route }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -285,7 +204,7 @@ const UpdateStationPage = ({ navigation, route }) => {
   const openCamera = async (setter, label) => {
     try {
       const result = await ImagePicker.launchCameraAsync({
-        quality: 0.1,
+        quality: 0.2,
         allowsEditing: true,
         aspect: label === "avatar" ? [1, 1] : undefined,
       });
@@ -304,16 +223,16 @@ const UpdateStationPage = ({ navigation, route }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -322,20 +241,12 @@ const UpdateStationPage = ({ navigation, route }) => {
   };
   const selectOnMap = () => {
     navigation.push("PickLocation", {
-      addressFor: "stationAddress",
+      addressFor: "adminStationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
       setCoordinate: (newCoordinate) => setCoordinate(newCoordinate),
     });
   };
   const handlePreview = () => {
-    // Validate required fields
-    // if (!stationName || !address || chargerForms.length === 0)
-    // if(true)
-    //   {
-    //   alert('Please fill in all required fields.');
-    //   return;
-    // }
-
     // Transform amenities into a comma-separated string
     const amenitiesString = selectedAmenities
       .map((id) => amenities.find((amenity) => amenity.id === id)?.label)
@@ -343,11 +254,13 @@ const UpdateStationPage = ({ navigation, route }) => {
 
     // Prepare the final station data
     const stationData = {
-      owner_id: user.id, // Replace with the actual owner ID if available
+      owner_id: station?.owner_id, // Replace with the actual owner ID if available
       station_id: station?.id || null,
       station_name: stationName,
       station_images: stationImages,
+      access_type: accessType,
       address,
+      status: selectedStatus,
       coordinates: {
         latitude: coordinate?.latitude || null,
         longitude: coordinate?.longitude || null,
@@ -360,10 +273,77 @@ const UpdateStationPage = ({ navigation, route }) => {
       chargers: chargerForms,
     };
 
-    console.log(
-      "Transformed Station Data in update:",
-      JSON.stringify(stationData, null, 2)
-    );
+    if (!stationData?.station_name || stationData?.station_name === "") {
+      dispatch(
+        showSnackbar({
+          message: "Station name cannot be empty.",
+          type: "error",
+        })
+      );
+      return;
+    }
+
+    if (!stationData?.address || stationData.address === "") {
+      dispatch(
+        showSnackbar({
+          message: "Station address cannot be empty.",
+          type: "error",
+        })
+      );
+      return;
+    }
+
+    // if (!stationData?.amenities || stationData.amenities === "") {
+    //   dispatch(
+    //     showSnackbar({
+    //       message: "Station Amenities cannot be empty.",
+    //       type: "error",
+    //     })
+    //   );
+    //   return;
+    // }
+
+    if (!stationData?.station_images || stationData.station_images === "") {
+      dispatch(
+        showSnackbar({
+          message: "Please upload Station Images.",
+          type: "error",
+        })
+      );
+      return;
+    }
+
+    if (!stationData?.chargers || stationData?.chargers?.length === 0) {
+      dispatch(
+        showSnackbar({
+          message: "At least one charger must be added.",
+          type: "error",
+        })
+      );
+      return;
+    }
+
+    for (let i = 0; i < stationData?.chargers?.length; i++) {
+      const charger = stationData?.chargers[i];
+      if (
+        !charger?.charger_type ||
+        !charger?.max_power_kw ||
+        !charger?.connector_type
+      ) {
+        dispatch(
+          showSnackbar({
+            message: `Charger ${i + 1} details are incomplete.`,
+            type: "error",
+          })
+        );
+        return;
+      }
+    }
+
+    // console.log(
+    //   "Transformed Station Data in update:",
+    //   JSON.stringify(stationData, null, 2)
+    // );
 
     // Navigate to PreviewPage with the transformed data
     navigation.push("PreviewPage", {
@@ -420,6 +400,7 @@ const UpdateStationPage = ({ navigation, route }) => {
     );
   };
   return (
+     <View style={{ flex: 1 }}>
     <ScrollView style={styles.container}>
       <MyStatusBar />
       <View style={styles.header}>
@@ -454,6 +435,16 @@ const UpdateStationPage = ({ navigation, route }) => {
       </Modal>
       {bottomSheet()}
     </ScrollView>
+     <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={addChargerForm}
+        style={styles.floatingAddButton}
+      >
+        <MaterialIcons name="add" size={20} color={Colors.whiteColor} />
+        <Text style={{ color: Colors.whiteColor, fontSize: 8 }}>
+          Add Charger
+        </Text>
+      </TouchableOpacity></View>
   );
   function bottomSheet() {
     return (
@@ -543,14 +534,46 @@ const UpdateStationPage = ({ navigation, route }) => {
 
             {/* Upload Photo Section */}
             {uploadPhotoSection()}
+            {statusSelector()}
             {accessTypeSection()}
           </>
         )}
       </TouchableOpacity>
     );
   }
+
+  function statusSelector() {
+    const statuses = ["Planned", "Active", "Inactive", "Rejected"];
+    return (
+      <View style={[styles.section, { marginBottom: 12 }]}>
+        <Text style={styles.sectionLabel}>Select Status</Text>
+
+        <View style={styles.hoursContainer}>
+          {statuses.map((role) => (
+            <TouchableOpacity
+              key={role}
+              style={[
+                styles.hoursButton,
+                selectedStatus === role && styles.selectedButton,
+              ]}
+              onPress={() => setSelectedStatus(role)}
+            >
+              <Text
+                style={[
+                  styles.buttonText,
+                  selectedStatus === role && styles.selectedButtonText,
+                ]}
+              >
+                {role.charAt(0).toUpperCase() + role.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+  }
   function chargerDetail(charger, index) {
-    console.log("charger details", chargerForms[index]);
+    // console.log("charger details", chargerForms[index]);
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -562,7 +585,7 @@ const UpdateStationPage = ({ navigation, route }) => {
           {index > 0 && (
             <TouchableOpacity
               onPress={() => removeChargerForm(index)}
-              style={styles.deleteButton}
+              style={{marginBottom:16}}
             >
               <Icon name="close-circle" size={24} color="red" />
             </TouchableOpacity>
@@ -629,7 +652,6 @@ const UpdateStationPage = ({ navigation, route }) => {
                 </TouchableOpacity>
               </View>
             </View>
-
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>
                 Power Rating <Text style={styles.optional}>(in kW)</Text>
@@ -640,19 +662,13 @@ const UpdateStationPage = ({ navigation, route }) => {
                 keyboardType="numeric"
                 value={String(chargerForms[index]?.max_power_kw ?? "")}
                 onChangeText={(text) => {
-                  // Remove non-numeric characters
-                  let numericText = text.replace(/[^0-9]/g, "");
+                  const validInput = validateDecimalInput(text, 1000, 2);
 
-                  // Prevent leading zeros
-                  if (numericText.length > 1 && numericText.startsWith("0")) {
-                    numericText = numericText.replace(/^0+/, "");
-                  }
-
-                  // If input is not empty and > 99, block it
-                  if (numericText && parseInt(numericText, 10) > 99) {
+                  if (text && !validInput) {
                     dispatch(
                       showSnackbar({
-                        message: "Power rating cannot exceed 99 kW",
+                        message:
+                          "Invalid input. Max 2 decimals or value exceeded.",
                         type: "error",
                       })
                     );
@@ -662,7 +678,10 @@ const UpdateStationPage = ({ navigation, route }) => {
                   setChargerForms((prev) =>
                     prev.map((charger, i) =>
                       i === index
-                        ? { ...charger, max_power_kw: numericText }
+                        ? {
+                            ...charger,
+                            max_power_kw: validInput,
+                          }
                         : charger
                     )
                   );
@@ -674,12 +693,12 @@ const UpdateStationPage = ({ navigation, route }) => {
 
             {index === chargerForms.length - 1 && (
               <View style={styles.nextButtonContainer}>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   onPress={addChargerForm}
                   style={styles.nextButton}
                 >
                   <Text style={styles.nextButtonText}>+ Add more</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             )}
           </>
@@ -689,9 +708,9 @@ const UpdateStationPage = ({ navigation, route }) => {
   }
 
   function connectorsInfo(charger, chargerIndex) {
-    console.log("charger = ", charger);
-    console.log("connectors = ", connectors);
-    console.log("connectorsList = ", connectorsList);
+    // console.log("charger = ", charger);
+    // console.log("connectors = ", connectors);
+    // console.log("connectorsList = ", connectorsList);
     return (
       <View style={styles?.section}>
         <Text style={styles?.sectionLabel}>Connectors</Text>
@@ -700,13 +719,13 @@ const UpdateStationPage = ({ navigation, route }) => {
             const connectorData = connectorsList?.find(
               (c) => c?.id === connector?.id && c?.chargerIndex === chargerIndex
             );
-            console.log("connectorData", connectorData);
+            //   console.log("connectorData", connectorData);
             const count = connectorData?.count || 0;
 
             const isSelected =
               selectedConnectors[chargerIndex] === connector?.type;
 
-            console.log("isSelected", isSelected);
+            // console.log("isSelected", isSelected);
 
             return (
               <TouchableOpacity
@@ -734,7 +753,7 @@ const UpdateStationPage = ({ navigation, route }) => {
                 </View>
 
                 {/* Radio Button */}
-                <TouchableOpacity
+                <View
                   style={{
                     height: 20,
                     width: 20,
@@ -756,7 +775,7 @@ const UpdateStationPage = ({ navigation, route }) => {
                       }}
                     />
                   )}
-                </TouchableOpacity>
+                </View>
 
                 {/* Count Buttons (if needed) */}
                 {/* Add your inc/dec logic here */}
@@ -891,16 +910,15 @@ const UpdateStationPage = ({ navigation, route }) => {
     );
   }
   function uploadPhotoSection() {
-  
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>
-          Upload Photo <Text style={styles.optional}>(Optional)</Text>
+          Upload Photo <Text style={styles.optional}>(Required)</Text>
         </Text>
         <Text style={styles.photoDescription}>
           Contribute to smoother journeys; include a location/charger photo.
         </Text>
-     
+
         <View
           style={{
             flexWrap: "wrap",
@@ -920,16 +938,16 @@ const UpdateStationPage = ({ navigation, route }) => {
           <TouchableOpacity
             style={[
               styles.hoursButton,
-              accessType === "public" && styles.selectedButton,
+              accessType === "Public" && styles.selectedButton,
             ]}
             onPress={() => {
-              setAccessType("public");
+              setAccessType("Public");
             }}
           >
             <Text
               style={[
                 styles.buttonText,
-                accessType === "public" && styles.selectedButtonText,
+                accessType === "Public" && styles.selectedButtonText,
               ]}
             >
               Public
@@ -938,14 +956,14 @@ const UpdateStationPage = ({ navigation, route }) => {
           <TouchableOpacity
             style={[
               styles.hoursButton,
-              accessType === "private" && styles.selectedButton,
+              accessType === "Private" && styles.selectedButton,
             ]}
-            onPress={() => setAccessType("private")}
+            onPress={() => setAccessType("Private")}
           >
             <Text
               style={[
                 styles.buttonText,
-                accessType === "private" && styles.selectedButtonText,
+                accessType === "Private" && styles.selectedButtonText,
               ]}
             >
               Private
@@ -972,6 +990,22 @@ const UpdateStationPage = ({ navigation, route }) => {
 };
 // export default  AddStations ;
 const styles = StyleSheet.create({
+   floatingAddButton: {
+     justifyContent: "center",
+          alignItems: "center",
+          width: 70,
+          height: 70,
+          borderRadius: 35,
+          backgroundColor: Colors.primaryColor,
+          shadowColor: Colors.primaryColor,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.4,
+          shadowRadius: 5,
+          elevation: 8,
+          position: "absolute",
+          bottom: 150,
+          right: "10%"
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
@@ -1093,6 +1127,7 @@ const styles = StyleSheet.create({
   },
   hoursContainer: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
   },
   hoursButton: {

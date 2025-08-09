@@ -38,22 +38,17 @@ import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
 const EditProfileScreen = ({ route, navigation }) => {
   const user = useSelector(selectUser);
   const accessToken = useSelector(selectToken);
+   const [coordinate, setCoordinate] = useState(null);
   const dispatch = useDispatch();
-  const [name, setName] = useState(user?.name || "Not found");
-  const [email, setEmail] = useState(user?.email || "Not found");
-  const [mobNumber, setMobNumber] = useState(
-    user?.mobile_number || "Not found"
-  );
-  const [businessName, setBusinessName] = useState(
-    user?.business_name || "Not found"
-  );
-  const [aadharNumber, setAadharNumber] = useState(
-    user?.adhar_no || "Not found"
-  );
-  const [panNumber, setPanNumber] = useState(user?.pan_no || "Not found");
+  const [name, setName] = useState(user?.name);
+  const [email, setEmail] = useState(user?.email);
+  const [mobNumber, setMobNumber] = useState(user?.mobile_number);
+  const [businessName, setBusinessName] = useState(user?.business_name);
+  const [aadharNumber, setAadharNumber] = useState(user?.adhar_no);
+  const [panNumber, setPanNumber] = useState(user?.pan_no);
   const [gstNumber, setGstNumber] = useState(user?.gstin_number);
+  const [businessType, setBusinessType] = useState(user?.vendor_type);
   //   image start
-
   //   image uri
   const [aadhaarFrontImageURI, setAadhaarFrontImageURI] = useState(
     user?.adhar_front_pic
@@ -73,6 +68,8 @@ const EditProfileScreen = ({ route, navigation }) => {
   const [showDialogue, setshowDialogue] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [imageloading, setImageLoading] = useState("");
+  const [address, setAddress] = useState(user?.address);
+
   const errorMessage = useSelector(selectAuthError);
   const showFullImage = (uri) => {
     if (!uri) return;
@@ -85,14 +82,17 @@ const EditProfileScreen = ({ route, navigation }) => {
     try {
       const updatedData = {
         owner_legal_name: name,
+        address:address,
         email: email,
+        mobile_number: mobNumber,
         avatar: avatarURI,
         business_name: businessName,
         role: user?.role,
+        address: address,
         user_key: user?.user_key,
       };
 
-      console.log("Updated Data:", updatedData);
+      // console.log("Updated Data:", updatedData);
 
       const response = await dispatch(patchUpdateUserProfile(updatedData));
 
@@ -112,20 +112,26 @@ const EditProfileScreen = ({ route, navigation }) => {
         );
       }
 
-      console.log("Response from update profile:", response.payload);
+      // console.log("Response from update profile:", response.payload);
     } finally {
       setIsLoading(false);
     }
   };
-
+  const selectOnMap = () => {
+    navigation.push("PickLocation", {
+      addressFor: "stationAddress",
+      setAddress: (newAddress) => setAddress(newAddress),
+      setCoordinate: (newCoordinate) => setCoordinate(newCoordinate),
+    });
+  };
   const openGallery = async (setter, label) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.1,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+      quality: 0.2,
+    });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -141,16 +147,16 @@ const EditProfileScreen = ({ route, navigation }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -161,10 +167,10 @@ const EditProfileScreen = ({ route, navigation }) => {
   const openCamera = async (setter, label) => {
     try {
       const result = await ImagePicker.launchCameraAsync({
-        quality: 0.1,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
+      quality: 0.2,
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+    });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -180,16 +186,16 @@ const EditProfileScreen = ({ route, navigation }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -206,12 +212,39 @@ const EditProfileScreen = ({ route, navigation }) => {
     <View style={{ marginBottom: 12 }}>
       <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
         {label}
+        {label === "GST Number" && businessType == "individual" && (
+          <Text style={styles.optional}> (Optional)</Text>
+        )}
       </Text>
       <TextInput
         style={styles.input}
         value={value}
-        onChangeText={setter}
+        onChangeText={(text) => {
+          if (label === "Email") {
+            setter(text.toLowerCase());
+          } else if (label === "Vehicle Registration Number") {
+            setter(text.toUpperCase());
+          } else {
+            setter(text);
+          }
+        }}
         placeholder={placeholder}
+        keyboardType={
+          label === "Mobile Number"
+            ? "numeric"
+            : label === "Email"
+            ? "email-address"
+            : "default"
+        }
+        maxLength={
+          label === "Mobile Number" || label === "PAN Number"
+            ? 10
+            : label === "Aadhar Number"
+            ? 12
+            : label === "GST Number"
+            ? 15
+            : undefined
+        }
       />
     </View>
   );
@@ -295,7 +328,8 @@ const EditProfileScreen = ({ route, navigation }) => {
           {renderImageBox("avatar", setAvatarURI, avatarURI)}
         </View>
         {renderInput("Full Name", name, setName, "Enter your full name")}
-        {renderNonEditableInput(
+
+        {renderInput(
           "Mobile Number",
           mobNumber,
           setMobNumber,
@@ -305,12 +339,17 @@ const EditProfileScreen = ({ route, navigation }) => {
 
         {user?.role === "vendor" && (
           <>
-            {renderInput(
-              "Business Name",
-              businessName,
-              setBusinessName,
-              "Enter business name"
+            {user?.vendor_type == "organization" && (
+              <>
+                {renderInput(
+                  "Organization or Legal Name",
+                  businessName,
+                  setBusinessName,
+                  "Enter Organization or Legal Name"
+                )}
+              </>
             )}
+
             {renderNonEditableInput(
               "Aadhar Number",
               aadharNumber,
@@ -329,6 +368,7 @@ const EditProfileScreen = ({ route, navigation }) => {
               setGstNumber,
               "Enter GST number"
             )}
+            {addressInfo()}
             <View style={styles.imageContainer}>
               {renderImageBox(
                 "Aadhaar front",
@@ -365,11 +405,11 @@ const EditProfileScreen = ({ route, navigation }) => {
           <View style={styles.modalContainer}>
             <Image source={{ uri: selectedImage }} style={styles.fullImage} />
             <TouchableOpacity
-            style={styles.modalCloseButton}
-            onPress={() => setModalVisible(false)}
-          >
-            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
-          </TouchableOpacity>
+              style={styles.modalCloseButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <MaterialIcons name="close" color={Colors.blackColor} size={26} />
+            </TouchableOpacity>
           </View>
         </Modal>
 
@@ -415,6 +455,61 @@ const EditProfileScreen = ({ route, navigation }) => {
     </View>
   );
 
+  function addressInfo() {
+    return (
+      <View style={styles.address}>
+         <Text
+          style={{
+            marginBottom: 4,
+            fontWeight: "bold",
+            fontSize: 14,
+            color: Colors.blackColor,
+          }}
+        >
+        Address
+        </Text>
+        <TextInput
+          style={[styles.input, styles.textArea]}
+          placeholder="Home/Street/Locality, City, State, Pincode"
+          placeholderTextColor="gray"
+          multiline
+          value={address}
+          onChangeText={(text) => {
+            if (text.length > 200) {
+              dispatch(
+                showSnackbar({
+                  message: "Address cannot exceed 100 characters",
+                  type: "error",
+                })
+              );
+              return;
+            }
+            setAddress(text);
+          }}
+          // maxLength={100}
+        />
+        <Text
+          style={{
+            marginVertical: 4,
+            fontWeight: "bold",
+            fontSize: 14,
+            color: Colors.darOrangeColor,
+          }}
+        >
+          Or
+        </Text>
+        <TouchableOpacity
+         onPress={selectOnMap}
+          style={[
+            styles.actionButton,
+            { borderWidth: 1, borderColor: Colors.darOrangeColor },
+          ]}
+        >
+          <Text style={styles.mapButtonText}>Select On Map</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
   function UpdateOverlay() {
     return (
       <Overlay
@@ -502,7 +597,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     flexDirection: "row",
-    gap:20,
+    gap: 20,
     marginTop: 20,
 
     flexWrap: "wrap",
@@ -569,14 +664,18 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
     borderRadius: 10,
   },
+    textArea: {
+    height: 80,
+    textAlignVertical: "top",
+  },
   modalCloseButton: {
     marginTop: 20,
     padding: 10,
     backgroundColor: "#fff",
-    justifyContent:"center",
-    alignItems:"center",
-    height:50,
-    width:50,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 50,
+    width: 50,
     borderRadius: 50,
   },
   closeText: {
@@ -615,7 +714,12 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 14,
+  },
+  mapButtonText: {
+    color: Colors.darOrangeColor,
+    fontWeight: "bold",
+    fontSize: 14,
   },
   /* delete Dialog Styles */
   dialogStyle: {
@@ -661,7 +765,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#333",
   },
-  
 });
 
 export default EditProfileScreen;

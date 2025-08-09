@@ -57,7 +57,7 @@ const UpdateStation = ({ navigation, route }) => {
   const [selectedAmenities, setSelectedAmenities] = useState(
     mapAmenitiesToIds(station?.amenities || "")
   );
-  console.log("Stations in update = ", JSON.stringify(station,null,2));
+  // console.log("Stations in update = ", JSON.stringify(station,null,2));
   const [openHours, setOpenHours] = useState(
     station.open_hours_opening_time === "00:00:00" &&
       station.open_hours_closing_time === "23:59:59"
@@ -229,10 +229,7 @@ const UpdateStation = ({ navigation, route }) => {
       chargers: chargerForms,
     };
 
-    console.log(
-      "Transformed Station Data in update:",
-      JSON.stringify(stationData, null, 2)
-    );
+  
 
     // Navigate to PreviewPage with the transformed data
     navigation.push("PreviewPage", {
@@ -334,7 +331,7 @@ const UpdateStation = ({ navigation, route }) => {
     );
   }
   function chargerDetail(charger, index) {
-    console.log("charger details", chargerForms[index]);
+    // console.log("charger details", chargerForms[index]);
     return (
       <TouchableOpacity
         style={styles.card}
@@ -526,8 +523,8 @@ const UpdateStation = ({ navigation, route }) => {
   }
 
   function connectorsInfo1(chargerIndex) {
-    console.log("connectorsList", chargerForms[chargerIndex]?.connectors);
-    console.log("connectors", connectors);
+    // console.log("connectorsList", chargerForms[chargerIndex]?.connectors);
+    // console.log("connectors", connectors);
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>Connectors</Text>
@@ -539,7 +536,7 @@ const UpdateStation = ({ navigation, route }) => {
                 c.connectorType.connector_type_id === connector.id &&
                 c.chargerIndex === chargerIndex
             );
-            console.log("connectorData", connectorData);
+            // console.log("connectorData", connectorData);
             const count = connectorData ? connectorData.count : 0;
 
             return (
@@ -723,7 +720,7 @@ const UpdateStation = ({ navigation, route }) => {
     );
   }
   function uploadPhotoSection() {
-    console.log("photo url = ", imageURL.baseURL+photo);
+    // console.log("photo url = ", imageURL.baseURL+photo);
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>

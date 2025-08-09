@@ -58,18 +58,17 @@ const PreviewPage = ({ navigation, route }) => {
   const errorMessage = useSelector(selectVendorError);
   const stations = useSelector(selectVendorStation);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(stationImage || '');
+  const [selectedImage, setSelectedImage] = useState(stationImage || "");
   const authToken = useSelector(selectToken);
   const station = stations.find(
     (station) => station.id === stationData.station_id
   );
 
-
   useEffect(() => {
-    console.log(
-      "Transformed station data preview:",
-      JSON.stringify(stationData, null, 2)
-    );
+    // console.log(
+    //   "Transformed station data preview:",
+    //   JSON.stringify(stationData, null, 2)
+    // );
   }, [stationData]);
 
   const connectorIcons = {
@@ -110,8 +109,7 @@ const PreviewPage = ({ navigation, route }) => {
 
   const handleSubmit = async () => {
     try {
-      
-      console.log('station data', stationData);
+      // console.log("station data", stationData);
       if (type === "add") {
         const addStationresponse = await dispatch(addStation(stationData));
         if (addStation.fulfilled.match(addStationresponse)) {
@@ -119,6 +117,7 @@ const PreviewPage = ({ navigation, route }) => {
             fetchStations(stationData?.owner_id)
           );
           if (fetchStations.fulfilled.match(stationResponse)) {
+            // console.log( "this is response",stationResponse);
             // await dispatch(showSnackbar({ message: "Station fetched Successfully.", type:'success' }));
             await dispatch(
               showSnackbar({ message: "New station added.", type: "success" })
@@ -145,9 +144,6 @@ const PreviewPage = ({ navigation, route }) => {
           );
         }
       } else {
-
-
-
         const updateStationResponse = await dispatch(
           updateStation(stationData)
         );
@@ -156,7 +152,7 @@ const PreviewPage = ({ navigation, route }) => {
             fetchStations(stationData?.owner_id)
           );
           if (fetchStations.fulfilled.match(stationResponse)) {
-            console.log("station updated");
+            // console.log("station updated");
 
             await dispatch(
               showSnackbar({
@@ -168,7 +164,7 @@ const PreviewPage = ({ navigation, route }) => {
             navigation.pop(2);
             // navigation.navigate("StationManagement", { station })
           } else if (fetchStations.rejected.match(stationResponse)) {
-            console.log("station update failed");
+            // console.log("station update failed");
             await dispatch(
               showSnackbar({
                 message: errorMessage || "Failed to fetch station.",
@@ -290,19 +286,15 @@ const PreviewPage = ({ navigation, route }) => {
     return (
       <Modal visible={modalVisible} transparent={true}>
         <View style={styles.modalContainer}>
-          <Image source={{ uri: imageURL.baseURL+selectedImage }} style={styles.fullImage} />
+          <Image
+            source={{ uri: imageURL.baseURL + selectedImage }}
+            style={styles.fullImage}
+          />
           <TouchableOpacity
             style={styles.modalCloseButton}
             onPress={() => setModalVisible(false)}
           >
-
-
-            <MaterialIcons
-              name="close"
-              color={Colors.blackColor}
-              size={26}
-            />
-
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
           </TouchableOpacity>
         </View>
       </Modal>
@@ -336,7 +328,7 @@ const PreviewPage = ({ navigation, route }) => {
                   name={
                     charger?.connector_type
                       ? connectorIcons?.[charger?.connector_type] ||
-                      "ev-plug-type1"
+                        "ev-plug-type1"
                       : "ev-plug-type1"
                   }
                   size={20}
@@ -356,7 +348,7 @@ const PreviewPage = ({ navigation, route }) => {
     }
     //  console.log("station image in preview page upper",stationImage);
     const imageUrl = stationImage
-      ? { uri: imageURL.baseURL+stationImage }
+      ? { uri: imageURL.baseURL + stationImage }
       : require("../../../../../assets/images/nullStation.png");
     // console.log("station image in preview page lower",imageUrl);
     return (
@@ -389,10 +381,7 @@ const PreviewPage = ({ navigation, route }) => {
           activeOpacity={0.9}
           style={styles.mapBackground}
           onPress={() => {
-            if (
-              stationImage &&
-              stationImage.trim() !== ""
-            ) {
+            if (stationImage && stationImage.trim() !== "") {
               showFullImage(stationImage);
             }
           }}
@@ -411,31 +400,20 @@ const PreviewPage = ({ navigation, route }) => {
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
           >
             <View style={styles.statusContainer}>
-              <Text
-                style={[
-                  styles.statusClosed,
-                  {
-                    color: stationData?.status === "Inactive" ? "#FF5722" : "green",
-                  },
-                ]}
-              >
-                {stationData?.status === "Inactive" ? "Closed" : "Open"}
-              </Text>
               <Text style={styles.statusTime}>
+                Open Hours :{" "}
                 {openHourFormatter(
                   stationData?.open_hours_opening_time,
                   stationData?.open_hours_closing_time
                 )}
               </Text>
-              <View style={styles.newBadge}>
-                <Text style={styles.newText}>
+              {stationData.status&& <View style={styles.newBadge}>
+               <Text style={styles.newText}>
                   {stationData.status === "Active"
                     ? "VERIFIED"
-                    :
-                    "New"
-                  }
+                    : stationData.status}
                 </Text>
-              </View>
+              </View>}
             </View>
           </View>
         </View>
@@ -497,7 +475,8 @@ const PreviewPage = ({ navigation, route }) => {
         <View style={styles.landmarkContainer}>
           <Text style={styles.landmarkTitle}>{stationData?.address}</Text>
         </View>
-
+          
+         { stationData?.amenities?.length &&( <>
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
           {stationData?.amenities?.split(",").map((amenityName, index) => {
@@ -512,6 +491,7 @@ const PreviewPage = ({ navigation, route }) => {
             );
           })}
         </View>
+          </>)}
       </ScrollView>
     );
   }
@@ -590,7 +570,7 @@ const styles = StyleSheet.create({
   statusTime: {
     color: COLORS.black,
     fontSize: 12,
-    marginLeft: 4,
+    fontWeight:"700"
   },
   newBadge: {
     backgroundColor: COLORS.primary,
@@ -797,7 +777,6 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "bold",
   },
-
 });
 
 export default PreviewPage;

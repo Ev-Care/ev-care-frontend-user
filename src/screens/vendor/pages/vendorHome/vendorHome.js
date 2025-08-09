@@ -42,6 +42,8 @@ import { selectStations } from "../../../user/service/selector";
 import { RefreshControl } from "react-native";
 import { handleRefreshStations } from "../../services/handleRefresh";
 import { showSnackbar } from "../../../../redux/snackbar/snackbarSlice";
+import * as Location from "expo-location";
+import { updateUserCoordinate } from "../../../../redux/store/userSlice";
 // Colors
 const COLORS = {
   primary: "#101942",
@@ -55,6 +57,8 @@ const COLORS = {
 
 const VendorHome = () => {
   const navigation = useNavigation();
+   const [currentLocation, setCurrentLocation] = useState(null);
+    // const [refreshing, setRefreshing] = useState(false);
   const stations = useSelector(selectVendorStation);
   const [isLive, setIsLive] = useState(false);
   const user = useSelector(selectUser);
@@ -69,8 +73,8 @@ const VendorHome = () => {
       );
 
       setIsLive(anyActiveStation);
-      console.log("useEffect called");
-      console.log("anyActiveStation called", anyActiveStation);
+      // console.log("useEffect called");
+      // console.log("anyActiveStation called", anyActiveStation);
     }
   }, [stations]);
 
@@ -79,9 +83,9 @@ const VendorHome = () => {
     const fetchData = async () => {
       if (user?.id) {
         if (stations) {
-          console.log("station = ", stations);
+          // console.log("station = ", stations);
         }
-        console.log("Dispatching fetchStations for user ID:", user?.id);
+        // console.log("Dispatching fetchStations for user ID:", user?.id);
         const response = await dispatch(fetchStations(user?.id));
         if (fetchStations.fulfilled.match(response)) {
           // await dispatch(showSnackbar({ message: "Station fetched Successfully." }));
@@ -91,7 +95,7 @@ const VendorHome = () => {
           );
         }
       } else {
-        console.log("User ID is not available");
+        // console.log("User ID is not available");
         // console.log(useSelector(selectStation));
       }
     };
@@ -99,7 +103,7 @@ const VendorHome = () => {
     fetchData();
 
     return () => {
-      console.log("Cleaning up VendorHome...");
+      // console.log("Cleaning up VendorHome...");
     };
   }, [dispatch]);
 
@@ -190,6 +194,68 @@ const VendorHome = () => {
     );
   };
 
+  useEffect(() => {
+    let subscription = null;
+
+    const startLocationUpdates = async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          dispatch(
+            showSnackbar({
+              message: "Permission to access location was denied.",
+              type: "error",
+            })
+          );
+          return;
+        }
+
+        subscription = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 5000, // minimum time (ms) between updates
+            distanceInterval: 50, // minimum distance (m) between updates
+          },
+          async (loc) => {
+            // <-- important: make this function async
+            const coords = loc.coords;
+             console.log("Location updated:", coords);
+            setCurrentLocation(coords);
+            // console.log({ currentLocation });
+
+            dispatch(updateUserCoordinate(coords)); // Update user coordinates
+
+            // 1. Fetch stations
+            const locationResponse = await dispatch(
+              fetchStationsByLocation({ radius, coords })
+            );
+            if (fetchStationsByLocation.fulfilled.match(locationResponse)) {
+              // dispatch(showSnackbar({ message: 'Charging stations found.', type: "success" }));
+            } else if (
+              fetchStationsByLocation.rejected.match(locationResponse)
+            ) {
+              dispatch(
+                showSnackbar({
+                  message: errorMessage || "Failed to fetch stations.",
+                  type: "error",
+                })
+              );
+            }
+          }
+        );
+      } catch (err) {
+        console.error("Error watching location:", err);
+      }
+    };
+
+    startLocationUpdates();
+
+    return () => {
+      if (subscription) subscription.remove();
+    };
+  }, [refreshing]);
+
+
   return (
     <SafeAreaView style={styles.container}>
       <MyStatusBar />
@@ -207,9 +273,12 @@ const VendorHome = () => {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.greetingContainer}>
-            <Text style={styles.greeting}>
+           {user?.vendor_type ==="organization"?(<Text style={styles.greeting}>
               Hi {getFirstName(user?.business_name)} !
-            </Text>
+            </Text>):
+             (<Text style={styles.greeting}>
+              Hi {getFirstName(user?.name)} !
+            </Text>)}
             <Text style={styles.subGreeting}>{getGreeting()}</Text>
           </View>
 

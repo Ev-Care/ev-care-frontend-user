@@ -25,10 +25,11 @@ import { useNavigation } from "@react-navigation/native";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { selectToken, selectUser } from "../../auth/services/selector";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import { Colors } from "../../../constants/styles";
+import { Colors, commonStyles } from "../../../constants/styles";
 import RNModal from "react-native-modal";
 import imageURL from "../../../constants/baseURL";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
+import { validateDecimalInput } from "../../../utils/globalMethods";
 
 const PRIMARY_COLOR = "#101942";
 const amenities = [
@@ -63,8 +64,13 @@ const AddStationScreen = () => {
   const [chargerForms, setChargerForms] = useState([{}]);
   const [selectedForm, setSelectedForm] = useState(null);
   const [coordinate, setCoordinate] = useState(null);
-  const addChargerForm = () =>
-    setChargerForms((prevForms) => [...prevForms, {}]);
+const addChargerForm = () => {
+    setChargerForms((prevForms) => {
+        const newForms = [...prevForms, {}];
+        setSelectedForm(String(newForms.length - 1));
+        return newForms;
+    });
+};
   const [connectorsList, setConnectorsList] = useState([]);
   const accessToken = useSelector(selectToken); // Get access token from Redux store
   const dispatch = useDispatch(); // Get the dispatch function
@@ -77,6 +83,8 @@ const AddStationScreen = () => {
   const [currentImageLabel, setCurrentImageLabel] = useState(null);
   const [imageloading, setImageLoading] = useState("");
   const [vendorNumber, setVendorNumber] = useState(null);
+  const [vendorName, setVendorNamer] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState("Planned");
 
   const handleTimeChange = (event, selectedDate) => {
     setShowPicker(false);
@@ -113,11 +121,11 @@ const AddStationScreen = () => {
   const openGallery = async (setter, label) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.1,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+      quality: 0.2,
+    });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -133,16 +141,16 @@ const AddStationScreen = () => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -153,10 +161,10 @@ const AddStationScreen = () => {
   const openCamera = async (setter, label) => {
     try {
       const result = await ImagePicker.launchCameraAsync({
-        quality: 0.1,
-        allowsEditing: true,
-        aspect: label === "avatar" ? [1, 1] : undefined,
-      });
+      quality: 0.1,
+      allowsEditing: true,
+      aspect: label === "avatar" ? [1, 1] : undefined,
+    });
 
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
@@ -172,16 +180,16 @@ const AddStationScreen = () => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -191,14 +199,21 @@ const AddStationScreen = () => {
 
   const selectOnMap = () => {
     navigation.push("PickLocation", {
-      addressFor: "stationAddress",
+      addressFor: "adminStationAddress",
       setAddress: (newAddress) => setAddress(newAddress),
       setCoordinate: (newCoordinate) => setCoordinate(newCoordinate),
     });
   };
+  const handleVendorSelection = () => {
+    // console.log("handleVendorSelection called");
+    navigation.push("VendorSelector", {
+      setVendorNumber: (newVendorNumber) => setVendorNumber(newVendorNumber),
+      setVendorName: (newVendorName) => setVendorNamer(newVendorName),
+    });
+  }
 
   const handlePreview = () => {
-    console.log("in the preview page");
+    // console.log("in the preview page");
     const amenitiesString = selectedAmenities
       .map((id) => amenities.find((amenity) => amenity.id === id)?.label)
       .join(",");
@@ -211,10 +226,12 @@ const AddStationScreen = () => {
     }));
 
     const stationData = {
+      identifier: vendorNumber,
       owner_id: user?.id || null,
       station_name: stationName,
       address,
       access_type: accessType,
+      status: selectedStatus,
       coordinates: {
         latitude: coordinate?.latitude || null,
         longitude: coordinate?.longitude || null,
@@ -228,10 +245,30 @@ const AddStationScreen = () => {
       station_images: photo ? photo : "",
     };
 
-    console.log(
-      "Transformed Station Data:",
-      JSON.stringify(stationData, null, 2)
-    );
+    // console.log(
+    //   "Transformed Station Data:",
+    //   JSON.stringify(stationData, null, 2)
+    // );
+
+    if (!vendorNumber || vendorNumber === "") {
+      dispatch(
+        showSnackbar({
+          message: "Vendor Contact Number cannot be empty.",
+          type: "error",
+        })
+      );
+      return;
+    }
+
+    if (vendorNumber.length !== 10) {
+      dispatch(
+        showSnackbar({
+          message: "Vendor Contact Number must be 10 digits.",
+          type: "error",
+        })
+      );
+      return;
+    }
 
     if (!stationData?.station_name || stationData?.station_name === "") {
       dispatch(
@@ -242,6 +279,7 @@ const AddStationScreen = () => {
       );
       return;
     }
+
     if (!stationData?.address || stationData.address === "") {
       dispatch(
         showSnackbar({
@@ -251,15 +289,17 @@ const AddStationScreen = () => {
       );
       return;
     }
-    if (!stationData?.amenities || stationData.amenities === "") {
-      dispatch(
-        showSnackbar({
-          message: "Station Amenities cannot be empty.",
-          type: "error",
-        })
-      );
-      return;
-    }
+
+    // if (!stationData?.amenities || stationData.amenities === "") {
+    //   dispatch(
+    //     showSnackbar({
+    //       message: "Station Amenities cannot be empty.",
+    //       type: "error",
+    //     })
+    //   );
+    //   return;
+    // }
+
     if (!stationData?.station_images || stationData.station_images === "") {
       dispatch(
         showSnackbar({
@@ -371,19 +411,16 @@ const AddStationScreen = () => {
       </TouchableOpacity>
     );
   };
-  return (
+  return ( <View style={{ flex: 1 }}>
     <ScrollView style={styles.container}>
       <MyStatusBar />
       <View style={styles.header}>
-        <TouchableOpacity
-          // onPress={() => navigation?.navigate("VendorBottomTabBar")}
-        >
+        <TouchableOpacity onPress={() => navigation?.goBack()}>
           <Icon name="arrow-left" size={24} color={PRIMARY_COLOR} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Add a New Station</Text>
         <View style={{ width: 24 }} />
       </View>
-
       {locationDetail()}
       {additionalDetail()}
       {bottomSheet()}
@@ -407,7 +444,17 @@ const AddStationScreen = () => {
           </TouchableOpacity>
         </View>
       </Modal>
-    </ScrollView>
+    </ScrollView> <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={addChargerForm}
+        style={styles.floatingAddButton}
+      >
+        <MaterialIcons name="add" size={20} color={Colors.whiteColor} />
+        <Text style={{ color: Colors.whiteColor, fontSize: 8 }}>
+          Add Charger
+        </Text>
+      </TouchableOpacity>
+      </View>
   );
   function bottomSheet() {
     return (
@@ -487,18 +534,51 @@ const AddStationScreen = () => {
         <Text style={styles?.sectionTitle}>Additional Details</Text>
         {selectedForm === "additionaldetail" && (
           <>
-            {vendorNumberSection?.()}
+            {vendorNameSection?.()}
             {stationNameSection?.()}
             {amenitiesSection?.()}
             {openHoursSection?.()}
             {uploadPhotoSection?.()}
+            {statusSelector()}
             {accessTypeSection?.()}
+
           </>
         )}
       </TouchableOpacity>
     );
   }
+  function statusSelector() {
+    const statuses = ["Planned", "Active", "Inactive", "Rejected"];
+    return (
+      <View style={[styles.section, { marginBottom: 12 }]}>
+        <Text style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14 }}>
+          Select Status
+        </Text>
 
+        <View style={styles.hoursContainer}>
+          {statuses.map((role) => (
+            <TouchableOpacity
+              key={role}
+              style={[
+                styles.hoursButton,
+                selectedStatus === role && styles.selectedButton,
+              ]}
+              onPress={() => setSelectedStatus(role)}
+            >
+              <Text
+                style={[
+                  styles.buttonText,
+                  selectedStatus === role && styles.selectedButtonText,
+                ]}
+              >
+                {role.charAt(0).toUpperCase() + role.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+  }
   function chargerDetail(index) {
     return (
       <TouchableOpacity
@@ -511,7 +591,7 @@ const AddStationScreen = () => {
           {index > 0 && (
             <TouchableOpacity
               onPress={() => removeChargerForm(index)}
-              style={styles?.deleteButton}
+              style={{marginBottom:16}}
             >
               <Icon name="close-circle" size={24} color="red" />
             </TouchableOpacity>
@@ -527,7 +607,7 @@ const AddStationScreen = () => {
                   style={[
                     styles?.hoursButton,
                     chargerForms?.[index]?.chargerType === "AC" &&
-                      styles?.selectedButton,
+                    styles?.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -543,7 +623,7 @@ const AddStationScreen = () => {
                     style={[
                       styles?.buttonText,
                       chargerForms?.[index]?.chargerType === "AC" &&
-                        styles?.selectedButtonText,
+                      styles?.selectedButtonText,
                     ]}
                   >
                     AC
@@ -554,7 +634,7 @@ const AddStationScreen = () => {
                   style={[
                     styles?.hoursButton,
                     chargerForms?.[index]?.chargerType === "DC" &&
-                      styles?.selectedButton,
+                    styles?.selectedButton,
                   ]}
                   onPress={() => {
                     setChargerForms((prev) =>
@@ -570,7 +650,7 @@ const AddStationScreen = () => {
                     style={[
                       styles?.buttonText,
                       chargerForms?.[index]?.chargerType === "DC" &&
-                        styles?.selectedButtonText,
+                      styles?.selectedButtonText,
                     ]}
                   >
                     DC
@@ -583,18 +663,19 @@ const AddStationScreen = () => {
               <Text style={styles?.sectionLabel}>
                 Power Rating <Text style={styles?.optional}>(in kW)</Text>
               </Text>
-              <TextInput
-                style={styles?.input}
+               <TextInput
+                style={styles.input}
                 placeholder="Power Rating In kW"
+                keyboardType="decimal-pad"
                 value={chargerForms?.[index]?.powerRating || ""}
-                keyboardType="numeric"
                 onChangeText={(text) => {
-                  const numericText = text.replace(/[^0-9]/g, "");
+                  const validInput = validateDecimalInput(text, 1000, 2);
 
-                  if (numericText && parseInt(numericText) > 1000) {
+                  if (text && !validInput) {
                     dispatch(
                       showSnackbar({
-                        message: "Power rating cannot exceed 1000 kW",
+                        message:
+                          "Invalid input. Max 2 decimals or value exceeded.",
                         type: "error",
                       })
                     );
@@ -606,7 +687,7 @@ const AddStationScreen = () => {
                       i === index
                         ? {
                             ...charger,
-                            powerRating: numericText,
+                            powerRating: validInput,
                           }
                         : charger
                     )
@@ -619,12 +700,12 @@ const AddStationScreen = () => {
 
             {index === chargerForms?.length - 1 && (
               <View style={styles?.nextButtonContainer}>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   onPress={addChargerForm}
                   style={styles?.nextButton}
                 >
                   <Text style={styles?.nextButtonText}>+ Add more</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             )}
           </>
@@ -724,7 +805,7 @@ const AddStationScreen = () => {
               style={[
                 styles.amenityItem,
                 selectedAmenities.includes(amenity.id) &&
-                  styles.selectedAmenity,
+                styles.selectedAmenity,
               ]}
               onPress={() => toggleAmenity(amenity.id)}
             >
@@ -741,7 +822,7 @@ const AddStationScreen = () => {
                 style={[
                   styles.amenityLabel,
                   selectedAmenities.includes(amenity.id) &&
-                    styles.selectedAmenityText,
+                  styles.selectedAmenityText,
                 ]}
               >
                 {amenity.label}
@@ -876,22 +957,50 @@ const AddStationScreen = () => {
       </View>
     );
   }
-  function vendorNumberSection() {
+  function vendorNameSection() {
     return (
       <View style={styles.section}>
-       
-        <Text style={styles.sectionLabel}>Vendor Contact Number</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter Vendor Contact Number"
-          value={vendorNumber}
-          onChangeText={setVendorNumber}
-          maxLength={10}
-          keyboardType="numeric"
-        />
+        <TouchableOpacity
+          onPress={handleVendorSelection}
+          style={{
+            borderWidth: 1,
+            borderColor: Colors.darOrangeColor,
+            borderRadius: 8,
+            padding: 12,
+            fontSize: 12,
+            marginBottom: 12,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              color: Colors.darOrangeColor,
+              textAlign: "center",
+            }}
+          >
+            Select Vendor (required)
+          </Text>
+        </TouchableOpacity>
+        {(vendorName && vendorNumber) && <>
+          <Text style={styles.sectionLabel}>Vendor Name</Text>
+          <View
+            style={[styles.input, { backgroundColor: Colors.bodyBackColor }]}
+          >
+            <Text
+              style={{
+                fontSize: 12,
+                color: Colors.blackColor,
+                textAlign: "left",
+              }}
+            >
+              {vendorName}
+            </Text>
+          </View>
+        </>}
       </View>
     );
   }
+
   function stationNameSection() {
     return (
       <View style={styles.section}>
@@ -936,6 +1045,22 @@ const AddStationScreen = () => {
 };
 // export default  AddStations ;
 const styles = StyleSheet.create({
+   floatingAddButton: {
+     justifyContent: "center",
+          alignItems: "center",
+          width: 70,
+          height: 70,
+          borderRadius: 35,
+          backgroundColor: Colors.primaryColor,
+          shadowColor: Colors.primaryColor,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.4,
+          shadowRadius: 5,
+          elevation: 8,
+          position: "absolute",
+          bottom: 150,
+          right: "10%"
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
@@ -1057,6 +1182,7 @@ const styles = StyleSheet.create({
   },
   hoursContainer: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
   },
   hoursButton: {

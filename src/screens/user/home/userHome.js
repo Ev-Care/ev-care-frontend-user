@@ -27,7 +27,7 @@ import {
   screenWidth,
 } from "../../../constants/styles";
 import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../../auth/services/selector";
+import { selectAuthloader, selectUser } from "../../auth/services/selector";
 import * as Location from "expo-location";
 import {
   fetchStationsByLocation,
@@ -51,9 +51,10 @@ import {
   openHourFormatter,
   formatDistance,
   getChargerLabel,
+  openGoogleMaps,
 } from "../../../utils/globalMethods";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import {DottedLoader} from "../../../utils/lottieLoader/loaderView";
+import { DottedLoader } from "../../../utils/lottieLoader/loaderView";
 import MyStatusBar from "../../../components/myStatusBar";
 const COLORS = {
   primary: "#101942",
@@ -71,14 +72,16 @@ const UserHome = ({ navigation }) => {
   const AnimatedLinearGradient =
     Animated.createAnimatedComponent(LinearGradient);
   const user = useSelector(selectUser);
-  const [radius, setRadius] = useState(30000);
+  // const isLoading =useSelector(selectAuthloader);
+  const [radius, setRadius] = useState(50);
   const [refreshing, setRefreshing] = useState(false);
   const isLoading = useSelector(selectStationsLoading || selectUserLoading);
   const stations = useSelector(selectStations);
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
+  console.log(JSON.stringify(stations, null, 2));
   const [currentLocation, setCurrentLocation] = useState(null);
+  
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good Morning";
@@ -93,7 +96,6 @@ const UserHome = ({ navigation }) => {
     let subscription = null;
 
     const startLocationUpdates = async () => {
-
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
@@ -116,8 +118,8 @@ const UserHome = ({ navigation }) => {
             // <-- important: make this function async
             const coords = loc.coords;
             setCurrentLocation(coords);
-            console.log({ currentLocation });
-
+                    console.log("Current Location:", coords);
+ 
             dispatch(updateUserCoordinate(coords)); // Update user coordinates
 
             // 1. Fetch stations
@@ -141,7 +143,6 @@ const UserHome = ({ navigation }) => {
       } catch (err) {
         console.error("Error watching location:", err);
       }
-
     };
 
     startLocationUpdates();
@@ -151,6 +152,9 @@ const UserHome = ({ navigation }) => {
     };
   }, [refreshing]);
 
+
+
+  
   const handleRefresh = async () => {
     try {
       // setRefreshing(true);
@@ -200,14 +204,6 @@ const UserHome = ({ navigation }) => {
     }
   };
 
-  const openGoogleMaps = (latitude, longitude) => {
-    const url = Platform.select({
-      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
-    });
-    Linking.openURL(url);
-  };
-
   const animatedHeaderStyle = {
     paddingBottom: scrollY.interpolate({
       inputRange: [0, 100],
@@ -232,7 +228,7 @@ const UserHome = ({ navigation }) => {
   }
   return (
     <SafeAreaView style={styles.container}>
-      <MyStatusBar/>
+      <MyStatusBar />
 
       <AnimatedLinearGradient
         colors={["#101942", "#1C2A5A"]}
@@ -323,26 +319,44 @@ const UserHome = ({ navigation }) => {
                     Nearest Charging Stations
                   </Text>
                   <Text style={styles.featureText}>
-                    Discover nearby EV stations and filter by distance or connector type.
+                    Discover nearby EV stations and filter by distance or
+                    connector type.
                   </Text>
                 </View>
-                <View style={styles.featureIcons}>
-                  <Icon
-                    name="map-marker-distance"
-                    size={14}
-                    color={COLORS.white}
-                  />
-                  {!stations?.length > 0 ? (
-                    <DottedLoader />
+               <View style={styles.featureIcons}>
+                  {isLoading ? (
+                    <>
+                      <DottedLoader />
+                      <Text style={{ fontSize: 10, color: COLORS.white }}>
+                        Loading Stations ....
+                      </Text>
+                    </>
+                  ) : stations.length > 0 ? (
+                    <>
+                      <Icon
+                        name="map-marker-distance"
+                        size={14}
+                        color={COLORS.white}
+                      />
+                      <Text style={styles.featureText}>
+                        {formatDistance(stations[0]?.distance_km)} (from your
+                        location)
+                      </Text>
+                    </>
                   ) : (
-                    <Text style={styles.featureText}>
-                      {formatDistance(stations[0]?.distance_km)}
-                    </Text>
+                    <>
+                      <Icon
+                        name="map-marker-distance"
+                        size={14}
+                        color={COLORS.white}
+                      />
+                      <Text style={styles.featureText}>
+                        No any Nearest Station
+                      </Text>
+                    </>
                   )}
-                  <Text style={styles.featureText}>(from your location)</Text>
                 </View>
               </TouchableOpacity>
-
             </LinearGradient>
 
             <LinearGradient
@@ -428,6 +442,7 @@ const UserHome = ({ navigation }) => {
               : require("../../../../assets/images/nullStation.png")
           }
           style={styles.enrouteChargingStationImage}
+           resizeMode="stretch"
         />
 
         <View style={styles.enrouteStationOpenCloseWrapper}>
@@ -489,7 +504,6 @@ const UserHome = ({ navigation }) => {
               marginTop: Sizes.fixPadding,
             }}
           >
-
             <Text
               numberOfLines={1}
               style={{
@@ -501,12 +515,12 @@ const UserHome = ({ navigation }) => {
               {formatDistance(item?.distance_km)}
             </Text>
 
-
             <TouchableOpacity
               onPress={() =>
                 openGoogleMaps(
                   item?.coordinates?.latitude ?? 0,
-                  item?.coordinates?.longitude ?? 0
+                  item?.coordinates?.longitude ?? 0,
+                  item?.station_name
                 )
               }
               style={styles.getDirectionButton}
@@ -520,11 +534,12 @@ const UserHome = ({ navigation }) => {
 
     return (
       <FlatList
-        data={stations}
-        keyExtractor={(item) => `${item?.id}`}
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-      />
+  data={stations.slice(0, 20)}
+  keyExtractor={(item) => `${item?.id}`}
+  renderItem={renderItem}
+  showsVerticalScrollIndicator={false}
+/>
+
     );
   }
 };
@@ -628,7 +643,7 @@ const styles = StyleSheet.create({
   welcomeImage: {
     width: 100,
     height: 100,
-    borderRadius:12,
+    borderRadius: 12,
   },
   sectionContainer: {
     marginBottom: 25,
@@ -727,7 +742,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1.0,
     flexDirection: "row",
 
-    marginBottom: Sizes.fixPadding * 2.0,
+    marginBottom: Sizes.fixPadding * 1.0,
   },
   enrouteChargingStationImage: {
     width: screenWidth / 3.2,

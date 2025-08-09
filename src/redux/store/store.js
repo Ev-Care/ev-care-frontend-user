@@ -15,18 +15,20 @@ const store = configureStore({
     admin: adminReducer,
     station: stationReducer,
     snackbar: snackbarReducer
-    
+
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }),
 });
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 const loadUserData = async () => {
   try {
     const user_key = await AsyncStorage.getItem("user");
     const accessToken = await AsyncStorage.getItem("accessToken");
-    console.log("user key in store", user_key);
-    console.log("Access token in store", accessToken);
+    // console.log("user key in store", user_key);
+    // console.log("Access token in store", accessToken);
     if (user_key && accessToken) {
+      await delay(2000); // 3 seconds delay
       await store.dispatch(getUserByKey(user_key));
       await store.dispatch(restoreUser(accessToken));
       // await store.dispatch(showSnackbar({ message: "Logged-In successfully", type: "success" }));

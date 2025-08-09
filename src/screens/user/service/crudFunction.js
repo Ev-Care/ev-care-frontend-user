@@ -2,14 +2,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
-  getAllStationsByLocationAPI,
-  updateUserProfileAPI,
-  getUserByKeyAPI,
-  getEnrouteStationsAPI,
   getAllFavoriteStationsAPI,
+  getAllStationsByLocationAPI,
+  getEnrouteStationsAPI,
+  getUserByKeyAPI,
   postFavoriteStationAPI,
-  unFavoriteStationAPI,
   sendQuery,
+  unFavoriteStationAPI,
+  updatePasswordAPI,
+  updateUserProfileAPI
 } from "./api"; // Import the API function
 // Async thunk to fetch stations
 export const fetchStationsByLocation = createAsyncThunk(
@@ -31,7 +32,7 @@ export const fetchStationsByLocation = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in postSignUp:", error);
+      // console.log("Error in postSignUp:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -62,7 +63,7 @@ export const searchStationsByLocation = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in postSignUp:", error);
+      // console.log("Error in postSignUp:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -92,7 +93,7 @@ export const getUserDetailsByKey = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in getUserDetailsByKey:", error);
+      // console.log("Erro/r in getUserDetailsByKey:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -120,7 +121,34 @@ export const patchUpdateUserProfile = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in patchUpdateUserProfile:", error);
+      // console.log("Error in patchUpdateUserProfile:", error);
+
+      // Always extract message properly even in catch
+      const errorMessage =
+        error?.response?.data?.message || // API sent error message
+        error?.message || // JS error message
+        "Failed to update user details"; // fallback message
+
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+export const postUpdatePassword = createAsyncThunk(
+  "userSlice/postUpdatePassword",
+  async (data, { rejectWithValue }) => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve access token from AsyncStorage
+      // console.log("data:",  {...data, accessToken}); // Log the access token for debugging
+      const response = await updatePasswordAPI({ data, accessToken }); // Call the API to fetch stations by location
+      if (response.data.code === 200 || response.data.code === 201) {
+        return response.data;
+      } else {
+        return rejectWithValue(
+          response.data.message || "Failed to update user details"
+        );
+      }
+    } catch (error) {
+      // console.log("Error in patchUpdateUserProfile:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -147,7 +175,7 @@ export const getEnrouteStations = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in getEnrouteStations:", error);
+      // console.log("Error in getEnrouteStations:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -177,7 +205,7 @@ export const getAllFavoriteStations = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in getAllFavoriteStations:", error);
+      // console.log("Error in getAllFavoriteStations:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -204,7 +232,7 @@ export const postFavoriteStation = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in postFavoriteStation:", error);
+      // console.log("Error in postFavoriteStation:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -231,7 +259,7 @@ export const unFavoriteStation = createAsyncThunk(
         );
       }
     } catch (error) {
-      console.log("Error in unFavoriteStation:", error);
+      // console.log("Error in unFavoriteStation:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -256,7 +284,7 @@ export const sendQueryAction = createAsyncThunk(
         return rejectWithValue(response.data.message || "Send query failed!!");
       }
     } catch (error) {
-      console.log("Error in sendQueryAction:", error);
+      // console.log("Error in sendQueryAction:", error);
 
       // Always extract message properly even in catch
       const errorMessage =

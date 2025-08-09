@@ -1,5 +1,5 @@
 // ViewAllUserPage.js
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
   SafeAreaView,
   StatusBar,
 } from "react-native";
@@ -18,12 +19,17 @@ import {
   Sizes,
   Fonts,
 } from "../../../constants/styles";
+import RNModal from "react-native-modal";
 import MyStatusBar from "../../../components/myStatusBar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { color } from "@rneui/base";
 import imageURL from "../../../constants/baseURL";
-// Define colors at the top for easy customization
+import { useDispatch, useSelector } from "react-redux";
+import { selectAllSupportIssues } from "../services/selector";
+import { useFocusEffect } from "@react-navigation/native";
+import { getAllSupportIssues } from "../services/crudFunctions";
+import { selectUser } from "../../auth/services/selector";
 const COLORS = {
   primary: "#101942",
   accent: "#FF5722",
@@ -37,206 +43,75 @@ const COLORS = {
   divider: "#e1e1ea",
 };
 
-// Sample user data
-const USERS = [
-  {
-    id: 18,
-    user_key: "b2ZB4gFprc",
-    owner_legal_name: "Dummy User",
-    business_name: null,
-    mobile_number: "+916666666666",
-    email: null,
-    otp: "573937",
-    pan_no: null,
-    tan_no: null,
-    adhar_no: null,
-    address: null,
-    avatar: null,
-    adhar_front_pic: null,
-    adhar_back_pic: null,
-    pan_pic: null,
-    tan_pic: null,
-    google_id: null,
-    otp_expiry_date: "2025-04-23T18:41:38.000Z",
-    status: "New",
-    role: "user",
-    login_method: "mobile_otp",
-    created_at: "2025-04-23T18:31:38.000Z",
-    update_at: "2025-04-23T18:31:38.509Z",
-    updated_by: 0,
-    isLoggedIn: true,
-    password: null,
-  },
-  {
-    id: 19,
-    user_key: "b2ZB4gFprc",
-    owner_legal_name: "Dummy User 2",
-    business_name: null,
-    mobile_number: "+9166666666669",
-    email: null,
-    otp: "573937",
-    pan_no: null,
-    tan_no: null,
-    adhar_no: null,
-    address: null,
-    avatar: null,
-    adhar_front_pic: null,
-    adhar_back_pic: null,
-    pan_pic: null,
-    tan_pic: null,
-    google_id: null,
-    otp_expiry_date: "2025-04-23T18:41:38.000Z",
-    status: "New",
-    role: "vendor",
-    login_method: "mobile_otp",
-    created_at: "2025-04-23T18:31:38.000Z",
-    update_at: "2025-04-23T18:31:38.509Z",
-    updated_by: 0,
-    isLoggedIn: true,
-    password: null,
-  },
-];
-
-const allIssues = [
-  {
-    "user": {
-      "id": 60,
-      "user_key": "ALdwJF818e",
-      "owner_legal_name": "vendor5",
-      "business_name": "This is business 3466",
-      "mobile_number": "6666666666",
-      "email": "Vendor66@gmail.com",
-      "otp": "264844",
-      "pan_no": "MCNPS2766K",
-      "tan_no": null,
-      "gstin_number": null,
-      "gstin_image": null,
-      "adhar_no": "343934391765",
-      "address": "16, Near Ganesh Garden, Ambegaon Pathar, Pune, Maharashtra 411046, India",
-      "avatar": "/uploads/1746087113689.jpeg",
-      "adhar_front_pic": "/uploads/1746087164706.jpeg",
-      "adhar_back_pic": "/uploads/1746087168841.jpeg",
-      "pan_pic": "/uploads/1746087180925.jpeg",
-      "tan_pic": null,
-      "google_id": null,
-      "otp_expiry_date": "2025-05-07T20:02:48.000Z",
-      "status": "Active",
-      "role": "vendor",
-      "vehicle_registration_number": null,
-      "vehicle_manufacturer": null,
-      "vehicle_model": null,
-      "vendor_type": null,
-      "login_method": "mobile_otp",
-      "created_at": "2025-05-01T07:24:49.453Z",
-      "update_at": "2025-05-07T19:52:47.000Z",
-      "updated_by": 0,
-      "isLoggedIn": true,
-      "password": null
-    },
-    status: "pending",
-    "contact_number": "+916666666666",
-    "contact_email": "dummy.user@example.com",
-    "title": "Unable to update profile",
-    "message": "Every time I try to update my profile, the app crashes.",
-    "reference_image_url": null,
-    "created_at": "2025-05-08T13:30:00Z"
-  },
-  {
-    "user":  {
-      id: 19,
-      user_key: "b2ZB4gFprc",
-      owner_legal_name: "Ravi Kumar",
-      business_name: null,
-      mobile_number: "+911234567890",
-      email: null,
-      otp: "573937",
-      pan_no: null,
-      tan_no: null,
-      adhar_no: null,
-      address: null,
-      avatar: null,
-      adhar_front_pic: null,
-      adhar_back_pic: null,
-      pan_pic: null,
-      tan_pic: null,
-      google_id: null,
-      otp_expiry_date: "2025-04-23T18:41:38.000Z",
-      status: "New",
-      role: "vendor",
-      login_method: "mobile_otp",
-      created_at: "2025-04-23T18:31:38.000Z",
-      update_at: "2025-04-23T18:31:38.509Z",
-      updated_by: 0,
-      isLoggedIn: true,
-      password: null,
-    },
-    status: "pending",
-    "contact_number": "+916666666666",
-    "contact_email": "dummy.user@example.com",
-    "title": "App UI issue on support screen",
-    "message": "The image preview is not loading correctly as shown in the screenshot.",
-    "reference_image_url": "https://yourdomain.com/uploads/support/issue_screenshot_123.jpg",
-    "created_at": "2025-05-08T14:05:00Z"
-  },
-  {
-    "user": {
-      id: 19,
-      user_key: "b2ZB4gFprc",
-      owner_legal_name: "Gaurav Chaubey",
-      business_name: null,
-      mobile_number: "+9166666666669",
-      email: null,
-      otp: "573937",
-      pan_no: null,
-      tan_no: null,
-      adhar_no: null,
-      address: null,
-      avatar: null,
-      adhar_front_pic: null,
-      adhar_back_pic: null,
-      pan_pic: null,
-      tan_pic: null,
-      google_id: null,
-      otp_expiry_date: "2025-04-23T18:41:38.000Z",
-      status: "New",
-      role: "vendor",
-      login_method: "mobile_otp",
-      created_at: "2025-04-23T18:31:38.000Z",
-      update_at: "2025-04-23T18:31:38.509Z",
-      updated_by: 0,
-      isLoggedIn: true,
-      password: null,
-    },
-    status: "pending",
-    "contact_number": "+916666666666",
-    "contact_email": null,
-    "title": "Login OTP not received",
-    "message": "Tried multiple times but no OTP was received on my phone.",
-    "reference_image_url": null,
-    "created_at": "2025-05-08T15:00:00Z"
-  }
-];
-
-// User item component - extracted for better code organization
-
 const ViewAllIssuesPage = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState(USERS);
+  const user = useSelector(selectUser);
+  const [isBottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const allIssues = useSelector(selectAllSupportIssues);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
+  const dispatch = useDispatch();
+  const statusColors = {
+    Open: "red",
+    "In Progress": "orange",
+    Resolved: "green",
+    Closed: "gray",
+    Escalated: "#d9534f",
+    Rejected: "purple",
+  };
+
+  const getStatusColor = (status) => {
+    return statusColors[status] || "black"; // fallback if unknown status
+  };
 
   // Filter users based on search query
-  const filteredIssues = allIssues.filter(
-    (issue) =>
-      issue?.user?.owner_legal_name
-        ?.toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      issue?.user.mobile_number?.includes(searchQuery)
-  );
+  // console.log('all Issue = ', allIssues);
+const filteredIssues = allIssues.filter((issue) => {
+  const matchesText =
+    issue?.user?.owner_legal_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    issue?.user?.mobile_number?.includes(searchQuery) || issue?.user?.role?.includes(searchQuery) ||
+    issue?.status?.toLowerCase().includes(searchQuery.toLowerCase());
+
+  const matchesStatus =
+    selectedStatuses.length === 0 || selectedStatuses.includes("All")
+      ? true
+      : selectedStatuses.includes(issue?.status);
+
+  return matchesText && matchesStatus;
+});
+
+
+  useEffect(() => {
+    handleRefresh();
+  }, []);
+
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true);
+      // setIsLoading(true);
+      await dispatch(getAllSupportIssues());
+    } catch (error) {
+      console.error("Error refreshing issues:", error);
+      await dispatch(
+        showSnackbar({
+          message: "Something went wrong during refresh.",
+          type: "error",
+        })
+      );
+    } finally {
+      setRefreshing(false);
+      // setIsLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <MyStatusBar />
       {searchBar()}
       <FlatList
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
         data={filteredIssues}
         renderItem={({ item }) => <SupportInfo issue={item} />}
         keyExtractor={(item) => item?.id?.toString()}
@@ -245,11 +120,21 @@ const ViewAllIssuesPage = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Icon name="account-search" size={60} color={COLORS.lightGray} />
+            <MaterialIcons
+              name="confirmation-number"
+              size={60}
+              color={COLORS.lightGray}
+            />
             <Text style={styles.emptyText}>No Issues found</Text>
           </View>
         }
       />
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryColor} />
+        </View>
+      )}
+       {bottonSheet()}
     </SafeAreaView>
   );
 
@@ -270,7 +155,10 @@ const ViewAllIssuesPage = ({ navigation }) => {
           ]}
         >
           {issue?.user?.avatar ? (
-            <Image source={{ uri: imageURL.baseURL + issue?.user?.avatar }} style={styles.avatar} />
+            <Image
+              source={{ uri: imageURL.baseURL + issue?.user?.avatar }}
+              style={styles.avatar}
+            />
           ) : (
             <Icon
               name="account-circle"
@@ -293,7 +181,10 @@ const ViewAllIssuesPage = ({ navigation }) => {
             <Text
               style={[
                 styles.roleText,
-                { color: issue?.user?.role === "user" ? COLORS.primary : "orange" },
+                {
+                  color:
+                    issue?.user?.role === "user" ? COLORS.primary : "orange",
+                },
               ]}
             >
               {issue?.user?.role || "N/A"}
@@ -302,7 +193,14 @@ const ViewAllIssuesPage = ({ navigation }) => {
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
           <Text style={[styles.userName, {}]}>Status: </Text>
-          <Text style={[styles.userMobile, { color: "red" }]}>{issue?.status} </Text>
+          <Text
+            style={[
+              styles.userMobile,
+              { color: getStatusColor(issue?.status) },
+            ]}
+          >
+            {issue?.status}
+          </Text>
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
           <Text style={[styles.userName, {}]}>Created at: </Text>
@@ -310,9 +208,7 @@ const ViewAllIssuesPage = ({ navigation }) => {
         </View>
         <View style={[{ flexDirection: "row", alignItems: "center" }]}>
           <Text style={[styles.userName, {}]}>Title: </Text>
-          <Text style={[styles.userMobile, {}]}>
-            {issue?.title}
-          </Text>
+          <Text style={[styles.userMobile, {}]}>{issue?.title}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -320,9 +216,17 @@ const ViewAllIssuesPage = ({ navigation }) => {
 
   function searchBar() {
     return (
-      <View style={{ margin: 20.0 }}>
+      <View
+        style={{
+          margin: 20,
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
         <MyStatusBar />
-        <View style={styles.searchBar}>
+
+        {/* Wrap SearchBar and give it flex: 1 */}
+        <View style={[styles.searchBar, { flex: 1 }]}>
           <MaterialIcons
             name="search"
             size={24}
@@ -330,7 +234,7 @@ const ViewAllIssuesPage = ({ navigation }) => {
             style={{ marginRight: 8 }}
           />
           <TextInput
-            placeholder="Search users here ..."
+            placeholder="Search here .."
             placeholderTextColor="#888"
             style={{
               flex: 1,
@@ -341,9 +245,92 @@ const ViewAllIssuesPage = ({ navigation }) => {
             onChangeText={(text) => setSearchQuery(text)}
           />
         </View>
+
+        {/* Filter Icon */}
+        <View style={{ position: "relative", marginLeft: 12 }}>
+          <MaterialIcons
+            name="filter-list"
+            color={Colors.blackColor}
+            size={26}
+            onPress={() => setBottomSheetVisible(true)}
+          />
+          <View
+            style={{
+              position: "absolute",
+              top: -8,
+              right: -8,
+              backgroundColor: "red",
+              borderRadius: 10,
+              width: 18,
+              height: 18,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "white", fontSize: 10, fontWeight: "bold" }}>
+             {filteredIssues?.length}
+            </Text>
+          </View>
+        </View>
       </View>
     );
   }
+  function bottonSheet() {
+    return (
+      <RNModal
+        isVisible={isBottomSheetVisible}
+        onBackdropPress={() => setBottomSheetVisible(false)}
+        style={{ justifyContent: "flex-end", margin: 0 }}
+      >
+        <View style={styles.bottomSheet}>
+          {/* {roleSelector()} */}
+          {statusSection()}
+        </View>
+      </RNModal>
+    );
+  }
+    function statusSection() {
+      const statuses = [ "Resolved", "In Progress", "Closed", "Escalated","Open","Rejected"];
+  
+      const toggleStatus = (status) => {
+        if (selectedStatuses.includes(status)) {
+          setSelectedStatuses(selectedStatuses.filter((s) => s !== status));
+        } else {
+          setSelectedStatuses([...selectedStatuses, status]);
+        }
+      };
+  
+      return (
+        <View style={[styles.section, { marginBottom: 12 }]}>
+          <Text style={{ marginBottom: 10, fontWeight: "bold", fontSize: 14 }}>
+            Select Status
+          </Text>
+  
+          <View style={[styles.TypeContainer, { flexWrap: "wrap" }]}>
+            {statuses.map((status) => (
+              <TouchableOpacity
+                key={status}
+                style={[
+                  styles.TypeButton,
+                  selectedStatuses.includes(status) && styles.selectedButton,
+                ]}
+                onPress={() => toggleStatus(status)}
+              >
+                <Text
+                  style={[
+                    styles.TypebuttonText,
+                    selectedStatuses.includes(status) &&
+                      styles.selectedButtonText,
+                  ]}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      );
+    }
 };
 
 const styles = StyleSheet.create({
@@ -364,6 +351,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
+  },
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
   },
   searchBar: {
     flexDirection: "row",
@@ -469,6 +467,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.gray,
     marginTop: 12,
+  },
+    bottomSheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+  },
+    TypeContainer: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  TypeButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    borderRadius: 8,
+  },
+  TypebuttonText: {
+    fontSize: 12,
+    color: "#555",
+  },
+  selectedButton: {
+    backgroundColor: Colors.primaryColor,
+    borderColor: Colors.primaryColor,
+  },
+  selectedButtonText: {
+    color: "white",
   },
 });
 

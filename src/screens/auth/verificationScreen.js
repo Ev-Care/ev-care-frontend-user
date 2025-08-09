@@ -52,7 +52,7 @@ const VerificationScreen = ({ navigation, route }) => {
     setTimerStarted(true);
   };
 
-  console.log("isLoading in VerificationScreen:", isLoading); // Debugging line
+  // console.log("isLoading in VerificationScreen:", isLoading); // Debugging line
 
   const verifyOtp = async () => {
     if (otpInput.length !== 6) {
@@ -72,7 +72,7 @@ const VerificationScreen = ({ navigation, route }) => {
     );
 
     if (postVerifyOtp.fulfilled.match(response)) {
-      console.log("OTP verified successfully:", response.payload);
+      // console.log("OTP verified successfully:", response.payload);
       const extractedUserKey = response.payload?.data?.user?.user_key;
       setUserKey(extractedUserKey);
       setNavigateToRegister(true); // set flag for useEffect
@@ -90,7 +90,7 @@ const VerificationScreen = ({ navigation, route }) => {
   // useEffect to handle user and token updates
   useEffect(() => {
     if (navigateToRegister && token && userKey && !user) {
-      console.log("Navigating to register...");
+      // console.log("Navigating to register...");
       dispatch(
         showSnackbar({ message: "OTP verified successfully", type: "success" })
       );
@@ -100,7 +100,7 @@ const VerificationScreen = ({ navigation, route }) => {
     }
 
     if (user && token) {
-      console.log("Existing user, logging in...");
+      // console.log("Existing user, logging in...");
       try {
         AsyncStorage.setItem("user", user.user_key);
         AsyncStorage.setItem("accessToken", token);

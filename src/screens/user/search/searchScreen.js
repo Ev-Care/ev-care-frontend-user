@@ -12,7 +12,9 @@ import {
   Linking,
   Pressable,
   Alert,
+  Keyboard,
 } from "react-native";
+import { DottedLoader2 } from "../../../utils/lottieLoader/loaderView";
 import {
   Colors,
   screenWidth,
@@ -25,15 +27,22 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
-import { selectStations } from "../service/selector";
+import { selectStations, selectUserCoordinate } from "../service/selector";
 import Key from "../../../constants/key";
 import imageURL from "../../../constants/baseURL";
 import {
   openHourFormatter,
   formatDistance,
   getChargerLabel,
+  openGoogleMaps,
+  markerImages,
+  getMarkerImage,
+  trimName,
 } from "../../../utils/globalMethods";
-import { fetchStationsByLocation, searchStationsByLocation } from "../service/crudFunction";
+import {
+  fetchStationsByLocation,
+  searchStationsByLocation,
+} from "../service/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 
 const width = screenWidth;
@@ -55,117 +64,124 @@ const customMapStyle = [
     elementType: "all",
     stylers: [{ visibility: "on" }],
   },
-  {
-    featureType: "poi.park",
-    elementType: "all",
-    stylers: [{ visibility: "on" }],
-  },
-  {
-    featureType: "poi.sports_complex",
-    elementType: "all",
-    stylers: [{ visibility: "on" }],
-  },
-  {
-    featureType: "poi.airport",
-    elementType: "all",
-    stylers: [{ visibility: "on" }],
-  },
-  {
-    featureType: "poi.train_station",
-    elementType: "all",
-    stylers: [{ visibility: "on" }],
-  },
-  {
-    featureType: "transit.station",
-    elementType: "all",
-    stylers: [{ visibility: "on" }],
-  },
+
 ];
 
 const ChargingStationMap = () => {
   const navigation = useNavigation();
   const mapRef = useRef(null);
   const stateStations = useSelector(selectStations);
-  const [stations, setStations] = useState(stateStations || []);
-  const dispatch = useDispatch();
-  console.log("stations", stations?.length);
+  const [stations, setStations] = useState(stateStations);
 
+  const dispatch = useDispatch();
+  const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(null);
+
+  // console.log("stations", JSON.stringify(stations, null, 2));
+  const userCurrentRegion = useSelector(selectUserCoordinate);
   const [region, setRegion] = useState({
-    latitude: 28.6139,
-    longitude: 77.209,
+    latitude: userCurrentRegion?.latitude || 28.6139,
+    longitude: userCurrentRegion?.longitude || 77.209,
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   });
-
+  const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
-  let mapAnimation = new Animated.Value(0);
-  let mapIndex = 0;
+  const mapAnimation = useRef(new Animated.Value(0)).current;
 
+  const mapIndexRef = useRef(0);
+  const coords = {
+    latitude: userCurrentRegion?.latitude || 28.6139,
+    longitude: userCurrentRegion?.longitude || 77.209,
+  };
   useEffect(() => {
-    console.log('new stations = ', JSON.stringify(stations[0], null, 2));
-  }, [stations]);
+    const fetchData = async () => {
+      await getUserLocation("autoCall");
+      await handleSearchedStation({ coords, radius: 10000 });
+    };
 
-
-  const handleSearchedStation = async (data) => {
-    try {
-
-      const response = await dispatch(searchStationsByLocation(data));
-
-      if (searchStationsByLocation.fulfilled.match(response)) {
-        setStations(response?.payload?.data);
-      } else if (searchStationsByLocation.fulfilled.match(response)) {
-        dispatch(showSnackbar({ message: "Location didn't fetched", type: "error" }));
-      }
-    } catch (error) {
-      console.log("error = " + error);
-      dispatch(showSnackbar({ message: "Something went wrong. Please try again later", type: "error" }));
-
-    }
-
-
-
-  }
-  const _scrollView = useRef(null);
-  useEffect(() => {
-    getUserLocation("autoCall");
+    fetchData();
   }, []);
 
   useEffect(() => {
-    console.log(" map page rendered");
-    mapAnimation.addListener(({ value }) => {
-      let index = Math.floor(value / cardWidth + 0.3);
-      if (index >= stations?.length) {
-        index = stations?.length - 1;
-      }
-      if (index <= 0) {
-        index = 0;
-      }
+    const listenerId = mapAnimation.addListener(({ value }) => {
+      const itemSpacing = cardWidth + 25;
+      const index = Math.round(value / itemSpacing);
 
-      clearTimeout(regionTimeout);
+      if (index !== mapIndexRef.current && stations[index]) {
+        mapIndexRef.current = index;
+        setSelectedMarkerIndex(index);
 
-      const regionTimeout = setTimeout(() => {
-        if (mapIndex !== index) {
-          mapIndex = index;
-          const { coordinates } = stations[index] ?? {}; // Optional chaining
-          mapRef.current?.animateToRegion(
-            {
-              ...coordinates,
-              latitudeDelta: region.latitudeDelta,
-              longitudeDelta: region.longitudeDelta,
-            },
-            350
-          );
-        }
-      }, 10);
+        const { coordinates } = stations[index];
+        mapRef.current?.animateToRegion(
+          {
+            ...coordinates,
+            latitudeDelta: 0.002,
+            longitudeDelta: 0.002,
+          },
+          350
+        );
+      }
     });
-  }, [mapAnimation, stations]);
+
+    return () => {
+      mapAnimation.removeListener(listenerId);
+    };
+  }, [stations]);
+
+  const handleSearchedStation = async (data) => {
+    try {
+      const response = await dispatch(searchStationsByLocation(data));
+
+      if (searchStationsByLocation.fulfilled.match(response)) {
+        const allStations = response?.payload?.data;
+         console.log("allStations length", allStations.length);
+        setStations(allStations);
+      } else if (searchStationsByLocation.fulfilled.match(response)) {
+        dispatch(
+          showSnackbar({ message: "Location didn't fetched", type: "error" })
+        );
+      }
+    } catch (error) {
+      // console.log("error = " + error);
+      dispatch(
+        showSnackbar({
+          message: "Something went wrong. Please try again later",
+          type: "error",
+        })
+      );
+    }
+  };
+
+  const _scrollView = useRef(null);
+
+
+
+  const scrollTo = () => {
+    if (stations.length > 0 && _scrollView.current) {
+      _scrollView.current.scrollToOffset({
+        offset: 0,
+        animated: true,
+      });
+    }
+  };
+
+  const onMarkerPress = (e, index) => {
+    setSelectedMarkerIndex(index);
+
+    const offset = index * (cardWidth + 25); // match your FlatList item layout
+    _scrollView.current?.scrollToOffset({
+      offset,
+      animated: true,
+    });
+  };
 
   const getUserLocation = async (calledBy) => {
+    setIsLoading(true);
     try {
-      console.log('user try to fit inmap');
+      // console.log('user try to fit inmap');
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         Alert.alert("Permission Denied", "Using default location (Delhi).");
@@ -173,6 +189,7 @@ const ChargingStationMap = () => {
       }
       let location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
+
 
       setRegion({
         latitude,
@@ -205,6 +222,9 @@ const ChargingStationMap = () => {
     } catch (error) {
       console.error("Location error:", error);
     }
+    finally {
+      setIsLoading(false);
+    }
   };
 
   const reverseGeocode = async (lat, lng) => {
@@ -222,6 +242,7 @@ const ChargingStationMap = () => {
 
   const fetchSuggestions = async (text) => {
     setSearch(text);
+    // setIsLoading(true);
     if (text.trim() === "") {
       setSuggestions([]);
       return;
@@ -241,7 +262,10 @@ const ChargingStationMap = () => {
 
   const selectSuggestion = async (placeId, description) => {
     setSuggestions([]);
+
+    setTimeout(() => Keyboard.dismiss(), 100);
     setSearch(description);
+    setIsLoading(true);
     try {
       const url = `https://maps.googleapis.com/maps/api/geocode/json?place_id=${placeId}&key=${Key.apiKey}`;
       const response = await fetch(url);
@@ -251,15 +275,17 @@ const ChargingStationMap = () => {
 
         const coords = {
           latitude: lat,
-          longitude: lng
+          longitude: lng,
         };
 
-        await handleSearchedStation({ coords, radius: 50 });
+        await handleSearchedStation({ coords, radius: 10000 });
 
-        const radiusInKm = 50;
+        const radiusInKm = 10000;
         const oneDegreeOfLatitudeInKm = 111.32;
         const latitudeDelta = radiusInKm / oneDegreeOfLatitudeInKm;
-        const longitudeDelta = radiusInKm / (oneDegreeOfLatitudeInKm * Math.cos(lat * (Math.PI / 180)));
+        const longitudeDelta =
+          radiusInKm /
+          (oneDegreeOfLatitudeInKm * Math.cos(lat * (Math.PI / 180)));
 
         const newRegion = {
           latitude: lat,
@@ -270,7 +296,7 @@ const ChargingStationMap = () => {
 
         setRegion(newRegion);
         const selectedCoord = { latitude: lat, longitude: lng };
-        
+
         setSelectedLocation(selectedCoord);
         scrollTo();
 
@@ -280,43 +306,10 @@ const ChargingStationMap = () => {
             { duration: 1000 }
           );
         }
-        
-
-        
       }
     } catch (error) {
       console.error("Place details error:", error);
-    }
-  };
-
-
-  const scrollTo = () => {
-    if (stations.length > 0 && _scrollView.current) {
-      _scrollView.current.scrollTo({
-        x: 0, // Scroll directly to the start of the first item
-        y: 0,
-        animated: true,
-      });
-    }
-  };
-
-  const openGoogleMaps = (latitude, longitude) => {
-    const url = Platform.select({
-      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
-    });
-    Linking.openURL(url);
-  };
-
-  const onMarkerPress = (mapEventData) => {
-    const markerID = mapEventData?._targetInst?.return?.key; // Optional chaining
-
-    let x = markerID * cardWidth + markerID * 20;
-    if (Platform.OS === "ios") {
-      x = x - SPACING_FOR_CARD_INSET;
-    }
-
-    _scrollView.current?.scrollTo({ x: x, y: 0, animated: true }); // Optional chaining
+    } finally { setIsLoading(false); }
   };
 
   const interpolation = stations?.map((marker, index) => {
@@ -366,6 +359,7 @@ const ChargingStationMap = () => {
         {suggestions.length > 0 && (
           <FlatList
             data={suggestions}
+            keyboardShouldPersistTaps="handled"
             keyExtractor={(item) => item.place_id}
             style={styles.suggestionList}
             renderItem={({ item }) => (
@@ -402,7 +396,6 @@ const ChargingStationMap = () => {
             fillColor="rgba(0, 150, 255, 0.1)"
           />
         )}
-
         {stations?.map((marker, index) => {
           // Optional chaining to prevent errors if stationsList is undefined or null
           const scaleStyle = {
@@ -415,17 +408,23 @@ const ChargingStationMap = () => {
           return (
             <Marker
               key={index}
-              coordinate={marker?.coordinates} // Optional chaining for coordinates
-              onPress={(e) => {
-                onMarkerPress(e);
-                navigation.navigate("ChargingStationDetail", { item: marker });
-              }}
+              coordinate={marker?.coordinates}
+              onPress={(e) => onMarkerPress(e, index)}
+              title={trimName(40, marker?.station_name)}
+              description={trimName(40, marker?.address)}
               anchor={{ x: 0.5, y: 0.5 }}
-              pinColor="green"
+              pinColor={index === selectedMarkerIndex ? "blue" : "green"} // optional
             >
               <Image
-                source={require("../../../../assets/images/stationMarker.png")}
-                style={{ width: 50, height: 50 }}
+                source={getMarkerImage(marker?.vendor?.owner_legal_name)}
+                style={{
+                  // backgroundColor:"teal",
+                  // borderColor:"teal",
+                  // borderWidth: 1,
+                  width: 65,
+                  height: 55,
+                  transform: [{ scale: index === selectedMarkerIndex ? 1 : 0.8 }],
+                }}
                 resizeMode="contain"
               />
             </Marker>
@@ -449,42 +448,48 @@ const ChargingStationMap = () => {
         <Ionicons name="locate-outline" size={28} color="white" />
       </TouchableOpacity>
       {chargingSpots()}
+      {isLoading && (
+        <View style={styles.loaderContainer}>
+          <DottedLoader2 />
+          {/* <ActivityIndicator size="large" color={Colors.primaryColor} /> */}
+        </View>
+      )}
     </View>
   );
 
   function chargingSpots() {
     return (
       <View style={styles.chargingInfoWrapStyle}>
-        <Animated.ScrollView
+        <Animated.FlatList
           ref={_scrollView}
+          data={stations}
           horizontal
           pagingEnabled
-          scrollEventThrottle={16}
+          keyExtractor={(_, index) => index.toString()}
           showsHorizontalScrollIndicator={false}
-          snapToInterval={cardWidth + 25}
           decelerationRate="fast"
+          snapToInterval={cardWidth + 25}
           snapToAlignment="center"
-          style={{ paddingVertical: Sizes.fixPadding }}
+          scrollEventThrottle={16}
           contentContainerStyle={{ paddingHorizontal: Sizes.fixPadding }}
           onScroll={Animated.event(
-            [
-              {
-                nativeEvent: {
-                  contentOffset: {
-                    x: mapAnimation,
-                  },
-                },
-              },
-            ],
+            [{ nativeEvent: { contentOffset: { x: mapAnimation } } }],
             { useNativeDriver: true }
           )}
-        >
-          {stations?.map((item, index) => (
+          getItemLayout={(_, index) => ({
+            length: cardWidth + 25,
+            offset: (cardWidth + 25) * index,
+            index,
+          })}
+          renderItem={({ item, index }) => (
             <TouchableOpacity
-              activeOpacity={0.8}
               onPress={() => navigation.push("ChargingStationDetail", { item })}
-              key={index}
-              style={styles.enrouteChargingStationWrapStyle}
+              activeOpacity={0.8}
+              style={{
+                ...styles.enrouteChargingStationWrapStyle,
+                width: cardWidth,
+                marginRight: 25, // add margin here
+              }}
             >
               <Image
                 source={
@@ -493,6 +498,7 @@ const ChargingStationMap = () => {
                     : require("../../../../assets/images/nullStation.png")
                 }
                 style={styles.enrouteChargingStationImage}
+                resizeMode="stretch"
               />
               <View style={styles.enrouteStationOpenCloseWrapper}>
                 <Text
@@ -527,7 +533,6 @@ const ChargingStationMap = () => {
                       ...commonStyles.rowSpaceBetween,
                     }}
                   >
-                    {/* Left Section */}
                     <View style={{ ...commonStyles.rowAlignCenter }}>
                       <Text style={{ ...Fonts.blackColor16Medium }}>
                         {openHourFormatter(
@@ -536,8 +541,6 @@ const ChargingStationMap = () => {
                         )}
                       </Text>
                     </View>
-
-                    {/* Right Section */}
                     <View style={{ ...commonStyles.rowAlignCenter }}>
                       <View style={styles.primaryColorDot} />
                       <Text
@@ -545,7 +548,7 @@ const ChargingStationMap = () => {
                         style={{
                           marginLeft: Sizes.fixPadding,
                           ...Fonts.grayColor14Medium,
-                          maxWidth: 150, // optional: limit text to prevent overflow
+                          maxWidth: 150,
                         }}
                       >
                         {getChargerLabel(item?.chargers?.length ?? 0)}
@@ -560,7 +563,6 @@ const ChargingStationMap = () => {
                     marginTop: Sizes.fixPadding,
                   }}
                 >
-
                   <Text
                     numberOfLines={1}
                     style={{
@@ -576,7 +578,8 @@ const ChargingStationMap = () => {
                     onPress={() =>
                       openGoogleMaps(
                         item?.coordinates?.latitude,
-                        item?.coordinates?.longitude
+                        item?.coordinates?.longitude,
+                        item?.station_name
                       )
                     }
                     style={styles.getDirectionButton}
@@ -588,8 +591,8 @@ const ChargingStationMap = () => {
                 </View>
               </View>
             </TouchableOpacity>
-          ))}
-        </Animated.ScrollView>
+          )}
+        />
       </View>
     );
   }
@@ -656,10 +659,10 @@ const styles = StyleSheet.create({
     borderWidth: 0.1,
     borderTopWidth: 1.0,
     flexDirection: "row",
-    marginHorizontal: Sizes.fixPadding,
+
     marginBottom: Sizes.fixPadding,
-    width: cardWidth,
   },
+
   enrouteChargingStationImage: {
     width: screenWidth / 3.2,
     height: "100%",
@@ -715,6 +718,17 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   // cards end
+  loaderContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
+    zIndex: 999,
+  },
 });
 
 export default ChargingStationMap;

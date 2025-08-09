@@ -7,11 +7,15 @@ import {
   postVerifyOtp,
   patchUpdateVendorProfile,
   getUserByKey,
+  login,
+  register,
 } from "../../screens/auth/services/crudFunction";
 import {
   patchUpdateUserProfile,
   getUserDetailsByKey,
 } from "../../screens/user/service/crudFunction";
+import { clearAdminState } from "../../screens/admin/services/adminSlice";
+import { clearVendorState } from "../../screens/vendor/services/vendorSlice";
 
 const initialState = {
   user: null,
@@ -34,12 +38,15 @@ const authSlice = createSlice({
       AsyncStorage.removeItem("user");
       AsyncStorage.removeItem("accessToken");
       // console.log("User logged out successfully");
+      // clearAdminState();
+      // clearVendorState();
+      // clearUserStationsState();
     },
     restoreUser: (state, action) => {
       // state.user = extractUser(action.payload.user);
       state.accessToken = action.payload;
       // console.log("User data restored from AsyncStorage:", action.payload.user);
-      console.log("Access token restored from AsyncStorage:", action.payload);
+      // console.log("Access token restored from AsyncStorage:", action.payload);
     },
     signUpUser: (state, action) => {
       // console.log("singup is called in redux");
@@ -74,35 +81,53 @@ const authSlice = createSlice({
       })
       .addCase(postVerifyOtp.fulfilled, (state, action) => {
         state.loading = false;
-        console.log("inside slice");
+        // console.log("inside slice");
         if (action.payload?.data?.user?.status !== "New") {
           state.user = extractUser(action.payload.data.user); // Extract user data from the response
         }
         // state.user = extractUser(action.payload.data.user); // Extract user data from the response
         state.accessToken = action.payload.data.access_token;
-        console.log("token saved successfully - ", state.accessToken);
-        console.log("user saved successfully - ", state.user);
+        // console.log("token saved successfully - ", state.accessToken);
+        // console.log("user saved successfully - ", state.user);
       })
       .addCase(postVerifyOtp.rejected, (state, action) => {
         state.loading = false;
-        console.log("error in slice", action.payload);
+        // console.log("error in slice", action.payload);
         state.error = action.payload.message;
       })
 
       // Sign Up
       .addCase(postSignUp.pending, (state) => {
         state.loading = true;
-        console.log("User signing up...");
+        // console.log("User signing up...");
         state.error = null;
       })
       .addCase(postSignUp.fulfilled, (state, action) => {
         state.loading = false;
-        console.log("User signed up successfully:", action.payload);
+        // console.log("User signed up successfully:", action.payload);
         // Extract user data from the response
         state.user = extractUser(action.payload.data.user);
-        console.log("User data after signup in slice:", state.user);
+        // console.log("User data after signup in slice:", state.user);
       })
       .addCase(postSignUp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Sign Up
+      .addCase(register.pending, (state) => {
+        state.loading = true;
+        // console.log("User signing up...");
+        state.error = null;
+      })
+      .addCase(register.fulfilled, (state, action) => {
+        state.loading = false;
+        // console.log("User signed up successfully:", action.payload);
+        // Extract user data from the response
+        state.user = extractUser(action.payload.data?.user);
+        state.accessToken = action.payload.data?.access_token;
+        // console.log("User data after signup in slice:", state.user);
+      })
+      .addCase(register.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -128,7 +153,7 @@ const authSlice = createSlice({
         // console.log("User profile updated successfully:", action.payload);
         // state.user = action.payload; // Assuming the API returns the updated user data
         state.user = extractUser(action.payload.data); // Extract user data from the response
-        console.log("User data after update in slice:", state.user);
+        // console.log("User data after update in slice:", state.user);
       })
       .addCase(patchUpdateVendorProfile.rejected, (state, action) => {
         state.loading = false;
@@ -140,15 +165,34 @@ const authSlice = createSlice({
       })
       .addCase(patchUpdateUserProfile.fulfilled, (state, action) => {
         state.loading = false;
-        console.log(
-          "User profile updated successfully in slice:",
-          action.payload.data
-        );
+        // console.log(
+        //   "User profile updated successfully in slice:",
+        //   action.payload.data
+        // );
         state.user = extractUser(action.payload.data); // Extract user data from the response
       })
       .addCase(patchUpdateUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Profile update failed";
+      })
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        // console.log(
+        //   "User logged in successfully in slice:",
+        //   action.payload.data
+        // );
+        state.user = extractUser(action.payload.data.user); // Extract user data from the response
+        state.accessToken = action.payload.data.access_token
+        // console.log('token in slice = ', state.accessToken);
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Profile update failed";
+        // console.log(state.error);
       })
       .addCase(getUserDetailsByKey.pending, (state) => {
         state.loading = true;

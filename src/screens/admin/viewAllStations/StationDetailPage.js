@@ -30,6 +30,11 @@ import imageURL from "../../../constants/baseURL";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import { openHourFormatter } from "../../../utils/globalMethods";
+import { deleteStation } from "../../vendor/services/crudFunction";
+import {
+  deleteStationByAdmin,
+  fetchAllStations,
+} from "../services/crudFunctions";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -49,22 +54,20 @@ const { width } = Dimensions.get("window");
 const StationDetailPage = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [showDeleteDialogue, setshowDeleteDialogue] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const scrollViewRef = useRef(null);
   const dispatch = useDispatch();
 
-
   const station = route?.params?.item;
+
+  console.log("station in detail page = ", JSON.stringify(station, 2, null));
 
   if (!station) {
     return <Text>Loading...</Text>; // Handle when station is not available
   }
-
-
-
 
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",
@@ -94,11 +97,51 @@ const StationDetailPage = ({ route, navigation }) => {
   };
 
   const handleDelete = async () => {
-    // setIsLoading(true);
-    console.log("handleDelete Called");
-    // setIsLoading(false);
-  }
-  
+    setIsLoading(true);
+    // console.log("handleDelete Called");
+
+    try {
+      const deleteResponse = await dispatch(deleteStationByAdmin(station?.id));
+      if (deleteStationByAdmin.fulfilled.match(deleteResponse)) {
+        const stationResponse = await dispatch(fetchAllStations());
+        if (fetchAllStations.fulfilled.match(stationResponse)) {
+          // console.log("station updated");
+          await dispatch(
+            showSnackbar({
+              message: "Station deleted successfully.",
+              type: "success",
+            })
+          );
+          navigation.pop();
+        } else if (fetchAllStations.rejected.match(stationResponse)) {
+          // console.log("Failed to fetch updated stations.");
+          await dispatch(
+            showSnackbar({
+              message: errorMessage || "Failed to update station list.",
+              type: "error",
+            })
+          );
+        }
+      } else if (deleteStationByAdmin.rejected.match(deleteResponse)) {
+        await dispatch(
+          showSnackbar({
+            message: errorMessage || "Failed to delete station.",
+            type: "error",
+          })
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting station:", error);
+      await dispatch(
+        showSnackbar({
+          message: errorMessage || "An error occurred while deleting.",
+          type: "error",
+        })
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const trimName = (threshold, str) => {
     if (str?.length <= threshold) {
@@ -119,7 +162,7 @@ const StationDetailPage = ({ route, navigation }) => {
       {/* Bottom Buttons */}
       {buttons()}
       {deleteDialogue()}
-       <Modal visible={modalVisible} transparent={true}>
+      <Modal visible={modalVisible} transparent={true}>
         <View style={styles.modalContainer}>
           <Image source={{ uri: selectedImage }} style={styles.fullImage} />
           <TouchableOpacity
@@ -150,11 +193,11 @@ const StationDetailPage = ({ route, navigation }) => {
     return (
       <View style={styles.header}>
         <View style={styles.communityBadgeAndBack}>
-        <View
+          <View
             style={{
               backgroundColor: Colors.primaryColor,
               borderRadius: 20,
-              padding: 6, 
+              padding: 6,
               alignItems: "center",
               justifyContent: "center",
               width: 40,
@@ -170,45 +213,47 @@ const StationDetailPage = ({ route, navigation }) => {
           </View>
 
           <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>Public</Text>
+            <Text style={styles.communityText}>{station?.access_type}</Text>
           </View>
         </View>
         <TouchableOpacity
-  activeOpacity={0.9}
-  style={styles.mapBackground}
-  onPress={() => {
-   if ( station?.station_images &&  station?.station_images.trim() !== "") {
-        showFullImage(imageURL.baseURL + station.station_images);
-      }
-    }}
->
-  <Image source={imageUrl} style={styles.mapBackground} />
-</TouchableOpacity>
-
-        
+          activeOpacity={0.9}
+          style={styles.mapBackground}
+          onPress={() => {
+            if (
+              station?.station_images &&
+              station?.station_images.trim() !== ""
+            ) {
+              showFullImage(imageURL.baseURL + station.station_images);
+            }
+          }}
+        >
+          <Image source={imageUrl} style={styles.mapBackground} />
+        </TouchableOpacity>
 
         <View style={styles.overlay}>
           <Text style={styles.stationName}>
             {trimName(50, station?.station_name)}
           </Text>
-          <Text style={styles.stationAddress}>
-            {trimName(50, station?.address)}
+          <Text style={[styles.stationAddress, { fontWeight: "700" }]}>
+            Vendor Name : {trimName(50, station?.vendor?.owner_legal_name)}
           </Text>
+          {station?.vendor?.vendor_type === "organization" &&(<Text style={[styles.stationAddress, { fontWeight: "700" }]}>
+            Organization Name: {trimName(50, station?.vendor?.business_name)}
+          </Text>)}
+          <Text style={[styles.stationAddress, { fontWeight: "700" }]}>
+            Contact Number : {station?.vendor?.mobile_number}
+          </Text>
+          <Text style={[styles.stationAddress, { fontWeight: "300" }]}>
+            Address : {trimName(50, station?.address)}
+          </Text>
+
           <View
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
           >
             <View style={styles.statusContainer}>
-              <Text
-                style={[
-                  styles.statusClosed,
-                  {
-                    color: station?.status === "Inactive" ? "#FF5722" : "green",
-                  },
-                ]}
-              >
-                {station?.status === "Inactive" ? "Closed" : "Open"}
-              </Text>
               <Text style={styles.statusTime}>
+                Open Hours :{" "}
                 {openHourFormatter(
                   station?.open_hours_opening_time,
                   station?.open_hours_closing_time
@@ -216,15 +261,10 @@ const StationDetailPage = ({ route, navigation }) => {
               </Text>
               <View style={styles.newBadge}>
                 <Text style={styles.newText}>
-                  {station.status === "Active"
-                    ? "VERIFIED"
-                    : station.status === "Planned"
-                    ? "PENDING"
-                    : ""}
+                  {String(station?.status).toUpperCase()}
                 </Text>
               </View>
             </View>
-          
           </View>
         </View>
       </View>
@@ -297,7 +337,7 @@ const StationDetailPage = ({ route, navigation }) => {
       </View>
     );
   }
- function deleteDialogue() {
+  function deleteDialogue() {
     return (
       <Overlay
         isVisible={showDeleteDialogue}
@@ -373,7 +413,7 @@ const StationDetailPage = ({ route, navigation }) => {
         </View>
       </Overlay>
     );
-}
+  }
   function chargerTab() {
     return (
       <ScrollView style={styles.tabContent}>
@@ -459,35 +499,38 @@ const StationDetailPage = ({ route, navigation }) => {
         <View style={styles.landmarkContainer}>
           <Text style={styles.landmarkTitle}>{station?.address}</Text>
         </View>
+        {station?.amenities?.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Amenities</Text>
+            <View style={styles.amenitiesContainer}>
+              {station?.amenities?.split(",").map((amenityName, index) => {
+                const trimmedName = amenityName.trim();
+                let iconName = "help-circle"; // default fallback
 
-        <Text style={styles.sectionTitle}>Amenities</Text>
-        <View style={styles.amenitiesContainer}>
-          {station?.amenities?.split(",").map((amenityName, index) => {
-            const trimmedName = amenityName.trim();
-            let iconName = "help-circle"; // default fallback
+                if (trimmedName === "Restroom") {
+                  iconName = "toilet";
+                } else if (trimmedName === "Cafe") {
+                  iconName = "coffee";
+                } else if (trimmedName === "Wifi") {
+                  iconName = "wifi";
+                } else if (trimmedName === "Store") {
+                  iconName = "cart";
+                } else if (trimmedName === "Car Care") {
+                  iconName = "car";
+                } else if (trimmedName === "Lodging") {
+                  iconName = "bed";
+                }
 
-            if (trimmedName === "Restroom") {
-              iconName = "toilet";
-            } else if (trimmedName === "Cafe") {
-              iconName = "coffee";
-            } else if (trimmedName === "Wifi") {
-              iconName = "wifi";
-            } else if (trimmedName === "Store") {
-              iconName = "cart";
-            } else if (trimmedName === "Car Care") {
-              iconName = "car";
-            } else if (trimmedName === "Lodging") {
-              iconName = "bed";
-            }
-
-            return (
-              <View key={trimmedName} style={styles.amenityItem}>
-                <Icon name={iconName} size={24} color={COLORS.primary} />
-                <Text style={styles.AminitiesTypeText}>{trimmedName}</Text>
-              </View>
-            );
-          })}
-        </View>
+                return (
+                  <View key={trimmedName} style={styles.amenityItem}>
+                    <Icon name={iconName} size={24} color={COLORS.primary} />
+                    <Text style={styles.AminitiesTypeText}>{trimmedName}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </>
+        )}
       </ScrollView>
     );
   }
@@ -512,7 +555,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center", 
+    alignItems: "center",
     top: 26,
     paddingLeft: 15,
     paddingRight: 25,
@@ -520,10 +563,8 @@ const styles = StyleSheet.create({
     width: "100%",
     zIndex: 9999,
   },
-  
 
   communityBadge: {
-  
     backgroundColor: COLORS.white,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -566,9 +607,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   statusTime: {
-    color: COLORS.black,
+    color: COLORS.primary,
     fontSize: 12,
-    marginLeft: 4,
+    fontWeight: "700",
   },
   newBadge: {
     backgroundColor: COLORS.primary,
@@ -769,10 +810,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 10,
     backgroundColor: "#fff",
-    justifyContent:"center",
-    alignItems:"center",
-    height:50,
-    width:50,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 50,
+    width: 50,
     borderRadius: 50,
   },
   closeText: {
@@ -780,32 +821,31 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   dialogStyle: {
-      backgroundColor: Colors.whiteColor,
-      borderRadius: Sizes.fixPadding - 5.0,
-      width: "85%",
-      padding: 0.0,
-      elevation: 0,
-    },
- 
+    backgroundColor: Colors.whiteColor,
+    borderRadius: Sizes.fixPadding - 5.0,
+    width: "85%",
+    padding: 0.0,
+    elevation: 0,
+  },
 
-    dialogYesNoButtonStyle: {
-      flex: 1,
-      ...commonStyles.shadow,
-  
-      padding: Sizes.fixPadding,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    noButtonStyle: {
-      backgroundColor: Colors.whiteColor,
-      borderTopColor: Colors.extraLightGrayColor,
-      borderBottomLeftRadius: Sizes.fixPadding - 5.0,
-    },
-    yesButtonStyle: {
-      borderTopColor: Colors.primaryColor,
-      backgroundColor: Colors.primaryColor,
-      borderBottomRightRadius: Sizes.fixPadding - 5.0,
-    },
+  dialogYesNoButtonStyle: {
+    flex: 1,
+    ...commonStyles.shadow,
+
+    padding: Sizes.fixPadding,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noButtonStyle: {
+    backgroundColor: Colors.whiteColor,
+    borderTopColor: Colors.extraLightGrayColor,
+    borderBottomLeftRadius: Sizes.fixPadding - 5.0,
+  },
+  yesButtonStyle: {
+    borderTopColor: Colors.primaryColor,
+    backgroundColor: Colors.primaryColor,
+    borderBottomRightRadius: Sizes.fixPadding - 5.0,
+  },
 });
 
 export default StationDetailPage;

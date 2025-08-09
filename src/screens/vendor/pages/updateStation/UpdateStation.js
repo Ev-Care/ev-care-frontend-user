@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import MyStatusBar from "../../../../components/myStatusBar";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
@@ -28,6 +29,7 @@ import { MaterialIcons, Ionicons, Entypo } from "@expo/vector-icons";
 
 import RNModal from "react-native-modal";
 import { Colors } from "../../../../constants/styles";
+import { validateDecimalInput } from "../../../../utils/globalMethods";
 const PRIMARY_COLOR = "#101942";
 const amenities = [
   { id: 1, icon: "toilet", label: "Restroom" },
@@ -66,14 +68,14 @@ const UpdateStation = ({ navigation, route }) => {
   const [selectedAmenities, setSelectedAmenities] = useState(
     mapAmenitiesToIds(station?.amenities || "")
   );
-  console.log("Stations in update = ", JSON.stringify(station, null, 2));
+  // console.log("Stations in update = ", JSON.stringify(station, null, 2));
   const [openHours, setOpenHours] = useState(
     station.open_hours_opening_time === "00:00:00" &&
       station.open_hours_closing_time === "23:59:59"
       ? "24 Hours"
       : "Custom"
   );
- 
+
   const [address, setAddress] = useState(station?.address || "");
   const [openTime, setOpenTime] = useState(
     station?.open_hours_opening_time || ""
@@ -112,17 +114,21 @@ const UpdateStation = ({ navigation, route }) => {
     return initialConnectors;
   });
 
-  console.log("selectedConnectors", selectedConnectors);
-  const addChargerForm = () =>
-    setChargerForms((prevForms) => [
+  // console.log("selectedConnectors", selectedConnectors);
+ const addChargerForm = () => {
+  setChargerForms((prevForms) => {
+    const newForms = [
       ...prevForms,
       {
-        // charger_id: -1,
         charger_type: null,
         max_power_kw: null,
         connectors: [],
       },
-    ]);
+    ];
+    setSelectedForm(String(newForms.length - 1));
+    return newForms;
+  });
+};
   const [connectorsList, setConnectorsList] = useState([]);
 
   const handleTimeChange = (event, selectedDate) => {
@@ -244,10 +250,10 @@ const UpdateStation = ({ navigation, route }) => {
   const openGallery = async (setter, label) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.1,
+        mediaTypes: ["images"],
         allowsEditing: true,
         aspect: label === "avatar" ? [1, 1] : undefined,
+        quality: 0.2,
       });
 
       if (!result.canceled) {
@@ -264,16 +270,16 @@ const UpdateStation = ({ navigation, route }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -284,7 +290,7 @@ const UpdateStation = ({ navigation, route }) => {
   const openCamera = async (setter, label) => {
     try {
       const result = await ImagePicker.launchCameraAsync({
-        quality: 0.1,
+        quality: 0.2,
         allowsEditing: true,
         aspect: label === "avatar" ? [1, 1] : undefined,
       });
@@ -303,16 +309,16 @@ const UpdateStation = ({ navigation, route }) => {
           response?.payload?.code === 201
         ) {
           setter(response?.payload?.data?.filePathUrl);
-          console.log(
-            "Profile Image URI set successfully:",
-            response?.payload?.data?.filePathUrl
-          );
+          // console.log(
+          //   "Profile Image URI set successfully:",
+          //   response?.payload?.data?.filePathUrl
+          // );
         } else {
           Alert.alert("Error", "File should be less than 5 MB");
         }
       }
     } catch (error) {
-      console.log("Error uploading file:", error);
+      // console.log("Error uploading file:", error);
       Alert.alert("Error", "Upload failed. Please try again.");
     } finally {
       setImageLoading("");
@@ -347,6 +353,8 @@ const UpdateStation = ({ navigation, route }) => {
       station_name: stationName,
       station_images: stationImages,
       address,
+      access_type: accessType,
+      status: station?.status,
       coordinates: {
         latitude: coordinate?.latitude || null,
         longitude: coordinate?.longitude || null,
@@ -359,10 +367,10 @@ const UpdateStation = ({ navigation, route }) => {
       chargers: chargerForms,
     };
 
-    console.log(
-      "Transformed Station Data in update:",
-      JSON.stringify(stationData, null, 2)
-    );
+    // console.log(
+    //   "Transformed Station Data in update:",
+    //   JSON.stringify(stationData, null, 2)
+    // );
 
     // Navigate to PreviewPage with the transformed data
     navigation.push("PreviewPage", {
@@ -419,6 +427,7 @@ const UpdateStation = ({ navigation, route }) => {
     );
   };
   return (
+      <View style={{ flex: 1 }}>
     <ScrollView style={styles.container}>
       <MyStatusBar />
       <View style={styles.header}>
@@ -440,6 +449,7 @@ const UpdateStation = ({ navigation, route }) => {
           <Text style={styles.previewButtonText}>Preview</Text>
         </TouchableOpacity>
       </View>
+     
       <Modal visible={modalVisible} transparent={true}>
         <View style={styles.modalContainer}>
           <Image source={{ uri: selectedImage }} style={styles.fullImage} />
@@ -453,6 +463,17 @@ const UpdateStation = ({ navigation, route }) => {
       </Modal>
       {bottomSheet()}
     </ScrollView>
+     <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={addChargerForm}
+        style={styles.floatingAddButton}
+      >
+        <MaterialIcons name="add" size={20} color={Colors.whiteColor} />
+        <Text style={{ color: Colors.whiteColor, fontSize: 8 }}>
+          Add Charger
+        </Text>
+      </TouchableOpacity>
+      </View>
   );
   function bottomSheet() {
     return (
@@ -549,7 +570,7 @@ const UpdateStation = ({ navigation, route }) => {
     );
   }
   function chargerDetail(charger, index) {
-    console.log("charger details", chargerForms[index]);
+    // console.log("charger details", chargerForms[index]);
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -561,7 +582,7 @@ const UpdateStation = ({ navigation, route }) => {
           {index > 0 && (
             <TouchableOpacity
               onPress={() => removeChargerForm(index)}
-              style={styles.deleteButton}
+              style={{marginBottom: 16,}}
             >
               <Icon name="close-circle" size={24} color="red" />
             </TouchableOpacity>
@@ -639,19 +660,13 @@ const UpdateStation = ({ navigation, route }) => {
                 keyboardType="numeric"
                 value={String(chargerForms[index]?.max_power_kw ?? "")}
                 onChangeText={(text) => {
-                  // Remove non-numeric characters
-                  let numericText = text.replace(/[^0-9]/g, "");
+                  const validInput = validateDecimalInput(text, 1000, 2);
 
-                  // Prevent leading zeros
-                  if (numericText.length > 1 && numericText.startsWith("0")) {
-                    numericText = numericText.replace(/^0+/, "");
-                  }
-
-                  // If input is not empty and > 99, block it
-                  if (numericText && parseInt(numericText, 10) > 99) {
+                  if (text && !validInput) {
                     dispatch(
                       showSnackbar({
-                        message: "Power rating cannot exceed 99 kW",
+                        message:
+                          "Invalid input. Max 2 decimals or value exceeded.",
                         type: "error",
                       })
                     );
@@ -661,7 +676,10 @@ const UpdateStation = ({ navigation, route }) => {
                   setChargerForms((prev) =>
                     prev.map((charger, i) =>
                       i === index
-                        ? { ...charger, max_power_kw: numericText }
+                        ? {
+                            ...charger,
+                            max_power_kw: validInput,
+                          }
                         : charger
                     )
                   );
@@ -673,12 +691,12 @@ const UpdateStation = ({ navigation, route }) => {
 
             {index === chargerForms.length - 1 && (
               <View style={styles.nextButtonContainer}>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   onPress={addChargerForm}
                   style={styles.nextButton}
                 >
                   <Text style={styles.nextButtonText}>+ Add more</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             )}
           </>
@@ -688,9 +706,9 @@ const UpdateStation = ({ navigation, route }) => {
   }
 
   function connectorsInfo(charger, chargerIndex) {
-    console.log("charger = ", charger);
-    console.log("connectors = ", connectors);
-    console.log("connectorsList = ", connectorsList);
+    // console.log("charger = ", charger);
+    // console.log("connectors = ", connectors);
+    // console.log("connectorsList = ", connectorsList);
     return (
       <View style={styles?.section}>
         <Text style={styles?.sectionLabel}>Connectors</Text>
@@ -699,13 +717,13 @@ const UpdateStation = ({ navigation, route }) => {
             const connectorData = connectorsList?.find(
               (c) => c?.id === connector?.id && c?.chargerIndex === chargerIndex
             );
-            console.log("connectorData", connectorData);
+            // console.log("connectorData", connectorData);
             const count = connectorData?.count || 0;
 
             const isSelected =
               selectedConnectors[chargerIndex] === connector?.type;
 
-            console.log("isSelected", isSelected);
+            // console.log("isSelected", isSelected);
 
             return (
               <TouchableOpacity
@@ -733,7 +751,7 @@ const UpdateStation = ({ navigation, route }) => {
                 </View>
 
                 {/* Radio Button */}
-                <TouchableOpacity
+                <View
                   style={{
                     height: 20,
                     width: 20,
@@ -755,7 +773,7 @@ const UpdateStation = ({ navigation, route }) => {
                       }}
                     />
                   )}
-                </TouchableOpacity>
+                </View>
 
                 {/* Count Buttons (if needed) */}
                 {/* Add your inc/dec logic here */}
@@ -890,7 +908,6 @@ const UpdateStation = ({ navigation, route }) => {
     );
   }
   function uploadPhotoSection() {
-  
     return (
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>
@@ -899,7 +916,7 @@ const UpdateStation = ({ navigation, route }) => {
         <Text style={styles.photoDescription}>
           Contribute to smoother journeys; include a location/charger photo.
         </Text>
-     
+
         <View
           style={{
             flexWrap: "wrap",
@@ -971,6 +988,22 @@ const UpdateStation = ({ navigation, route }) => {
 };
 // export default  AddStations ;
 const styles = StyleSheet.create({
+  floatingAddButton: {
+     justifyContent: "center",
+          alignItems: "center",
+          width: 70,
+          height: 70,
+          borderRadius: 35,
+          backgroundColor: Colors.primaryColor,
+          shadowColor: Colors.primaryColor,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.4,
+          shadowRadius: 5,
+          elevation: 8,
+          position: "absolute",
+          bottom: 150,
+          right: "10%"
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",

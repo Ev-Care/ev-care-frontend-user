@@ -1,55 +1,36 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Picker } from "@react-native-picker/picker";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ImageBackground,
+  Linking,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  Linking,
   TouchableOpacity,
   View,
 } from "react-native";
 import { RadioButton } from "react-native-paper";
-import React, { useState, useEffect } from "react";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useDispatch, useSelector } from "react-redux";
+import MyStatusBar from "../../components/myStatusBar";
 import {
   Colors,
-  screenWidth,
   Fonts,
   Sizes,
   commonStyles,
+  screenWidth,
 } from "../../constants/styles";
-import MyStatusBar from "../../components/myStatusBar";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-
-import { useDispatch, useSelector } from "react-redux";
-import { postSignUp } from "./services/crudFunction";
-import { selectAuthError, selectToken, selectUser } from "./services/selector";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showSnackbar } from "../../redux/snackbar/snackbarSlice";
-import { Picker } from '@react-native-picker/picker';
-import { Entypo } from '@expo/vector-icons';
+import { register } from "./services/crudFunction";
+import { selectAuthError, selectToken, selectUser } from "./services/selector";
+import { vehicleData } from "../../utils/evVehicleData";
+import { EMAIL_REGEX, NAME_REGEX, PASSWORD_REGEX, PHONE_REGEX, VEHICLE_NUMBER_REGEX } from "../../constants/regex";
 // import DropDownPicker from 'react-native-dropdown-picker';
-
-
-
-
-
-export const vehicleData = {
-  "Tata": ["Ace", "Intra", "Yodha"],
-  "Mahindra": ["Bolero", "Jeeto", "Supro"],
-  "Ashok Leyland": ["Dost", "Partner", "Boss"],
-  "Maruti Suzuki": ["Super Carry", "Eeco Cargo", "Omni Cargo"],
-  "Piaggio": ["Ape Xtra", "Porter", "Ape Auto"],
-  "Force Motors": ["Kargo King", "Shaktiman", "Traveller Pickup"],
-  "Isuzu": ["D-Max", "S-CAB", "Hi-Lander"],
-  "Eicher": ["Pro 2049", "Pro 3015", "Pro 2059"],
-  "Toyota": ["Hilux", "Innova Crysta Commercial", "LC79 Pickup"],
-  "Others": [],
-
-
-};
 
 const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setfullName] = useState(null);
@@ -60,40 +41,75 @@ const RegisterScreen = ({ navigation, route }) => {
   const user = useSelector(selectUser); // Get user data from Redux store
   const token = useSelector(selectToken); // Get user data from Redux store
   const error = useSelector(selectAuthError); // Get error from Redux store
-  const userKey = route?.params?.userKey;
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [selectedModel, setSelectedModel] = useState(null);
   const [customCompany, setCustomCompany] = useState(null);
   const [customModel, setCustomModel] = useState(null);
   const [vehicleNumber, setVehicleNumber] = useState(null);
 
-  const models = selectedCompany && vehicleData[selectedCompany] ? vehicleData[selectedCompany] : [];
+  const [mobNumber, setMobNumber] = useState(null);
+  const [password, setPassword] = useState(null);
+  const [confirmPassword, setConfirmPassword] = useState(null);
+  const [secureText, setSecureText] = useState(true);
+  const [secureConfirmText, setSecureConfirmText] = useState(true);
+
+  const models =
+    selectedCompany && vehicleData[selectedCompany]
+      ? vehicleData[selectedCompany]
+      : [];
   // console.log("user key in register : ", userKey);
 
   const validateUserData = (data) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const nameRegex = /^[A-Za-z\s]{3,}$/;
-    const vehicleNumberRegex = /^[A-Z]{2}\d{2}[A-Z]{2}\d{4}$/;
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // const nameRegex = /^[A-Za-z\s]{3,}$/;
+    // const vehicleNumberRegex = /^[A-Z0-9]{8,11}$/;
+    // const strongPasswordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
-    if (!data.email || !emailRegex.test(data.email)) {
+    // const phoneRegex = /^[6-9]\d{9}$/;
+
+    if (!PHONE_REGEX.test(mobNumber)) {
+      return "Invalid mobile number";
+    }
+    if (!data.email || !EMAIL_REGEX.test(data.email)) {
       return "Invalid email address.";
     }
 
-    if (!data.owner_legal_name || !nameRegex.test(data.owner_legal_name)) {
+    if (!data.owner_legal_name || !NAME_REGEX.test(data.owner_legal_name)) {
       return "Invalid full name. Only letters and spaces, at least 3 characters.";
     }
 
-    if (!data.role || !['user', 'vendor'].includes(data.role.toLowerCase())) {
+    if (!data.role || !["user", "vendor"].includes(data.role.toLowerCase())) {
       return "Role must be either 'user' or 'vendor'.";
     }
-    if (data.role === 'user') {
 
+    if (!data.password) {
+      return "Password is required.";
+    }
 
-      if (!data.vehicle_registration_number || !vehicleNumberRegex.test(data.vehicle_registration_number)) {
-        return "Invalid vehicle number format (e.g., MH12AB1234).";
+    if (!PASSWORD_REGEX.test(data.password)) {
+      return "Password must be 8–20 characters long and include at least one letter and one number.";
+    }
+
+    if (!data.confirm_password) {
+      return "Confirm password is required.";
+    }
+
+    if (data.password !== data.confirm_password) {
+      return "Passwords do not match.";
+    }
+
+    if (data.role === "user") {
+      if (
+        !data.vehicle_registration_number ||
+        !VEHICLE_NUMBER_REGEX.test(data.vehicle_registration_number)
+      ) {
+        return "Invalid vehicle number format ";
       }
 
-      if (!data.vehicle_manufacturer || data.vehicle_manufacturer.trim() === "") {
+      if (
+        !data.vehicle_manufacturer ||
+        data.vehicle_manufacturer.trim() === ""
+      ) {
         return "Vehicle manufacturer is required.";
       }
 
@@ -110,83 +126,60 @@ const RegisterScreen = ({ navigation, route }) => {
       email: email,
       owner_legal_name: fullName,
       role: role,
-      user_key: userKey,
+      password:password.trim(),
+      mobile_number: mobNumber,
+      confirm_password: confirmPassword.trim(),
       vehicle_registration_number: vehicleNumber,
-      vehicle_manufacturer: customCompany !== '' ? customCompany : selectedCompany,
-      vehicle_model: customModel !== '' ? customModel : selectedModel
+      vehicle_manufacturer:
+        customCompany !== "" || null ? customCompany : selectedCompany,
+      vehicle_model: customModel !== "" || null ? customModel : selectedModel,
     };
 
-    const vendorData = {
-      email: email,
-      owner_legal_name: fullName,
-      role: role,
-      user_key: userKey,
-
-    };
-    const error = validateUserData(userData);
-    if (error) {
-      console.log('error cartched');
-      dispatch(showSnackbar({ message: error, type: 'error' }));
+    const validationError = validateUserData(userData);
+    if (validationError) {
+      // console.log("error cartched");
+      dispatch(showSnackbar({ message: validationError, type: "error" }));
       return;
     }
 
     setLoading(true);
 
-
-    console.log("Post signup called");
+    // console.log("P/ost signup called");
     try {
-      const response = await dispatch(postSignUp(userData));
+      const response = await dispatch(register(userData));
+      if (register.fulfilled.match(response)) {
+            // Save user data and token to AsyncStorage
+        AsyncStorage.setItem("user", response?.payload?.data?.user?.user_key);
+        // console.log('token in sigin = ', token);
+        AsyncStorage.setItem("accessToken", response?.payload?.data?.access_token);
+        dispatch(
+          showSnackbar({ message: "Registration Successfull", type: "success" })
+        );
+      } else if (register.rejected.match(response)) {
+        dispatch(
+          showSnackbar({
+            message: response.payload || "Registration Failed",
+            type: "error",
+          })
+        );
+      }
     } catch (error) {
-      console.log("Error during registration");
+      // console.log("Error during registration");
       dispatch(
-        showSnackbar({ message: error || "Registration Failed", type: "error" })
+        showSnackbar({
+          message: error || "Something went wrong. Please try again later!",
+          type: "error",
+        })
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // useEffect to handle user and token updates
-  useEffect(() => {
-    if (user && user?.status !== "New" && token) {
-      console.log("User and token updated in useEffect:", user, token);
-
-      try {
-        // Save user data and token to AsyncStorage
-        AsyncStorage.setItem("user", user.user_key);
-        AsyncStorage.setItem("accessToken", token);
-
-        console.log(
-          "Access token stored in AsyncStorage:",
-          AsyncStorage.getItem("token")
-        );
-
-        dispatch(
-          showSnackbar({
-            message: error || "Registration Successfull",
-            type: "success",
-          })
-        );
-
-        navigation.navigate("userHome"); // Navigate to the home screen
-      } catch (error) {
-        console.error("Error saving user data:", error);
-        dispatch(
-          showSnackbar({ message: "Error in saving user data", type: "error" })
-        );
-      }
-    } else if (error) {
-      console.error("Error during registration:", error);
-      dispatch(
-        showSnackbar({ message: error || "Registration Failed", type: "error" })
-      );
-    }
-  }, [user, token, error, navigation]);
-
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
       <MyStatusBar />
-      <View style={{ flex: 1, }}>
+      <View style={{ flex: 1 }}>
         {topImage()}
         <ScrollView
           style={{ paddingHorizontal: 20 }}
@@ -196,10 +189,16 @@ const RegisterScreen = ({ navigation, route }) => {
         >
           {selectRole()}
           {fullNameInfo()}
+          {mobNumberInfo()}
           {emailInfo()}
-          {role === "user" && (<>{vehicleNumberInfo()}
-            {vehicleDataForm()}
-          </>)}
+          {role === "user" && (
+            <>
+              {vehicleNumberInfo()}
+              {vehicleDataForm()}
+            </>
+          )}
+          {passwordField()}
+          {signInText()}
           {continueButton()}
           {agreeInfo()}
         </ScrollView>
@@ -209,20 +208,28 @@ const RegisterScreen = ({ navigation, route }) => {
 
   function selectRole() {
     return (
-      <View style={{ marginTop: 30 }}>
-        <Text style={styles.sectionLabel}>
-          Select Role <Text style={styles.label}>*</Text>
-        </Text>
-        <View style={styles.pickerWrapper}>
-          <Picker
-            selectedValue={selectedModel}
-            onValueChange={(itemValue) => setRole(itemValue)}
-            style={styles.pickerStyle}
-          >
-            <Picker.Item style={{ fontSize: 12 }} label="Select Role" value="" />
-            <Picker.Item style={{ fontSize: 12 }} label="User" value="user" />
-            <Picker.Item style={{ fontSize: 12 }} label="Vendor" value="vendor" />
-          </Picker>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-around",
+          margin: Sizes.fixPadding * 2,
+        }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <RadioButton
+            value="User"
+            status={role === "user" ? "checked" : "unchecked"}
+            onPress={() => setRole("user")}
+          />
+          <Text>User</Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <RadioButton
+            value="Vendor"
+            status={role === "vendor" ? "checked" : "unchecked"}
+            onPress={() => setRole("vendor")}
+          />
+          <Text>Vendor</Text>
         </View>
       </View>
     );
@@ -235,9 +242,7 @@ const RegisterScreen = ({ navigation, route }) => {
           By continuing, you agree to our
         </Text>
         <TouchableOpacity
-          onPress={() =>
-            Linking.openURL("http://evcareindia.com/")
-          }
+          onPress={() => Linking.openURL("http://evcareindia.com/")}
         >
           <Text
             style={{
@@ -255,78 +260,196 @@ const RegisterScreen = ({ navigation, route }) => {
   }
 
   function emailInfo() {
-    return (<>
-      <Text style={styles.sectionLabel}>
-        Email Id <Text style={styles.label}>*</Text>
-        {/* <Text style={styles.optional}>(Optional)</Text> */}
-      </Text>
-      <View
-        style={{
-          ...styles.textFieldWrapper,
-          marginBottom: Sizes.fixPadding * 2.0,
-        }}
-      >
-        <TextInput
-          placeholder="Enter Your Email id "
-          placeholderTextColor={Colors.grayColor}
-          value={email}
-          onChangeText={(text) => setemail(text.toLowerCase())}
-          style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
-          cursorColor={Colors.primaryColor}
-          selectionColor={Colors.primaryColor}
-          keyboardType="email-address"
-        />
-      </View>
-    </>
+    return (
+      <>
+        <Text style={styles.sectionLabel}>
+          Email Id <Text style={styles.label}>*</Text>
+          {/* <Text style={styles.optional}>(Optional)</Text> */}
+        </Text>
+        <View
+          style={{
+            ...styles.textFieldWrapper,
+            marginBottom: Sizes.fixPadding * 2.0,
+          }}
+        >
+          <TextInput
+            placeholder="Enter Your Email id "
+            placeholderTextColor={Colors.grayColor}
+            value={email}
+            onChangeText={(text) => setemail(text.toLowerCase())}
+            style={{
+              ...Fonts.blackColor16Medium,
+              paddingVertical: 12,
+              fontSize: 12,
+            }}
+            cursorColor={Colors.primaryColor}
+           
+            keyboardType="email-address"
+          />
+        </View>
+      </>
+    );
+  }
+  function mobNumberInfo() {
+    return (
+      <>
+        <Text style={styles.sectionLabel}>
+          Mobile Number <Text style={styles.label}>*</Text>
+          {/* <Text style={styles.optional}>(Optional)</Text> */}
+        </Text>
+        <View
+          style={{
+            ...styles.textFieldWrapper,
+            marginBottom: Sizes.fixPadding * 2.0,
+          }}
+        >
+          <TextInput
+            placeholder="Enter Your Mobile Number "
+            placeholderTextColor={Colors.grayColor}
+            value={mobNumber}
+            onChangeText={(text) => setMobNumber(text)}
+            style={{
+              ...Fonts.blackColor16Medium,
+              paddingVertical: 12,
+              fontSize: 12,
+            }}
+            cursorColor={Colors.primaryColor}
+         
+            maxLength={10}
+            keyboardType="numeric"
+          />
+        </View>
+      </>
+    );
+  }
+  function passwordField() {
+    return (
+      <>
+        {/* Password Field */}
+        <Text style={styles.sectionLabel}>
+          Password <Text style={styles.label}>*</Text>
+        </Text>
+        <View
+          style={{
+            ...styles.textFieldWrapper,
+            marginBottom: Sizes.fixPadding * 2.0,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <TextInput
+            placeholder="Enter Your Password"
+            placeholderTextColor={Colors.grayColor}
+            value={password}
+            onChangeText={(text) => setPassword(text)}
+            secureTextEntry={secureText}
+            maxLength={20}
+            style={{
+              ...Fonts.blackColor16Medium,
+              paddingVertical: 12,
+              fontSize: 12,
+              flex: 1,
+            }}
+            cursorColor={Colors.primaryColor}
+          
+          />
+          <Ionicons
+            name={secureText ? "eye-off" : "eye"}
+            size={20}
+            color={Colors.grayColor}
+            onPress={() => setSecureText(!secureText)}
+            style={{ marginHorizontal: 10 }}
+          />
+        </View>
+
+        {/* Confirm Password Field */}
+        <Text style={styles.sectionLabel}>
+          Confirm Password <Text style={styles.label}>*</Text>
+        </Text>
+        <View
+          style={{
+            ...styles.textFieldWrapper,
+            marginBottom: Sizes.fixPadding * 2.0,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <TextInput
+            placeholder="Re-enter Your Password"
+            placeholderTextColor={Colors.grayColor}
+            value={confirmPassword}
+            onChangeText={(text) => setConfirmPassword(text)}
+            secureTextEntry={secureConfirmText}
+            maxLength={20}
+            style={{
+              ...Fonts.blackColor16Medium,
+              paddingVertical: 12,
+              fontSize: 12,
+              flex: 1,
+            }}
+            cursorColor={Colors.primaryColor}
+        
+          />
+          <Ionicons
+            name={secureConfirmText ? "eye-off" : "eye"}
+            size={20}
+            color={Colors.grayColor}
+            onPress={() => setSecureConfirmText(!secureConfirmText)}
+            style={{ marginHorizontal: 10 }}
+          />
+        </View>
+      </>
     );
   }
 
   function fullNameInfo() {
-    return (<>
-      <Text style={styles.sectionLabel}>
-        Full Name <Text style={styles.label}>*</Text>
-        {/* <Text style={styles.optional}>(Optional)</Text> */}
-      </Text>
-      <View style={{ ...styles.textFieldWrapper }}>
-
-        <TextInput
-          placeholder="Enter Your Full name"
-          placeholderTextColor={Colors.grayColor}
-          value={fullName}
-          onChangeText={(text) => setfullName(text)}
-          style={{
-            ...Fonts.blackColor16Medium, paddingVertical: 12,
-            fontSize: 12,
-          }}
-          cursorColor={Colors.primaryColor}
-          selectionColor={Colors.primaryColor}
-        />
-      </View>
-    </>
+    return (
+      <>
+        <Text style={styles.sectionLabel}>
+          Full Name <Text style={styles.label}>*</Text>
+          {/* <Text style={styles.optional}>(Optional)</Text> */}
+        </Text>
+        <View style={{ ...styles.textFieldWrapper }}>
+          <TextInput
+            placeholder="Enter Your Full name"
+            placeholderTextColor={Colors.grayColor}
+            value={fullName}
+            onChangeText={(text) => setfullName(text)}
+            style={{
+              ...Fonts.blackColor16Medium,
+              paddingVertical: 12,
+              fontSize: 12,
+            }}
+            cursorColor={Colors.primaryColor}
+          
+          />
+        </View>
+      </>
     );
   }
   function vehicleNumberInfo() {
-    return (<>
-      <Text style={styles.sectionLabel}>
-        Vehicle Registration Number <Text style={styles.label}>*</Text>
-        {/* <Text style={styles.optional}>(Optional)</Text> */}
-      </Text>
-      <View style={{ ...styles.textFieldWrapper }}>
-
-        <TextInput
-          placeholder="Enter Your Vehicle Registration Number"
-          placeholderTextColor={Colors.grayColor}
-          value={vehicleNumber}
-          onChangeText={(text) => setVehicleNumber(text)}
-          style={{
-            ...Fonts.blackColor16Medium, paddingVertical: 12,
-            fontSize: 12,
-          }}
-          cursorColor={Colors.primaryColor}
-          selectionColor={Colors.primaryColor}
-        />
-      </View>
-    </>
+    return (
+      <>
+        <Text style={styles.sectionLabel}>
+          Vehicle Registration Number <Text style={styles.label}>*</Text>
+          {/* <Text style={styles.optional}>(Optional)</Text> */}
+        </Text>
+        <View style={{ ...styles.textFieldWrapper }}>
+          <TextInput
+            placeholder="Enter Your Vehicle Registration Number"
+            placeholderTextColor={Colors.grayColor}
+            value={vehicleNumber}
+            onChangeText={(text) => setVehicleNumber(text.toUpperCase())}
+            style={{
+              ...Fonts.blackColor16Medium,
+              paddingVertical: 12,
+              fontSize: 12,
+            }}
+            cursorColor={Colors.primaryColor}
+        
+          />
+        </View>
+      </>
     );
   }
 
@@ -391,11 +514,9 @@ const RegisterScreen = ({ navigation, route }) => {
   function vehicleDataForm() {
     return (
       <View style={styles.container}>
-
         {/* Company Picker */}
         <Text style={styles.sectionLabel}>
           Select Vehicle Manufacturer <Text style={styles.label}>*</Text>
-
         </Text>
         <View style={styles.pickerWrapper}>
           <Picker
@@ -408,9 +529,18 @@ const RegisterScreen = ({ navigation, route }) => {
             }}
             style={styles.pickerStyle}
           >
-            <Picker.Item style={{ fontSize: 12 }} label="Select Company" value="" />
+            <Picker.Item
+              style={{ fontSize: 12 }}
+              label="Select Manufacturer"
+              value=""
+            />
             {Object.keys(vehicleData).map((make) => (
-              <Picker.Item style={{ fontSize: 12 }} key={make} label={make} value={make} />
+              <Picker.Item
+                style={{ fontSize: 12 }}
+                key={make}
+                label={make}
+                value={make}
+              />
             ))}
           </Picker>
         </View>
@@ -418,7 +548,6 @@ const RegisterScreen = ({ navigation, route }) => {
         {/* Custom company if 'Other' */}
         {selectedCompany === "Others" && (
           <>
-
             <Text style={styles.sectionLabel}>
               Enter Vehicle Manufacturer <Text style={styles.label}>*</Text>
             </Text>
@@ -427,18 +556,20 @@ const RegisterScreen = ({ navigation, route }) => {
               style={{
                 ...styles.textFieldWrapper,
                 marginBottom: Sizes.fixPadding * 2.0,
-
               }}
             >
               <TextInput
-                placeholder="Enter Company Name here "
+                placeholder="Enter Manufacturer Name here "
                 placeholderTextColor={Colors.grayColor}
                 value={customCompany}
                 onChangeText={setCustomCompany}
-                style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
+                style={{
+                  ...Fonts.blackColor16Medium,
+                  paddingVertical: 12,
+                  fontSize: 12,
+                }}
                 cursorColor={Colors.primaryColor}
-                selectionColor={Colors.primaryColor}
-
+             
               />
             </View>
             <Text style={styles.sectionLabel}>
@@ -448,7 +579,6 @@ const RegisterScreen = ({ navigation, route }) => {
               style={{
                 ...styles.textFieldWrapper,
                 marginBottom: Sizes.fixPadding * 2.0,
-
               }}
             >
               <TextInput
@@ -456,33 +586,51 @@ const RegisterScreen = ({ navigation, route }) => {
                 placeholderTextColor={Colors.grayColor}
                 value={customModel}
                 onChangeText={setCustomModel}
-                style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
+                style={{
+                  ...Fonts.blackColor16Medium,
+                  paddingVertical: 12,
+                  fontSize: 12,
+                }}
                 cursorColor={Colors.primaryColor}
-                selectionColor={Colors.primaryColor}
-
+            
               />
             </View>
           </>
         )}
 
         {/* Model Picker if applicable */}
-        {models.length > 0 ? (<>
-          <Text style={styles.sectionLabel}>
-            Select Vehicle Model <Text style={styles.label}>*</Text>
-          </Text>
-          <View style={styles.pickerWrapper}>
-            <Picker
-              selectedValue={selectedModel}
-              onValueChange={(itemValue) => setSelectedModel(itemValue)}
-              style={styles.pickerStyle}
-            >
-              <Picker.Item style={{ fontSize: 12 }} label="Select Model" value="" />
-              {models.map((model) => (
-                <Picker.Item style={{ fontSize: 12 }} key={model} label={model} value={model} />
-              ))}
-              <Picker.Item style={{ fontSize: 12 }} label="Other" value="Other" />
-            </Picker>
-          </View></>
+        {models.length > 0 ? (
+          <>
+            <Text style={styles.sectionLabel}>
+              Select Vehicle Model <Text style={styles.label}>*</Text>
+            </Text>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={selectedModel}
+                onValueChange={(itemValue) => setSelectedModel(itemValue)}
+                style={styles.pickerStyle}
+              >
+                <Picker.Item
+                  style={{ fontSize: 12 }}
+                  label="Select Model"
+                  value=""
+                />
+                {models.map((model) => (
+                  <Picker.Item
+                    style={{ fontSize: 12 }}
+                    key={model}
+                    label={model}
+                    value={model}
+                  />
+                ))}
+                <Picker.Item
+                  style={{ fontSize: 12 }}
+                  label="Other"
+                  value="Other"
+                />
+              </Picker>
+            </View>
+          </>
         ) : selectedCompany !== "" ? null : null}
 
         {/* Custom model if no models found or "Other" selected */}
@@ -495,7 +643,6 @@ const RegisterScreen = ({ navigation, route }) => {
               style={{
                 ...styles.textFieldWrapper,
                 marginBottom: Sizes.fixPadding * 2.0,
-
               }}
             >
               <TextInput
@@ -503,16 +650,38 @@ const RegisterScreen = ({ navigation, route }) => {
                 placeholderTextColor={Colors.grayColor}
                 value={customModel}
                 onChangeText={setCustomModel}
-                style={{ ...Fonts.blackColor16Medium, paddingVertical: 12, fontSize: 12, }}
+                style={{
+                  ...Fonts.blackColor16Medium,
+                  paddingVertical: 12,
+                  fontSize: 12,
+                }}
                 cursorColor={Colors.primaryColor}
-                selectionColor={Colors.primaryColor}
-
+             
               />
             </View>
           </>
         )}
       </View>
-    )
+    );
+  }
+  function signInText() {
+    return (
+      <View style={{ alignItems: "flex-end", marginBottom: 20 }}>
+        <Text style={{ ...Fonts.grayColor18Medium, textAlign: "right" }}>
+          Are You Existing User?{" "}
+          <Text
+            onPress={() => navigation.goBack()}
+            style={{
+              ...Fonts.grayColor18SemiBold,
+              color: "blue",
+              fontWeight: "700",
+            }}
+          >
+            Click Here
+          </Text>
+        </Text>
+      </View>
+    );
   }
 };
 
@@ -536,10 +705,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.extraLightGrayColor,
     borderWidth: 1.0,
     marginBottom: Sizes.fixPadding * 2.0,
-
   },
   sectionLabel: {
-
     fontSize: 12,
     fontWeight: "bold",
     color: Colors.primaryColor,
@@ -577,5 +744,4 @@ const styles = StyleSheet.create({
     color: "#000",
     fontSize: 16,
   },
-
 });

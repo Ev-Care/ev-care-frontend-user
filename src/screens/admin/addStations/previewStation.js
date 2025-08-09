@@ -18,16 +18,19 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useDispatch, useSelector } from "react-redux";
 import { Colors, Fonts, Sizes } from "../../../constants/styles";
 
-import {
-  selectVendorError,
-  selectVendorLoading,
-  selectVendorStation,
-} from "../services/selector";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
 import imageURL from "../../../constants/baseURL";
 import { postSingleFile } from "../../auth/services/crudFunction";
 import { selectToken } from "../../auth/services/selector";
 import { setupImagePicker } from "../../vendor/CompleteProfileDetail/vendorDetailForm";
+import {
+  addStationByAdmin,
+  fetchAllPendingStation,
+  fetchAllStations,
+} from "../services/crudFunctions";
+import { updateStation } from "../../vendor/services/crudFunction";
+
+import { selectAdminError } from "../services/selector";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -50,25 +53,19 @@ const PreviewStation = ({ navigation, route }) => {
   const mapRef = useRef(null);
   const dispatch = useDispatch();
   const { stationData, type, stationImage, clearForm } = route?.params || {};
-//   const isLoading = useSelector(selectVendorLoading);
-//   const errorMessage = useSelector(selectVendorError);
-  const [isLoading ,setIsLoading]=useState(null);
-  const errorMessage ="change this with actual error";
-//   const stations = useSelector(selectVendorStation);
+  //   const isLoading = useSelector(selectVendorLoading);
+  //   const errorMessage = useSelector(selectVendorError);
+  const [isLoading, setIsLoading] = useState(false);
+  const errorMessage = useSelector(selectAdminError);
+  //   const stations = useSelector(selectVendorStation);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(stationImage || '');
-//   const authToken = useSelector(selectToken);
-//   const station = stations.find(
-//     (station) => station.id === stationData.station_id
-//   );
+  const [selectedImage, setSelectedImage] = useState(stationImage || "");
+  //   const authToken = useSelector(selectToken);
+  //   const station = stations.find(
+  //     (station) => station.id === stationData.station_id
+  //   );
 
 
-  useEffect(() => {
-    console.log(
-      "Transformed station data preview:",
-      JSON.stringify(stationData, null, 2)
-    );
-  }, [stationData]);
 
   const connectorIcons = {
     "CCS-2": "ev-plug-ccs2",
@@ -95,25 +92,26 @@ const PreviewStation = ({ navigation, route }) => {
 
   const handleSubmit = async () => {
     try {
-      
-      console.log('station data', stationData);
+      setIsLoading(true);
+
+      // console.log("station data", stationData);
+
       if (type === "add") {
-        const addStationresponse = await dispatch(addStation(stationData));
-        if (addStation.fulfilled.match(addStationresponse)) {
-          const stationResponse = await dispatch(
-            fetchStations(stationData?.owner_id)
-          );
-          if (fetchStations.fulfilled.match(stationResponse)) {
-            // await dispatch(showSnackbar({ message: "Station fetched Successfully.", type:'success' }));
+        const addStationResponse = await dispatch(
+          addStationByAdmin(stationData)
+        );
+
+        if (addStationByAdmin.fulfilled.match(addStationResponse)) {
+          const stationResponse = await dispatch(fetchAllStations());
+
+          if (fetchAllStations.fulfilled.match(stationResponse)) {
             await dispatch(
               showSnackbar({ message: "New station added.", type: "success" })
             );
-            if (typeof clearForm === "function") {
-              clearForm();
-            }
-            // navigation.pop();
-            navigation.navigate("VendorBottomTabBar");
-          } else if (fetchStations.rejected.match(stationResponse)) {
+
+            if (typeof clearForm === "function") clearForm();
+            navigation.pop(2);
+          } else {
             await dispatch(
               showSnackbar({
                 message: errorMessage || "Failed to fetch station.",
@@ -121,7 +119,7 @@ const PreviewStation = ({ navigation, route }) => {
               })
             );
           }
-        } else if (addStation.rejected.match(addStationresponse)) {
+        } else {
           await dispatch(
             showSnackbar({
               message: errorMessage || "Failed to add station.",
@@ -130,30 +128,25 @@ const PreviewStation = ({ navigation, route }) => {
           );
         }
       } else {
-
-
-
         const updateStationResponse = await dispatch(
           updateStation(stationData)
         );
+
         if (updateStation.fulfilled.match(updateStationResponse)) {
           const stationResponse = await dispatch(
-            fetchStations(stationData?.owner_id)
+            fetchAllStations(stationData?.owner_id)
           );
-          if (fetchStations.fulfilled.match(stationResponse)) {
-            console.log("station updated");
 
+          if (fetchAllStations.fulfilled.match(stationResponse)) {
             await dispatch(
               showSnackbar({
-                message: "Station updated Successfully.",
+                message: "Station updated successfully.",
                 type: "success",
               })
             );
-
-            navigation.pop(2);
-            // navigation.navigate("StationManagement", { station })
-          } else if (fetchStations.rejected.match(stationResponse)) {
-            console.log("station update failed");
+            // navigation.navigate('ViewAllStationsPage');
+            navigation.pop(3);
+          } else {
             await dispatch(
               showSnackbar({
                 message: errorMessage || "Failed to fetch station.",
@@ -161,7 +154,7 @@ const PreviewStation = ({ navigation, route }) => {
               })
             );
           }
-        } else if (updateStation.rejected.match(updateStationResponse)) {
+        } else {
           await dispatch(
             showSnackbar({
               message: errorMessage || "Failed to update station.",
@@ -171,7 +164,7 @@ const PreviewStation = ({ navigation, route }) => {
         }
       }
     } catch (error) {
-      console.error("Error adding station:", error);
+      console.error("Error in admin preview  station:", error);
       await dispatch(
         showSnackbar({
           message:
@@ -179,6 +172,8 @@ const PreviewStation = ({ navigation, route }) => {
           type: "error",
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -275,19 +270,15 @@ const PreviewStation = ({ navigation, route }) => {
     return (
       <Modal visible={modalVisible} transparent={true}>
         <View style={styles.modalContainer}>
-          <Image source={{ uri: imageURL.baseURL+selectedImage }} style={styles.fullImage} />
+          <Image
+            source={{ uri: imageURL.baseURL + selectedImage }}
+            style={styles.fullImage}
+          />
           <TouchableOpacity
             style={styles.modalCloseButton}
             onPress={() => setModalVisible(false)}
           >
-
-
-            <MaterialIcons
-              name="close"
-              color={Colors.blackColor}
-              size={26}
-            />
-
+            <MaterialIcons name="close" color={Colors.blackColor} size={26} />
           </TouchableOpacity>
         </View>
       </Modal>
@@ -321,7 +312,7 @@ const PreviewStation = ({ navigation, route }) => {
                   name={
                     charger?.connector_type
                       ? connectorIcons?.[charger?.connector_type] ||
-                      "ev-plug-type1"
+                        "ev-plug-type1"
                       : "ev-plug-type1"
                   }
                   size={20}
@@ -341,7 +332,7 @@ const PreviewStation = ({ navigation, route }) => {
     }
     //  console.log("station image in preview page upper",stationImage);
     const imageUrl = stationImage
-      ? { uri: imageURL.baseURL+stationImage }
+      ? { uri: imageURL.baseURL + stationImage }
       : require("../../../../assets/images/nullStation.png");
     // console.log("station image in preview page lower",imageUrl);
     return (
@@ -367,17 +358,14 @@ const PreviewStation = ({ navigation, route }) => {
           </View>
 
           <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>{stationData?.access_type}</Text>
+            <Text style={styles.communityText}>{stationData?.access_type.charAt(0).toUpperCase() + stationData?.access_type.slice(1)}</Text>
           </View>
         </View>
         <TouchableOpacity
           activeOpacity={0.9}
           style={styles.mapBackground}
           onPress={() => {
-            if (
-              stationImage &&
-              stationImage.trim() !== ""
-            ) {
+            if (stationImage && stationImage.trim() !== "") {
               showFullImage(stationImage);
             }
           }}
@@ -389,37 +377,61 @@ const PreviewStation = ({ navigation, route }) => {
           <Text style={styles.stationName}>
             {trimName(50, stationData?.station_name)}
           </Text>
-          <Text style={styles.stationAddress}>
-            {trimName(50, stationData?.address)}
-          </Text>
+          {type === "add" ? (
+            <Text style={styles.stationAddress}>
+              <Text style={{ fontWeight: "700" }}>
+                Vendor Contact Number:
+              </Text>{" "}
+              {trimName(50, stationData?.identifier)}
+            </Text>
+          ) : (
+            <>
+              {stationData?.user?.vendor_type === "individual" ? (
+                <>
+                  <Text style={styles.stationAddress}>
+                    Vendor Name : {stationData?.user?.owner_legal_name}
+                  </Text>
+                  <Text style={styles.stationAddress}>
+                    Contact Number : {stationData?.user?.mobile_number}
+                  </Text>
+                </>
+              ) : stationData?.user?.vendor_type === "organization" ? (
+                <>
+                  <Text style={styles.stationAddress}>
+                    Organization Name: {stationData?.user?.business_name}
+                  </Text>
+                  <Text style={styles.stationAddress}>
+                    Contact Number : {stationData?.user?.mobile_number}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.stationAddress}>
+                  {trimName(50, stationData?.address)}
+                </Text>
+              )}
+            </>
+          )}
+
           <View
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
           >
             <View style={styles.statusContainer}>
               <Text
-                style={[
-                  styles.statusClosed,
-                  {
-                    color: stationData?.status === "Inactive" ? "#FF5722" : "green",
-                  },
-                ]}
+                style={{
+                  fontSize: 12,
+                  fontWeight:"700",
+                  color: Colors.primaryColor,
+                }}
               >
-                {stationData?.status === "Inactive" ? "Closed" : "Open"}
-              </Text>
-              <Text style={styles.statusTime}>
+                Open Hours :{" "}
                 {openHourFormatter(
                   stationData?.open_hours_opening_time,
                   stationData?.open_hours_closing_time
                 )}
               </Text>
+
               <View style={styles.newBadge}>
-                <Text style={styles.newText}>
-                  {stationData.status === "Active"
-                    ? "VERIFIED"
-                    :
-                    "New"
-                  }
-                </Text>
+                <Text style={styles.newText}>{stationData?.status}</Text>
               </View>
             </View>
           </View>
@@ -427,8 +439,6 @@ const PreviewStation = ({ navigation, route }) => {
       </View>
     );
   }
-
- 
 
   function detailTab() {
     return (
@@ -460,7 +470,7 @@ const PreviewStation = ({ navigation, route }) => {
         <View style={styles.landmarkContainer}>
           <Text style={styles.landmarkTitle}>{stationData?.address}</Text>
         </View>
-
+       {stationData?.amenities?.length>0 && (<>
         <Text style={styles.sectionTitle}>Amenities</Text>
         <View style={styles.amenitiesContainer}>
           {stationData?.amenities?.split(",").map((amenityName, index) => {
@@ -475,6 +485,7 @@ const PreviewStation = ({ navigation, route }) => {
             );
           })}
         </View>
+        </>)}
       </ScrollView>
     );
   }
@@ -760,7 +771,6 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "bold",
   },
-
 });
 
 export default PreviewStation;

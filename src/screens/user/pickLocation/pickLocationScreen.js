@@ -18,34 +18,51 @@ import { Colors, Fonts, commonStyles } from "../../../constants/styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, StackActions } from "@react-navigation/native";
 import * as Location from "expo-location";
-import {DottedLoader2} from "../../../utils/lottieLoader/loaderView";
+import { DottedLoader2 } from "../../../utils/lottieLoader/loaderView";
+import { selectUserCoordinate } from "../service/selector";
+import { useSelector } from "react-redux";
 
 const PickLocationScreen = ({ navigation, route }) => {
-  // const navigation = useNavigation();
+   const userCurrentRegion = useSelector(selectUserCoordinate);
+   console.log("userCurrentRegion from store: ", userCurrentRegion);
   const mapRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const [currentLocation, setCurrentLocation] = useState(null);
+  const [currentLocation, setCurrentLocation] = useState(
+    userCurrentRegion
+      ? {
+          latitude: userCurrentRegion.latitude,
+          longitude: userCurrentRegion.longitude,
+        }
+      : null
+  );
   const [isLoading, setIsLoading] = useState(false);
-
+ 
+  // console.log("location from store ", userCurrentRegion);
   const [address, setAddress] = useState(""); // Store address
-  const [region, setRegion] = useState({
-    latitude: 28.6139, // Default to Delhi
-    longitude: 77.209,
-    latitudeDelta: 0.03,
-    longitudeDelta: 0.03,
-  });
+ const [region, setRegion] = useState(userCurrentRegion
+       ? {
+     latitude: userCurrentRegion?.latitude,
+     longitude: userCurrentRegion?.longitude,
+     latitudeDelta: 0.05,
+     longitudeDelta: 0.05,
+   }:{
+     latitude:28.6139,
+     longitude:77.209,
+     latitudeDelta: 0.05,
+     longitudeDelta: 0.05,
+   });
   const [errorMsg, setErrorMsg] = useState(null);
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (mapRef.current) {
-        getUserLocation();
-      } else {
-        console.log("Map reference is not ready yet");
-      }
-    }, 500);
+  // useEffect(() => {
+  //   const timeout = setTimeout(() => {
+  //     if (mapRef.current) {
+  //       getUserLocation();
+  //     } else {
+  //       // console.log("Map reference is not ready yet");
+  //     }
+  //   }, 500);
 
-    return () => clearTimeout(timeout);
-  }, []);
+  //   return () => clearTimeout(timeout);
+  // }, []);
 
   const getUserLocation = async () => {
     setIsLoading(true);
@@ -67,7 +84,7 @@ const PickLocationScreen = ({ navigation, route }) => {
       let location = await Location.getCurrentPositionAsync({});
 
       const { latitude, longitude } = location.coords;
-    
+
       setRegion({
         latitude,
         longitude,
@@ -79,7 +96,7 @@ const PickLocationScreen = ({ navigation, route }) => {
 
       // ✅ Animate camera IMMEDIATELY without waiting for state update
       if (mapRef.current) {
-        console.log("Animating camera to..:", latitude, longitude);
+        // console.log("Animating camera to..:", latitude, longitude);
         mapRef.current.animateCamera(
           {
             center: { latitude, longitude },
@@ -97,8 +114,7 @@ const PickLocationScreen = ({ navigation, route }) => {
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
       });
-    }
-    finally{ 
+    } finally {
       setIsLoading(false);
     }
   };
@@ -116,8 +132,7 @@ const PickLocationScreen = ({ navigation, route }) => {
       }
     } catch (error) {
       console.error("Error fetching address:", error);
-    }
-    finally{
+    } finally {
       setIsLoading(false);
     }
   };
@@ -126,7 +141,7 @@ const PickLocationScreen = ({ navigation, route }) => {
   const handleMapPress = async (event) => {
     setIsLoading(true);
     const { latitude, longitude } = event.nativeEvent.coordinate;
-  
+
     try {
       setSelectedLocation({ latitude, longitude });
       await fetchAddressFromCoordinates(latitude, longitude);
@@ -136,12 +151,11 @@ const PickLocationScreen = ({ navigation, route }) => {
       setIsLoading(false); // <- fix: set to false, not true
     }
   };
-  
 
   // Handle search selection
   const handleSearchSelect = async (data, details) => {
     setIsLoading(true);
-  
+
     try {
       const { lat, lng } = details.geometry.location;
       const newRegion = {
@@ -150,11 +164,11 @@ const PickLocationScreen = ({ navigation, route }) => {
         latitudeDelta: 0.03,
         longitudeDelta: 0.03,
       };
-  
+
       setRegion(newRegion);
       setSelectedLocation({ latitude: lat, longitude: lng });
       await fetchAddressFromCoordinates(lat, lng); // Assuming this is async
-  
+
       if (mapRef.current) {
         mapRef.current.animateCamera(
           { center: newRegion, zoom: 15 },
@@ -167,7 +181,6 @@ const PickLocationScreen = ({ navigation, route }) => {
       setIsLoading(false);
     }
   };
-  
 
   // Submit function
   const handleSubmit = () => {
@@ -176,19 +189,8 @@ const PickLocationScreen = ({ navigation, route }) => {
       return;
     }
 
-    if (route.params?.addressFor === "destination") {
-      route.params?.setDestinationAddress(address);
-      route.params?.setDestinationCoordinate(selectedLocation);
-    } else if (route.params?.addressFor === "pickup") {
-      route.params?.setPickupAddress(address);
-      route.params?.setPickupCoordinate(selectedLocation);
-    } else if (route.params?.addressFor === "vendorAddress") {
-      route.params?.setAddress(address);
-      route.params?.setCoordinate(selectedLocation);
-    } else {
-      route.params?.setAddress(address);
-      route.params?.setCoordinate(selectedLocation);
-    }
+    route.params?.setAddress(address);
+    route.params?.setCoordinate(selectedLocation);
 
     navigation.dispatch(StackActions.pop(1));
   };
@@ -233,7 +235,18 @@ const PickLocationScreen = ({ navigation, route }) => {
       {/* Display Selected Address */}
       {address ? (
         <View style={styles.addressContainer}>
-          <Text style={styles.addressText}>{address}</Text>
+          <Text style={styles.addressHeading}>Location Details</Text>
+          {route.params?.addressFor === "adminStationAddress" && (
+            <View style={styles.addressRow}>
+              <Text style={styles.label}>Coordinates:</Text>
+              <Text style={styles.value}>{selectedLocation?.latitude},</Text>
+              <Text style={styles.value}>{selectedLocation?.longitude}</Text>
+            </View>
+          )}
+          <View style={styles.addressRow}>
+            <Text style={styles.label}>Address:</Text>
+            <Text style={styles.value}>{address}</Text>
+          </View>
         </View>
       ) : null}
 
@@ -253,11 +266,11 @@ const PickLocationScreen = ({ navigation, route }) => {
         <Text style={Fonts.whiteColor18Medium}>Select Location</Text>
       </TouchableOpacity>
       {isLoading && (
-              <View style={styles.loaderContainer}>
-                <DottedLoader2/>
-                {/* <ActivityIndicator size="large" color={Colors.primaryColor} /> */}
-              </View>
-            )}
+        <View style={styles.loaderContainer}>
+          <DottedLoader2 />
+          {/* <ActivityIndicator size="large" color={Colors.primaryColor} /> */}
+        </View>
+      )}
     </View>
   );
 };
@@ -272,7 +285,8 @@ const styles = StyleSheet.create({
     left: 10,
     right: 10,
     zIndex: 1,
-  }, loaderContainer: {
+  },
+  loaderContainer: {
     position: "absolute",
     top: 0,
     left: 0,
@@ -280,7 +294,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "rgba(182, 206, 232, 0.3)", 
+    // backgroundColor: "rgba(182, 206, 232, 0.3)",
     zIndex: 999,
   },
   searchInput: {
@@ -305,16 +319,44 @@ const styles = StyleSheet.create({
     bottom: 80,
     left: 20,
     right: 20,
-    backgroundColor: "rgba(255,255,255,0.9)",
-    borderRadius: 4,
-    padding: 10,
-    alignItems: "center",
-    elevation: 5,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  addressText: {
-    fontSize: 16,
-    color: "black",
+
+  addressHeading: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: Colors.primaryColor,
+    marginBottom: 10,
   },
+
+  addressRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 6,
+    flexWrap: "wrap",
+  },
+
+  label: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: Colors.primaryColor,
+    marginRight: 6,
+  },
+
+  value: {
+    fontSize: 13,
+    color: "#333",
+    flexShrink: 1,
+  },
+
   submitButton: {
     position: "absolute",
     bottom: 20,
@@ -328,7 +370,7 @@ const styles = StyleSheet.create({
   },
   currentLocationButton: {
     position: "absolute",
-    bottom: 150,
+    bottom: 250,
     right: 20,
     width: 50,
     height: 50,

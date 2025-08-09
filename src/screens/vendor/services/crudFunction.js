@@ -11,7 +11,7 @@ export const fetchStations = createAsyncThunk(
     try {
       const accessToken = await AsyncStorage.getItem("accessToken");
       // const accessToken = await useSelector(selectToken);
-      console.log("vendorId", vendorId);
+      // console.log("vendorId", vendorId);
       const response = await getAllStationsAPI({ owner_id: vendorId, accessToken });
       if (response.data.code === 200 || response.data.code === 201) {
         return response.data;
@@ -19,7 +19,7 @@ export const fetchStations = createAsyncThunk(
         return rejectWithValue(response.data.message || "Failed to fetch Stations");
       }
     } catch (error) {
-      console.log("Error in fetchStations:", error);
+      // console.log("Error in fetchStations:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -43,11 +43,11 @@ export const addStation = createAsyncThunk(
       if (response?.data?.code === 200 || response?.data?.code === 201) {
         return response?.data;
       } else {
-        console.log('error message:',response?.data?.message );
+        // console.log('error message:',response?.data?.message );
         return rejectWithValue(response?.data?.message || "Failed to add station");
       }
     } catch (error) {
-      console.log("Error in addStation:", error);
+      // console.log("Error in addStation:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -69,16 +69,16 @@ export const updateStationsChargersConnectorsStatus = createAsyncThunk(
       const accessToken = await AsyncStorage.getItem("accessToken"); // Retrieve accessToken inside the thunk
 
       const UpdateStatusResponse = await updateStationsChargersConnectorsStatusAPI({ ...data, accessToken });
-      console.log("UpdateStatusResponse", UpdateStatusResponse?.data);
+      // console.log("UpdateStatusResponse", UpdateStatusResponse?.data);
       const getStationresponse = await getStationByIdAPI({ station_id: data.station_id, accessToken });
-      console.log("getStationresponse", JSON.stringify(getStationresponse?.data, null, 2));
+      // console.log("getStationresponse", JSON.stringify(getStationresponse?.data, null, 2));
       if (getStationresponse?.data?.code === 200 || getStationresponse?.data?.code === 201) {
         return getStationresponse.data;
       } else {
         return rejectWithValue(getStationresponse.data.message || "Failed to fetch Stations");
       }
     } catch (error) {
-      console.log("Error in fetchStations:", error);
+      // console.log("Error in fetchStations:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -105,7 +105,7 @@ export const deleteStation = createAsyncThunk(
         return rejectWithValue(response.data.message || "Failed to delete Stations");
       }
     } catch (error) {
-      console.log("Error in deleteStation:", error);
+      // console.log("Error in deleteStation:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -129,7 +129,7 @@ export const updateAllStationStatus = createAsyncThunk(
         return rejectWithValue(response.data.message || "Failed to update stations status");
       }
     } catch (error) {
-      console.log("Error in updateAllStationStatus:", error);
+      // console.log("Error in updateAllStationStatus:", error);
 
       // Always extract message properly even in catch
       const errorMessage =
@@ -154,7 +154,7 @@ export const updateStation = createAsyncThunk(
         return rejectWithValue(response.data.message || "Failed to fetch Stations");
       }
     } catch (error) {
-      console.log("Error in fetchStations:", error);
+      // console.log("Error in fetchStations:", error);
 
       // Always extract message properly even in catch
       const errorMessage =

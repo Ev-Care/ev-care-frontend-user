@@ -3,14 +3,19 @@ import { Alert, Linking, Platform } from "react-native";
 
 /** Format distance in meters or kilometers */
 export const formatDistance = (distanceInKm) => {
-  if (distanceInKm < 1) {
-    const meters = Math.round(distanceInKm * 1000);
+  const distance = Number(distanceInKm);
+
+  if (isNaN(distance)) return 'NAN';
+
+  if (distance < 1) {
+    const meters = (distance * 1000).toFixed(2).replace(/\.00$/, '');
     return `${meters} m`;
   } else {
-    const kilometers = Math.round(distanceInKm);
+    const kilometers = distance.toFixed(2).replace(/\.00$/, '');
     return `${kilometers} km`;
   }
 };
+
 
 /** Format operating hours */
 export const openHourFormatter = (openingTime, closingTime) => {
@@ -63,7 +68,7 @@ export const getLocationPermission = async () => {
       );
 
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Location permission granted (Android)');
+        // console.log('Location permission granted (Android)');
         return true;
       } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
         Alert.alert(
@@ -75,12 +80,12 @@ export const getLocationPermission = async () => {
           ]
         );
       } else {
-        console.log('Location permission denied (Android)');
+        // console.log('Location permission denied (Android)');
       }
     } else {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status === 'granted') {
-        console.log('Location permission granted (iOS)');
+        // console.log('Location permission granted (iOS)');
         return true;
       } else {
         Alert.alert(
@@ -105,3 +110,78 @@ export const getLocationPermission = async () => {
 export const TimeDelay = (seconds) => {
   return new Promise(resolve => setTimeout(resolve, seconds));
 };
+export  const openGoogleMaps = (latitude, longitude, label = 'EV Care') => {
+  const encodedLabel = encodeURIComponent(label);
+  const url = Platform.select({
+    ios: `maps://?q=${encodedLabel}&ll=${latitude},${longitude}`,
+    android: `geo:${latitude},${longitude}?q=${latitude},${longitude}(${encodedLabel})`,
+  });
+  Linking.openURL(url);
+};
+// export const openGoogleMaps = (latitude, longitude, label = 'Selected Location') => {
+//   const encodedLabel = encodeURIComponent(label);
+
+//   const url = Platform.select({
+//     ios: `maps://?q=${encodedLabel}&ll=${latitude},${longitude}`,
+//     android: `geo:${latitude},${longitude}?q=${latitude},${longitude}(${encodedLabel})`,
+//   });
+
+//   Linking.openURL(url);
+// };
+export const validateDecimalInput = (text, max = 1000, decimalPlaces = 2) => {
+  const numericText = text.replace(/[^0-9.]/g, "");
+
+  if ((numericText.match(/\./g) || []).length > 1) return "";
+
+  const [whole, fraction] = numericText.split(".");
+  if (fraction && fraction.length > decimalPlaces) return "";
+
+  const value = parseFloat(numericText);
+  if (!isNaN(value) && value > max) return "";
+
+  return numericText;
+};
+
+export const markerImages = {
+  a: require("../../assets/images/markers/a.png"),
+  b: require("../../assets/images/markers/b.png"),
+  c: require("../../assets/images/markers/c.png"),
+  d: require("../../assets/images/markers/d.png"),
+  e: require("../../assets/images/markers/e.png"),
+  f: require("../../assets/images/markers/f.png"),
+  g: require("../../assets/images/markers/g.png"),
+  h: require("../../assets/images/markers/h.png"),
+  i: require("../../assets/images/markers/i.png"),
+  j: require("../../assets/images/markers/j.png"),
+  k: require("../../assets/images/markers/k.png"),
+  l: require("../../assets/images/markers/l.png"),
+  m: require("../../assets/images/markers/m.png"),
+  n: require("../../assets/images/markers/n.png"),
+  o: require("../../assets/images/markers/o.png"),
+  p: require("../../assets/images/markers/p.png"),
+  q: require("../../assets/images/markers/q.png"),
+  r: require("../../assets/images/markers/r.png"),
+  s: require("../../assets/images/markers/s.png"),
+  t: require("../../assets/images/markers/t.png"),
+  u: require("../../assets/images/markers/u.png"),
+  v: require("../../assets/images/markers/v.png"),
+  w: require("../../assets/images/markers/w.png"),
+  x: require("../../assets/images/markers/x.png"),
+  y: require("../../assets/images/markers/y.png"),
+  z: require("../../assets/images/markers/z.png"),
+  default: require("../../assets/images/markers/ev.png"),
+};
+
+
+export const getMarkerImage = (stationName) => {
+  if (!stationName || typeof stationName !== "string") return markerImages.default;
+  const firstChar = stationName.trim()[0].toLowerCase();
+  return markerImages[firstChar] || markerImages.default;
+};
+
+export   function trimName(threshold, str) {
+    if (str.length <= threshold) {
+      return str;
+    }
+    return str.substring(0, threshold) + ".....";
+  }

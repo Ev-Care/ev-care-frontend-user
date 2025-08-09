@@ -35,7 +35,10 @@ import {
   unFavoriteStation,
 } from "../service/crudFunction";
 import { showSnackbar } from "../../../redux/snackbar/snackbarSlice";
-import { openHourFormatter } from "../../../utils/globalMethods";
+import {
+  openGoogleMaps,
+  openHourFormatter,
+} from "../../../utils/globalMethods";
 // Define colors at the top for easy customization
 const COLORS = {
   primary: "#101942",
@@ -52,14 +55,13 @@ const COLORS = {
 
 const { width } = Dimensions.get("window");
 
-
 const ChargingStationDetailScreen = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState(0);
   const favStations = useSelector(selectFavoriteStations);
-    const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   // const [showSnackBar, setshowSnackBar] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const scrollViewRef = useRef(null);
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
@@ -71,7 +73,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
   }
 
   const [inFavorite, setInFavorite] = useState(false);
-  console.log(station.id);
+  // console.log("Vendor===>",station?.vendor);
 
   useEffect(() => {
     if (favStations && station) {
@@ -79,12 +81,12 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         (favStation) => favStation.stationId === station.id
       );
       setInFavorite(isFavorite);
-      console.log("stationdetail useEffect called.", inFavorite);
+      // console.log("stationdetail useEffect called.", inFavorite);
     }
   }, [favStations, station]);
 
   useEffect(() => {
-    console.log("inFavorite changed to", inFavorite);
+    // console.log("inFavorite changed to", inFavorite);
   }, [inFavorite]);
 
   const connectorIcons = {
@@ -114,15 +116,6 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     }
   };
 
-  const openGoogleMaps = (latitude, longitude) => {
-    // console.log("called")
-    const url = Platform.select({
-      ios: `maps://app?saddr=&daddr=${latitude},${longitude}`,
-      android: `geo:${latitude},${longitude}?q=${latitude},${longitude}`,
-    });
-    Linking.openURL(url);
-  };
-
   const handleAddToFavorite = async (station) => {
     setIsLoading(true);
     try {
@@ -130,10 +123,10 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         const postFavresponse = await dispatch(
           postFavoriteStation({ stationId: station.id, userId: user.id })
         );
-        console.log("station favorited ");
-  
+        // console.log("station favorited ");
+
         await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
-  
+
         if (postFavoriteStation.fulfilled.match(postFavresponse)) {
           await dispatch(
             showSnackbar({
@@ -154,10 +147,10 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         const unFavResponse = await dispatch(
           unFavoriteStation({ stationId: station.id, userId: user.id })
         );
-        console.log("station unfavorited ");
-  
+        // console.log("station unfavorited ");
+
         await dispatch(getAllFavoriteStations({ user_key: user.user_key }));
-  
+
         if (unFavoriteStation.fulfilled.match(unFavResponse)) {
           await dispatch(
             showSnackbar({
@@ -179,7 +172,6 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
       setIsLoading(false);
     }
   };
-  
 
   const trimName = (threshold, str) => {
     if (str?.length <= threshold) {
@@ -199,7 +191,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
 
       {/* Bottom Buttons */}
       {buttons()}
-       <Modal visible={modalVisible} transparent={true}>
+      <Modal visible={modalVisible} transparent={true}>
         <View style={styles.modalContainer}>
           <Image source={{ uri: selectedImage }} style={styles.fullImage} />
           <TouchableOpacity
@@ -230,11 +222,11 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
     return (
       <View style={styles.header}>
         <View style={styles.communityBadgeAndBack}>
-        <View
+          <View
             style={{
               backgroundColor: Colors.primaryColor,
               borderRadius: 20,
-              padding: 6, 
+              padding: 6,
               alignItems: "center",
               justifyContent: "center",
               width: 40,
@@ -250,45 +242,56 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
           </View>
 
           <View style={styles.communityBadge}>
-            <Text style={styles.communityText}>Public</Text>
+            <Text style={styles.communityText}>{station?.access_type}</Text>
           </View>
         </View>
         <TouchableOpacity
-  activeOpacity={0.9}
-  style={styles.mapBackground}
-  onPress={() => {
-   if ( station?.station_images &&  station?.station_images.trim() !== "") {
-        showFullImage(imageURL.baseURL + station.station_images);
-      }
-    }}
->
-  <Image source={imageUrl} style={styles.mapBackground} />
-</TouchableOpacity>
-
-        
+          activeOpacity={0.9}
+          style={styles.mapBackground}
+          onPress={() => {
+            if (
+              station?.station_images &&
+              station?.station_images.trim() !== ""
+            ) {
+              showFullImage(imageURL.baseURL + station.station_images);
+            }
+          }}
+        >
+          <Image source={imageUrl} style={styles.mapBackground} />
+        </TouchableOpacity>
 
         <View style={styles.overlay}>
           <Text style={styles.stationName}>
             {trimName(50, station?.station_name)}
           </Text>
+          {/* {station?.vendor?.vendor_type === "individual" ? (
+            <>
+              <Text style={[styles.stationName, { fontWeight: "500" }]}>
+                Vendor Name : {station?.vendor?.owner_legal_name}
+              </Text>
+             
+            </>
+          ) : station?.vendor?.vendor_type === "organization" ? (
+            <>
+              <Text style={[styles.stationName, { fontWeight: "500" }]}>
+                Organization Name: {station?.vendor?.business_name}
+              </Text>
+              
+            </>
+          ) : null} */}
+          <Text style={[styles.stationName, { fontWeight: "500" }]}>
+            Vendor Name : {station?.vendor?.owner_legal_name}
+          </Text>
           <Text style={styles.stationAddress}>
             {trimName(50, station?.address)}
           </Text>
+
           <View
             style={[{ flexDirection: "row", justifyContent: "space-between" }]}
           >
             <View style={styles.statusContainer}>
-              <Text
-                style={[
-                  styles.statusClosed,
-                  {
-                    color: station?.status === "Inactive" ? "#FF5722" : "green",
-                  },
-                ]}
-              >
-                {station?.status === "Inactive" ? "Closed" : "Open"}
-              </Text>
               <Text style={styles.statusTime}>
+                Open Hours :{" "}
                 {openHourFormatter(
                   station?.open_hours_opening_time,
                   station?.open_hours_closing_time
@@ -300,7 +303,7 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
                     ? "VERIFIED"
                     : station.status === "Planned"
                     ? "PENDING"
-                    : ""}
+                    : station.status}
                 </Text>
               </View>
             </View>
@@ -365,11 +368,19 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
   }
   function buttons() {
     return (
-      <View  style={styles.bottomButtons}>
-        <TouchableOpacity onPress={openGoogleMaps} style={styles.directionButton}>
+      <View style={styles.bottomButtons}>
+        <TouchableOpacity
+          onPress={() =>
+            openGoogleMaps(
+              station?.coordinates.latitude,
+              station?.coordinates.longitude,
+              station?.station_name
+            )
+          }
+          style={styles.directionButton}
+        >
           <Text style={styles.directionButtonText}>Get Direction</Text>
         </TouchableOpacity>
- 
       </View>
     );
   }
@@ -459,35 +470,38 @@ const ChargingStationDetailScreen = ({ route, navigation }) => {
         <View style={styles.landmarkContainer}>
           <Text style={styles.landmarkTitle}>{station?.address}</Text>
         </View>
+        {station?.amenities?.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Amenities</Text>
+            <View style={styles.amenitiesContainer}>
+              {station?.amenities?.split(",").map((amenityName, index) => {
+                const trimmedName = amenityName.trim();
+                let iconName = "help-circle"; // default fallback
 
-        <Text style={styles.sectionTitle}>Amenities</Text>
-        <View style={styles.amenitiesContainer}>
-          {station?.amenities?.split(",").map((amenityName, index) => {
-            const trimmedName = amenityName.trim();
-            let iconName = "help-circle"; // default fallback
+                if (trimmedName === "Restroom") {
+                  iconName = "toilet";
+                } else if (trimmedName === "Cafe") {
+                  iconName = "coffee";
+                } else if (trimmedName === "Wifi") {
+                  iconName = "wifi";
+                } else if (trimmedName === "Store") {
+                  iconName = "cart";
+                } else if (trimmedName === "Car Care") {
+                  iconName = "car";
+                } else if (trimmedName === "Lodging") {
+                  iconName = "bed";
+                }
 
-            if (trimmedName === "Restroom") {
-              iconName = "toilet";
-            } else if (trimmedName === "Cafe") {
-              iconName = "coffee";
-            } else if (trimmedName === "Wifi") {
-              iconName = "wifi";
-            } else if (trimmedName === "Store") {
-              iconName = "cart";
-            } else if (trimmedName === "Car Care") {
-              iconName = "car";
-            } else if (trimmedName === "Lodging") {
-              iconName = "bed";
-            }
-
-            return (
-              <View key={trimmedName} style={styles.amenityItem}>
-                <Icon name={iconName} size={24} color={COLORS.primary} />
-                <Text style={styles.AminitiesTypeText}>{trimmedName}</Text>
-              </View>
-            );
-          })}
-        </View>
+                return (
+                  <View key={trimmedName} style={styles.amenityItem}>
+                    <Icon name={iconName} size={24} color={COLORS.primary} />
+                    <Text style={styles.AminitiesTypeText}>{trimmedName}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </>
+        )}
       </ScrollView>
     );
   }
@@ -502,6 +516,7 @@ const styles = StyleSheet.create({
   mapBackground: {
     width: "100%",
     height: 200,
+    resizeMode:"cover",
   },
   overlay: {
     paddingHorizontal: 16,
@@ -512,7 +527,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center", 
+    alignItems: "center",
     top: 26,
     paddingLeft: 15,
     paddingRight: 25,
@@ -520,7 +535,7 @@ const styles = StyleSheet.create({
     width: "100%",
     zIndex: 9999,
   },
-  
+
   loaderContainer: {
     position: "absolute",
     top: 0,
@@ -533,7 +548,6 @@ const styles = StyleSheet.create({
     zIndex: 999,
   },
   communityBadge: {
-  
     backgroundColor: COLORS.white,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -567,7 +581,7 @@ const styles = StyleSheet.create({
   statusTime: {
     color: COLORS.black,
     fontSize: 12,
-    marginLeft: 4,
+    fontWeight: "700",
   },
   newBadge: {
     backgroundColor: COLORS.primary,
@@ -761,10 +775,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 10,
     backgroundColor: "#fff",
-    justifyContent:"center",
-    alignItems:"center",
-    height:50,
-    width:50,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 50,
+    width: 50,
     borderRadius: 50,
   },
   closeText: {

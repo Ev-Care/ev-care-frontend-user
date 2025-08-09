@@ -91,7 +91,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
   let mapIndex = 0;
 
   useEffect(() => {
-    console.log(" map page rendered");
+    // console.log(" map page rendered");
     mapAnimation.addListener(({ value }) => {
       let index = Math.floor(value / cardWidth + 0.3);
       if (index >= stationsList.length) {
@@ -151,7 +151,7 @@ const ChargingStationsOnMapScreen = ({ navigation }) => {
 
       // ✅ Animate camera IMMEDIATELY without waiting for state update
       if (_map.current) {
-        console.log("Animating camera to..:", latitude, longitude);
+        // console.log("Animating camera to..:", latitude, longitude);
         _map.current.animateCamera(
           {
             center: { latitude, longitude },
